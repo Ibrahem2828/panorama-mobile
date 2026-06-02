@@ -1,26 +1,32 @@
 # navigation
 
-يحتوي هذا المجلد معمارية التنقل لتطبيق Panorama Mobile باستخدام React Navigation.
+معمارية التنقل لتطبيق Panorama Mobile باستخدام React Navigation.
 
 ## الملفات
 
-- `RootNavigator.tsx`: يربط `NavigationContainer` ويختار التدفق الأولي.
-- `PublicNavigator.tsx`: Splash وOnboarding وشاشات auth المؤقتة.
-- `StudentSetupNavigator.tsx`: إعداد الملف الأكاديمي والتوثيق.
-- `AppTabsNavigator.tsx`: تبويبات التطبيق الرئيسية.
+- `RootNavigator.tsx`: يقرأ auth state، يشغل bootstrap مرة واحدة، ويختار Public أو App flow.
+- `PublicNavigator.tsx`: Splash وOnboarding وشاشات auth العامة.
+- `StudentSetupNavigator.tsx`: إعداد الملف الأكاديمي والتوثيق، محفوظ للمراحل القادمة.
+- `AppTabsNavigator.tsx`: تبويبات التطبيق الرئيسية للمستخدم المصادق حاليا.
 - `stacks/`: nested stacks للتبويبات.
-- `config/navigationTheme.ts`: theme متوافق مع tokens.
+- `config/navigationTheme.ts`: theme متوافق مع design tokens.
 - `config/screenOptions.ts`: خيارات stack مشتركة.
 - `config/tabOptions.ts`: labels عربية وخيارات bottom tabs.
-- `config/initialFlow.ts`: اختيار تدفق تطويري مؤقت.
-- `guards/navigationGuards.ts`: placeholders فقط للحراس المستقبلية.
+- `config/initialFlow.ts`: mapping من auth status إلى root flow.
+- `guards/navigationGuards.ts`: guards أولية؛ StudentSetup guard غير مفعل بعد.
 - `routes.ts`: route constants.
 - `types.ts`: typed param lists.
+
+## سلوك Phase 5
+
+- أثناء bootstrap تظهر `AuthBootstrapScreen`.
+- unauthenticated user يرى Public flow.
+- authenticated user يرى AppTabs.
+- StudentSetup flow يبقى موجودا لكنه غير نشط حتى Phase 6.
 
 ## القواعد
 
 - لا تستخدم route strings عشوائية في الشاشات.
-- لا تضف auth logic أو storage داخل navigation في Phase 3.
 - لا تستدعي API من navigators.
-- headers الافتراضية مخفية حاليا، والشاشات تستخدم `AppHeader` من Design System.
-- لتغيير التدفق المعروض مؤقتا عدل `INITIAL_ROOT_FLOW` إلى `public` أو `studentSetup` أو `app`.
+- لا تخزن tokens داخل navigation.
+- لا تفعل verification guards قبل تنفيذ Student Profile & Verification.

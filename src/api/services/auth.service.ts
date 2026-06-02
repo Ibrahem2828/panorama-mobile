@@ -1,10 +1,11 @@
 import { apiClient } from '../client';
 import { endpoints } from '../endpoints';
 import type {
-  AuthTokens,
   CurrentUser,
   EmptyResponse,
   LoginRequest,
+  LoginResponse,
+  RefreshTokenResponse,
   RefreshTokenRequest,
   RegisterStudentRequest,
   SendOtpRequest,
@@ -12,7 +13,7 @@ import type {
 } from '../types';
 
 export function login(request: LoginRequest) {
-  return apiClient.post<AuthTokens, LoginRequest>(endpoints.auth.login, request);
+  return apiClient.post<LoginResponse, LoginRequest>(endpoints.auth.login, request);
 }
 
 export function registerStudent(request: RegisterStudentRequest) {
@@ -22,12 +23,18 @@ export function registerStudent(request: RegisterStudentRequest) {
   );
 }
 
-export function refreshToken(request: RefreshTokenRequest) {
-  return apiClient.post<AuthTokens, RefreshTokenRequest>(endpoints.auth.refresh, request);
+export function refreshToken(refresh: string) {
+  return apiClient.post<RefreshTokenResponse, RefreshTokenRequest>(endpoints.auth.refresh, {
+    refresh,
+  });
 }
 
-export function logout(authToken?: string | null) {
-  return apiClient.post<EmptyResponse, EmptyResponse>(endpoints.auth.logout, {}, { authToken });
+export function logout(refresh: string, authToken?: string | null) {
+  return apiClient.post<EmptyResponse, RefreshTokenRequest>(
+    endpoints.auth.logout,
+    { refresh },
+    { authToken },
+  );
 }
 
 export function getCurrentUser(authToken?: string | null) {

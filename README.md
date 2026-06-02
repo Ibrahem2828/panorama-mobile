@@ -1,28 +1,40 @@
 # Panorama Mobile
 
-Panorama هو تطبيق موبايل عربي للطلاب الجامعيين. الهدف هو جمع المواد، الغروبات، المحادثات، الملفات، طلبات الطباعة، الإشعارات، الدعم الفني، والبيانات الأكاديمية داخل تجربة واحدة منظمة.
+Panorama هو تطبيق موبايل عربي وRTL-first للطلاب الجامعيين. الهدف هو جمع المواد، الغروبات، المحادثات، الملفات، طلبات الطباعة، الإشعارات، الدعم الفني، والبيانات الأكاديمية داخل تجربة واحدة منظمة.
 
 ## حالة المشروع الحالية
 
-الحالة الحالية: **Phase 4 API Client Foundation**.
+الحالة الحالية: **Phase 5.5 Expo SDK Audit & Safe Upgrade Decision**.
 
-تم تأسيس API Client foundation باستخدام `fetch` بدون اعتماديات إضافية. الطبقة الحالية تشمل typed request builder، response envelope handling، error normalization برسائل عربية، pagination helpers، endpoint constants، وخدمات API foundation غير مربوطة بالشاشات.
+تم تأسيس طبقة المصادقة الأساسية:
+
+- Secure token storage عبر Expo SecureStore.
+- Zustand auth store.
+- Session bootstrap عند تشغيل التطبيق.
+- Login UI فعلي باللغة العربية.
+- تحميل المستخدم الحالي من `/api/v1/auth/me/`.
+- Refresh access token مرة واحدة عند انتهاء الجلسة أثناء bootstrap.
+- Logout من شاشة Profile.
+- Root navigation يتحول بين Public وAppTabs حسب auth state.
 
 ## ما تم إنجازه
 
-- Phase 0: توثيق الرؤية، قرارات المنتج، نطاق MVP، الأدوار، الرحلات، المتطلبات، الهوية، API assumptions، واستراتيجية الإصدارات.
-- Phase 1: إنشاء مشروع Expo + React Native + TypeScript وبنية `src/` الأساسية.
-- Phase 1.6: إصلاح Expo config، TypeScript، ESLint، Prettier، audit، وسكربتات التحقق.
-- Phase 2: تأسيس theme tokens ومكونات UI reusable وشاشة showcase ووثائق الاستخدام.
-- Phase 3: تأسيس React Navigation architecture، route constants، typed params، navigators، placeholders، وroot flow selector.
-- Phase 4: تأسيس API Client، endpoint map، response/error/pagination types، service foundations، وenv validation helpers.
+- Phase 0: توثيق الرؤية وقرارات المنتج ونطاق MVP.
+- Phase 1: إنشاء مشروع Expo + React Native + TypeScript وبنية `src/`.
+- Phase 1.6: إصلاح tooling وExpo config وTypeScript وESLint وPrettier وaudit.
+- Phase 2: تأسيس design system reusable.
+- Phase 3: تأسيس React Navigation architecture والـ placeholders.
+- Phase 4: تأسيس API client وendpoint map وservice foundations.
+- Phase 5: تأسيس Authentication Foundation.
+- Phase 5.5: تدقيق Expo SDK وترقية المشروع إلى SDK 56.
 
-## المتطلبات
+## حالة Expo SDK
 
-- Node.js 20.19.4 أو أحدث.
-- npm.
-- Expo CLI عبر سكربتات npm.
-- EAS CLI عبر `npx` عند الحاجة للبناء السحابي.
+- Expo SDK الحالي: `56.0.0` عبر `expo@~56.0.8`.
+- React: `19.2.3`.
+- React Native: `0.85`.
+- Expo doctor: نظيف.
+- Expo install check: نظيف.
 
 ## إعدادات البيئة
 
@@ -34,13 +46,11 @@ EXPO_PUBLIC_API_BASE_URL=http://localhost:8000
 EXPO_PUBLIC_WS_BASE_URL=ws://localhost:8000
 ```
 
-لا توجد أسرار أو tokens داخل env. تخزين tokens مؤجل إلى Phase Auth.
+لا توجد أسرار أو tokens داخل env. التوكنات تخزن عبر SecureStore ولا تستخدم AsyncStorage.
 
-## أوامر التشغيل والتحقق
+## أوامر التحقق
 
 ```bash
-npm ci
-npm run start
 npm run typecheck
 npm run lint
 npm run format:check
@@ -52,34 +62,21 @@ npm audit --omit=dev
 
 لا يتم تشغيل Expo dev server ضمن مراحل التنفيذ الآلي إلا إذا طلب المستخدم ذلك صراحة.
 
-## بنية API الحالية
+## حدود Phase 5
 
-```txt
-src/api/
-├── client.ts
-├── endpoints.ts
-├── errors.ts
-├── http.ts
-├── pagination.ts
-├── request.ts
-├── response.ts
-├── types.ts
-└── services/
-```
+لم يتم تنفيذ:
 
-## نطاق ما لم يتم تنفيذه بعد
+- Register Student الكامل.
+- OTP الكامل.
+- Password reset الكامل.
+- Student profile setup.
+- Student verification.
+- Home/Subjects/Groups/Files/Printing/Notifications/Support real data.
+- TanStack Query.
+- WebSocket أو PDF viewer.
 
-التطبيق حاليا لا يحتوي على:
-
-- Auth logic أو session storage.
-- SecureStore أو refresh-token automation.
-- TanStack Query أو Zustand.
-- API calls من الشاشات.
-- WebSocket.
-- PDF Viewer حقيقي.
-- خدمات طباعة فعلية.
-- شاشات منتج حقيقية.
+المستخدم المصادق ينتقل حاليا إلى AppTabs. سيتم تفعيل StudentSetup guard في مرحلة Student Profile & Verification.
 
 ## المرحلة التالية
 
-المرحلة التالية المقترحة هي **Phase 5 Authentication Foundation**، ويجب أن تبقى محصورة في تأسيس auth state/token handling بدون توسيع ميزات المنتج قبل أوانها.
+المرحلة التالية المقترحة: **Phase 6 Student Profile & Verification Foundation**.

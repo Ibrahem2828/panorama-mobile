@@ -8,6 +8,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   scheme: 'panorama',
   userInterfaceStyle: 'light',
+  plugins: ['expo-secure-store', 'expo-status-bar'],
   ios: {
     ...config.ios,
     bundleIdentifier: 'com.panorama.student',

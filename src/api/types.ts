@@ -17,9 +17,22 @@ export type AuthTokens = {
 
 export type CurrentUser = ApiEntity & {
   name?: string;
+  full_name?: string;
   email?: string;
   phone?: string;
+  phone_number?: string;
+  username?: string | null;
   role?: string;
+  is_phone_verified?: boolean;
+  is_email_verified?: boolean;
+};
+
+export type LoginResponse = AuthTokens & {
+  user?: CurrentUser;
+};
+
+export type RefreshTokenResponse = {
+  access: string;
 };
 
 export type LoginRequest = {

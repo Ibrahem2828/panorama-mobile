@@ -1,6 +1,6 @@
 # API services
 
-هذه الملفات هي service foundations فقط، وليست features مكتملة.
+هذه الملفات هي service foundations فوق `apiClient` وليست features مكتملة.
 
 ## المتوفر
 
@@ -13,11 +13,11 @@
 - `notifications.service.ts`
 - `support.service.ts`
 
-## القواعد
+## قواعد Phase 5
 
 - يسمح للخدمات باستيراد `apiClient` و`endpoints`.
-- لا يتم استيراد الخدمات من الشاشات في Phase 4.
 - لا توجد React hooks هنا.
-- لا يوجد token storage أو refresh automation.
-- لا يوجد Zustand أو SecureStore أو TanStack Query.
-- تقبل بعض الدوال `authToken` اختياريا حتى تمرره طبقة Auth لاحقا.
+- لا يوجد token storage داخل API services.
+- لا يوجد Zustand أو SecureStore أو TanStack Query داخل API services.
+- Auth service يستدعي backend فقط؛ session orchestration موجود داخل `src/features/auth/services`.
+- بعض الدوال تقبل `authToken` اختياريا حتى تمرره طبقة Auth.

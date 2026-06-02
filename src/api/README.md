@@ -12,13 +12,14 @@
 - `request.ts`: URL/header/request builder.
 - `response.ts`: response envelope types وtype guards.
 - `types.ts`: أنواع مشتركة مبدئية للخدمات.
-- `services/`: foundations مستقبلية لكل module.
+- `services/`: service foundations لكل module.
 - `index.ts`: exports عامة.
 
-## القواعد
+## قواعد Phase 5
 
-- لا تستدع API من placeholder screens في Phase 4.
-- لا تخزن tokens هنا.
-- لا تنفذ refresh-token automation هنا.
-- لا تضف TanStack Query أو Zustand أو SecureStore في هذه المرحلة.
+- لا تخزن tokens داخل `src/api`.
+- لا تستخدم SecureStore أو Zustand داخل API layer.
+- لا تنفذ automatic refresh interceptor لكل endpoints بعد.
+- مرر `authToken` صراحة من طبقة auth عند الحاجة.
 - لا تضع endpoint strings خارج `endpoints.ts`.
+- لا تستدع API مباشرة من الشاشات.

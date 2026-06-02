@@ -1,10 +1,14 @@
+import { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AppTabsNavigator } from './AppTabsNavigator';
-import { INITIAL_ROOT_FLOW, getInitialRootRoute } from './config/initialFlow';
+import { AuthBootstrapScreen } from '../features/auth/screens/AuthBootstrapScreen';
+import { useAuthStore } from '../features/auth/store';
+import { getRootFlowForAuthStatus } from './config/initialFlow';
 import { navigationTheme } from './config/navigationTheme';
 import { hiddenStackScreenOptions } from './config/screenOptions';
+import { canAccessApp } from './guards/navigationGuards';
 import { PublicNavigator } from './PublicNavigator';
 import { RootRoutes } from './routes';
 import { StudentSetupNavigator } from './StudentSetupNavigator';
@@ -13,15 +17,34 @@ import type { RootStackParamList } from './types';
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
+  const status = useAuthStore((state) => state.status);
+  const user = useAuthStore((state) => state.user);
+  const isBootstrapping = useAuthStore((state) => state.isBootstrapping);
+  const bootstrap = useAuthStore((state) => state.bootstrap);
+  const rootFlow = getRootFlowForAuthStatus(status);
+  const shouldShowBootstrap = status === 'idle' || status === 'bootstrapping' || isBootstrapping;
+  const shouldShowApp = canAccessApp({ status, user });
+
+  useEffect(() => {
+    if (status === 'idle') {
+      void bootstrap();
+    }
+  }, [bootstrap, status]);
+
+  if (shouldShowBootstrap) {
+    return <AuthBootstrapScreen />;
+  }
+
   return (
     <NavigationContainer theme={navigationTheme}>
-      <RootStack.Navigator
-        initialRouteName={getInitialRootRoute(INITIAL_ROOT_FLOW)}
-        screenOptions={hiddenStackScreenOptions}
-      >
-        <RootStack.Screen component={PublicNavigator} name={RootRoutes.Public} />
-        <RootStack.Screen component={StudentSetupNavigator} name={RootRoutes.StudentSetup} />
-        <RootStack.Screen component={AppTabsNavigator} name={RootRoutes.App} />
+      <RootStack.Navigator screenOptions={hiddenStackScreenOptions}>
+        {shouldShowApp ? (
+          <RootStack.Screen component={AppTabsNavigator} name={RootRoutes.App} />
+        ) : rootFlow === 'studentSetup' ? (
+          <RootStack.Screen component={StudentSetupNavigator} name={RootRoutes.StudentSetup} />
+        ) : (
+          <RootStack.Screen component={PublicNavigator} name={RootRoutes.Public} />
+        )}
       </RootStack.Navigator>
     </NavigationContainer>
   );
