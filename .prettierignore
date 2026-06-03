@@ -6,3 +6,4 @@ coverage
 package-lock.json
 android
 ios
+mobile_api_collection.json

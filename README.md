@@ -1,39 +1,43 @@
 # Panorama Mobile
 
-Panorama هو تطبيق موبايل عربي وRTL-first للطلاب الجامعيين. الهدف هو جمع المواد، الغروبات، المحادثات، الملفات، طلبات الطباعة، الإشعارات، الدعم الفني، والبيانات الأكاديمية داخل تجربة واحدة منظمة.
+Panorama is an Arabic, RTL-first mobile app for university students. The goal is to bring subjects, groups, chats, files, printing requests, notifications, support, and academic data into one organized experience.
 
-## حالة المشروع الحالية
+## Current Project Status
 
-الحالة الحالية: **Phase 6 Student Profile & Verification Foundation**.
+Current status: **Phase 7 Home & Announcements Foundation**.
 
-تم تنفيذ:
+Implemented so far:
 
-- Expo SDK 56 عبر `expo@~56.0.8`.
-- React `19.2.3` وReact Native `0.85`.
-- Secure token storage عبر Expo SecureStore.
-- Zustand auth store وجلسة تسجيل دخول فعلية.
-- API client موحد مع Bearer auth وFormData support.
-- Root navigation بين Public وStudentSetup وAppTabs.
+- Expo SDK 56 through `expo@~56.0.8`.
+- React `19.2.3` and React Native `0.85`.
+- Secure token storage through Expo SecureStore.
+- Zustand auth store and real login session foundation.
+- Central API client with Bearer auth and FormData support.
+- Root navigation between Public, StudentSetup, and AppTabs.
 - Student academic profile setup.
 - Student number parsing.
 - Verification submit/status/resubmit foundation.
-- Image selection من المعرض عبر `expo-image-picker`.
+- Image selection from gallery through `expo-image-picker`.
+- Authenticated Home screen foundation.
+- Announcements integration through `GET /api/v1/announcements/`.
+- Unread notification count integration through `GET /api/v1/notifications/unread-count/`.
 
-## ما تم إنجازه
+## Completed Phases
 
-- Phase 0: توثيق الرؤية وقرارات المنتج ونطاق MVP.
-- Phase 1: إنشاء مشروع Expo + React Native + TypeScript وبنية `src/`.
-- Phase 1.6: إصلاح tooling وExpo config وTypeScript وESLint وPrettier وaudit.
-- Phase 2: تأسيس design system reusable.
-- Phase 3: تأسيس React Navigation architecture والـ placeholders.
-- Phase 4: تأسيس API client وendpoint map وservice foundations.
-- Phase 5: تأسيس Authentication Foundation.
-- Phase 5.5: تدقيق Expo SDK وترقية المشروع إلى SDK 56.
-- Phase 6: تأسيس Student Profile & Verification وتفعيل StudentSetup gate.
+- Phase 0: Vision, product decisions, and MVP scope documentation.
+- Phase 1: Expo + React Native + TypeScript project initialization and `src/` structure.
+- Phase 1.6: Tooling, Expo config, TypeScript, ESLint, Prettier, and audit fixes.
+- Phase 2: Reusable design system foundation.
+- Phase 3: React Navigation architecture and placeholders.
+- Phase 4: API client, endpoint map, and service foundations.
+- Phase 5: Authentication Foundation.
+- Phase 5.5: Expo SDK audit and upgrade to SDK 56.
+- Phase 6: Student Profile & Verification Foundation and StudentSetup gate activation.
+- Phase 7: Home screen, announcements, unread notification count, Home store, and Home documentation.
 
-## إعدادات البيئة
+## Environment
 
-القيم العامة فقط موجودة في `.env.example`:
+Only public, non-secret values are documented in `.env.example`:
 
 ```bash
 EXPO_PUBLIC_APP_ENV=development
@@ -41,9 +45,9 @@ EXPO_PUBLIC_API_BASE_URL=http://localhost:8000
 EXPO_PUBLIC_WS_BASE_URL=ws://localhost:8000
 ```
 
-لا توجد أسرار أو tokens داخل env. التوكنات تخزن عبر SecureStore ولا تستخدم AsyncStorage.
+No secrets or tokens belong in env files. Tokens are stored through SecureStore and are not stored in AsyncStorage.
 
-## أوامر التحقق
+## Validation Commands
 
 ```bash
 npm run typecheck
@@ -58,17 +62,19 @@ npx expo-doctor
 npx expo install --check
 ```
 
-لا يتم تشغيل Expo dev server أو emulator أو EAS build ضمن مراحل التنفيذ الآلي إلا إذا طلب المستخدم ذلك صراحة.
+Expo dev server, emulator commands, and EAS builds are not run during automated phase implementation unless explicitly requested.
 
-## حدود Phase 6
+## Phase 7 Boundaries
 
-لم يتم تنفيذ:
+Not implemented in Phase 7:
 
-- Register Student الكامل.
-- OTP الكامل.
-- Password reset الكامل.
-- Home/Subjects/Groups/Files/Printing/Notifications/Support real data.
+- Register Student full flow.
+- Full OTP flow.
+- Full password reset flow.
+- Subjects, groups, files, printing, support, and notifications feature data beyond Home quick actions.
+- Full notifications inbox.
 - TanStack Query.
-- WebSocket أو PDF viewer.
+- WebSocket or push notification listeners.
+- PDF viewer.
 
-الطالب المصادق لا يدخل AppTabs إلا بعد اكتمال الملف الأكاديمي وقبول التوثيق. الأدوار غير `student` تدخل AppTabs مؤقتا إلى حين تحديد قواعدها النهائية.
+Authenticated students enter AppTabs only after academic profile completion and verification approval. Non-student roles temporarily enter AppTabs until their final rules are scoped.

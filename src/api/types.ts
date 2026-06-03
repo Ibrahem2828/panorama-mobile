@@ -136,6 +136,18 @@ export type NotificationRecord = ApiEntity & {
   readAt?: string | null;
 };
 
+export type AnnouncementRecord = ApiEntity & {
+  title?: string;
+  description?: string;
+  body?: string;
+  created_at?: string;
+  updated_at?: string;
+  start_date?: string | null;
+  end_date?: string | null;
+  is_active?: boolean;
+  type?: string;
+};
+
 export type UnreadCount = {
   count: number;
 };

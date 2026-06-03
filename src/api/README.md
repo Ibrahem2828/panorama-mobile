@@ -1,25 +1,31 @@
 # api
 
-طبقة API المركزية لتطبيق Panorama Mobile.
+Central API layer for Panorama Mobile.
 
-## الملفات
+## Files
 
-- `client.ts`: fetch wrapper typed يعيد `data` من envelope ويرمي `ApiClientError`.
-- `endpoints.ts`: كل مسارات `/api/v1/` المركزية.
-- `errors.ts`: error normalization برسائل عربية آمنة.
-- `http.ts`: HTTP method/header/content-type types.
-- `pagination.ts`: pagination types وquery helpers.
-- `request.ts`: URL/header/request builder.
-- `response.ts`: response envelope types وtype guards.
-- `types.ts`: أنواع مشتركة مبدئية للخدمات.
-- `services/`: service foundations لكل module.
-- `index.ts`: exports عامة.
+- `client.ts`: typed fetch wrapper that unwraps API envelopes and throws `ApiClientError`.
+- `endpoints.ts`: centralized `/api/v1/` endpoint map.
+- `errors.ts`: safe Arabic error normalization.
+- `http.ts`: HTTP method, header, and content-type types.
+- `pagination.ts`: pagination types and query helpers.
+- `request.ts`: URL, header, and request builder.
+- `response.ts`: response envelope types and type guards.
+- `types.ts`: shared service record types.
+- `services/`: API service foundations per module.
+- `index.ts`: public API exports.
 
-## قواعد Phase 5
+## Phase 7 additions
 
-- لا تخزن tokens داخل `src/api`.
-- لا تستخدم SecureStore أو Zustand داخل API layer.
-- لا تنفذ automatic refresh interceptor لكل endpoints بعد.
-- مرر `authToken` صراحة من طبقة auth عند الحاجة.
-- لا تضع endpoint strings خارج `endpoints.ts`.
-- لا تستدع API مباشرة من الشاشات.
+- `announcements.service.ts` exposes `listRelevantAnnouncements(authToken)`.
+- Home consumes `announcements.list` and `notifications.unreadCount` through feature services.
+- Announcement records are typed in `types.ts` and normalized inside the Home feature.
+
+## Rules
+
+- Do not store tokens in `src/api`.
+- Do not use SecureStore or Zustand inside the API layer.
+- Do not add automatic refresh interceptors until that phase is explicitly scoped.
+- Pass `authToken` explicitly from the feature/auth layer when needed.
+- Do not place endpoint strings outside `endpoints.ts`.
+- Do not call the API client directly from screens.
