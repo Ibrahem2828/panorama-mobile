@@ -1,10 +1,17 @@
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
 import { AppButton, AppCard, AppHeader, AppScreen, AppText, Stack } from '../../../components';
+import { ProfileRoutes } from '../../../navigation/routes';
+import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { useAuthStore } from '../../auth/store';
 
+type ProfileHomeNavigation = NativeStackNavigationProp<ProfileStackParamList, 'ProfileHome'>;
+
 export function ProfileHomeScreen() {
+  const navigation = useNavigation<ProfileHomeNavigation>();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const isSubmitting = useAuthStore((state) => state.isSubmitting);
@@ -32,6 +39,13 @@ export function ProfileHomeScreen() {
             هذه شاشة حساب مبسطة لاختبار جلسة الدخول والخروج فقط. تعديل الملف الشخصي والتوثيق سيتم
             تنفيذهما في مراحل لاحقة.
           </AppText>
+
+          <AppButton
+            fullWidth
+            onPress={() => navigation.navigate(ProfileRoutes.Notifications)}
+            title="الإشعارات"
+            variant="outline"
+          />
 
           <AppButton
             fullWidth

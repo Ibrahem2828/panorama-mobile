@@ -64,6 +64,8 @@ export const endpoints = {
     markRead: (notificationId: EndpointId) => `${API_PREFIX}/notifications/${notificationId}/read/`,
     readAll: `${API_PREFIX}/notifications/read-all/`,
     deviceTokens: `${API_PREFIX}/notifications/device-tokens/`,
+    deviceTokenDetail: (tokenId: EndpointId) =>
+      `${API_PREFIX}/notifications/device-tokens/${tokenId}/`,
   },
   support: {
     createTicket: `${API_PREFIX}/support/tickets/`,

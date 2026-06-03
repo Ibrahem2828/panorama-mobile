@@ -49,6 +49,15 @@ These files are thin service foundations over `apiClient`. They are not complete
 - Create order accepts only the official JSON body: `items[{ source_file, copies }]` and optional `user_notes`.
 - Printing services/options, pricing, payment, upload, and file picker endpoints are intentionally not implemented in Phase 11.
 
+## Phase 12 additions
+
+- `notifications.service.ts` calls `GET /api/v1/notifications/` for the current user's notifications.
+- `notifications.service.ts` calls `GET /api/v1/notifications/unread-count/` for unread count.
+- `notifications.service.ts` calls `POST /api/v1/notifications/{notification_id}/read/`.
+- `notifications.service.ts` calls `POST /api/v1/notifications/read-all/`.
+- `notifications.service.ts` exposes `POST /api/v1/notifications/device-tokens/` and `DELETE /api/v1/notifications/device-tokens/{token_id}/` as future service functions only.
+- Device token service functions are not called from runtime in Phase 12.
+
 ## Rules
 
 - Services may import only API-layer helpers such as `apiClient`, `endpoints`, and shared API types.

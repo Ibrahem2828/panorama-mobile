@@ -4,7 +4,7 @@ Panorama is an Arabic, RTL-first mobile app for university students. The goal is
 
 ## Current Project Status
 
-Current status: **Phase 11 Printing Foundation**.
+Current status: **Phase 12 Notifications Foundation**.
 
 Implemented so far:
 
@@ -38,6 +38,9 @@ Implemented so far:
 - My printing orders through `GET /api/v1/printing/orders/my/`.
 - Printing order details and cancel through the official order endpoints.
 - File details now route `طلب طباعة` into the Printing stack with file id and title.
+- In-app notifications list through `GET /api/v1/notifications/`.
+- Mark notification read and mark all notifications read through the official Notifications API.
+- Device token service functions exist for future push integration, but are not called at runtime.
 
 ## Completed Phases
 
@@ -56,6 +59,7 @@ Implemented so far:
 - Phase 10: Files list/detail, group files, metadata display, and in-app viewer foundation.
 - Phase 10.5: Production audit triage for Expo transitive `uuid`/`xcode` tooling path.
 - Phase 11: Printing order MVP foundation using official printing order endpoints.
+- Phase 12: In-app notifications list, unread count, read state, and routing foundation.
 
 ## Environment
 
@@ -123,5 +127,24 @@ Not implemented in Phase 11:
 - Dynamic printing services/options APIs.
 - Pricing calculation endpoint.
 - Payment, upload, document picker, pickup location selection, or staff/admin printing workflows.
+
+## Phase 12 Notifications Boundaries
+
+Implemented in Phase 12:
+
+- Notifications screen loads the current user's notifications.
+- Unread count loads from the official unread-count endpoint.
+- One notification can be marked as read.
+- All notifications can be marked as read.
+- Read/unread state is shown visually.
+- Safe routing foundation handles printing orders, groups, and files when target metadata exists.
+
+Not implemented in Phase 12:
+
+- Push notifications.
+- Expo notification permissions.
+- FCM/APNs.
+- Device token registration at runtime.
+- Notification settings or notification detail endpoint.
 
 Authenticated students enter AppTabs only after academic profile completion and verification approval. Non-student roles temporarily enter AppTabs until their final rules are scoped.

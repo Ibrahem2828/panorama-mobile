@@ -54,6 +54,16 @@ Central API layer for Panorama Mobile.
 - Printing detail and cancel use `GET /api/v1/printing/orders/{order_id}/` and `POST /api/v1/printing/orders/{order_id}/cancel/`.
 - No printing services/options, pricing, payment, upload, or file picker API is added by Phase 11.
 
+## Phase 12 additions
+
+- `NotificationRecord`, `UnreadCountResponse`, and device-token request types are expanded in `types.ts`.
+- `notifications.service.ts` exposes list, unread count, mark read, read all, register device token, and delete device token functions.
+- Notifications list uses `GET /api/v1/notifications/`.
+- Unread count uses `GET /api/v1/notifications/unread-count/`.
+- Read actions use `POST /api/v1/notifications/{notification_id}/read/` and `POST /api/v1/notifications/read-all/`.
+- Device token endpoints are typed service-level foundations only and are not called by app runtime.
+- No push notifications, permissions, FCM/APNs, settings, or notification detail endpoint is added by Phase 12.
+
 ## Rules
 
 - Do not store tokens in `src/api`.

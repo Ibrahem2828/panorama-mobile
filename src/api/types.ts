@@ -203,10 +203,30 @@ export type CreatePrintOrderRequest = {
   user_notes?: string;
 };
 
+export type NotificationType =
+  | 'announcement'
+  | 'verification'
+  | 'printing'
+  | 'group'
+  | 'file'
+  | 'support'
+  | 'system'
+  | string;
+
 export type NotificationRecord = ApiEntity & {
-  title: string;
+  title?: string;
+  subject?: string;
+  message?: string;
   body?: string;
+  type?: NotificationType;
+  is_read?: boolean;
+  read_at?: string | null;
   readAt?: string | null;
+  target_type?: string | null;
+  target_id?: EntityId | null;
+  data?: Record<string, unknown> | null;
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type AnnouncementRecord = ApiEntity & {
@@ -241,9 +261,13 @@ export type UnreadCount = {
   count: number;
 };
 
+export type UnreadCountResponse = UnreadCount;
+
+export type DeviceTokenPlatform = 'ios' | 'android' | 'web' | string;
+
 export type RegisterDeviceTokenRequest = {
   token: string;
-  platform: 'ios' | 'android' | 'web';
+  platform: DeviceTokenPlatform;
 };
 
 export type SupportTicketStatus = 'open' | 'pending' | 'closed';

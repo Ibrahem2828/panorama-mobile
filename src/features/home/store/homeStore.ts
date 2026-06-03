@@ -15,6 +15,7 @@ type HomeState = {
 
   loadHome: () => Promise<void>;
   refreshHome: () => Promise<void>;
+  setUnreadNotificationsCount: (count: number) => void;
   clearError: () => void;
 };
 
@@ -96,6 +97,10 @@ export const useHomeStore = create<HomeState>((set, get) => ({
     }
 
     await loadHomeData(set, 'refresh');
+  },
+
+  setUnreadNotificationsCount(count) {
+    set({ unreadNotificationsCount: Math.max(0, count) });
   },
 
   clearError() {
