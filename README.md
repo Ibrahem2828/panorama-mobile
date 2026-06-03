@@ -4,18 +4,20 @@ Panorama هو تطبيق موبايل عربي وRTL-first للطلاب الجا
 
 ## حالة المشروع الحالية
 
-الحالة الحالية: **Phase 5.5 Expo SDK Audit & Safe Upgrade Decision**.
+الحالة الحالية: **Phase 6 Student Profile & Verification Foundation**.
 
-تم تأسيس طبقة المصادقة الأساسية:
+تم تنفيذ:
 
+- Expo SDK 56 عبر `expo@~56.0.8`.
+- React `19.2.3` وReact Native `0.85`.
 - Secure token storage عبر Expo SecureStore.
-- Zustand auth store.
-- Session bootstrap عند تشغيل التطبيق.
-- Login UI فعلي باللغة العربية.
-- تحميل المستخدم الحالي من `/api/v1/auth/me/`.
-- Refresh access token مرة واحدة عند انتهاء الجلسة أثناء bootstrap.
-- Logout من شاشة Profile.
-- Root navigation يتحول بين Public وAppTabs حسب auth state.
+- Zustand auth store وجلسة تسجيل دخول فعلية.
+- API client موحد مع Bearer auth وFormData support.
+- Root navigation بين Public وStudentSetup وAppTabs.
+- Student academic profile setup.
+- Student number parsing.
+- Verification submit/status/resubmit foundation.
+- Image selection من المعرض عبر `expo-image-picker`.
 
 ## ما تم إنجازه
 
@@ -27,14 +29,7 @@ Panorama هو تطبيق موبايل عربي وRTL-first للطلاب الجا
 - Phase 4: تأسيس API client وendpoint map وservice foundations.
 - Phase 5: تأسيس Authentication Foundation.
 - Phase 5.5: تدقيق Expo SDK وترقية المشروع إلى SDK 56.
-
-## حالة Expo SDK
-
-- Expo SDK الحالي: `56.0.0` عبر `expo@~56.0.8`.
-- React: `19.2.3`.
-- React Native: `0.85`.
-- Expo doctor: نظيف.
-- Expo install check: نظيف.
+- Phase 6: تأسيس Student Profile & Verification وتفعيل StudentSetup gate.
 
 ## إعدادات البيئة
 
@@ -58,25 +53,22 @@ npm run expo:config
 npm run validate
 npm audit
 npm audit --omit=dev
+npx expo config --type public
+npx expo-doctor
+npx expo install --check
 ```
 
-لا يتم تشغيل Expo dev server ضمن مراحل التنفيذ الآلي إلا إذا طلب المستخدم ذلك صراحة.
+لا يتم تشغيل Expo dev server أو emulator أو EAS build ضمن مراحل التنفيذ الآلي إلا إذا طلب المستخدم ذلك صراحة.
 
-## حدود Phase 5
+## حدود Phase 6
 
 لم يتم تنفيذ:
 
 - Register Student الكامل.
 - OTP الكامل.
 - Password reset الكامل.
-- Student profile setup.
-- Student verification.
 - Home/Subjects/Groups/Files/Printing/Notifications/Support real data.
 - TanStack Query.
 - WebSocket أو PDF viewer.
 
-المستخدم المصادق ينتقل حاليا إلى AppTabs. سيتم تفعيل StudentSetup guard في مرحلة Student Profile & Verification.
-
-## المرحلة التالية
-
-المرحلة التالية المقترحة: **Phase 6 Student Profile & Verification Foundation**.
+الطالب المصادق لا يدخل AppTabs إلا بعد اكتمال الملف الأكاديمي وقبول التوثيق. الأدوار غير `student` تدخل AppTabs مؤقتا إلى حين تحديد قواعدها النهائية.

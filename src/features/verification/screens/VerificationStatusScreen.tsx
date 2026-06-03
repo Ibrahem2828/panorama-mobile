@@ -1,5 +1,130 @@
-import { PlaceholderScreen } from '../../../components';
+import { useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { StyleSheet } from 'react-native';
+
+import {
+  AppButton,
+  AppHeader,
+  AppScreen,
+  ErrorState,
+  LoadingState,
+  Stack,
+} from '../../../components';
+import { StudentSetupRoutes } from '../../../navigation/routes';
+import type { StudentSetupStackParamList } from '../../../navigation/types';
+import { spacing } from '../../../theme';
+import { StudentSetupStepper } from '../../student-profile/components';
+import { VerificationStatusCard } from '../components';
+import {
+  canResubmitVerification,
+  getVerificationStatus,
+  isVerificationApproved,
+} from '../services';
+import { useVerificationStore } from '../store';
+
+type VerificationStatusNavigation = NativeStackNavigationProp<
+  StudentSetupStackParamList,
+  'VerificationStatus'
+>;
 
 export function VerificationStatusScreen() {
-  return <PlaceholderScreen subtitle="إعداد الطالب" title="VerificationStatus - حالة التوثيق" />;
+  const navigation = useNavigation<VerificationStatusNavigation>();
+  const verification = useVerificationStore((state) => state.verification);
+  const hasLoadedVerification = useVerificationStore((state) => state.hasLoadedVerification);
+  const isLoadingVerification = useVerificationStore((state) => state.isLoadingVerification);
+  const errorMessage = useVerificationStore((state) => state.errorMessage);
+  const loadVerification = useVerificationStore((state) => state.loadVerification);
+  const status = getVerificationStatus(verification);
+  const canResubmit = canResubmitVerification(verification);
+  const approved = isVerificationApproved(verification);
+
+  useEffect(() => {
+    void loadVerification();
+  }, [loadVerification]);
+
+  function handleRefresh() {
+    void loadVerification({ force: true });
+  }
+
+  if (isLoadingVerification && !hasLoadedVerification) {
+    return (
+      <AppScreen contentContainerStyle={styles.content} scroll>
+        <AppHeader subtitle="إعداد الطالب" title="حالة التوثيق" />
+        <StudentSetupStepper currentStep={3} />
+        <LoadingState message="جاري تحميل حالة التوثيق..." />
+      </AppScreen>
+    );
+  }
+
+  if (errorMessage && !verification) {
+    return (
+      <AppScreen contentContainerStyle={styles.content} scroll>
+        <AppHeader subtitle="إعداد الطالب" title="حالة التوثيق" />
+        <StudentSetupStepper currentStep={3} />
+        <ErrorState message={errorMessage} onRetry={handleRefresh} />
+      </AppScreen>
+    );
+  }
+
+  return (
+    <AppScreen contentContainerStyle={styles.content} scroll>
+      <Stack gap="xl">
+        <Stack gap="md">
+          <AppHeader
+            subtitle="تابع نتيجة مراجعة بطاقة الطالب، وأعد الإرسال عند الحاجة."
+            title="حالة التوثيق"
+          />
+          <StudentSetupStepper currentStep={3} />
+        </Stack>
+
+        <VerificationStatusCard verification={verification} />
+
+        {status === 'none' ? (
+          <AppButton
+            fullWidth
+            onPress={() => navigation.navigate(StudentSetupRoutes.SubmitVerification)}
+            title="إرسال بطاقة الطالب"
+          />
+        ) : null}
+
+        {canResubmit ? (
+          <AppButton
+            fullWidth
+            onPress={() => navigation.navigate(StudentSetupRoutes.SubmitVerification)}
+            title="إعادة إرسال صورة محدثة"
+          />
+        ) : null}
+
+        {status === 'pending' ? (
+          <AppButton
+            fullWidth
+            loading={isLoadingVerification}
+            onPress={handleRefresh}
+            title="تحديث الحالة"
+            variant="outline"
+          />
+        ) : null}
+
+        {approved ? (
+          <AppButton
+            fullWidth
+            loading={isLoadingVerification}
+            onPress={handleRefresh}
+            title="الدخول إلى التطبيق"
+          />
+        ) : null}
+
+        {errorMessage && verification ? (
+          <ErrorState message={errorMessage} onRetry={handleRefresh} />
+        ) : null}
+      </Stack>
+    </AppScreen>
+  );
 }
+
+const styles = StyleSheet.create({
+  content: {
+    gap: spacing.xl,
+  },
+});

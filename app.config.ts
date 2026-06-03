@@ -8,7 +8,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   scheme: 'panorama',
   userInterfaceStyle: 'light',
-  plugins: ['expo-secure-store', 'expo-status-bar'],
+  plugins: [
+    'expo-secure-store',
+    'expo-status-bar',
+    [
+      'expo-image-picker',
+      {
+        photosPermission:
+          'Panorama needs access to your photo library so you can upload your student card for verification.',
+        cameraPermission: false,
+        microphonePermission: false,
+      },
+    ],
+  ],
   ios: {
     ...config.ios,
     bundleIdentifier: 'com.panorama.student',

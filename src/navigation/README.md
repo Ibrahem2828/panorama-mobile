@@ -4,29 +4,27 @@
 
 ## الملفات
 
-- `RootNavigator.tsx`: يقرأ auth state، يشغل bootstrap مرة واحدة، ويختار Public أو App flow.
+- `RootNavigator.tsx`: يشغل auth bootstrap ثم يختار `Public` أو `StudentSetup` أو `AppTabs`.
 - `PublicNavigator.tsx`: Splash وOnboarding وشاشات auth العامة.
-- `StudentSetupNavigator.tsx`: إعداد الملف الأكاديمي والتوثيق، محفوظ للمراحل القادمة.
-- `AppTabsNavigator.tsx`: تبويبات التطبيق الرئيسية للمستخدم المصادق حاليا.
-- `stacks/`: nested stacks للتبويبات.
-- `config/navigationTheme.ts`: theme متوافق مع design tokens.
-- `config/screenOptions.ts`: خيارات stack مشتركة.
-- `config/tabOptions.ts`: labels عربية وخيارات bottom tabs.
-- `config/initialFlow.ts`: mapping من auth status إلى root flow.
-- `guards/navigationGuards.ts`: guards أولية؛ StudentSetup guard غير مفعل بعد.
+- `StudentSetupNavigator.tsx`: إكمال الملف الأكاديمي، إرسال بطاقة الطالب، وحالة التوثيق.
+- `AppTabsNavigator.tsx`: تبويبات التطبيق الرئيسية للمستخدم المسموح له بالدخول.
+- `guards/useStudentAccessGate.ts`: gate الفعلي للطالب بعد المصادقة.
+- `guards/navigationGuards.ts`: دوال guard نقية قابلة للاختبار.
 - `routes.ts`: route constants.
 - `types.ts`: typed param lists.
 
-## سلوك Phase 5
+## سلوك Phase 6
 
-- أثناء bootstrap تظهر `AuthBootstrapScreen`.
-- unauthenticated user يرى Public flow.
-- authenticated user يرى AppTabs.
-- StudentSetup flow يبقى موجودا لكنه غير نشط حتى Phase 6.
+- أثناء auth bootstrap تظهر `AuthBootstrapScreen`.
+- المستخدم غير المصادق يرى `Public`.
+- المستخدم المصادق بدور غير `student` يدخل `AppTabs` مؤقتا حتى تتضح قواعد هذه الأدوار.
+- الطالب المصادق لا يدخل `AppTabs` إلا بعد اكتمال الملف الأكاديمي وحالة توثيق `approved`.
+- الطالب غير المكتمل أو غير الموثق يدخل `StudentSetup`.
+- عند فشل تحميل الملف أو التوثيق بسبب الشبكة يبقى الطالب داخل `StudentSetup` مع retry من الشاشات، ولا يحدث crash.
 
 ## القواعد
 
-- لا تستخدم route strings عشوائية في الشاشات.
-- لا تستدعي API من navigators.
+- لا تستخدم route strings عشوائية داخل الشاشات.
 - لا تخزن tokens داخل navigation.
-- لا تفعل verification guards قبل تنفيذ Student Profile & Verification.
+- لا تضع student profile data داخل auth store.
+- لا تشغل dev server من طبقة navigation أو أثناء validation.

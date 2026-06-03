@@ -5,10 +5,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AppTabsNavigator } from './AppTabsNavigator';
 import { AuthBootstrapScreen } from '../features/auth/screens/AuthBootstrapScreen';
 import { useAuthStore } from '../features/auth/store';
-import { getRootFlowForAuthStatus } from './config/initialFlow';
 import { navigationTheme } from './config/navigationTheme';
 import { hiddenStackScreenOptions } from './config/screenOptions';
-import { canAccessApp } from './guards/navigationGuards';
+import { useStudentAccessGate } from './guards/useStudentAccessGate';
 import { PublicNavigator } from './PublicNavigator';
 import { RootRoutes } from './routes';
 import { StudentSetupNavigator } from './StudentSetupNavigator';
@@ -18,12 +17,10 @@ const RootStack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
   const status = useAuthStore((state) => state.status);
-  const user = useAuthStore((state) => state.user);
   const isBootstrapping = useAuthStore((state) => state.isBootstrapping);
   const bootstrap = useAuthStore((state) => state.bootstrap);
-  const rootFlow = getRootFlowForAuthStatus(status);
+  const { rootFlow } = useStudentAccessGate();
   const shouldShowBootstrap = status === 'idle' || status === 'bootstrapping' || isBootstrapping;
-  const shouldShowApp = canAccessApp({ status, user });
 
   useEffect(() => {
     if (status === 'idle') {
@@ -38,7 +35,7 @@ export function RootNavigator() {
   return (
     <NavigationContainer theme={navigationTheme}>
       <RootStack.Navigator screenOptions={hiddenStackScreenOptions}>
-        {shouldShowApp ? (
+        {rootFlow === 'app' ? (
           <RootStack.Screen component={AppTabsNavigator} name={RootRoutes.App} />
         ) : rootFlow === 'studentSetup' ? (
           <RootStack.Screen component={StudentSetupNavigator} name={RootRoutes.StudentSetup} />

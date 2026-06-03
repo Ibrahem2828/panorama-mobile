@@ -73,13 +73,24 @@ export type StudentProfile = ApiEntity & {
   faculty?: AcademicOption;
   major?: AcademicOption;
   academicYear?: AcademicOption;
+  academic_year?: AcademicOption;
+  semester?: AcademicOption;
+  student_number?: string | null;
+  studentNumber?: string | null;
+  verification_status?: VerificationStatus;
+  is_academic_profile_complete?: boolean;
+  isAcademicProfileComplete?: boolean;
 };
 
-export type VerificationStatus = 'pending' | 'approved' | 'rejected' | 'none';
+export type VerificationStatus = 'pending' | 'approved' | 'rejected' | 'needs_update' | 'none';
 
 export type VerificationRecord = ApiEntity & {
   status: VerificationStatus;
   rejectionReason?: string;
+  rejection_reason?: string | null;
+  submitted_at?: string | null;
+  updated_at?: string | null;
+  card_image_url?: string | null;
 };
 
 export type GroupSummary = ApiEntity & {
