@@ -22,6 +22,7 @@ type AuthState = {
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   refreshAccessToken: () => Promise<string | null>;
+  setUser: (user: AuthUser) => void;
   clearError: () => void;
 };
 
@@ -160,6 +161,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       return null;
     }
+  },
+
+  setUser(user) {
+    set({ user });
   },
 
   clearError() {

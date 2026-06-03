@@ -1,44 +1,35 @@
 # auth
 
-نطاق المصادقة في Panorama Mobile.
+Authentication feature for Panorama Mobile.
 
-## ما تم تنفيذه في Phase 5
+## Implemented
 
-- شاشة Login فعلية باللغة العربية.
-- Auth store عبر Zustand.
-- تخزين access token وrefresh token عبر Expo SecureStore.
-- Bootstrap للجلسة عند تشغيل التطبيق.
-- Login orchestration عبر API service وsession service.
-- تحميل المستخدم الحالي من `/api/v1/auth/me/`.
-- Refresh access token عند انتهاء الجلسة أثناء bootstrap.
-- Logout يمسح التوكنات المحلية دائما.
-- AuthBootstrapScreen أثناء التحقق من الجلسة.
+- Real Arabic Login screen.
+- Zustand auth store.
+- Secure access and refresh token storage through Expo SecureStore.
+- Session bootstrap on app launch.
+- Login, bootstrap, refresh, and logout orchestration.
+- Current user loading through `GET /api/v1/auth/me/`.
+- Safe logout that clears local tokens.
 
-## الملفات
+## Phase 14 Note
 
-- `types.ts`: أنواع المستخدم والتوكنات وحالة المصادقة.
-- `components/AuthFormCard.tsx`: حاوية نموذج تسجيل الدخول.
-- `components/PasswordInput.tsx`: حقل كلمة مرور مع إظهار/إخفاء.
-- `services/authTokenStorage.ts`: تخزين آمن للتوكنات عبر SecureStore.
-- `services/authSessionService.ts`: تنسيق login/bootstrap/refresh/logout.
-- `store/authStore.ts`: Zustand store لحالة المصادقة.
-- `screens/LoginScreen.tsx`: شاشة تسجيل الدخول المربوطة بالـ store.
+- Profile can refresh and update the current auth user through a minimal `setUser` store action.
+- Change Password uses `POST /api/v1/auth/change-password/` through the API auth service.
+- Password values are not logged and are not persisted outside the in-memory Settings store draft.
+- Logout still clears secure tokens through the existing auth flow, now after Profile confirmation UI.
 
-## ما لم يتم تنفيذه بعد
+## Files
 
-- Register Student الكامل.
-- OTP الكامل.
-- Forgot/Reset Password الكامل.
-- Student Profile setup.
-- Student Verification.
-- Role-based dashboard.
+- `types.ts`: auth user, token, and session types.
+- `components/`: auth form components.
+- `services/`: token storage and session orchestration.
+- `store/authStore.ts`: Zustand auth session state.
+- `screens/LoginScreen.tsx`: login screen connected to the auth store.
 
-الشاشات غير المكتملة تبقى placeholders عربية ولا تستدعي API.
+## Rules
 
-## قواعد مهمة
-
-- لا تستخدم AsyncStorage للتوكنات.
-- لا تسجل tokens أو passwords.
-- لا تكتب direct fetch داخل الشاشات.
-- لا تضف API calls خارج auth في هذه المرحلة.
-- API service لا يحتوي على SecureStore أو Zustand.
+- Do not use AsyncStorage for tokens.
+- Do not log tokens or passwords.
+- Do not write direct fetch calls inside screens.
+- API service does not use SecureStore or Zustand.

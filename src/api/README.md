@@ -74,6 +74,16 @@ Central API layer for Panorama Mobile.
 - Add message uses `POST /api/v1/support/tickets/{ticket_id}/messages/`.
 - No attachments, category API, close/reopen, staff/admin support tools, realtime chat, or invented support endpoints are added by Phase 13.
 
+## Phase 14 additions
+
+- `UpdateCurrentUserRequest` and `ChangePasswordRequest` are typed in `types.ts`.
+- `auth.service.ts` exposes current-user update and change-password calls.
+- Current user reads use `GET /api/v1/auth/me/`.
+- Profile update uses `PATCH /api/v1/auth/me/` and sends only `full_name` and `username`.
+- Change password uses `POST /api/v1/auth/change-password/`.
+- Student profile and verification display reuse existing `GET /api/v1/students/me/profile/` and `GET /api/v1/verification/me/` services.
+- No delete-account, profile-photo, preferences, notification settings, or unsupported account endpoint is added by Phase 14.
+
 ## Rules
 
 - Do not store tokens in `src/api`.

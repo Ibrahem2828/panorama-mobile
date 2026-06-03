@@ -1,6 +1,6 @@
 # Panorama Docs Index
 
-This directory contains Panorama Mobile documentation from Phase 0 through Phase 13.
+This directory contains Panorama Mobile documentation from Phase 0 through Phase 14.
 
 | File                                                        | Description                                                            |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -34,7 +34,8 @@ This directory contains Panorama Mobile documentation from Phase 0 through Phase
 | `27_PHASE_11_PRINTING_FOUNDATION.md`                        | Printing order creation, listing, details, and cancel foundation.      |
 | `28_PHASE_12_NOTIFICATIONS_FOUNDATION.md`                   | In-app notifications list, unread count, and read-state foundation.    |
 | `29_PHASE_13_SUPPORT_TICKETS_FOUNDATION.md`                 | Student support tickets list, create, detail, and reply foundation.    |
+| `30_PHASE_14_PROFILE_AND_SETTINGS_COMPLETION.md`            | Profile and settings completion for the MVP account area.              |
 
 ## Current status
 
-Phase 13 Support Tickets Foundation has been completed. Student support tickets are real, while attachments, staff tooling, realtime chat, and push notifications remain deferred.
+Phase 14 Profile & Settings Completion has been completed. Profile, settings, edit profile, change password, academic info, and legal screens are real, while unsupported account endpoints remain deferred.

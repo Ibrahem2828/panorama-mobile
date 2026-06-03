@@ -56,7 +56,10 @@ export const PrintingRoutes = {
 
 export const ProfileRoutes = {
   ProfileHome: 'ProfileHome',
+  EditProfile: 'EditProfile',
+  AcademicInfo: 'AcademicInfo',
   Settings: 'Settings',
+  ChangePassword: 'ChangePassword',
   Notifications: 'Notifications',
   SupportTickets: 'SupportTickets',
   CreateSupportTicket: 'CreateSupportTicket',

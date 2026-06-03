@@ -2,6 +2,7 @@ import { apiClient } from '../client';
 import { endpoints } from '../endpoints';
 import type {
   CurrentUser,
+  ChangePasswordRequest,
   EmptyResponse,
   LoginRequest,
   LoginResponse,
@@ -9,6 +10,7 @@ import type {
   RefreshTokenRequest,
   RegisterStudentRequest,
   SendOtpRequest,
+  UpdateCurrentUserRequest,
   VerifyOtpRequest,
 } from '../types';
 
@@ -39,6 +41,28 @@ export function logout(refresh: string, authToken?: string | null) {
 
 export function getCurrentUser(authToken?: string | null) {
   return apiClient.get<CurrentUser>(endpoints.auth.me, { authToken });
+}
+
+export function updateCurrentUser(input: UpdateCurrentUserRequest, authToken: string) {
+  const allowedInput: UpdateCurrentUserRequest = {};
+
+  if (typeof input.full_name === 'string') {
+    allowedInput.full_name = input.full_name;
+  }
+
+  if (typeof input.username === 'string') {
+    allowedInput.username = input.username;
+  }
+
+  return apiClient.patch<CurrentUser, UpdateCurrentUserRequest>(endpoints.auth.me, allowedInput, {
+    authToken,
+  });
+}
+
+export function changePassword(input: ChangePasswordRequest, authToken: string) {
+  return apiClient.post<unknown, ChangePasswordRequest>(endpoints.auth.changePassword, input, {
+    authToken,
+  });
 }
 
 export function sendOtp(request: SendOtpRequest) {

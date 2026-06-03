@@ -4,7 +4,7 @@ Panorama is an Arabic, RTL-first mobile app for university students. The goal is
 
 ## Current Project Status
 
-Current status: **Phase 13 Support Tickets Foundation**.
+Current status: **Phase 14 Profile & Settings Completion**.
 
 Implemented so far:
 
@@ -45,6 +45,11 @@ Implemented so far:
 - Create ticket, list my tickets, ticket detail, and add-message support flows.
 - ProfileHome links to Support Tickets.
 - Support-ticket notifications can route to TicketDetails when safe target metadata exists.
+- Real Profile Home, Edit Profile, Academic Info, Settings, Change Password, Privacy Policy, Terms, and About screens.
+- Edit profile supports only `full_name` and `username` through the official current-user endpoint.
+- Change password uses the official auth change-password endpoint.
+- Academic info is display-only and uses existing student profile and verification stores.
+- Logout now requires explicit confirmation.
 
 ## Completed Phases
 
@@ -65,6 +70,7 @@ Implemented so far:
 - Phase 11: Printing order MVP foundation using official printing order endpoints.
 - Phase 12: In-app notifications list, unread count, read state, and routing foundation.
 - Phase 13: Student-facing support tickets list, create, detail, and reply foundation.
+- Phase 14: Profile and settings completion with edit profile, change password, academic info, legal screens, and logout confirmation.
 
 ## Environment
 
@@ -167,5 +173,19 @@ Implemented in Phase 13:
 Not implemented in Phase 13:
 
 - Attachments, category API, close/reopen, staff assignment, staff/admin tools, realtime chat, push notifications, new dependencies, or invented support endpoints.
+
+## Phase 14 Profile & Settings Boundaries
+
+Implemented in Phase 14:
+
+- Profile Home shows real account summary, service navigation, academic summary, and logout confirmation.
+- Edit Profile uses `PATCH /api/v1/auth/me/` and sends only `full_name` and `username`.
+- Change Password uses `POST /api/v1/auth/change-password/`.
+- Academic Info displays `GET /api/v1/students/me/profile/` and `GET /api/v1/verification/me/` data through existing stores.
+- Privacy Policy, Terms, and About are static MVP screens.
+
+Not implemented in Phase 14:
+
+- Delete account, profile photo upload, email/phone/role editing, notification settings API, privacy preferences API, dark mode persistence, language switching persistence, Chat/WebSocket, or unsupported account endpoints.
 
 Authenticated students enter AppTabs only after academic profile completion and verification approval. Non-student roles temporarily enter AppTabs until their final rules are scoped.

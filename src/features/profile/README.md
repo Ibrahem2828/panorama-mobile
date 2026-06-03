@@ -1,21 +1,48 @@
 # profile
 
-Profile feature foundation for the current user's account area.
+Profile and account area for the current user.
 
-## Current Scope
+## Implemented In Phase 14
 
-- Shows basic current-user identity.
-- Supports logout through the auth store.
-- Exposes an action to open the in-app Notifications screen.
-- Exposes an action to open the student Support Tickets screen.
-- Keeps settings/profile expansion for later phases.
+- Real Profile Home screen.
+- Edit Profile screen.
+- Academic Info screen.
+- Privacy Policy screen.
+- Terms screen.
+- About screen.
+- Profile summary card.
+- Academic summary and display-only academic information.
+- Account action sections for notifications, support, printing orders, academic info, settings, and legal screens.
+- Logout confirmation before calling the auth logout flow.
 
-## Phase 12 Note
+## API Scope
 
-Notifications remain mounted under the Profile stack. ProfileHome links to `ProfileRoutes.Notifications`
-so the notifications inbox is reachable from both Home quick actions and the Profile area.
+Profile uses only official account endpoints:
 
-## Phase 13 Note
+- `GET /api/v1/auth/me/`
+- `PATCH /api/v1/auth/me/`
 
-Support Tickets remain mounted under the Profile stack. ProfileHome links to `ProfileRoutes.SupportTickets`
-so students can create and follow their support tickets from the account area.
+Academic Info reads through existing student-profile and verification stores:
+
+- `GET /api/v1/students/me/profile/`
+- `GET /api/v1/verification/me/`
+
+## Edit Profile Rules
+
+Only `full_name` and `username` are editable and sent to the backend.
+
+Read-only in this phase:
+
+- Email.
+- Phone.
+- Role.
+- Academic identity fields.
+
+## Deferred
+
+- Delete account.
+- Profile photo upload.
+- Email or phone editing.
+- Role editing.
+- User preferences API.
+- Privacy settings API.

@@ -49,7 +49,10 @@ export type PrintingStackParamList = {
 
 export type ProfileStackParamList = {
   ProfileHome: undefined;
+  EditProfile: undefined;
+  AcademicInfo: undefined;
   Settings: undefined;
+  ChangePassword: undefined;
   Notifications: undefined;
   SupportTickets: undefined;
   CreateSupportTicket: undefined;

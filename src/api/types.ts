@@ -52,6 +52,17 @@ export type RefreshTokenRequest = {
   refresh: string;
 };
 
+export type UpdateCurrentUserRequest = {
+  full_name?: string;
+  username?: string;
+};
+
+export type ChangePasswordRequest = {
+  old_password: string;
+  new_password: string;
+  new_password_confirm: string;
+};
+
 export type OtpChannel = 'sms' | 'email';
 
 export type SendOtpRequest = {

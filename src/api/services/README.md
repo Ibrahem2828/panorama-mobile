@@ -68,6 +68,14 @@ These files are thin service foundations over `apiClient`. They are not complete
 - Add message accepts only the official JSON body: `message`.
 - Attachments, category API, close/reopen, staff assignment, staff/admin tools, and realtime chat are intentionally not implemented in Phase 13.
 
+## Phase 14 additions
+
+- `auth.service.ts` calls `GET /api/v1/auth/me/` for current-user reads.
+- `auth.service.ts` calls `PATCH /api/v1/auth/me/` for current-user updates.
+- `auth.service.ts` calls `POST /api/v1/auth/change-password/` for password changes.
+- Current-user update accepts and sends only `full_name` and `username`.
+- Email, phone, role, delete account, profile photo upload, preferences, and notification settings endpoints are intentionally not implemented in Phase 14.
+
 ## Rules
 
 - Services may import only API-layer helpers such as `apiClient`, `endpoints`, and shared API types.
