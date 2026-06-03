@@ -12,7 +12,7 @@ Files feature foundation for accessible student files and in-app viewing.
 - Safe in-app fallback for PDF, document, unknown, and missing-URL files.
 - File metadata display.
 - Loading, refresh, error, and empty states.
-- Disabled printing request placeholder.
+- Printing request entry point from file details, added in Phase 11.
 
 ## Structure
 
@@ -31,6 +31,12 @@ Phase 10 uses only official API collection endpoints:
 - `GET /api/v1/groups/{group_id}/files/`
 
 Screens use the Files store and never call the API client directly.
+
+## Phase 11 Printing Link
+
+File details exposes `طلب طباعة` and navigates to the Printing stack with the selected file id and
+display title. Files still do not upload, download, share, save to device, or open a document
+picker. The Printing feature owns order creation and sends only the official printing request body.
 
 ## Viewer Scope
 
@@ -51,7 +57,6 @@ of truth for file visibility.
 ## Deferred
 
 - Advanced PDF rendering.
-- Printing order creation.
 - Dynamic printing options.
 - Subject-specific files endpoint.
 - File download/share/save-to-device actions.

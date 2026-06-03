@@ -155,22 +155,52 @@ export type FileRecord = ApiEntity & {
 };
 
 export type PrintOrderStatus =
-  | 'new'
-  | 'processing'
+  | 'submitted'
+  | 'pending'
+  | 'accepted'
+  | 'in_progress'
+  | 'printing'
   | 'ready'
+  | 'ready_for_pickup'
   | 'delivered'
+  | 'cancelled'
+  | 'canceled'
   | 'rejected'
-  | 'cancelled';
+  | string;
+
+export type PrintOrderItem = Record<string, unknown> & {
+  id?: EntityId;
+  source_file?: EntityId | Record<string, unknown> | null;
+  uploaded_file?: string | null;
+  copies?: number;
+  pages_count?: number | null;
+  created_at?: string;
+  updated_at?: string;
+};
 
 export type PrintOrder = ApiEntity & {
-  status: PrintOrderStatus;
-  totalPrice?: number;
+  status?: PrintOrderStatus;
+  items?: PrintOrderItem[];
+  user_notes?: string | null;
+  internal_notes?: string | null;
+  rejection_reason?: string | null;
+  total_price?: string | number | null;
+  totalPrice?: string | number | null;
+  created_at?: string;
+  updated_at?: string;
+  submitted_at?: string;
+  ready_at?: string | null;
+  delivered_at?: string | null;
+};
+
+export type CreatePrintOrderItemInput = {
+  source_file: EntityId;
+  copies: number;
 };
 
 export type CreatePrintOrderRequest = {
-  fileId?: EntityId;
-  notes?: string;
-  copies?: number;
+  items: CreatePrintOrderItemInput[];
+  user_notes?: string;
 };
 
 export type NotificationRecord = ApiEntity & {

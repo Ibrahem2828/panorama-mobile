@@ -41,10 +41,10 @@ export type GroupsStackParamList = {
 
 export type PrintingStackParamList = {
   PrintHome: undefined;
-  CreatePrintOrder: { fileId?: string } | undefined;
-  PrintPriceSummary: { draftOrderId?: string } | undefined;
+  CreatePrintOrder: { fileId?: string | number; fileTitle?: string } | undefined;
+  PrintPriceSummary: undefined;
   MyPrintOrders: undefined;
-  PrintOrderDetails: { orderId: string };
+  PrintOrderDetails: { orderId: string | number };
 };
 
 export type ProfileStackParamList = {

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
@@ -15,7 +16,8 @@ import {
   SectionHeader,
   Stack,
 } from '../../../components';
-import { SharedRoutes } from '../../../navigation/routes';
+import { PrintingRoutes, SharedRoutes, TabRoutes } from '../../../navigation/routes';
+import type { AppTabsParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { FileDetailHeader, FileMetaRow } from '../components';
 import {
@@ -46,6 +48,7 @@ type FileDetailsNavigation = NativeStackNavigationProp<
   FileDetailsNavigationParamList,
   'FileDetails'
 >;
+type AppTabsNavigation = BottomTabNavigationProp<AppTabsParamList>;
 
 function isSameId(left: Id, right: Id): boolean {
   return String(left) === String(right);
@@ -117,6 +120,16 @@ export function FileDetailsScreen() {
     });
   }
 
+  function handleRequestPrint(file: FileResource) {
+    navigation.getParent<AppTabsNavigation>()?.navigate(TabRoutes.Printing, {
+      screen: PrintingRoutes.CreatePrintOrder,
+      params: {
+        fileId: file.id,
+        fileTitle: getFileDisplayTitle(file),
+      },
+    });
+  }
+
   if (showInitialLoading) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
@@ -160,7 +173,11 @@ export function FileDetailsScreen() {
             onPress={() => handleOpenViewer(activeFile)}
             title="فتح داخل التطبيق"
           />
-          <AppButton disabled title="طلب طباعة - قريبا" variant="outline" />
+          <AppButton
+            onPress={() => handleRequestPrint(activeFile)}
+            title="طلب طباعة"
+            variant="outline"
+          />
         </Stack>
 
         {!fileUri ? (

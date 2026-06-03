@@ -40,6 +40,15 @@ These files are thin service foundations over `apiClient`. They are not complete
 - `files.service.ts` calls `GET /api/v1/groups/{group_id}/files/` for group files.
 - File download, file stream, signed URL, subject files, and printing order endpoints are intentionally not implemented in Phase 10.
 
+## Phase 11 additions
+
+- `printing.service.ts` calls `POST /api/v1/printing/orders/` for create order.
+- `printing.service.ts` calls `GET /api/v1/printing/orders/my/` for the current student's print orders.
+- `printing.service.ts` calls `GET /api/v1/printing/orders/{order_id}/` for print order detail.
+- `printing.service.ts` calls `POST /api/v1/printing/orders/{order_id}/cancel/` for cancellation.
+- Create order accepts only the official JSON body: `items[{ source_file, copies }]` and optional `user_notes`.
+- Printing services/options, pricing, payment, upload, and file picker endpoints are intentionally not implemented in Phase 11.
+
 ## Rules
 
 - Services may import only API-layer helpers such as `apiClient`, `endpoints`, and shared API types.

@@ -1,34 +1,31 @@
 import { apiClient } from '../client';
 import { endpoints } from '../endpoints';
-import type { ApiListParams, CreatePrintOrderRequest, EmptyResponse, PrintOrder } from '../types';
 import type { PaginatedResult } from '../pagination';
-import { toPaginationQuery } from '../pagination';
+import type { CreatePrintOrderRequest, EmptyResponse, PrintOrder } from '../types';
 
-export function createPrintOrder(
-  request: CreatePrintOrderRequest | FormData,
-  authToken?: string | null,
-) {
-  return apiClient.post<PrintOrder, CreatePrintOrderRequest | FormData>(
+export function createPrintOrder(request: CreatePrintOrderRequest, authToken: string) {
+  return apiClient.post<PrintOrder, CreatePrintOrderRequest>(
     endpoints.printing.createOrder,
     request,
-    { authToken },
+    {
+      authToken,
+    },
   );
 }
 
-export function listMyPrintOrders(params?: ApiListParams, authToken?: string | null) {
+export function listMyPrintOrders(authToken: string) {
   return apiClient.get<PaginatedResult<PrintOrder>>(endpoints.printing.myOrders, {
     authToken,
-    query: toPaginationQuery(params),
   });
 }
 
-export function getPrintOrderDetail(orderId: string | number, authToken?: string | null) {
+export function getPrintOrderDetail(orderId: string | number, authToken: string) {
   return apiClient.get<PrintOrder>(endpoints.printing.orderDetail(orderId), {
     authToken,
   });
 }
 
-export function cancelPrintOrder(orderId: string | number, authToken?: string | null) {
+export function cancelPrintOrder(orderId: string | number, authToken: string) {
   return apiClient.post<EmptyResponse, EmptyResponse>(
     endpoints.printing.cancelOrder(orderId),
     {},

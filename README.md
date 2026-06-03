@@ -4,7 +4,7 @@ Panorama is an Arabic, RTL-first mobile app for university students. The goal is
 
 ## Current Project Status
 
-Current status: **Phase 10.5 Production Audit Triage**.
+Current status: **Phase 11 Printing Foundation**.
 
 Implemented so far:
 
@@ -34,6 +34,10 @@ Implemented so far:
 - In-app viewer foundation for images with safe fallbacks for PDF/document/unknown file types.
 - No direct download, share, save-to-device, or external browser action for student files.
 - Production audit triage for Expo transitive tooling dependencies, with Expo SDK 56 preserved.
+- Printing order creation through `POST /api/v1/printing/orders/`.
+- My printing orders through `GET /api/v1/printing/orders/my/`.
+- Printing order details and cancel through the official order endpoints.
+- File details now route `طلب طباعة` into the Printing stack with file id and title.
 
 ## Completed Phases
 
@@ -51,6 +55,7 @@ Implemented so far:
 - Phase 9: Groups overview, lists, detail, membership status, join/leave, and passive WhatsApp support.
 - Phase 10: Files list/detail, group files, metadata display, and in-app viewer foundation.
 - Phase 10.5: Production audit triage for Expo transitive `uuid`/`xcode` tooling path.
+- Phase 11: Printing order MVP foundation using official printing order endpoints.
 
 ## Environment
 
@@ -98,10 +103,25 @@ Not implemented in Phase 10:
 - TanStack Query.
 - WebSocket or push notification listeners.
 
-Files list/detail and group files are real. The in-app viewer foundation exists. No direct download button exists. Printing remains for a later phase, and advanced PDF rendering may need additional runtime-tested improvement.
+Files list/detail and group files are real. The in-app viewer foundation exists. No direct download button exists. Printing order creation, order listing, order detail, and cancel foundation are real. Advanced PDF rendering may need additional runtime-tested improvement.
 
 ## Phase 10.5 Audit Decision
 
 `npm audit` and `npm audit --omit=dev` are currently clean. The inspected `uuid@7.0.3` path is transitive through `expo@56.0.8 -> @expo/config-plugins@56.0.8 -> xcode@3.0.1 -> uuid@7.0.3` and belongs to Expo tooling, not app runtime code. No override or `npm audit fix --force` was applied.
+
+## Phase 11 Printing Boundaries
+
+Implemented in Phase 11:
+
+- PrintHome, CreatePrintOrder, PrintPriceSummary, MyPrintOrders, and PrintOrderDetails are real screens.
+- Create order sends only `items[{ source_file, copies }]` and optional `user_notes`.
+- Order list, details, and cancel use only the documented printing order endpoints.
+- Future color, duplex, binding, paper size, and pricing controls are visible placeholders only and are not sent to the backend.
+
+Not implemented in Phase 11:
+
+- Dynamic printing services/options APIs.
+- Pricing calculation endpoint.
+- Payment, upload, document picker, pickup location selection, or staff/admin printing workflows.
 
 Authenticated students enter AppTabs only after academic profile completion and verification approval. Non-student roles temporarily enter AppTabs until their final rules are scoped.

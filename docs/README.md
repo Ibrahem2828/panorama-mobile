@@ -1,6 +1,6 @@
 # Panorama Docs Index
 
-This directory contains Panorama Mobile documentation from Phase 0 through Phase 10.5.
+This directory contains Panorama Mobile documentation from Phase 0 through Phase 11.
 
 | File                                                        | Description                                                            |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -31,7 +31,8 @@ This directory contains Panorama Mobile documentation from Phase 0 through Phase
 | `24_PHASE_9_GROUPS_FOUNDATION.md`                           | Groups list/detail, join/leave, and WhatsApp link foundation.          |
 | `25_PHASE_10_FILES_AND_IN_APP_VIEWER_FOUNDATION.md`         | Files list/detail, group files, and in-app viewer foundation.          |
 | `26_PHASE_10_5_PRODUCTION_AUDIT_TRIAGE.md`                  | Production audit triage for Expo transitive tooling dependencies.      |
+| `27_PHASE_11_PRINTING_FOUNDATION.md`                        | Printing order creation, listing, details, and cancel foundation.      |
 
 ## Current status
 
-Phase 10.5 Production Audit Triage has been completed. Final validation and audit results are documented in `26_PHASE_10_5_PRODUCTION_AUDIT_TRIAGE.md`.
+Phase 11 Printing Foundation has been completed. It uses only the official printing order endpoints and keeps dynamic options/pricing deferred.

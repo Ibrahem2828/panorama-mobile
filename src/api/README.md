@@ -45,6 +45,15 @@ Central API layer for Panorama Mobile.
 - Group files use `GET /api/v1/groups/{group_id}/files/`.
 - No file download, stream, signed URL, subject files, or printing order endpoint is added by Phase 10.
 
+## Phase 11 additions
+
+- `PrintOrder`, `PrintOrderItem`, and `CreatePrintOrderRequest` are typed in `types.ts`.
+- `printing.service.ts` exposes create, my orders, detail, and cancel calls.
+- Printing create uses `POST /api/v1/printing/orders/`.
+- My printing orders uses `GET /api/v1/printing/orders/my/`.
+- Printing detail and cancel use `GET /api/v1/printing/orders/{order_id}/` and `POST /api/v1/printing/orders/{order_id}/cancel/`.
+- No printing services/options, pricing, payment, upload, or file picker API is added by Phase 11.
+
 ## Rules
 
 - Do not store tokens in `src/api`.
