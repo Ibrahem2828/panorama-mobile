@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
@@ -13,13 +14,15 @@ import {
   SectionHeader,
   Stack,
 } from '../../../components';
-import type { SubjectsStackParamList } from '../../../navigation/types';
+import { GroupsRoutes, TabRoutes } from '../../../navigation/routes';
+import type { AppTabsParamList, SubjectsStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { SubjectDetailHeader, SubjectLinkedSectionCard } from '../components';
 import { useSubjectsStore } from '../store';
 import type { Subject } from '../types';
 
 type SubjectDetailsScreenProps = NativeStackScreenProps<SubjectsStackParamList, 'SubjectDetails'>;
+type AppTabsNavigation = BottomTabNavigationProp<AppTabsParamList>;
 
 function isSameSubjectId(subject: Subject, subjectId: string | number) {
   return String(subject.id) === String(subjectId);
@@ -57,6 +60,12 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
   function handleRetry() {
     didAttemptReload.current = true;
     void refreshSubjects();
+  }
+
+  function handleOpenGroups() {
+    navigation
+      .getParent<AppTabsNavigation>()
+      ?.navigate(TabRoutes.Groups, { screen: GroupsRoutes.GroupsOverview });
   }
 
   if (!subject && isBusy) {
@@ -111,8 +120,8 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
             title="الملفات"
           />
           <SubjectLinkedSectionCard
-            description="سيتم ربط غروبات المادة عند تنفيذ Phase 9."
-            disabled
+            description="افتح الغروبات العامة المتاحة. لا يوجد ربط موثق حسب المادة في هذه المرحلة."
+            onPress={handleOpenGroups}
             title="الغروبات"
           />
           <SubjectLinkedSectionCard

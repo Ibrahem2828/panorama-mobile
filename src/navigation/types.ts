@@ -29,8 +29,8 @@ export type GroupsStackParamList = {
   GroupsOverview: undefined;
   AvailableGroups: undefined;
   MyGroups: undefined;
-  GroupDetails: { groupId: string };
-  ChatRoom: { groupId: string };
+  GroupDetails: { groupId: string | number };
+  ChatRoom: { groupId: string | number };
 };
 
 export type PrintingStackParamList = {

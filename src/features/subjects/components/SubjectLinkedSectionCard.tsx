@@ -37,7 +37,10 @@ export function SubjectLinkedSectionCard({
               {description}
             </AppText>
           </Stack>
-          <AppBadge label="لاحقا" variant="neutral" />
+          <AppBadge
+            label={isDisabled ? 'لاحقا' : 'فتح'}
+            variant={isDisabled ? 'neutral' : 'brand'}
+          />
         </Stack>
       </AppCard>
     </Pressable>

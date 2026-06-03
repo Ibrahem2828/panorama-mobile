@@ -4,7 +4,7 @@ Panorama is an Arabic, RTL-first mobile app for university students. The goal is
 
 ## Current Project Status
 
-Current status: **Phase 8 Subjects & Academic Content Foundation**.
+Current status: **Phase 9 Groups Foundation**.
 
 Implemented so far:
 
@@ -24,6 +24,10 @@ Implemented so far:
 - Real Subjects list through `GET /api/v1/majors/{major_id}/subjects/`.
 - Subject detail foundation derived from loaded subject list data.
 - Local subjects search by name, title, or code.
+- Real Groups overview, Available Groups, My Groups, and Group details.
+- Groups integration through `GET /api/v1/groups/available/`, `GET /api/v1/groups/my/`, and `GET /api/v1/groups/{group_id}/`.
+- Join/leave group actions through the official Groups API endpoints.
+- Passive WhatsApp link support for safe WhatsApp URLs returned by the backend or present in group descriptions.
 
 ## Completed Phases
 
@@ -38,6 +42,7 @@ Implemented so far:
 - Phase 6: Student Profile & Verification Foundation and StudentSetup gate activation.
 - Phase 7: Home screen, announcements, unread notification count, Home store, and Home documentation.
 - Phase 8: Subjects list, academic profile filtering, local search, and subject detail foundation.
+- Phase 9: Groups overview, lists, detail, membership status, join/leave, and passive WhatsApp support.
 
 ## Environment
 
@@ -68,17 +73,20 @@ npx expo install --check
 
 Expo dev server, emulator commands, and EAS builds are not run during automated phase implementation unless explicitly requested.
 
-## Phase 8 Boundaries
+## Phase 9 Boundaries
 
-Not implemented in Phase 8:
+Not implemented in Phase 9:
 
 - Register Student full flow.
 - Full OTP flow.
 - Full password reset flow.
-- Files, groups, chat, PDF viewer, support, and notifications list.
+- Chat messages, message sending, WebSocket, typing indicators, message deletion, and message reporting.
+- Group files, Files module, and PDF viewer.
+- Support, full notifications list, dashboard group management, and admin/moderator tools.
 - Subject detail API endpoint because it is not in the official API collection.
-- Full notifications inbox.
 - TanStack Query.
 - WebSocket or push notification listeners.
+
+Groups list/detail and join/leave are real. Chat remains a placeholder. Group files remain for the Files phase. WhatsApp links are passive and open only safe WhatsApp URLs after user press.
 
 Authenticated students enter AppTabs only after academic profile completion and verification approval. Non-student roles temporarily enter AppTabs until their final rules are scoped.

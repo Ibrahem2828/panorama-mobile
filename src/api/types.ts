@@ -93,10 +93,34 @@ export type VerificationRecord = ApiEntity & {
   card_image_url?: string | null;
 };
 
-export type GroupSummary = ApiEntity & {
-  name: string;
-  description?: string;
-  whatsappUrl?: string;
+export type GroupRecord = ApiEntity & {
+  name?: string;
+  title?: string;
+  description?: string | null;
+  image?: string | null;
+  image_url?: string | null;
+  members_count?: number;
+  current_user_membership_status?: string;
+  current_user_group_role?: string | null;
+  send_messages_permission?: string;
+  whatsapp_url?: string | null;
+  whatsapp_link?: string | null;
+  external_chat_url?: string | null;
+  external_link?: string | null;
+  university?: EntityId | Record<string, unknown> | null;
+  major?: EntityId | Record<string, unknown> | null;
+  academic_year?: EntityId | Record<string, unknown> | null;
+  semester?: EntityId | Record<string, unknown> | null;
+  subject?: EntityId | Record<string, unknown> | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type GroupSummary = GroupRecord;
+
+export type GroupJoinResult = Record<string, unknown> & {
+  status?: string;
+  group?: GroupRecord;
 };
 
 export type GroupMessage = ApiEntity & {

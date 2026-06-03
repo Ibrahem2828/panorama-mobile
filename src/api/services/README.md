@@ -25,6 +25,14 @@ These files are thin service foundations over `apiClient`. They are not complete
 - Subject list params support `academic_year`, `semester`, `search`, and `ordering`.
 - Subject details are handled in the Subjects feature from loaded list data, not through an API service endpoint.
 
+## Phase 9 additions
+
+- `groups.service.ts` calls `GET /api/v1/groups/available/` for available groups.
+- `groups.service.ts` calls `GET /api/v1/groups/my/` for the current student's groups.
+- `groups.service.ts` calls `GET /api/v1/groups/{group_id}/` for group detail.
+- `groups.service.ts` calls `POST /api/v1/groups/{group_id}/join/` and `POST /api/v1/groups/{group_id}/leave/`.
+- Group messages and group files are intentionally not implemented in Phase 9.
+
 ## Rules
 
 - Services may import only API-layer helpers such as `apiClient`, `endpoints`, and shared API types.

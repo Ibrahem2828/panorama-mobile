@@ -1,6 +1,6 @@
 # Panorama Docs Index
 
-This directory contains Panorama Mobile documentation from Phase 0 through Phase 8.
+This directory contains Panorama Mobile documentation from Phase 0 through Phase 9.
 
 | File                                                        | Description                                                            |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -28,7 +28,8 @@ This directory contains Panorama Mobile documentation from Phase 0 through Phase
 | `21_PHASE_6_STUDENT_PROFILE_AND_VERIFICATION_FOUNDATION.md` | Student profile, verification, and StudentSetup gate foundation.       |
 | `22_PHASE_7_HOME_AND_ANNOUNCEMENTS_FOUNDATION.md`           | Home screen, announcements, and unread notification count foundation.  |
 | `23_PHASE_8_SUBJECTS_AND_ACADEMIC_CONTENT_FOUNDATION.md`    | Subjects list, local search, and subject detail foundation.            |
+| `24_PHASE_9_GROUPS_FOUNDATION.md`                           | Groups list/detail, join/leave, and WhatsApp link foundation.          |
 
 ## Current status
 
-Phase 8 Subjects & Academic Content Foundation has been implemented. Final validation results are documented in `23_PHASE_8_SUBJECTS_AND_ACADEMIC_CONTENT_FOUNDATION.md`.
+Phase 9 Groups Foundation has been implemented. Final validation results are documented in `24_PHASE_9_GROUPS_FOUNDATION.md`.
