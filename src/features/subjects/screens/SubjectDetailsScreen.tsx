@@ -14,7 +14,7 @@ import {
   SectionHeader,
   Stack,
 } from '../../../components';
-import { GroupsRoutes, TabRoutes } from '../../../navigation/routes';
+import { GroupsRoutes, SharedRoutes, TabRoutes } from '../../../navigation/routes';
 import type { AppTabsParamList, SubjectsStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { SubjectDetailHeader, SubjectLinkedSectionCard } from '../components';
@@ -68,6 +68,12 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
       ?.navigate(TabRoutes.Groups, { screen: GroupsRoutes.GroupsOverview });
   }
 
+  function handleOpenFiles() {
+    navigation
+      .getParent<AppTabsNavigation>()
+      ?.navigate(TabRoutes.Home, { screen: SharedRoutes.FilesList });
+  }
+
   if (!subject && isBusy) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
@@ -105,18 +111,19 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
 
         <AppCard variant="muted">
           <AppText color="secondary" variant="bodySmall">
-            سيتم ربط ملفات المادة وغروباتها في المراحل القادمة.
+            يمكن فتح قائمة الملفات العامة المتاحة لحسابك، ولا يوجد endpoint موثق لملفات مادة محددة
+            في هذه المرحلة.
           </AppText>
         </AppCard>
 
         <Stack gap="md">
           <SectionHeader
-            subtitle="هذه الأقسام placeholders فقط ولا تستدعي أي API في Phase 8."
+            subtitle="ملفات المادة الخاصة غير موثقة كـ endpoint مستقل، لذلك يعرض التطبيق كل الملفات المتاحة لحسابك."
             title="المحتوى المرتبط"
           />
           <SubjectLinkedSectionCard
-            description="سيتم عرض ملفات المادة عند تنفيذ وحدة الملفات."
-            disabled
+            description="افتح قائمة الملفات المتاحة داخل التطبيق. لا يوجد فلتر موثق حسب المادة في هذه المرحلة."
+            onPress={handleOpenFiles}
             title="الملفات"
           />
           <SubjectLinkedSectionCard

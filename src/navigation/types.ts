@@ -18,6 +18,9 @@ export type StudentSetupStackParamList = {
 
 export type HomeStackParamList = {
   Home: undefined;
+  FilesList: undefined;
+  FileDetails: { fileId: string | number };
+  PdfViewer: { fileId: string | number; title?: string };
 };
 
 export type SubjectsStackParamList = {
@@ -30,6 +33,9 @@ export type GroupsStackParamList = {
   AvailableGroups: undefined;
   MyGroups: undefined;
   GroupDetails: { groupId: string | number };
+  GroupFiles: { groupId: string | number };
+  FileDetails: { fileId: string | number };
+  PdfViewer: { fileId: string | number; title?: string };
   ChatRoom: { groupId: string | number };
 };
 
@@ -54,9 +60,10 @@ export type ProfileStackParamList = {
 };
 
 export type SharedStackParamList = {
-  FilesList: { subjectId?: string; groupId?: string } | undefined;
-  FileDetails: { fileId: string };
-  PdfViewer: { fileId: string; title?: string };
+  FilesList: undefined;
+  FileDetails: { fileId: string | number };
+  PdfViewer: { fileId: string | number; title?: string };
+  GroupFiles: { groupId: string | number };
   Search: { query?: string } | undefined;
 };
 

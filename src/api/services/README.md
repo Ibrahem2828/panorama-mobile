@@ -33,6 +33,13 @@ These files are thin service foundations over `apiClient`. They are not complete
 - `groups.service.ts` calls `POST /api/v1/groups/{group_id}/join/` and `POST /api/v1/groups/{group_id}/leave/`.
 - Group messages and group files are intentionally not implemented in Phase 9.
 
+## Phase 10 additions
+
+- `files.service.ts` calls `GET /api/v1/files/` for accessible files.
+- `files.service.ts` calls `GET /api/v1/files/{file_id}/` for file detail.
+- `files.service.ts` calls `GET /api/v1/groups/{group_id}/files/` for group files.
+- File download, file stream, signed URL, subject files, and printing order endpoints are intentionally not implemented in Phase 10.
+
 ## Rules
 
 - Services may import only API-layer helpers such as `apiClient`, `endpoints`, and shared API types.

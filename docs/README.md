@@ -1,6 +1,6 @@
 # Panorama Docs Index
 
-This directory contains Panorama Mobile documentation from Phase 0 through Phase 9.
+This directory contains Panorama Mobile documentation from Phase 0 through Phase 10.
 
 | File                                                        | Description                                                            |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -29,7 +29,8 @@ This directory contains Panorama Mobile documentation from Phase 0 through Phase
 | `22_PHASE_7_HOME_AND_ANNOUNCEMENTS_FOUNDATION.md`           | Home screen, announcements, and unread notification count foundation.  |
 | `23_PHASE_8_SUBJECTS_AND_ACADEMIC_CONTENT_FOUNDATION.md`    | Subjects list, local search, and subject detail foundation.            |
 | `24_PHASE_9_GROUPS_FOUNDATION.md`                           | Groups list/detail, join/leave, and WhatsApp link foundation.          |
+| `25_PHASE_10_FILES_AND_IN_APP_VIEWER_FOUNDATION.md`         | Files list/detail, group files, and in-app viewer foundation.          |
 
 ## Current status
 
-Phase 9 Groups Foundation has been implemented. Final validation results are documented in `24_PHASE_9_GROUPS_FOUNDATION.md`.
+Phase 10 Files & In-App Viewer Foundation has been implemented. Final validation results are documented in `25_PHASE_10_FILES_AND_IN_APP_VIEWER_FOUNDATION.md`.

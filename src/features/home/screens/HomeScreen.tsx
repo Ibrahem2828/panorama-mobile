@@ -19,6 +19,7 @@ import {
   GroupsRoutes,
   PrintingRoutes,
   ProfileRoutes,
+  SharedRoutes,
   SubjectsRoutes,
   TabRoutes,
 } from '../../../navigation/routes';
@@ -66,9 +67,7 @@ function getQuickActions(unreadNotificationsCount: number): HomeQuickAction[] {
     {
       key: 'files',
       title: 'الملفات',
-      description: 'ستتوفر من سياق المواد والغروبات لاحقا.',
-      badge: 'قريبا',
-      disabled: true,
+      description: 'افتح الملفات المتاحة داخل التطبيق بدون زر تنزيل مباشر.',
     },
     {
       key: 'printing',
@@ -133,6 +132,7 @@ export function HomeScreen() {
         navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.ProfileHome });
         break;
       case 'files':
+        navigation.navigate(SharedRoutes.FilesList);
         break;
     }
   }

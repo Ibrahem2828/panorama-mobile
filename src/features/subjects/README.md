@@ -9,7 +9,7 @@ Feature foundation for the authenticated Subjects experience.
 - Sends `academic_year` and `semester` query params when those IDs are available.
 - Provides local search over loaded subject `name`, `title`, and `code`.
 - Shows a subject detail foundation derived from the loaded list data.
-- Keeps files, groups, chat, and subject announcements as disabled placeholders.
+- Keeps subject-specific files, chat, and subject announcements out of scope because their endpoints are not documented.
 
 ## Files
 
@@ -23,7 +23,8 @@ Feature foundation for the authenticated Subjects experience.
 ## Boundaries
 
 - No subject detail endpoint is used or invented.
-- No files list is loaded.
-- No groups list is loaded.
+- No subject-specific files endpoint is used or invented.
+- Phase 10 allows the subject detail files card to open the general accessible Files list.
+- No subject-specific groups endpoint is used or invented.
 - No chat, WebSocket, PDF viewer, printing, notifications list, or support logic is implemented here.
 - No new dependencies are introduced in Phase 8.

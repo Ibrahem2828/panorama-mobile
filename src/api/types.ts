@@ -130,9 +130,28 @@ export type GroupMessage = ApiEntity & {
 };
 
 export type FileRecord = ApiEntity & {
-  title: string;
-  mimeType?: string;
-  sizeBytes?: number;
+  title?: string;
+  name?: string;
+  description?: string | null;
+  file?: string | null;
+  file_url?: string | null;
+  url?: string | null;
+  download_url?: string | null;
+  mime_type?: string | null;
+  content_type?: string | null;
+  mimeType?: string | null;
+  extension?: string | null;
+  size?: number | null;
+  size_bytes?: number | null;
+  sizeBytes?: number | null;
+  visibility?: string;
+  group?: EntityId | Record<string, unknown> | null;
+  major?: EntityId | Record<string, unknown> | null;
+  academic_year?: EntityId | Record<string, unknown> | null;
+  semester?: EntityId | Record<string, unknown> | null;
+  subject?: EntityId | Record<string, unknown> | null;
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type PrintOrderStatus =

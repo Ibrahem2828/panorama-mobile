@@ -13,6 +13,7 @@ import {
   SectionHeader,
   Stack,
 } from '../../../components';
+import { GroupsRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { GroupDescriptionCard, GroupDetailHeader, GroupPermissionCard } from '../components';
@@ -63,6 +64,10 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
 
   function handleLeave() {
     void leaveGroup(groupId);
+  }
+
+  function handleOpenGroupFiles() {
+    navigation.navigate(GroupsRoutes.GroupFiles, { groupId });
   }
 
   async function handleOpenWhatsApp() {
@@ -165,7 +170,7 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
 
         <Stack gap="md">
           <SectionHeader
-            subtitle="هذه المداخل placeholders فقط ولا تستدعي رسائل أو ملفات في Phase 9."
+            subtitle="المحادثة مؤجلة، وملفات الغروب أصبحت متاحة حسب صلاحيات الباك إند."
             title="محتوى الغروب"
           />
           <AppCard variant="muted">
@@ -180,8 +185,13 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
             <Stack gap="sm">
               <AppText variant="title">ملفات الغروب</AppText>
               <AppText color="secondary" variant="bodySmall">
-                ملفات الغروب ستتوفر في مرحلة الملفات.
+                افتح الملفات المرتبطة بهذا الغروب داخل التطبيق بدون زر تنزيل مباشر.
               </AppText>
+              <AppButton
+                onPress={handleOpenGroupFiles}
+                title="فتح ملفات الغروب"
+                variant="outline"
+              />
             </Stack>
           </AppCard>
         </Stack>

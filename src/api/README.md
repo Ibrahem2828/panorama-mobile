@@ -37,6 +37,14 @@ Central API layer for Panorama Mobile.
 - Join and leave use `POST /api/v1/groups/{group_id}/join/` and `POST /api/v1/groups/{group_id}/leave/`.
 - Group message and group files endpoints are intentionally not used by Phase 9.
 
+## Phase 10 additions
+
+- `FileRecord` is expanded in `types.ts` for file metadata and optional view URL fields.
+- `files.service.ts` exposes real Files list/detail/group-files calls.
+- Files use `GET /api/v1/files/` and `GET /api/v1/files/{file_id}/`.
+- Group files use `GET /api/v1/groups/{group_id}/files/`.
+- No file download, stream, signed URL, subject files, or printing order endpoint is added by Phase 10.
+
 ## Rules
 
 - Do not store tokens in `src/api`.

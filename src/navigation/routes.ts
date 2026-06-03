@@ -42,6 +42,7 @@ export const GroupsRoutes = {
   AvailableGroups: 'AvailableGroups',
   MyGroups: 'MyGroups',
   GroupDetails: 'GroupDetails',
+  GroupFiles: 'GroupFiles',
   ChatRoom: 'ChatRoom',
 } as const;
 
@@ -69,5 +70,6 @@ export const SharedRoutes = {
   FilesList: 'FilesList',
   FileDetails: 'FileDetails',
   PdfViewer: 'PdfViewer',
+  GroupFiles: 'GroupFiles',
   Search: 'Search',
 } as const;

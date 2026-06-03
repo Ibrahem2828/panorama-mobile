@@ -4,7 +4,7 @@ Panorama is an Arabic, RTL-first mobile app for university students. The goal is
 
 ## Current Project Status
 
-Current status: **Phase 9 Groups Foundation**.
+Current status: **Phase 10 Files & In-App Viewer Foundation**.
 
 Implemented so far:
 
@@ -28,6 +28,11 @@ Implemented so far:
 - Groups integration through `GET /api/v1/groups/available/`, `GET /api/v1/groups/my/`, and `GET /api/v1/groups/{group_id}/`.
 - Join/leave group actions through the official Groups API endpoints.
 - Passive WhatsApp link support for safe WhatsApp URLs returned by the backend or present in group descriptions.
+- Real Files list through `GET /api/v1/files/`.
+- Real File detail through `GET /api/v1/files/{file_id}/`.
+- Real Group files through `GET /api/v1/groups/{group_id}/files/`.
+- In-app viewer foundation for images with safe fallbacks for PDF/document/unknown file types.
+- No direct download, share, save-to-device, or external browser action for student files.
 
 ## Completed Phases
 
@@ -43,6 +48,7 @@ Implemented so far:
 - Phase 7: Home screen, announcements, unread notification count, Home store, and Home documentation.
 - Phase 8: Subjects list, academic profile filtering, local search, and subject detail foundation.
 - Phase 9: Groups overview, lists, detail, membership status, join/leave, and passive WhatsApp support.
+- Phase 10: Files list/detail, group files, metadata display, and in-app viewer foundation.
 
 ## Environment
 
@@ -73,20 +79,23 @@ npx expo install --check
 
 Expo dev server, emulator commands, and EAS builds are not run during automated phase implementation unless explicitly requested.
 
-## Phase 9 Boundaries
+## Phase 10 Boundaries
 
-Not implemented in Phase 9:
+Not implemented in Phase 10:
 
 - Register Student full flow.
 - Full OTP flow.
 - Full password reset flow.
 - Chat messages, message sending, WebSocket, typing indicators, message deletion, and message reporting.
-- Group files, Files module, and PDF viewer.
+- Advanced PDF rendering and annotations.
+- Direct file download, share, save-to-device, document picker, filesystem library, or external browser opening by default.
+- Printing order creation and dynamic printing options.
 - Support, full notifications list, dashboard group management, and admin/moderator tools.
 - Subject detail API endpoint because it is not in the official API collection.
+- Subject-specific files endpoint because it is not in the official API collection.
 - TanStack Query.
 - WebSocket or push notification listeners.
 
-Groups list/detail and join/leave are real. Chat remains a placeholder. Group files remain for the Files phase. WhatsApp links are passive and open only safe WhatsApp URLs after user press.
+Files list/detail and group files are real. The in-app viewer foundation exists. No direct download button exists. Printing remains for a later phase, and advanced PDF rendering may need additional runtime-tested improvement.
 
 Authenticated students enter AppTabs only after academic profile completion and verification approval. Non-student roles temporarily enter AppTabs until their final rules are scoped.

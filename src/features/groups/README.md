@@ -17,6 +17,7 @@ Groups feature foundation for verified students.
 - Group image/avatar display when a safe image URL is returned.
 - Group description rendering.
 - Passive WhatsApp link support for safe WhatsApp URLs only.
+- Phase 10 adds navigation from Group details to real Group files.
 
 ## Structure
 
@@ -38,6 +39,11 @@ Phase 9 uses only official API collection endpoints:
 
 Screens use the Groups store and never call the API client directly.
 
+## Phase 10 Files Integration
+
+Group details now links to `GroupFiles`, which is implemented in `src/features/files` and uses
+`GET /api/v1/groups/{group_id}/files/`. Groups still do not implement chat or message APIs.
+
 ## WhatsApp Links
 
 WhatsApp links are optional and passive. The feature checks known optional fields and the group
@@ -49,6 +55,5 @@ press. It does not parse HTML, create previews, or open arbitrary URLs.
 - Chat messages.
 - WebSocket.
 - Message sending, deletion, reporting, and typing indicators.
-- Group files.
-- Files module and PDF viewer.
+- Advanced PDF rendering.
 - Admin/moderator management tools.
