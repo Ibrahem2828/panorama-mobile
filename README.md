@@ -4,7 +4,7 @@ Panorama is an Arabic, RTL-first mobile app for university students. The goal is
 
 ## Current Project Status
 
-Current status: **Phase 10 Files & In-App Viewer Foundation**.
+Current status: **Phase 10.5 Production Audit Triage**.
 
 Implemented so far:
 
@@ -33,6 +33,7 @@ Implemented so far:
 - Real Group files through `GET /api/v1/groups/{group_id}/files/`.
 - In-app viewer foundation for images with safe fallbacks for PDF/document/unknown file types.
 - No direct download, share, save-to-device, or external browser action for student files.
+- Production audit triage for Expo transitive tooling dependencies, with Expo SDK 56 preserved.
 
 ## Completed Phases
 
@@ -49,6 +50,7 @@ Implemented so far:
 - Phase 8: Subjects list, academic profile filtering, local search, and subject detail foundation.
 - Phase 9: Groups overview, lists, detail, membership status, join/leave, and passive WhatsApp support.
 - Phase 10: Files list/detail, group files, metadata display, and in-app viewer foundation.
+- Phase 10.5: Production audit triage for Expo transitive `uuid`/`xcode` tooling path.
 
 ## Environment
 
@@ -97,5 +99,9 @@ Not implemented in Phase 10:
 - WebSocket or push notification listeners.
 
 Files list/detail and group files are real. The in-app viewer foundation exists. No direct download button exists. Printing remains for a later phase, and advanced PDF rendering may need additional runtime-tested improvement.
+
+## Phase 10.5 Audit Decision
+
+`npm audit` and `npm audit --omit=dev` are currently clean. The inspected `uuid@7.0.3` path is transitive through `expo@56.0.8 -> @expo/config-plugins@56.0.8 -> xcode@3.0.1 -> uuid@7.0.3` and belongs to Expo tooling, not app runtime code. No override or `npm audit fix --force` was applied.
 
 Authenticated students enter AppTabs only after academic profile completion and verification approval. Non-student roles temporarily enter AppTabs until their final rules are scoped.

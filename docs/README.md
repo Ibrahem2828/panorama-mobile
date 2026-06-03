@@ -1,6 +1,6 @@
 # Panorama Docs Index
 
-This directory contains Panorama Mobile documentation from Phase 0 through Phase 10.
+This directory contains Panorama Mobile documentation from Phase 0 through Phase 10.5.
 
 | File                                                        | Description                                                            |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -30,7 +30,8 @@ This directory contains Panorama Mobile documentation from Phase 0 through Phase
 | `23_PHASE_8_SUBJECTS_AND_ACADEMIC_CONTENT_FOUNDATION.md`    | Subjects list, local search, and subject detail foundation.            |
 | `24_PHASE_9_GROUPS_FOUNDATION.md`                           | Groups list/detail, join/leave, and WhatsApp link foundation.          |
 | `25_PHASE_10_FILES_AND_IN_APP_VIEWER_FOUNDATION.md`         | Files list/detail, group files, and in-app viewer foundation.          |
+| `26_PHASE_10_5_PRODUCTION_AUDIT_TRIAGE.md`                  | Production audit triage for Expo transitive tooling dependencies.      |
 
 ## Current status
 
-Phase 10 Files & In-App Viewer Foundation has been implemented. Final validation results are documented in `25_PHASE_10_FILES_AND_IN_APP_VIEWER_FOUNDATION.md`.
+Phase 10.5 Production Audit Triage has been completed. Final validation and audit results are documented in `26_PHASE_10_5_PRODUCTION_AUDIT_TRIAGE.md`.

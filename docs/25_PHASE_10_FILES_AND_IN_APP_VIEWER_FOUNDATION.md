@@ -157,5 +157,8 @@ was started.
 
 ## Next Phase Recommendation
 
+Phase 10.5 was introduced after this phase to triage production audit findings around Expo
+transitive tooling dependencies before starting Printing.
+
 Phase 11 should implement Printing Foundation using the official printing endpoints and dynamic
 backend-controlled printing options.
