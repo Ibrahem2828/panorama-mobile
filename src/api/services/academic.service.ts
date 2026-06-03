@@ -1,8 +1,13 @@
 import { apiClient } from '../client';
 import { endpoints } from '../endpoints';
-import type { ApiListParams, AcademicOption } from '../types';
+import type { AcademicOption, ApiListParams, EntityId, SubjectRecord } from '../types';
 import type { PaginatedResult } from '../pagination';
 import { toPaginationQuery } from '../pagination';
+
+export type SubjectListParams = ApiListParams & {
+  academic_year?: EntityId;
+  semester?: EntityId;
+};
 
 export function listUniversities(params?: ApiListParams, authToken?: string | null) {
   return apiClient.get<PaginatedResult<AcademicOption>>(endpoints.academic.universities, {
@@ -49,11 +54,18 @@ export function listMajorsForFaculty(
 
 export function listSubjectsForMajor(
   majorId: string | number,
-  params?: ApiListParams,
+  params?: SubjectListParams,
   authToken?: string | null,
 ) {
-  return apiClient.get<PaginatedResult<AcademicOption>>(
+  return apiClient.get<PaginatedResult<SubjectRecord>>(
     endpoints.academic.subjectsForMajor(majorId),
-    { authToken, query: toPaginationQuery(params) },
+    {
+      authToken,
+      query: {
+        ...toPaginationQuery(params),
+        academic_year: params?.academic_year,
+        semester: params?.semester,
+      },
+    },
   );
 }

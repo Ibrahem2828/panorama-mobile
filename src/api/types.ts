@@ -148,6 +148,22 @@ export type AnnouncementRecord = ApiEntity & {
   type?: string;
 };
 
+export type SubjectRecord = ApiEntity & {
+  name?: string;
+  title?: string;
+  code?: string | number | null;
+  description?: string | null;
+  major?: EntityId | Record<string, unknown> | null;
+  academic_year?: EntityId | Record<string, unknown> | null;
+  semester?: EntityId | Record<string, unknown> | null;
+  order?: number;
+  created_at?: string;
+  updated_at?: string;
+  files_count?: number;
+  groups_count?: number;
+  lectures_count?: number;
+};
+
 export type UnreadCount = {
   count: number;
 };

@@ -22,7 +22,7 @@ export type HomeStackParamList = {
 
 export type SubjectsStackParamList = {
   SubjectsList: undefined;
-  SubjectDetails: { subjectId: string };
+  SubjectDetails: { subjectId: string | number };
 };
 
 export type GroupsStackParamList = {

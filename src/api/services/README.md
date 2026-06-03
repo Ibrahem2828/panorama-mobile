@@ -19,6 +19,12 @@ These files are thin service foundations over `apiClient`. They are not complete
 - `announcements.service.ts` calls `GET /api/v1/announcements/`.
 - `notifications.service.ts` continues to expose `getUnreadCount` for Home.
 
+## Phase 8 additions
+
+- `academic.service.ts` calls `GET /api/v1/majors/{major_id}/subjects/` for subjects.
+- Subject list params support `academic_year`, `semester`, `search`, and `ordering`.
+- Subject details are handled in the Subjects feature from loaded list data, not through an API service endpoint.
+
 ## Rules
 
 - Services may import only API-layer helpers such as `apiClient`, `endpoints`, and shared API types.

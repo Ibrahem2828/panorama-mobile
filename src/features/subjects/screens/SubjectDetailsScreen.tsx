@@ -1,5 +1,133 @@
-import { PlaceholderScreen } from '../../../components';
+import { useEffect, useRef } from 'react';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { StyleSheet } from 'react-native';
 
-export function SubjectDetailsScreen() {
-  return <PlaceholderScreen subtitle="المواد" title="SubjectDetails - تفاصيل المادة" />;
+import {
+  AppButton,
+  AppCard,
+  AppHeader,
+  AppScreen,
+  AppText,
+  ErrorState,
+  LoadingState,
+  SectionHeader,
+  Stack,
+} from '../../../components';
+import type { SubjectsStackParamList } from '../../../navigation/types';
+import { spacing } from '../../../theme';
+import { SubjectDetailHeader, SubjectLinkedSectionCard } from '../components';
+import { useSubjectsStore } from '../store';
+import type { Subject } from '../types';
+
+type SubjectDetailsScreenProps = NativeStackScreenProps<SubjectsStackParamList, 'SubjectDetails'>;
+
+function isSameSubjectId(subject: Subject, subjectId: string | number) {
+  return String(subject.id) === String(subjectId);
 }
+
+export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreenProps) {
+  const { subjectId } = route.params;
+  const selectedSubject = useSubjectsStore((state) => state.selectedSubject);
+  const subjects = useSubjectsStore((state) => state.subjects);
+  const isLoading = useSubjectsStore((state) => state.isLoading);
+  const isRefreshing = useSubjectsStore((state) => state.isRefreshing);
+  const errorMessage = useSubjectsStore((state) => state.errorMessage);
+  const refreshSubjects = useSubjectsStore((state) => state.refreshSubjects);
+  const setSelectedSubject = useSubjectsStore((state) => state.setSelectedSubject);
+  const didAttemptReload = useRef(false);
+  const subject =
+    selectedSubject && isSameSubjectId(selectedSubject, subjectId)
+      ? selectedSubject
+      : (subjects.find((item) => isSameSubjectId(item, subjectId)) ?? null);
+  const isBusy = isLoading || isRefreshing;
+
+  useEffect(() => {
+    if (!subject || selectedSubject?.id !== subject.id) {
+      setSelectedSubject(subject);
+    }
+  }, [selectedSubject?.id, setSelectedSubject, subject]);
+
+  useEffect(() => {
+    if (!subject && !didAttemptReload.current && !isBusy) {
+      didAttemptReload.current = true;
+      void refreshSubjects();
+    }
+  }, [isBusy, refreshSubjects, subject]);
+
+  function handleRetry() {
+    didAttemptReload.current = true;
+    void refreshSubjects();
+  }
+
+  if (!subject && isBusy) {
+    return (
+      <AppScreen contentContainerStyle={styles.content} scroll>
+        <AppHeader subtitle="تفاصيل المادة" title="موادي" />
+        <LoadingState message="جاري تحميل بيانات المادة..." />
+      </AppScreen>
+    );
+  }
+
+  if (!subject) {
+    return (
+      <AppScreen contentContainerStyle={styles.content} scroll>
+        <Stack gap="lg">
+          <AppHeader subtitle="تفاصيل المادة" title="موادي" />
+          <AppButton onPress={() => navigation.goBack()} title="رجوع إلى المواد" variant="ghost" />
+          <ErrorState
+            message={errorMessage ?? 'تعذر العثور على المادة.'}
+            onRetry={handleRetry}
+            title="المادة غير متاحة"
+          />
+        </Stack>
+      </AppScreen>
+    );
+  }
+
+  return (
+    <AppScreen contentContainerStyle={styles.content} scroll>
+      <Stack gap="xl">
+        <Stack gap="md">
+          <AppHeader subtitle="تفاصيل المادة من بيانات القائمة" title="موادي" />
+          <AppButton onPress={() => navigation.goBack()} title="رجوع إلى المواد" variant="ghost" />
+        </Stack>
+
+        <SubjectDetailHeader subject={subject} />
+
+        <AppCard variant="muted">
+          <AppText color="secondary" variant="bodySmall">
+            سيتم ربط ملفات المادة وغروباتها في المراحل القادمة.
+          </AppText>
+        </AppCard>
+
+        <Stack gap="md">
+          <SectionHeader
+            subtitle="هذه الأقسام placeholders فقط ولا تستدعي أي API في Phase 8."
+            title="المحتوى المرتبط"
+          />
+          <SubjectLinkedSectionCard
+            description="سيتم عرض ملفات المادة عند تنفيذ وحدة الملفات."
+            disabled
+            title="الملفات"
+          />
+          <SubjectLinkedSectionCard
+            description="سيتم ربط غروبات المادة عند تنفيذ Phase 9."
+            disabled
+            title="الغروبات"
+          />
+          <SubjectLinkedSectionCard
+            description="لا يوجد endpoint موثق لإعلانات المادة في هذه المرحلة."
+            disabled
+            title="الإعلانات"
+          />
+        </Stack>
+      </Stack>
+    </AppScreen>
+  );
+}
+
+const styles = StyleSheet.create({
+  content: {
+    gap: spacing.xl,
+  },
+});

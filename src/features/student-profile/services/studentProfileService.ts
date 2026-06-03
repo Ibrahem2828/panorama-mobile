@@ -6,6 +6,7 @@ import {
   type AcademicOption as ApiAcademicOption,
   type EntityId,
   type PaginatedResult,
+  type SubjectRecord,
 } from '../../../api';
 import type {
   AcademicOption,
@@ -23,7 +24,8 @@ const VALIDATION_MESSAGE = 'يرجى التأكد من البيانات الأك
 const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
 const GENERIC_MESSAGE = 'تعذر تنفيذ العملية. حاول مرة أخرى.';
 
-type AcademicListResponse = PaginatedResult<ApiAcademicOption> | ApiAcademicOption[];
+type AcademicListItem = ApiAcademicOption | SubjectRecord;
+type FlexibleAcademicListResponse = PaginatedResult<AcademicListItem> | AcademicListItem[];
 
 function toText(value: unknown): string | null {
   if (typeof value === 'string' && value.trim().length > 0) {
@@ -37,7 +39,7 @@ function toText(value: unknown): string | null {
   return null;
 }
 
-function normalizeAcademicOption(option: ApiAcademicOption): AcademicOption {
+function normalizeAcademicOption(option: AcademicListItem): AcademicOption {
   const name =
     toText(option.name) ??
     toText(option.label) ??
@@ -52,7 +54,7 @@ function normalizeAcademicOption(option: ApiAcademicOption): AcademicOption {
   };
 }
 
-function getAcademicListItems(response: AcademicListResponse): ApiAcademicOption[] {
+function getAcademicListItems(response: FlexibleAcademicListResponse): AcademicListItem[] {
   if (Array.isArray(response)) {
     return response;
   }
@@ -60,7 +62,7 @@ function getAcademicListItems(response: AcademicListResponse): ApiAcademicOption
   return response.results;
 }
 
-function normalizeAcademicList(response: AcademicListResponse): AcademicOption[] {
+function normalizeAcademicList(response: FlexibleAcademicListResponse): AcademicOption[] {
   return getAcademicListItems(response).map(normalizeAcademicOption);
 }
 

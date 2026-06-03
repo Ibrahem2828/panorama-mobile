@@ -4,7 +4,7 @@ Panorama is an Arabic, RTL-first mobile app for university students. The goal is
 
 ## Current Project Status
 
-Current status: **Phase 7 Home & Announcements Foundation**.
+Current status: **Phase 8 Subjects & Academic Content Foundation**.
 
 Implemented so far:
 
@@ -21,6 +21,9 @@ Implemented so far:
 - Authenticated Home screen foundation.
 - Announcements integration through `GET /api/v1/announcements/`.
 - Unread notification count integration through `GET /api/v1/notifications/unread-count/`.
+- Real Subjects list through `GET /api/v1/majors/{major_id}/subjects/`.
+- Subject detail foundation derived from loaded subject list data.
+- Local subjects search by name, title, or code.
 
 ## Completed Phases
 
@@ -34,6 +37,7 @@ Implemented so far:
 - Phase 5.5: Expo SDK audit and upgrade to SDK 56.
 - Phase 6: Student Profile & Verification Foundation and StudentSetup gate activation.
 - Phase 7: Home screen, announcements, unread notification count, Home store, and Home documentation.
+- Phase 8: Subjects list, academic profile filtering, local search, and subject detail foundation.
 
 ## Environment
 
@@ -64,17 +68,17 @@ npx expo install --check
 
 Expo dev server, emulator commands, and EAS builds are not run during automated phase implementation unless explicitly requested.
 
-## Phase 7 Boundaries
+## Phase 8 Boundaries
 
-Not implemented in Phase 7:
+Not implemented in Phase 8:
 
 - Register Student full flow.
 - Full OTP flow.
 - Full password reset flow.
-- Subjects, groups, files, printing, support, and notifications feature data beyond Home quick actions.
+- Files, groups, chat, PDF viewer, support, and notifications list.
+- Subject detail API endpoint because it is not in the official API collection.
 - Full notifications inbox.
 - TanStack Query.
 - WebSocket or push notification listeners.
-- PDF viewer.
 
 Authenticated students enter AppTabs only after academic profile completion and verification approval. Non-student roles temporarily enter AppTabs until their final rules are scoped.

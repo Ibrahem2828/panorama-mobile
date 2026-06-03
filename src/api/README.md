@@ -21,6 +21,14 @@ Central API layer for Panorama Mobile.
 - Home consumes `announcements.list` and `notifications.unreadCount` through feature services.
 - Announcement records are typed in `types.ts` and normalized inside the Home feature.
 
+## Phase 8 additions
+
+- `SubjectRecord` is typed in `types.ts`.
+- `academic.service.ts` exposes `listSubjectsForMajor(majorId, params, authToken)`.
+- Subjects use `GET /api/v1/majors/{major_id}/subjects/`.
+- Supported query params for subjects are `academic_year`, `semester`, `search`, and `ordering`.
+- No subject detail endpoint is defined because it is not present in the official API collection.
+
 ## Rules
 
 - Do not store tokens in `src/api`.
