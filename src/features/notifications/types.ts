@@ -48,6 +48,7 @@ export type NotificationRouteIntent =
   | { kind: 'printingOrder'; orderId: Id }
   | { kind: 'group'; groupId: Id }
   | { kind: 'file'; fileId: Id }
+  | { kind: 'supportTicket'; ticketId: Id }
   | { kind: 'verification' }
   | { kind: 'future'; label: string }
   | { kind: 'none' };

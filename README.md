@@ -4,7 +4,7 @@ Panorama is an Arabic, RTL-first mobile app for university students. The goal is
 
 ## Current Project Status
 
-Current status: **Phase 12 Notifications Foundation**.
+Current status: **Phase 13 Support Tickets Foundation**.
 
 Implemented so far:
 
@@ -41,6 +41,10 @@ Implemented so far:
 - In-app notifications list through `GET /api/v1/notifications/`.
 - Mark notification read and mark all notifications read through the official Notifications API.
 - Device token service functions exist for future push integration, but are not called at runtime.
+- Student support tickets through the official Support Tickets API.
+- Create ticket, list my tickets, ticket detail, and add-message support flows.
+- ProfileHome links to Support Tickets.
+- Support-ticket notifications can route to TicketDetails when safe target metadata exists.
 
 ## Completed Phases
 
@@ -60,6 +64,7 @@ Implemented so far:
 - Phase 10.5: Production audit triage for Expo transitive `uuid`/`xcode` tooling path.
 - Phase 11: Printing order MVP foundation using official printing order endpoints.
 - Phase 12: In-app notifications list, unread count, read state, and routing foundation.
+- Phase 13: Student-facing support tickets list, create, detail, and reply foundation.
 
 ## Environment
 
@@ -146,5 +151,21 @@ Not implemented in Phase 12:
 - FCM/APNs.
 - Device token registration at runtime.
 - Notification settings or notification detail endpoint.
+
+## Phase 13 Support Tickets Boundaries
+
+Implemented in Phase 13:
+
+- Support Tickets list loads the current student's tickets from `GET /api/v1/support/tickets/my/`.
+- Create Support Ticket sends only `category`, `subject`, and `message` to `POST /api/v1/support/tickets/`.
+- Ticket Details loads from `GET /api/v1/support/tickets/{ticket_id}/`.
+- Add Message sends only `message` to `POST /api/v1/support/tickets/{ticket_id}/messages/`.
+- Closed or resolved tickets block new student messages.
+- ProfileHome links to the support tickets area.
+- Notification routing can open TicketDetails for support ticket metadata with a valid target id.
+
+Not implemented in Phase 13:
+
+- Attachments, category API, close/reopen, staff assignment, staff/admin tools, realtime chat, push notifications, new dependencies, or invented support endpoints.
 
 Authenticated students enter AppTabs only after academic profile completion and verification approval. Non-student roles temporarily enter AppTabs until their final rules are scoped.

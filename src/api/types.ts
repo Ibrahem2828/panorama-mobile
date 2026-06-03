@@ -270,17 +270,58 @@ export type RegisterDeviceTokenRequest = {
   platform: DeviceTokenPlatform;
 };
 
-export type SupportTicketStatus = 'open' | 'pending' | 'closed';
+export type SupportTicketStatus =
+  | 'open'
+  | 'pending'
+  | 'in_progress'
+  | 'answered'
+  | 'resolved'
+  | 'closed'
+  | 'rejected'
+  | string;
+
+export type SupportTicketPriority = 'low' | 'medium' | 'high' | 'urgent' | string;
+
+export type SupportTicketCategory =
+  | 'technical'
+  | 'account'
+  | 'verification'
+  | 'printing'
+  | 'files'
+  | 'groups'
+  | 'other'
+  | string;
+
+export type SupportTicketMessage = Record<string, unknown> & {
+  id?: EntityId;
+  message?: string;
+  body?: string;
+  content?: string;
+  sender?: EntityId | Record<string, unknown> | null;
+  sender_name?: string | null;
+  is_staff_reply?: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
 
 export type SupportTicket = ApiEntity & {
-  subject: string;
-  status: SupportTicketStatus;
+  category?: SupportTicketCategory;
+  subject?: string;
+  title?: string;
+  message?: string;
+  status?: SupportTicketStatus;
+  priority?: SupportTicketPriority;
+  messages?: SupportTicketMessage[];
+  created_at?: string;
+  updated_at?: string;
+  closed_at?: string | null;
+  resolved_at?: string | null;
 };
 
 export type CreateSupportTicketRequest = {
+  category: SupportTicketCategory;
   subject: string;
-  description: string;
-  category?: string;
+  message: string;
 };
 
 export type AddSupportTicketMessageRequest = {

@@ -58,6 +58,16 @@ These files are thin service foundations over `apiClient`. They are not complete
 - `notifications.service.ts` exposes `POST /api/v1/notifications/device-tokens/` and `DELETE /api/v1/notifications/device-tokens/{token_id}/` as future service functions only.
 - Device token service functions are not called from runtime in Phase 12.
 
+## Phase 13 additions
+
+- `support.service.ts` calls `POST /api/v1/support/tickets/` for ticket creation.
+- `support.service.ts` calls `GET /api/v1/support/tickets/my/` for the current student's tickets.
+- `support.service.ts` calls `GET /api/v1/support/tickets/{ticket_id}/` for ticket detail.
+- `support.service.ts` calls `POST /api/v1/support/tickets/{ticket_id}/messages/` for student messages.
+- Create ticket accepts only the official JSON body: `category`, `subject`, and `message`.
+- Add message accepts only the official JSON body: `message`.
+- Attachments, category API, close/reopen, staff assignment, staff/admin tools, and realtime chat are intentionally not implemented in Phase 13.
+
 ## Rules
 
 - Services may import only API-layer helpers such as `apiClient`, `endpoints`, and shared API types.

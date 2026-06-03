@@ -64,6 +64,16 @@ Central API layer for Panorama Mobile.
 - Device token endpoints are typed service-level foundations only and are not called by app runtime.
 - No push notifications, permissions, FCM/APNs, settings, or notification detail endpoint is added by Phase 12.
 
+## Phase 13 additions
+
+- `SupportTicket`, `SupportTicketMessage`, and support request types are expanded in `types.ts`.
+- `support.service.ts` exposes create, my tickets, detail, and add-message calls.
+- Create ticket uses `POST /api/v1/support/tickets/`.
+- My tickets uses `GET /api/v1/support/tickets/my/`.
+- Ticket detail uses `GET /api/v1/support/tickets/{ticket_id}/`.
+- Add message uses `POST /api/v1/support/tickets/{ticket_id}/messages/`.
+- No attachments, category API, close/reopen, staff/admin support tools, realtime chat, or invented support endpoints are added by Phase 13.
+
 ## Rules
 
 - Do not store tokens in `src/api`.

@@ -2,32 +2,33 @@ import { apiClient } from '../client';
 import { endpoints } from '../endpoints';
 import type {
   AddSupportTicketMessageRequest,
-  ApiListParams,
   CreateSupportTicketRequest,
   SupportTicket,
+  SupportTicketMessage,
 } from '../types';
 import type { PaginatedResult } from '../pagination';
-import { toPaginationQuery } from '../pagination';
 
 export function createSupportTicket(
-  request: CreateSupportTicketRequest | FormData,
-  authToken?: string | null,
-) {
-  return apiClient.post<SupportTicket, CreateSupportTicketRequest | FormData>(
+  input: CreateSupportTicketRequest,
+  authToken: string,
+): Promise<SupportTicket> {
+  return apiClient.post<SupportTicket, CreateSupportTicketRequest>(
     endpoints.support.createTicket,
-    request,
+    input,
     { authToken },
   );
 }
 
-export function listMySupportTickets(params?: ApiListParams, authToken?: string | null) {
+export function listMySupportTickets(authToken: string): Promise<PaginatedResult<SupportTicket>> {
   return apiClient.get<PaginatedResult<SupportTicket>>(endpoints.support.myTickets, {
     authToken,
-    query: toPaginationQuery(params),
   });
 }
 
-export function getSupportTicketDetail(ticketId: string | number, authToken?: string | null) {
+export function getSupportTicketDetail(
+  ticketId: string | number,
+  authToken: string,
+): Promise<SupportTicket> {
   return apiClient.get<SupportTicket>(endpoints.support.ticketDetail(ticketId), {
     authToken,
   });
@@ -35,12 +36,12 @@ export function getSupportTicketDetail(ticketId: string | number, authToken?: st
 
 export function addSupportTicketMessage(
   ticketId: string | number,
-  request: AddSupportTicketMessageRequest | FormData,
-  authToken?: string | null,
-) {
-  return apiClient.post<SupportTicket, AddSupportTicketMessageRequest | FormData>(
+  input: AddSupportTicketMessageRequest,
+  authToken: string,
+): Promise<SupportTicketMessage | unknown> {
+  return apiClient.post<SupportTicketMessage | unknown, AddSupportTicketMessageRequest>(
     endpoints.support.addMessage(ticketId),
-    request,
+    input,
     { authToken },
   );
 }

@@ -14,7 +14,13 @@ import {
   LoadingState,
   Stack,
 } from '../../../components';
-import { GroupsRoutes, PrintingRoutes, SharedRoutes, TabRoutes } from '../../../navigation/routes';
+import {
+  GroupsRoutes,
+  PrintingRoutes,
+  ProfileRoutes,
+  SharedRoutes,
+  TabRoutes,
+} from '../../../navigation/routes';
 import type { AppTabsParamList, ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { NotificationCard, NotificationsHeaderActions } from '../components';
@@ -83,6 +89,12 @@ export function NotificationsScreen({ navigation }: NotificationsScreenProps) {
         tabNavigation?.navigate(TabRoutes.Home, {
           screen: SharedRoutes.FileDetails,
           params: { fileId: intent.fileId },
+        });
+        break;
+      case 'supportTicket':
+        tabNavigation?.navigate(TabRoutes.Profile, {
+          screen: ProfileRoutes.TicketDetails,
+          params: { ticketId: intent.ticketId },
         });
         break;
       case 'verification':

@@ -2,7 +2,6 @@ import type { NotificationRouteIntent, NotificationTarget } from '../types';
 
 const FUTURE_TARGET_LABELS: Record<string, string> = {
   announcement: 'إعلان',
-  support: 'دعم',
 };
 
 function normalizeTargetType(targetType: string | null): string | null {
@@ -28,6 +27,17 @@ export function resolveNotificationRouteIntent(
 
   if (targetType === 'file' && target.targetId !== null) {
     return { kind: 'file', fileId: target.targetId };
+  }
+
+  if (
+    (targetType === 'support' || targetType === 'support_ticket' || targetType === 'ticket') &&
+    target.targetId !== null
+  ) {
+    return { kind: 'supportTicket', ticketId: target.targetId };
+  }
+
+  if (targetType === 'support' || targetType === 'support_ticket' || targetType === 'ticket') {
+    return { kind: 'future', label: 'دعم' };
   }
 
   if (targetType === 'verification') {

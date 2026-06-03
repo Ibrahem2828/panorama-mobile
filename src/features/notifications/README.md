@@ -13,6 +13,7 @@ In-app notifications foundation for Panorama Mobile.
 - Read/unread visual state.
 - Notification type badges.
 - Basic safe routing foundation for printing orders, groups, and files.
+- Support ticket routing when notification metadata includes a safe support ticket target id.
 
 ## Structure
 
@@ -45,3 +46,9 @@ Device token functions exist in services for future push integration only.
 - Notification settings.
 - Notification detail endpoint.
 - Full deep-linking coverage.
+
+## Phase 13 Note
+
+Notifications can route to `ProfileRoutes.TicketDetails` for support ticket targets when metadata provides
+`support`, `support_ticket`, or `ticket` with a valid target id. Notifications without a safe target id keep
+the existing non-navigating fallback.

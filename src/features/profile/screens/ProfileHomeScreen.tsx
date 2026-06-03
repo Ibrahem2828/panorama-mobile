@@ -49,6 +49,13 @@ export function ProfileHomeScreen() {
 
           <AppButton
             fullWidth
+            onPress={() => navigation.navigate(ProfileRoutes.SupportTickets)}
+            title="الدعم الفني"
+            variant="outline"
+          />
+
+          <AppButton
+            fullWidth
             loading={isSubmitting}
             onPress={() => {
               void logout();
