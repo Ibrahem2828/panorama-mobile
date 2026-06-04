@@ -1,6 +1,6 @@
 # Panorama Docs Index
 
-This directory contains Panorama Mobile documentation from Phase 0 through Phase 14.
+This directory contains Panorama Mobile documentation from Phase 0 through Phase 15.
 
 | File                                                        | Description                                                            |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -35,7 +35,8 @@ This directory contains Panorama Mobile documentation from Phase 0 through Phase
 | `28_PHASE_12_NOTIFICATIONS_FOUNDATION.md`                   | In-app notifications list, unread count, and read-state foundation.    |
 | `29_PHASE_13_SUPPORT_TICKETS_FOUNDATION.md`                 | Student support tickets list, create, detail, and reply foundation.    |
 | `30_PHASE_14_PROFILE_AND_SETTINGS_COMPLETION.md`            | Profile and settings completion for the MVP account area.              |
+| `31_PHASE_15_CHAT_FOUNDATION.md`                            | Group chat foundation with REST list/send and optional WebSocket.      |
 
 ## Current status
 
-Phase 14 Profile & Settings Completion has been completed. Profile, settings, edit profile, change password, academic info, and legal screens are real, while unsupported account endpoints remain deferred.
+Phase 15 Chat Foundation has been completed. Group ChatRoom, REST message loading/sending, optional WebSocket support, and permission-aware chat input are real, while advanced chat features remain deferred.

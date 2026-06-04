@@ -135,9 +135,23 @@ export type GroupJoinResult = Record<string, unknown> & {
 };
 
 export type GroupMessage = ApiEntity & {
-  body: string;
+  group?: EntityId | Record<string, unknown> | null;
+  sender?: EntityId | CurrentUser | Record<string, unknown> | null;
+  sender_name?: string | null;
+  message?: string;
+  body?: string;
+  content?: string;
+  text?: string;
+  type?: string;
+  is_own?: boolean;
+  created_at?: string;
   createdAt?: string;
-  sender?: CurrentUser;
+  updated_at?: string;
+};
+
+export type SendGroupMessageRequest = {
+  type: 'message';
+  content: string;
 };
 
 export type FileRecord = ApiEntity & {

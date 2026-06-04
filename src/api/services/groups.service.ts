@@ -1,6 +1,12 @@
 import { apiClient } from '../client';
 import { endpoints } from '../endpoints';
-import type { EmptyResponse, GroupJoinResult, GroupRecord } from '../types';
+import type {
+  EmptyResponse,
+  GroupJoinResult,
+  GroupMessage,
+  GroupRecord,
+  SendGroupMessageRequest,
+} from '../types';
 import type { PaginatedResult } from '../pagination';
 
 export function listAvailableGroups(authToken: string): Promise<PaginatedResult<GroupRecord>> {
@@ -33,6 +39,27 @@ export function leaveGroup(groupId: string | number, authToken: string): Promise
   return apiClient.post<EmptyResponse, EmptyResponse>(
     endpoints.groups.leave(groupId),
     {},
+    { authToken },
+  );
+}
+
+export function listGroupMessages(
+  groupId: string | number,
+  authToken: string,
+): Promise<PaginatedResult<GroupMessage>> {
+  return apiClient.get<PaginatedResult<GroupMessage>>(endpoints.groups.messages(groupId), {
+    authToken,
+  });
+}
+
+export function sendGroupMessage(
+  groupId: string | number,
+  input: SendGroupMessageRequest,
+  authToken: string,
+): Promise<GroupMessage> {
+  return apiClient.post<GroupMessage, SendGroupMessageRequest>(
+    endpoints.groups.messages(groupId),
+    input,
     { authToken },
   );
 }

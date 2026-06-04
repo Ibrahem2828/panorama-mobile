@@ -84,6 +84,16 @@ Central API layer for Panorama Mobile.
 - Student profile and verification display reuse existing `GET /api/v1/students/me/profile/` and `GET /api/v1/verification/me/` services.
 - No delete-account, profile-photo, preferences, notification settings, or unsupported account endpoint is added by Phase 14.
 
+## Phase 15 additions
+
+- `GroupMessage` is expanded in `types.ts` for flexible group message records.
+- `SendGroupMessageRequest` is typed in `types.ts` and sends only `type` and `content`.
+- `groups.service.ts` exposes `listGroupMessages(groupId, authToken)`.
+- `groups.service.ts` exposes `sendGroupMessage(groupId, input, authToken)`.
+- Chat reads use `GET /api/v1/groups/{group_id}/messages/`.
+- Chat sends use `POST /api/v1/groups/{group_id}/messages/` with `{ "type": "message", "content": "..." }`.
+- Message delete/report endpoints are intentionally not added to runtime behavior by Phase 15.
+
 ## Rules
 
 - Do not store tokens in `src/api`.

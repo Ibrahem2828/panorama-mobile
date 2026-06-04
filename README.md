@@ -4,7 +4,7 @@ Panorama is an Arabic, RTL-first mobile app for university students. The goal is
 
 ## Current Project Status
 
-Current status: **Phase 14 Profile & Settings Completion**.
+Current status: **Phase 15 Chat Foundation**.
 
 Implemented so far:
 
@@ -50,6 +50,11 @@ Implemented so far:
 - Change password uses the official auth change-password endpoint.
 - Academic info is display-only and uses existing student profile and verification stores.
 - Logout now requires explicit confirmation.
+- Real group ChatRoom foundation through official group message endpoints.
+- Chat message list uses `GET /api/v1/groups/{group_id}/messages/`.
+- Chat message send uses `POST /api/v1/groups/{group_id}/messages/` with the official `{ type, content }` body.
+- Optional WebSocket group chat client uses the official `/ws/v1/groups/{group_id}/chat/` path with REST fallback.
+- Group details now opens in-app ChatRoom while keeping passive WhatsApp link support intact.
 
 ## Completed Phases
 
@@ -71,6 +76,7 @@ Implemented so far:
 - Phase 12: In-app notifications list, unread count, read state, and routing foundation.
 - Phase 13: Student-facing support tickets list, create, detail, and reply foundation.
 - Phase 14: Profile and settings completion with edit profile, change password, academic info, legal screens, and logout confirmation.
+- Phase 15: Group chat foundation with REST message list/send, optional WebSocket client, permission-aware input, and ChatRoom UI.
 
 ## Environment
 
@@ -187,5 +193,21 @@ Implemented in Phase 14:
 Not implemented in Phase 14:
 
 - Delete account, profile photo upload, email/phone/role editing, notification settings API, privacy preferences API, dark mode persistence, language switching persistence, Chat/WebSocket, or unsupported account endpoints.
+
+## Phase 15 Chat Boundaries
+
+Implemented in Phase 15:
+
+- ChatRoom loads group messages through `GET /api/v1/groups/{group_id}/messages/`.
+- ChatRoom sends text messages through `POST /api/v1/groups/{group_id}/messages/`.
+- Message creation sends only `{ "type": "message", "content": "..." }`.
+- Optional WebSocket uses `ws://{host}/ws/v1/groups/{group_id}/chat/?token={access_token}`.
+- REST remains the source of truth if realtime connection is unavailable.
+- Send input is permission-aware using group detail fields such as membership status, current user role, and send-message permission.
+- Passive WhatsApp support remains available from Group details.
+
+Not implemented in Phase 15:
+
+- Voice messages, attachments, reactions, read receipts, typing indicators, search, edit, pinning, moderation tools, push notifications, admin chat tools, message delete, or message report actions.
 
 Authenticated students enter AppTabs only after academic profile completion and verification approval. Non-student roles temporarily enter AppTabs until their final rules are scoped.

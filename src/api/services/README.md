@@ -76,6 +76,13 @@ These files are thin service foundations over `apiClient`. They are not complete
 - Current-user update accepts and sends only `full_name` and `username`.
 - Email, phone, role, delete account, profile photo upload, preferences, and notification settings endpoints are intentionally not implemented in Phase 14.
 
+## Phase 15 additions
+
+- `groups.service.ts` calls `GET /api/v1/groups/{group_id}/messages/` for group chat messages.
+- `groups.service.ts` calls `POST /api/v1/groups/{group_id}/messages/` for sending a group chat message.
+- Send message accepts only the official JSON body: `type` and `content`.
+- Message delete/report endpoints, attachments, reactions, read receipts, typing indicators, and moderation actions are intentionally not implemented in Phase 15.
+
 ## Rules
 
 - Services may import only API-layer helpers such as `apiClient`, `endpoints`, and shared API types.

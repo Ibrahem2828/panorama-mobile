@@ -18,6 +18,7 @@ Groups feature foundation for verified students.
 - Group description rendering.
 - Passive WhatsApp link support for safe WhatsApp URLs only.
 - Phase 10 adds navigation from Group details to real Group files.
+- Phase 15 adds navigation from Group details to the real in-app ChatRoom.
 
 ## Structure
 
@@ -42,7 +43,14 @@ Screens use the Groups store and never call the API client directly.
 ## Phase 10 Files Integration
 
 Group details now links to `GroupFiles`, which is implemented in `src/features/files` and uses
-`GET /api/v1/groups/{group_id}/files/`. Groups still do not implement chat or message APIs.
+`GET /api/v1/groups/{group_id}/files/`.
+
+## Phase 15 Chat Integration
+
+Group details now links to `ChatRoom`, which is implemented in `src/features/chat` and uses
+the official group messages API. Groups remain responsible for group detail, membership status,
+current user role, and send-message permission display. Chat message loading, sending, and optional
+WebSocket handling stay inside the Chat feature.
 
 ## WhatsApp Links
 
@@ -52,8 +60,6 @@ press. It does not parse HTML, create previews, or open arbitrary URLs.
 
 ## Deferred
 
-- Chat messages.
-- WebSocket.
-- Message sending, deletion, reporting, and typing indicators.
+- Message deletion, reporting, reactions, read receipts, and typing indicators.
 - Advanced PDF rendering.
 - Admin/moderator management tools.

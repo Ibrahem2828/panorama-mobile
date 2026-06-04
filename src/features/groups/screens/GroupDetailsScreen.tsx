@@ -70,6 +70,10 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
     navigation.navigate(GroupsRoutes.GroupFiles, { groupId });
   }
 
+  function handleOpenChatRoom() {
+    navigation.navigate(GroupsRoutes.ChatRoom, { groupId });
+  }
+
   async function handleOpenWhatsApp() {
     if (!isSafeWhatsAppLink(whatsAppLink)) {
       setWhatsAppErrorMessage(WHATSAPP_OPEN_ERROR);
@@ -177,8 +181,14 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
             <Stack gap="sm">
               <AppText variant="title">المحادثة</AppText>
               <AppText color="secondary" variant="bodySmall">
-                المحادثة داخل التطبيق ستتوفر في المرحلة القادمة.
+                افتح المحادثة النصية داخل التطبيق. صلاحية الإرسال تعرض داخل شاشة المحادثة حسب عضوية
+                الغروب وقواعد الخادم.
               </AppText>
+              <AppButton
+                onPress={handleOpenChatRoom}
+                title="فتح المحادثة داخل التطبيق"
+                variant="outline"
+              />
             </Stack>
           </AppCard>
           <AppCard variant="muted">
