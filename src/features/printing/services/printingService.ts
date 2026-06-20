@@ -127,24 +127,52 @@ export function getPrintOrderStatusPresentation(status: PrintOrderStatus): Print
   switch (status) {
     case 'submitted':
     case 'pending':
-      return { label: 'بانتظار المراجعة', variant: 'warning' };
+      return {
+        label: 'بانتظار المراجعة',
+        actionMessage: 'تم استلام طلبك',
+        variant: 'warning',
+      };
     case 'accepted':
-      return { label: 'مقبول', variant: 'info' };
+      return { label: 'مقبول', actionMessage: 'تم قبول طلبك', variant: 'info' };
     case 'in_progress':
     case 'printing':
-      return { label: 'قيد الطباعة', variant: 'brand' };
+      return {
+        label: 'قيد الطباعة',
+        actionMessage: 'طلبك قيد التجهيز',
+        variant: 'brand',
+      };
     case 'ready':
     case 'ready_for_pickup':
-      return { label: 'جاهز للاستلام', variant: 'success' };
+      return {
+        label: 'جاهز للاستلام',
+        actionMessage: 'طلبك جاهز للاستلام',
+        variant: 'success',
+      };
     case 'delivered':
-      return { label: 'تم التسليم', variant: 'success' };
+      return {
+        label: 'تم التسليم',
+        actionMessage: 'تم إكمال الطلب',
+        variant: 'success',
+      };
     case 'cancelled':
     case 'canceled':
-      return { label: 'ملغي', variant: 'neutral' };
+      return {
+        label: 'ملغي',
+        actionMessage: 'تم إلغاء الطلب',
+        variant: 'neutral',
+      };
     case 'rejected':
-      return { label: 'مرفوض', variant: 'error' };
+      return {
+        label: 'مرفوض',
+        actionMessage: 'تم إلغاء الطلب',
+        variant: 'error',
+      };
     default:
-      return { label: status || 'حالة غير معروفة', variant: 'neutral' };
+      return {
+        label: status || 'حالة غير معروفة',
+        actionMessage: 'تابع حالة الطلب من هذه الشاشة',
+        variant: 'neutral',
+      };
   }
 }
 

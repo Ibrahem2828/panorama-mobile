@@ -1,3 +1,10 @@
+export {
+  getApiAuthBridge,
+  isAuthExemptPath,
+  refreshAccessTokenOnce,
+  registerApiAuthBridge,
+  shouldAttemptAuthRefresh,
+} from './authBridge';
 export { apiClient } from './client';
 export { endpoints, API_PREFIX } from './endpoints';
 export {
@@ -15,6 +22,7 @@ export * as announcementsService from './services/announcements.service';
 export * as authService from './services/auth.service';
 export * as filesService from './services/files.service';
 export * as groupsService from './services/groups.service';
+export * as healthService from './services/health.service';
 export * as notificationsService from './services/notifications.service';
 export * as printingService from './services/printing.service';
 export * as supportService from './services/support.service';

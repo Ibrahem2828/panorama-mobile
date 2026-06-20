@@ -9,10 +9,14 @@ These files are thin service foundations over `apiClient`. They are not complete
 - `auth.service.ts`
 - `files.service.ts`
 - `groups.service.ts`
+- `health.service.ts`
 - `notifications.service.ts`
 - `printing.service.ts`
 - `support.service.ts`
 - `verification.service.ts`
+
+`health.service.ts` calls the runtime health endpoint at `GET /api/v1/health/` without
+authentication and returns a small normalized status object.
 
 ## Phase 7 additions
 

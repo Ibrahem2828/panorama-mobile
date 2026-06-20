@@ -1,4 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import Constants from 'expo-constants';
 import { StyleSheet } from 'react-native';
 
 import { AppButton, AppCard, AppHeader, AppScreen, AppText, Stack } from '../../../components';
@@ -9,6 +10,8 @@ import { LegalContentBlock } from '../components';
 type AboutScreenProps = NativeStackScreenProps<ProfileStackParamList, 'About'>;
 
 export function AboutScreen({ navigation }: AboutScreenProps) {
+  const appVersion = Constants.expoConfig?.version ?? 'غير متاح';
+
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
@@ -21,7 +24,7 @@ export function AboutScreen({ navigation }: AboutScreenProps) {
           <Stack gap="sm">
             <AppText variant="h2">Panorama</AppText>
             <AppText color="secondary" variant="bodySmall">
-              الإصدار 0.1.0
+              الإصدار {appVersion}
             </AppText>
           </Stack>
         </AppCard>

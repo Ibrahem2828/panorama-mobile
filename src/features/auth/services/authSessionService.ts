@@ -119,19 +119,30 @@ export async function loginWithCredentials(credentials: LoginCredentials): Promi
   }
 }
 
-export async function bootstrapSession(): Promise<AuthSession | null> {
+export type BootstrapSessionResult = {
+  session: AuthSession | null;
+  sessionExpired: boolean;
+};
+
+export async function bootstrapSession(): Promise<BootstrapSessionResult> {
   const storedTokens = await getStoredAuthTokens();
 
   if (!storedTokens) {
-    return null;
+    return {
+      session: null,
+      sessionExpired: false,
+    };
   }
 
   try {
     const user = await loadCurrentUser(storedTokens.accessToken);
 
     return {
-      user,
-      tokens: storedTokens,
+      session: {
+        user,
+        tokens: storedTokens,
+      },
+      sessionExpired: false,
     };
   } catch (error) {
     if (!isUnauthorizedError(error)) {
@@ -144,12 +155,18 @@ export async function bootstrapSession(): Promise<AuthSession | null> {
     const user = await loadCurrentUser(refreshedTokens.accessToken);
 
     return {
-      user,
-      tokens: refreshedTokens,
+      session: {
+        user,
+        tokens: refreshedTokens,
+      },
+      sessionExpired: false,
     };
   } catch {
     await clearAuthTokens();
-    return null;
+    return {
+      session: null,
+      sessionExpired: true,
+    };
   }
 }
 

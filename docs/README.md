@@ -40,3 +40,12 @@ This directory contains Panorama Mobile documentation from Phase 0 through Phase
 ## Current status
 
 Phase 15 Chat Foundation has been completed. Group ChatRoom, REST message loading/sending, optional WebSocket support, and permission-aware chat input are real, while advanced chat features remain deferred.
+
+Runtime integration now targets the temporary HTTP VPS/Coolify backend. API base values must omit
+`/api/v1`, WebSocket uses a separate WS base, and Android cleartext is temporary until production
+HTTPS/WSS is available. See document 33 for the complete backend and missing-assets checklist.
+
+## Runtime readiness
+
+- `33_MOBILE_BACKEND_RUNTIME_INTEGRATION_AND_ASSETS_READINESS.md`: current backend, WebSocket,
+  Android cleartext, production migration, and required asset checklist.

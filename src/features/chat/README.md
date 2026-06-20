@@ -47,6 +47,10 @@ The optional realtime client uses the official path:
 ws://{host}/ws/v1/groups/{group_id}/chat/?token={access_token}
 ```
 
+`EXPO_PUBLIC_WS_BASE_URL` supplies the host separately from the REST API base. HTTP deployments
+use WS; production HTTPS deployments must use WSS. The access token is URL-encoded, and the
+complete token-bearing URL is never logged.
+
 REST remains the source of truth. If WebSocket is unavailable, the user can still load, refresh, and send messages through REST.
 
 ## Deferred

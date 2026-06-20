@@ -1,14 +1,18 @@
-import { env } from '../config/env';
 import { logger } from '../utils/logger';
+import { getApiAuthBridge, refreshAccessTokenOnce, shouldAttemptAuthRefresh } from './authBridge';
 import { ACCEPT_JSON, DEFAULT_REQUEST_TIMEOUT_MS, type HttpHeaders } from './http';
 import { ApiClientError, createApiError, normalizeApiError, normalizeHttpError } from './errors';
 import type { ApiRequestOptions } from './request';
-import { buildApiUrl, buildRequestHeaders } from './request';
+import { buildDefaultApiUrl, buildRequestHeaders } from './request';
 import { isApiResponseEnvelope, isApiSuccess } from './response';
 
 type ParsedResponse = {
   body: unknown;
   isJson: boolean;
+};
+
+type InternalRequestOptions<TBody = unknown> = ApiRequestOptions<TBody> & {
+  _retried?: boolean;
 };
 
 function isFormDataBody(body: unknown): body is FormData {
@@ -70,7 +74,23 @@ function buildFetchBody(body: unknown): BodyInit | undefined {
   return JSON.stringify(body);
 }
 
-async function request<TData, TBody = unknown>(options: ApiRequestOptions<TBody>): Promise<TData> {
+function logRequestFailure(
+  normalizedError: ReturnType<typeof normalizeApiError>,
+  method: string,
+  path: string,
+) {
+  logger.warn('API request failed', {
+    code: normalizedError.code,
+    status: normalizedError.status ?? 'none',
+    requestId: normalizedError.requestId ?? 'none',
+    method,
+    path,
+  });
+}
+
+async function executeRequest<TData, TBody = unknown>(
+  options: InternalRequestOptions<TBody>,
+): Promise<TData> {
   const controller = new AbortController();
   const timeoutId = setTimeout(
     () => controller.abort(),
@@ -85,7 +105,7 @@ async function request<TData, TBody = unknown>(options: ApiRequestOptions<TBody>
     hasJsonBody: hasBody,
     hasFormDataBody,
   });
-  const url = buildApiUrl(env.apiBaseUrl, options.path, options.query);
+  const url = buildDefaultApiUrl(options);
 
   try {
     const response = await fetch(url, {
@@ -122,17 +142,57 @@ async function request<TData, TBody = unknown>(options: ApiRequestOptions<TBody>
   } catch (error) {
     const normalizedError = normalizeApiError(error);
 
-    logger.warn('API request failed', {
-      code: normalizedError.code,
-      status: normalizedError.status ?? 'none',
-      method,
-      path: options.path,
-    });
+    logRequestFailure(normalizedError, method, options.path);
 
     throw new ApiClientError(normalizedError);
   } finally {
     clearTimeout(timeoutId);
   }
+}
+
+async function requestWithAuthRetry<TData, TBody = unknown>(
+  options: InternalRequestOptions<TBody>,
+): Promise<TData> {
+  try {
+    return await executeRequest<TData, TBody>(options);
+  } catch (error) {
+    const normalizedError = normalizeApiError(error);
+
+    if (
+      normalizedError.code !== 'UNAUTHORIZED' ||
+      options._retried ||
+      !shouldAttemptAuthRefresh(options.path, options.authToken)
+    ) {
+      throw error instanceof ApiClientError ? error : new ApiClientError(normalizedError);
+    }
+
+    const bridge = getApiAuthBridge();
+
+    if (!bridge) {
+      throw error instanceof ApiClientError ? error : new ApiClientError(normalizedError);
+    }
+
+    const refreshedToken = await refreshAccessTokenOnce();
+
+    if (!refreshedToken) {
+      await bridge.onSessionExpired();
+      throw new ApiClientError(normalizedError);
+    }
+
+    return executeRequest<TData, TBody>({
+      ...options,
+      authToken: refreshedToken,
+      _retried: true,
+    });
+  }
+}
+
+async function request<TData, TBody = unknown>(options: ApiRequestOptions<TBody>): Promise<TData> {
+  if (shouldAttemptAuthRefresh(options.path, options.authToken)) {
+    return requestWithAuthRetry<TData, TBody>(options);
+  }
+
+  return executeRequest<TData, TBody>(options);
 }
 
 export const apiClient = {

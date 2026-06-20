@@ -1,6 +1,7 @@
+import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
-import { AppBadge, AppCard, AppText, Stack } from '../../../components';
+import { AppBadge, AppCard, AppText, AppTextInput, Stack } from '../../../components';
 import { opacity, spacing } from '../../../theme';
 import { getFileDisplayTitle, getFileExtension } from '../../files/services';
 import type { FileResource, Id } from '../../files/types';
@@ -19,6 +20,19 @@ function isSameId(left: Id, right: Id): boolean {
   return String(left) === String(right);
 }
 
+function matchesFileSearch(file: FileResource, query: string): boolean {
+  if (!query) {
+    return true;
+  }
+
+  const searchableText = [getFileDisplayTitle(file), getFileExtension(file), String(file.id)]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  return searchableText.includes(query.toLowerCase());
+}
+
 export function PrintFileSelector({
   files,
   selectedFileId,
@@ -28,7 +42,12 @@ export function PrintFileSelector({
   onSelectFile,
   onRefresh,
 }: PrintFileSelectorProps) {
-  const visibleFiles = files.slice(0, 8);
+  const [searchQuery, setSearchQuery] = useState('');
+  const normalizedSearchQuery = searchQuery.trim();
+  const visibleFiles = useMemo(
+    () => files.filter((file) => matchesFileSearch(file, normalizedSearchQuery)),
+    [files, normalizedSearchQuery],
+  );
 
   return (
     <Stack gap="md">
@@ -38,6 +57,15 @@ export function PrintFileSelector({
           اختر ملفا من الملفات التي يسمح لك الباك إند بالوصول إليها.
         </AppText>
       </Stack>
+
+      {files.length > 0 ? (
+        <AppTextInput
+          label="بحث محلي"
+          onChangeText={setSearchQuery}
+          placeholder="ابحث باسم الملف أو نوعه"
+          value={searchQuery}
+        />
+      ) : null}
 
       {selectedFileId !== null ? (
         <AppCard variant="muted">
@@ -93,7 +121,11 @@ export function PrintFileSelector({
         <AppCard variant="muted">
           <Stack gap="sm">
             <AppText color="secondary" variant="bodySmall">
-              {isLoading ? 'جاري تحميل الملفات...' : 'لا توجد ملفات متاحة للطباعة حاليا.'}
+              {isLoading
+                ? 'جاري تحميل الملفات...'
+                : normalizedSearchQuery
+                  ? 'لا توجد ملفات تطابق البحث الحالي.'
+                  : 'لا توجد ملفات متاحة للطباعة حاليا.'}
             </AppText>
             {onRefresh ? (
               <Pressable accessibilityRole="button" onPress={onRefresh} style={styles.inlineAction}>

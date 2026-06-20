@@ -35,6 +35,7 @@ type GroupsState = {
   setSelectedGroup: (group: Group | null) => void;
   clearError: () => void;
   resetSelectedGroup: () => void;
+  reset: () => void;
 };
 
 const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
@@ -60,6 +61,22 @@ function upsertGroup(groups: Group[], nextGroup: Group): Group[] {
 
   return groups.map((group, index) => (index === existingIndex ? nextGroup : group));
 }
+
+const initialGroupsState = {
+  availableGroups: [],
+  myGroups: [],
+  selectedGroup: null,
+  isLoadingAvailable: false,
+  isLoadingMyGroups: false,
+  isLoadingDetail: false,
+  isRefreshing: false,
+  isSubmittingMembership: false,
+  errorMessage: null,
+  successMessage: null,
+  lastLoadedAt: null,
+  availableCount: 0,
+  myGroupsCount: 0,
+};
 
 export const useGroupsStore = create<GroupsState>((set, get) => {
   function requireToken(): string | null {
@@ -106,19 +123,7 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
   }
 
   return {
-    availableGroups: [],
-    myGroups: [],
-    selectedGroup: null,
-    isLoadingAvailable: false,
-    isLoadingMyGroups: false,
-    isLoadingDetail: false,
-    isRefreshing: false,
-    isSubmittingMembership: false,
-    errorMessage: null,
-    successMessage: null,
-    lastLoadedAt: null,
-    availableCount: 0,
-    myGroupsCount: 0,
+    ...initialGroupsState,
 
     async loadAvailableGroups() {
       if (get().isLoadingAvailable) {
@@ -307,6 +312,10 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
 
     resetSelectedGroup() {
       set({ selectedGroup: null });
+    },
+
+    reset() {
+      set(initialGroupsState);
     },
   };
 });

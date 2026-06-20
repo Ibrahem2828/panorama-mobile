@@ -15,6 +15,7 @@ export const PublicRoutes = {
 } as const;
 
 export const StudentSetupRoutes = {
+  SetupFlow: 'SetupFlow',
   AcademicProfileSetup: 'AcademicProfileSetup',
   SubmitVerification: 'SubmitVerification',
   VerificationStatus: 'VerificationStatus',

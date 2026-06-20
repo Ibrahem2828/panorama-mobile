@@ -1,4 +1,4 @@
-import { env } from '../../../config/env';
+import { buildGroupChatWebSocketUrl } from '../../../config/env';
 import type { ChatConnectionStatus, ChatMessage, Id } from '../types';
 
 export type ChatWebSocketHandlers = {
@@ -79,12 +79,6 @@ function normalizeSocketMessage(payload: unknown, groupId: Id): ChatMessage | nu
   };
 }
 
-function buildWebSocketUrl(groupId: Id, authToken: string): string {
-  return `${env.wsBaseUrl}/ws/v1/groups/${encodeURIComponent(
-    String(groupId),
-  )}/chat/?token=${encodeURIComponent(authToken)}`;
-}
-
 export function createChatWebSocketClient({
   groupId,
   authToken,
@@ -130,7 +124,7 @@ export function createChatWebSocketClient({
     setStatus(reconnectAttempts > 0 ? 'reconnecting' : 'connecting');
 
     try {
-      socket = new WebSocket(buildWebSocketUrl(groupId, authToken));
+      socket = new WebSocket(buildGroupChatWebSocketUrl({ groupId, accessToken: authToken }));
     } catch {
       setStatus('error');
       handlers?.onError?.(WEBSOCKET_ERROR_MESSAGE);

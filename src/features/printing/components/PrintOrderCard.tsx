@@ -8,9 +8,11 @@ import {
   getPrintOrderCopiesCount,
   getPrintOrderDisplayTitle,
   getPrintOrderItemsCount,
+  getPrintOrderStatusPresentation,
 } from '../services';
 import type { PrintOrder } from '../types';
 import { PrintOrderStatusBadge } from './PrintOrderStatusBadge';
+import { PrintOrderStatusIcon } from './PrintOrderStatusIcon';
 
 type PrintOrderCardProps = {
   order: PrintOrder;
@@ -20,6 +22,7 @@ type PrintOrderCardProps = {
 export function PrintOrderCard({ order, onPress }: PrintOrderCardProps) {
   const date = formatPrintOrderDate(order.created_at ?? order.submitted_at);
   const price = formatPrintOrderPrice(order);
+  const statusPresentation = getPrintOrderStatusPresentation(order.status);
 
   return (
     <Pressable
@@ -31,8 +34,12 @@ export function PrintOrderCard({ order, onPress }: PrintOrderCardProps) {
       <AppCard variant="elevated">
         <Stack gap="md">
           <Stack direction="horizontal" gap="md" style={styles.header}>
+            <PrintOrderStatusIcon status={order.status} />
             <Stack gap="xs" style={styles.titleBlock}>
               <AppText variant="title">{getPrintOrderDisplayTitle(order)}</AppText>
+              <AppText color="brand" variant="bodySmall" weight="600">
+                {statusPresentation.actionMessage}
+              </AppText>
               <AppText color="secondary" variant="bodySmall">
                 {getPrintOrderItemsCount(order)} ملف - {getPrintOrderCopiesCount(order)} نسخة
               </AppText>

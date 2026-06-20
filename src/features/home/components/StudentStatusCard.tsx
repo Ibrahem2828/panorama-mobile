@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { AppBadge, AppCard, AppText, Stack } from '../../../components';
+import { AppBadge, AppButton, AppCard, AppText, Stack } from '../../../components';
 import { colors, spacing } from '../../../theme';
 import type { StatusVariant } from '../../../types/common';
 
@@ -9,6 +9,8 @@ type StudentStatusCardProps = {
   verificationStatus: string;
   hasProfileState: boolean;
   hasVerificationState: boolean;
+  actionLabel?: string;
+  onAction?: () => void;
 };
 
 type StudentStatusView = {
@@ -86,6 +88,9 @@ export function StudentStatusCard(props: StudentStatusCardProps) {
         <AppText color="secondary" variant="bodySmall">
           {statusView.description}
         </AppText>
+        {props.actionLabel && props.onAction ? (
+          <AppButton onPress={props.onAction} title={props.actionLabel} variant="outline" />
+        ) : null}
       </Stack>
     </AppCard>
   );

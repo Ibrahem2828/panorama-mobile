@@ -1,22 +1,42 @@
 import type { ReactNode } from 'react';
+import type { ImageSourcePropType } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { StyleSheet, View } from 'react-native';
 
 import { spacing } from '../../theme';
 import { AppText } from '../common';
+import { StateIllustration } from '../media';
 
 type EmptyStateProps = {
   title: string;
   message?: string;
   icon?: ReactNode;
+  illustrationSource?: ImageSourcePropType;
+  illustrationLabel?: string;
   action?: ReactNode;
   style?: StyleProp<ViewStyle>;
 };
 
-export function EmptyState({ title, message, icon, action, style }: EmptyStateProps) {
+export function EmptyState({
+  title,
+  message,
+  icon,
+  illustrationSource,
+  illustrationLabel,
+  action,
+  style,
+}: EmptyStateProps) {
   return (
     <View style={[styles.container, style]}>
-      {icon}
+      {illustrationSource ? (
+        <StateIllustration
+          accessibilityLabel={illustrationLabel ?? title}
+          compact
+          source={illustrationSource}
+        />
+      ) : (
+        icon
+      )}
       <View style={styles.textBlock}>
         <AppText align="center" variant="title">
           {title}

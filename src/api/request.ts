@@ -1,4 +1,4 @@
-import { env } from '../config/env';
+import { buildApiUrl as buildConfiguredApiUrl } from '../config/env';
 import type { HttpHeaders, HttpMethod } from './http';
 import { CONTENT_TYPE_JSON } from './http';
 import { buildQueryString } from './pagination';
@@ -17,14 +17,28 @@ export type ApiRequestOptions<TBody = unknown> = {
   timeoutMs?: number;
 };
 
-export function buildApiUrl(baseUrl: string, path: string, query?: ApiQueryParams): string {
-  const normalizedBaseUrl = baseUrl.replace(/\/+$/, '');
+function normalizeApiBaseUrl(baseUrl: string): string {
+  return baseUrl
+    .trim()
+    .replace(/\/+$/u, '')
+    .replace(/(?:\/api\/v1)+$/iu, '');
+}
+
+function normalizeApiPath(path: string): string {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
+  return normalizedPath.replace(/^\/(?:api\/v1\/)+(.*)$/iu, '/api/v1/$1');
+}
+
+export function buildApiUrl(baseUrl: string, path: string, query?: ApiQueryParams): string {
   const queryString = buildQueryString(query);
 
   if (/^https?:\/\//i.test(path)) {
-    return `${path}${queryString}`;
+    return `${path.replace(/\/api\/v1(?:\/api\/v1)+/giu, '/api/v1')}${queryString}`;
   }
+
+  const normalizedBaseUrl = normalizeApiBaseUrl(baseUrl);
+  const normalizedPath = normalizeApiPath(path);
 
   if (!normalizedBaseUrl) {
     return `${normalizedPath}${queryString}`;
@@ -53,5 +67,5 @@ export function buildRequestHeaders({
 }
 
 export function buildDefaultApiUrl<TBody>(options: ApiRequestOptions<TBody>): string {
-  return buildApiUrl(env.apiBaseUrl, options.path, options.query);
+  return `${buildConfiguredApiUrl(options.path)}${buildQueryString(options.query)}`;
 }

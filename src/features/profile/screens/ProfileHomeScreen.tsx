@@ -26,7 +26,7 @@ import {
   ProfileActionSection,
   ProfileSummaryCard,
 } from '../components';
-import { getBooleanStatusLabel } from '../services';
+import { getStudentCardVerificationSummary } from '../services';
 import { useProfileStore } from '../store';
 
 type ProfileHomeScreenProps = NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>;
@@ -68,6 +68,7 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
 
   const user = profileUser ?? authUser;
   const verificationStatus = getVerificationStatus(verification);
+  const cardVerificationSummary = getStudentCardVerificationSummary(verificationStatus);
 
   useEffect(() => {
     void loadProfile();
@@ -119,8 +120,8 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
             title="تعديل الملف الشخصي"
           />
           <ProfileActionItem
-            badge={getBooleanStatusLabel(user?.is_email_verified)}
-            badgeVariant={user?.is_email_verified ? 'success' : 'warning'}
+            badge={cardVerificationSummary.label}
+            badgeVariant={cardVerificationSummary.variant}
             onPress={() => navigation.navigate(ProfileRoutes.AcademicInfo)}
             subtitle="عرض بيانات الجامعة والتوثيق"
             title="المعلومات الأكاديمية"

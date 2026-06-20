@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 
-import { AppCard, AppText, Stack } from '../../../components';
+import { images } from '../../../assets/images';
+import { AppCard, AppText, Illustration, Stack } from '../../../components';
 import { spacing } from '../../../theme';
 
 type FileViewerFallbackProps = {
@@ -14,7 +15,12 @@ export function FileViewerFallback({
 }: FileViewerFallbackProps) {
   return (
     <AppCard style={styles.card} variant="muted">
-      <Stack gap="sm">
+      <Stack align="center" gap="sm">
+        <Illustration
+          accessibilityLabel="رسم يوضح تعذر معاينة الملف"
+          size="lg"
+          source={images.files.previewError}
+        />
         <AppText align="center" variant="title">
           {title}
         </AppText>

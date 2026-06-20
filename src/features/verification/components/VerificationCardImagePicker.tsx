@@ -2,8 +2,9 @@ import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Image, StyleSheet, View } from 'react-native';
 
+import { images } from '../../../assets/images';
 import { AppButton, AppCard, AppText, Stack } from '../../../components';
-import { colors, radius } from '../../../theme';
+import { colors, radius, spacing } from '../../../theme';
 import type { VerificationCardImage } from '../types';
 
 type VerificationCardImagePickerProps = {
@@ -11,6 +12,25 @@ type VerificationCardImagePickerProps = {
   onChange: (image: VerificationCardImage | null) => void;
   disabled?: boolean;
 };
+
+const CARD_EXAMPLES = [
+  {
+    image: images.verification.cardExampleGood,
+    label: 'واضحة',
+  },
+  {
+    image: images.verification.cardExampleBlurry,
+    label: 'غير واضحة',
+  },
+  {
+    image: images.verification.cardExampleCropped,
+    label: 'مقصوصة',
+  },
+  {
+    image: images.verification.cardExampleDark,
+    label: 'مظلمة',
+  },
+] as const;
 
 function getImageName(asset: ImagePicker.ImagePickerAsset): string {
   return asset.fileName ?? `student-card-${Date.now()}.jpg`;
@@ -69,11 +89,37 @@ export function VerificationCardImagePicker({
   return (
     <AppCard padding="lg" variant="default">
       <Stack gap="md">
+        <Image
+          accessibilityIgnoresInvertColors
+          accessibilityLabel="دليل تصوير بطاقة الطالب"
+          resizeMode="contain"
+          source={images.verification.studentCardGuide}
+          style={styles.guideImage}
+        />
+
         <Stack gap="xs">
           <AppText variant="title">صورة بطاقة الطالب</AppText>
           <AppText color="secondary" variant="bodySmall">
-            اختر صورة واضحة من المعرض. لا يتم تسجيل مسار الصورة في السجلات.
+            اختر صورة واضحة من المعرض تظهر فيها بطاقة الطالب كاملة بدون انعكاس أو قص. تأكد من وضوح
+            الاسم والرقم الجامعي.
           </AppText>
+        </Stack>
+
+        <Stack direction="horizontal" gap="sm" wrap>
+          {CARD_EXAMPLES.map((example) => (
+            <View key={example.label} style={styles.exampleItem}>
+              <Image
+                accessibilityIgnoresInvertColors
+                accessibilityLabel={`مثال بطاقة ${example.label}`}
+                resizeMode="contain"
+                source={example.image}
+                style={styles.exampleImage}
+              />
+              <AppText align="center" color="secondary" variant="caption">
+                {example.label}
+              </AppText>
+            </View>
+          ))}
         </Stack>
 
         <View style={styles.preview}>
@@ -127,6 +173,22 @@ export function VerificationCardImagePicker({
 }
 
 const styles = StyleSheet.create({
+  guideImage: {
+    alignSelf: 'center',
+    width: 240,
+    maxWidth: '86%',
+    height: 160,
+  },
+  exampleItem: {
+    width: 76,
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  exampleImage: {
+    width: 72,
+    height: 52,
+    borderRadius: 8,
+  },
   preview: {
     minHeight: 180,
     alignItems: 'center',

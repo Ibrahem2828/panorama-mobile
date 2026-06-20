@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
-import { AppBadge, AppCard, AppText, Stack } from '../../../components';
+import { images } from '../../../assets/images';
+import { AppBadge, AppCard, AppText, Illustration, Stack } from '../../../components';
 import { colors, spacing } from '../../../theme';
 import type { StatusVariant } from '../../../types/common';
 import { getVerificationRejectionReason, getVerificationStatus } from '../services';
@@ -23,32 +24,34 @@ function getStatusView(verification: VerificationRecord | null): VerificationSta
     case 'approved':
       return {
         label: 'موثق',
-        description: 'تم قبول طلب التوثيق ويمكنك الدخول إلى خدمات التطبيق.',
+        description: 'تم قبول طلب التوثيق. يمكنك الآن استخدام خدمات التطبيق للطلاب.',
         variant: 'success',
       };
     case 'pending':
       return {
         label: 'قيد المراجعة',
-        description: 'تم إرسال طلبك وهو بانتظار مراجعة الإدارة.',
+        description:
+          'طلبك قيد المراجعة من الإدارة. لا حاجة لإعادة الإرسال إلا إذا طُلب منك ذلك صراحة.',
         variant: 'warning',
       };
     case 'rejected':
       return {
         label: 'مرفوض',
-        description: 'تم رفض طلب التوثيق. راجع السبب ثم أرسل صورة محدثة.',
+        description: 'تم رفض طلب التوثيق. راجع السبب أدناه ثم أرسل صورة محدثة وواضحة.',
         variant: 'error',
       };
     case 'needs_update':
       return {
         label: 'بحاجة إلى تحديث',
-        description: 'يحتاج طلبك إلى صورة أو بيانات أوضح قبل إكمال التوثيق.',
+        description: 'يحتاج طلبك إلى صورة أو بيانات أوضح. أرسل بطاقة طالب محدثة.',
         variant: 'warning',
       };
     case 'none':
     default:
       return {
         label: 'غير مرسل',
-        description: 'لم يتم إرسال طلب توثيق لهذا الحساب بعد.',
+        description:
+          'لم يتم إرسال طلب توثيق بعد. التوثيق مطلوب للوصول إلى الغروبات والملفات والخدمات الطلابية.',
         variant: 'neutral',
       };
   }
@@ -57,10 +60,21 @@ function getStatusView(verification: VerificationRecord | null): VerificationSta
 export function VerificationStatusCard({ verification }: VerificationStatusCardProps) {
   const statusView = getStatusView(verification);
   const rejectionReason = getVerificationRejectionReason(verification);
+  const status = getVerificationStatus(verification);
+  const illustration =
+    status === 'approved'
+      ? images.verification.approved
+      : status === 'pending'
+        ? images.verification.pending
+        : status === 'rejected' || status === 'needs_update'
+          ? images.verification.rejected
+          : images.verification.studentCardGuide;
 
   return (
     <AppCard padding="lg" variant="default">
       <Stack gap="md">
+        <Illustration accessibilityLabel="رسم يوضح حالة التوثيق" size="lg" source={illustration} />
+
         <View style={styles.header}>
           <AppText variant="title">حالة التوثيق</AppText>
           <AppBadge label={statusView.label} size="md" variant={statusView.variant} />
@@ -74,7 +88,7 @@ export function VerificationStatusCard({ verification }: VerificationStatusCardP
           <View style={styles.reasonBox}>
             <Stack gap="xs">
               <AppText color="error" variant="bodySmall" weight="600">
-                سبب الرفض
+                سبب الرفض أو الملاحظة
               </AppText>
               <AppText color="secondary" variant="bodySmall">
                 {rejectionReason}

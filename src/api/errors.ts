@@ -16,6 +16,8 @@ export type NormalizedApiError = {
   code: ApiErrorCode;
   status?: number;
   message: string;
+  technicalMessage?: string;
+  requestId?: string;
   fieldErrors?: FieldErrors;
   raw?: unknown;
 };
@@ -36,6 +38,8 @@ const defaultMessages: Record<ApiErrorCode, string> = {
 export class ApiClientError extends Error implements NormalizedApiError {
   code: ApiErrorCode;
   status?: number;
+  technicalMessage?: string;
+  requestId?: string;
   fieldErrors?: FieldErrors;
   raw?: unknown;
 
@@ -44,6 +48,8 @@ export class ApiClientError extends Error implements NormalizedApiError {
     this.name = 'ApiClientError';
     this.code = error.code;
     this.status = error.status;
+    this.technicalMessage = error.technicalMessage;
+    this.requestId = error.requestId;
     this.fieldErrors = error.fieldErrors;
     this.raw = error.raw;
   }
@@ -77,6 +83,34 @@ function toFieldErrors(errors: unknown): FieldErrors | undefined {
   );
 }
 
+function extractRequestId(responseBody: unknown): string | undefined {
+  if (!isRecord(responseBody)) {
+    return undefined;
+  }
+
+  const requestId = responseBody.request_id;
+
+  return typeof requestId === 'string' && requestId.trim() ? requestId.trim() : undefined;
+}
+
+function extractBackendMessage(responseBody: unknown): string | undefined {
+  if (!isRecord(responseBody) || typeof responseBody.message !== 'string') {
+    return undefined;
+  }
+
+  const message = responseBody.message.trim();
+
+  return message || undefined;
+}
+
+function resolveUserMessage(code: ApiErrorCode, backendMessage?: string): string {
+  if (!backendMessage) {
+    return defaultMessages[code];
+  }
+
+  return backendMessage;
+}
+
 function codeFromStatus(status?: number): ApiErrorCode {
   if (status === 400 || status === 422) {
     return 'VALIDATION_ERROR';
@@ -105,6 +139,8 @@ export function createApiError(input: {
   code?: ApiErrorCode;
   status?: number;
   message?: string;
+  technicalMessage?: string;
+  requestId?: string;
   fieldErrors?: FieldErrors;
   raw?: unknown;
 }): ApiClientError {
@@ -114,6 +150,8 @@ export function createApiError(input: {
     code,
     status: input.status,
     message: input.message || defaultMessages[code],
+    technicalMessage: input.technicalMessage,
+    requestId: input.requestId,
     fieldErrors: input.fieldErrors,
     raw: input.raw,
   });
@@ -127,10 +165,8 @@ export function normalizeHttpError({
   responseBody: unknown;
 }): NormalizedApiError {
   const code = codeFromStatus(status);
-  const message =
-    isRecord(responseBody) && typeof responseBody.message === 'string'
-      ? responseBody.message
-      : defaultMessages[code];
+  const backendMessage = extractBackendMessage(responseBody);
+  const requestId = extractRequestId(responseBody);
   const fieldErrors =
     isRecord(responseBody) && 'errors' in responseBody
       ? toFieldErrors(responseBody.errors)
@@ -139,7 +175,9 @@ export function normalizeHttpError({
   return {
     code,
     status,
-    message,
+    message: resolveUserMessage(code, backendMessage),
+    technicalMessage: backendMessage,
+    requestId,
     fieldErrors,
     raw: responseBody,
   };
@@ -151,6 +189,8 @@ export function normalizeApiError(error: unknown): NormalizedApiError {
       code: error.code,
       status: error.status,
       message: error.message,
+      technicalMessage: error.technicalMessage,
+      requestId: error.requestId,
       fieldErrors: error.fieldErrors,
       raw: error.raw,
     };

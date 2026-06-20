@@ -41,11 +41,12 @@ export type LoginRequest = {
 };
 
 export type RegisterStudentRequest = {
-  name: string;
-  phone?: string;
-  email?: string;
+  full_name: string;
+  phone_number: string;
+  email: string;
   password: string;
-  studentNumber?: string;
+  password_confirm: string;
+  student_number: string;
 };
 
 export type RefreshTokenRequest = {
@@ -63,16 +64,28 @@ export type ChangePasswordRequest = {
   new_password_confirm: string;
 };
 
-export type OtpChannel = 'sms' | 'email';
+export type OtpPurpose = 'verify_phone' | 'reset_password';
 
 export type SendOtpRequest = {
-  destination: string;
-  channel: OtpChannel;
+  phone_number: string;
+  purpose: OtpPurpose;
 };
 
 export type VerifyOtpRequest = {
-  destination: string;
+  phone_number: string;
+  purpose: OtpPurpose;
   code: string;
+};
+
+export type RequestPasswordResetRequest = {
+  phone_number: string;
+};
+
+export type ConfirmPasswordResetRequest = {
+  phone_number: string;
+  code: string;
+  new_password: string;
+  new_password_confirm: string;
 };
 
 export type AcademicOption = ApiEntity & {

@@ -4,10 +4,13 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AppTabsNavigator } from './AppTabsNavigator';
 import { AuthBootstrapScreen } from '../features/auth/screens/AuthBootstrapScreen';
+import { RoleAccessDeniedScreen } from '../features/auth/screens/RoleAccessDeniedScreen';
+import { StudentContextLoadingScreen } from '../features/auth/screens/StudentContextLoadingScreen';
 import { useAuthStore } from '../features/auth/store';
 import { navigationTheme } from './config/navigationTheme';
 import { hiddenStackScreenOptions } from './config/screenOptions';
 import { useStudentAccessGate } from './guards/useStudentAccessGate';
+import { useSessionStateCleanup } from './guards/useSessionStateCleanup';
 import { PublicNavigator } from './PublicNavigator';
 import { RootRoutes } from './routes';
 import { StudentSetupNavigator } from './StudentSetupNavigator';
@@ -19,7 +22,8 @@ export function RootNavigator() {
   const status = useAuthStore((state) => state.status);
   const isBootstrapping = useAuthStore((state) => state.isBootstrapping);
   const bootstrap = useAuthStore((state) => state.bootstrap);
-  const { rootFlow } = useStudentAccessGate();
+  const { rootFlow, isResolvingStudentContext } = useStudentAccessGate();
+  useSessionStateCleanup();
   const shouldShowBootstrap = status === 'idle' || status === 'bootstrapping' || isBootstrapping;
 
   useEffect(() => {
@@ -30,6 +34,14 @@ export function RootNavigator() {
 
   if (shouldShowBootstrap) {
     return <AuthBootstrapScreen />;
+  }
+
+  if (isResolvingStudentContext) {
+    return <StudentContextLoadingScreen />;
+  }
+
+  if (rootFlow === 'accessDenied') {
+    return <RoleAccessDeniedScreen />;
   }
 
   return (

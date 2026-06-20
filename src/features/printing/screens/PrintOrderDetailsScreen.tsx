@@ -9,6 +9,7 @@ import {
   AppScreen,
   AppText,
   ErrorState,
+  Illustration,
   LoadingState,
   SectionHeader,
   Stack,
@@ -17,6 +18,7 @@ import type { PrintingStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import {
   PrintOrderStatusBadge,
+  getPrintOrderStatusImage,
   PrintOrderSummaryCard,
   PrintingFutureOptionsCard,
 } from '../components';
@@ -25,6 +27,7 @@ import {
   formatPrintOrderDate,
   getPrintOrderDisplayTitle,
   getPrintOrderItemFileLabel,
+  getPrintOrderStatusPresentation,
 } from '../services';
 import { usePrintingStore } from '../store';
 
@@ -50,6 +53,9 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
   const cachedOrder = orders.find((order) => isSameId(order.id, orderId)) ?? null;
   const activeOrder =
     selectedOrder && isSameId(selectedOrder.id, orderId) ? selectedOrder : cachedOrder;
+  const statusPresentation = activeOrder
+    ? getPrintOrderStatusPresentation(activeOrder.status)
+    : null;
 
   useEffect(() => {
     void loadOrderDetail(orderId);
@@ -94,9 +100,19 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
 
         <AppCard variant="elevated">
           <Stack gap="md">
+            <Illustration
+              accessibilityLabel="رسم يوضح حالة طلب الطباعة"
+              size="lg"
+              source={getPrintOrderStatusImage(activeOrder.status)}
+            />
             <Stack direction="horizontal" gap="md" style={styles.header}>
               <Stack gap="xs" style={styles.titleBlock}>
                 <AppText variant="title">{getPrintOrderDisplayTitle(activeOrder)}</AppText>
+                {statusPresentation ? (
+                  <AppText color="brand" variant="bodySmall" weight="600">
+                    {statusPresentation.actionMessage}
+                  </AppText>
+                ) : null}
                 <AppText color="secondary" variant="bodySmall">
                   {formatPrintOrderDate(activeOrder.created_at ?? activeOrder.submitted_at) ??
                     'تاريخ الطلب غير متاح'}
@@ -119,6 +135,40 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
         ) : null}
 
         <PrintOrderSummaryCard order={activeOrder} />
+
+        {activeOrder.ready_at ||
+        activeOrder.delivered_at ||
+        activeOrder.updated_at ||
+        activeOrder.internal_notes ? (
+          <AppCard variant="muted">
+            <Stack gap="sm">
+              <AppText variant="title">تفاصيل إضافية</AppText>
+              {activeOrder.ready_at ? (
+                <AppText color="secondary" variant="bodySmall">
+                  جاهز للاستلام:{' '}
+                  {formatPrintOrderDate(activeOrder.ready_at) ?? activeOrder.ready_at}
+                </AppText>
+              ) : null}
+              {activeOrder.delivered_at ? (
+                <AppText color="secondary" variant="bodySmall">
+                  تم التسليم:{' '}
+                  {formatPrintOrderDate(activeOrder.delivered_at) ?? activeOrder.delivered_at}
+                </AppText>
+              ) : null}
+              {activeOrder.updated_at ? (
+                <AppText color="secondary" variant="bodySmall">
+                  آخر تحديث:{' '}
+                  {formatPrintOrderDate(activeOrder.updated_at) ?? activeOrder.updated_at}
+                </AppText>
+              ) : null}
+              {activeOrder.internal_notes ? (
+                <AppText color="secondary" variant="bodySmall">
+                  ملاحظات داخلية: {activeOrder.internal_notes}
+                </AppText>
+              ) : null}
+            </Stack>
+          </AppCard>
+        ) : null}
 
         <Stack gap="md">
           <SectionHeader subtitle="مصدر الملفات كما أعاده الباك إند" title="عناصر الطلب" />

@@ -25,6 +25,7 @@ type FilesState = {
   setSelectedFile: (file: FileResource | null) => void;
   getFileById: (fileId: Id) => FileResource | null;
   clearError: () => void;
+  reset: () => void;
 };
 
 const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
@@ -50,6 +51,20 @@ function upsertFile(files: FileResource[], nextFile: FileResource): FileResource
 
   return files.map((file, index) => (index === existingIndex ? nextFile : file));
 }
+
+const initialFilesState = {
+  files: [],
+  groupFilesByGroupId: {},
+  selectedFile: null,
+  isLoadingFiles: false,
+  isLoadingDetail: false,
+  isLoadingGroupFiles: false,
+  isRefreshing: false,
+  errorMessage: null,
+  lastLoadedAt: null,
+  filesCount: 0,
+  groupFilesCountByGroupId: {},
+};
 
 export const useFilesStore = create<FilesState>((set, get) => {
   function requireToken(): string | null {
@@ -117,17 +132,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
   }
 
   return {
-    files: [],
-    groupFilesByGroupId: {},
-    selectedFile: null,
-    isLoadingFiles: false,
-    isLoadingDetail: false,
-    isLoadingGroupFiles: false,
-    isRefreshing: false,
-    errorMessage: null,
-    lastLoadedAt: null,
-    filesCount: 0,
-    groupFilesCountByGroupId: {},
+    ...initialFilesState,
 
     async loadFiles() {
       if (get().isLoadingFiles) {
@@ -274,6 +279,10 @@ export const useFilesStore = create<FilesState>((set, get) => {
 
     clearError() {
       set({ errorMessage: null });
+    },
+
+    reset() {
+      set(initialFilesState);
     },
   };
 });

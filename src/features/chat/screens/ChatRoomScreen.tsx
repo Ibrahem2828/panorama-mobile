@@ -46,6 +46,7 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
   const isRefreshing = useChatStore((state) => state.isRefreshing);
   const isSending = useChatStore((state) => state.isSending);
   const errorMessage = useChatStore((state) => state.errorMessage);
+  const sendErrorMessage = useChatStore((state) => state.sendErrorMessage);
   const loadMessages = useChatStore((state) => state.loadMessages);
   const refreshMessages = useChatStore((state) => state.refreshMessages);
   const sendMessage = useChatStore((state) => state.sendMessage);
@@ -53,6 +54,7 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
   const connectGroupChat = useChatStore((state) => state.connectGroupChat);
   const disconnectGroupChat = useChatStore((state) => state.disconnectGroupChat);
   const clearError = useChatStore((state) => state.clearError);
+  const clearSendError = useChatStore((state) => state.clearSendError);
 
   const group = useMemo(() => {
     if (selectedGroup && isSameId(selectedGroup.id, groupId)) {
@@ -78,6 +80,7 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
 
   useEffect(() => {
     clearError();
+    clearSendError();
     void loadGroupDetail(groupId);
     void loadMessages(groupId);
     connectGroupChat(groupId);
@@ -85,7 +88,15 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
     return () => {
       disconnectGroupChat();
     };
-  }, [clearError, connectGroupChat, disconnectGroupChat, groupId, loadGroupDetail, loadMessages]);
+  }, [
+    clearError,
+    clearSendError,
+    connectGroupChat,
+    disconnectGroupChat,
+    groupId,
+    loadGroupDetail,
+    loadMessages,
+  ]);
 
   function handleRefresh() {
     void loadGroupDetail(groupId);
@@ -135,8 +146,10 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
 
         {permission.allowed ? (
           <ChatMessageInput
+            error={sendErrorMessage}
             loading={isSending}
             onChangeText={(value) => setDraftMessage(groupId, value)}
+            onResend={sendErrorMessage ? handleSend : undefined}
             onSubmit={handleSend}
             value={draft}
           />

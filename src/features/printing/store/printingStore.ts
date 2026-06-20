@@ -43,6 +43,7 @@ type PrintingState = {
   clearError: () => void;
   clearMessages: () => void;
   setSelectedOrder: (order: PrintOrder | null) => void;
+  reset: () => void;
 };
 
 const DEFAULT_DRAFT: PrintDraft = {
@@ -51,6 +52,24 @@ const DEFAULT_DRAFT: PrintDraft = {
   copies: 1,
   userNotes: '',
 };
+
+function getInitialPrintingState() {
+  return {
+    orders: [],
+    selectedOrder: null,
+    draft: { ...DEFAULT_DRAFT },
+    validation: {},
+    isLoadingOrders: false,
+    isLoadingDetail: false,
+    isRefreshing: false,
+    isSubmitting: false,
+    isCancelling: false,
+    errorMessage: null,
+    successMessage: null,
+    lastLoadedAt: null,
+    ordersCount: 0,
+  };
+}
 
 const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
 const CREATE_SUCCESS_MESSAGE = 'تم إرسال طلب الطباعة.';
@@ -122,19 +141,7 @@ export const usePrintingStore = create<PrintingState>((set, get) => {
   }
 
   return {
-    orders: [],
-    selectedOrder: null,
-    draft: DEFAULT_DRAFT,
-    validation: {},
-    isLoadingOrders: false,
-    isLoadingDetail: false,
-    isRefreshing: false,
-    isSubmitting: false,
-    isCancelling: false,
-    errorMessage: null,
-    successMessage: null,
-    lastLoadedAt: null,
-    ordersCount: 0,
+    ...getInitialPrintingState(),
 
     async loadMyOrders() {
       if (get().isLoadingOrders) {
@@ -353,6 +360,10 @@ export const usePrintingStore = create<PrintingState>((set, get) => {
 
     setSelectedOrder(order) {
       set({ selectedOrder: order });
+    },
+
+    reset() {
+      set(getInitialPrintingState());
     },
   };
 });

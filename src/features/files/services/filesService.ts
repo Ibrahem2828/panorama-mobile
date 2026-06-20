@@ -1,4 +1,4 @@
-import { env } from '../../../config/env';
+import { buildApiUrl } from '../../../config/env';
 import {
   filesService as apiFilesService,
   normalizeApiError,
@@ -53,7 +53,7 @@ function toAbsoluteViewUri(value: string): string | null {
   }
 
   if (value.startsWith('/')) {
-    return `${env.apiBaseUrl.replace(/\/$/u, '')}${value}`;
+    return buildApiUrl(value);
   }
 
   return null;

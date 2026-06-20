@@ -24,6 +24,7 @@ type ChatState = {
   isRefreshing: boolean;
   isSending: boolean;
   errorMessage: string | null;
+  sendErrorMessage: string | null;
   lastLoadedAtByGroupId: Record<string, string>;
 
   loadMessages: (groupId: Id) => Promise<void>;
@@ -34,6 +35,8 @@ type ChatState = {
   connectGroupChat: (groupId: Id) => void;
   disconnectGroupChat: () => void;
   clearError: () => void;
+  clearSendError: () => void;
+  reset: () => void;
 };
 
 const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
@@ -70,13 +73,27 @@ function getKnownGroup(groupId: Id): Group | null {
   );
 }
 
+const initialChatState = {
+  messagesByGroupId: {},
+  draftByGroupId: {},
+  activeGroupId: null,
+  connectionStatus: 'idle' as const,
+  isLoadingMessages: false,
+  isRefreshing: false,
+  isSending: false,
+  errorMessage: null,
+  sendErrorMessage: null,
+  lastLoadedAtByGroupId: {},
+};
+
 export const useChatStore = create<ChatState>((set, get) => {
-  function requireToken(): string | null {
+  function requireToken(options?: { field?: 'errorMessage' | 'sendErrorMessage' }): string | null {
     const accessToken = getAccessToken();
+    const field = options?.field ?? 'errorMessage';
 
     if (!accessToken) {
       set({
-        errorMessage: MISSING_SESSION_MESSAGE,
+        [field]: MISSING_SESSION_MESSAGE,
         isLoadingMessages: false,
         isRefreshing: false,
         isSending: false,
@@ -104,15 +121,7 @@ export const useChatStore = create<ChatState>((set, get) => {
   }
 
   return {
-    messagesByGroupId: {},
-    draftByGroupId: {},
-    activeGroupId: null,
-    connectionStatus: 'idle',
-    isLoadingMessages: false,
-    isRefreshing: false,
-    isSending: false,
-    errorMessage: null,
-    lastLoadedAtByGroupId: {},
+    ...initialChatState,
 
     async loadMessages(groupId) {
       if (get().isLoadingMessages) {
@@ -171,12 +180,12 @@ export const useChatStore = create<ChatState>((set, get) => {
       const message = (get().draftByGroupId[groupKey] ?? '').trim();
 
       if (!message) {
-        set({ errorMessage: EMPTY_MESSAGE });
+        set({ sendErrorMessage: EMPTY_MESSAGE });
         return;
       }
 
       if (message.length > 1000) {
-        set({ errorMessage: LONG_MESSAGE });
+        set({ sendErrorMessage: LONG_MESSAGE });
         return;
       }
 
@@ -186,17 +195,17 @@ export const useChatStore = create<ChatState>((set, get) => {
         : { allowed: true, permission: 'unknown' as const };
 
       if (!permission.allowed) {
-        set({ errorMessage: permission.reason ?? PERMISSION_MESSAGE });
+        set({ sendErrorMessage: permission.reason ?? PERMISSION_MESSAGE });
         return;
       }
 
-      const accessToken = requireToken();
+      const accessToken = requireToken({ field: 'sendErrorMessage' });
 
       if (!accessToken) {
         return;
       }
 
-      set({ isSending: true, errorMessage: null });
+      set({ isSending: true, sendErrorMessage: null });
 
       try {
         const sentMessage = await sendGroupChatMessage(groupId, { message }, accessToken);
@@ -215,7 +224,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       } catch (error) {
         set({
           isSending: false,
-          errorMessage: toSafeSendChatErrorMessage(error),
+          sendErrorMessage: toSafeSendChatErrorMessage(error),
         });
       }
     },
@@ -229,6 +238,7 @@ export const useChatStore = create<ChatState>((set, get) => {
           [groupKey]: message,
         },
         errorMessage: null,
+        sendErrorMessage: null,
       }));
     },
 
@@ -279,6 +289,19 @@ export const useChatStore = create<ChatState>((set, get) => {
 
     clearError() {
       set({ errorMessage: null });
+    },
+
+    clearSendError() {
+      set({ sendErrorMessage: null });
+    },
+
+    reset() {
+      if (chatWebSocketClient) {
+        chatWebSocketClient.disconnect();
+        chatWebSocketClient = null;
+      }
+
+      set(initialChatState);
     },
   };
 });

@@ -3,6 +3,7 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
+import { images } from '../../../assets/images';
 import {
   AppButton,
   AppCard,
@@ -192,6 +193,8 @@ export function NotificationsScreen({ navigation }: NotificationsScreenProps) {
             }
             message="ستظهر هنا تحديثات التوثيق والغروبات والملفات وطلبات الطباعة عند توفرها."
             title="لا توجد إشعارات حاليا"
+            illustrationLabel="رسم يوضح عدم وجود إشعارات"
+            illustrationSource={images.emptyStates.notifications}
           />
         )}
 

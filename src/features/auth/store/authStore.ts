@@ -9,6 +9,8 @@ import {
 } from '../services';
 import type { AuthStatus, AuthUser, AuthTokens, LoginCredentials } from '../types';
 
+const SESSION_EXPIRED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
+
 type AuthState = {
   status: AuthStatus;
   user: AuthUser | null;
@@ -22,6 +24,7 @@ type AuthState = {
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   refreshAccessToken: () => Promise<string | null>;
+  forceSessionExpired: (message?: string) => Promise<void>;
   setUser: (user: AuthUser) => void;
   clearError: () => void;
 };
@@ -65,24 +68,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
 
     try {
-      const session = await bootstrapSession();
+      const result = await bootstrapSession();
 
-      if (!session) {
+      if (!result.session) {
         set({
           ...unauthenticatedState,
           isBootstrapping: false,
+          errorMessage: result.sessionExpired ? SESSION_EXPIRED_MESSAGE : null,
         });
         return;
       }
 
       set({
-        ...toAuthenticatedState(session.user, session.tokens),
+        ...toAuthenticatedState(result.session.user, result.session.tokens),
         isBootstrapping: false,
       });
     } catch {
       set({
         ...unauthenticatedState,
         isBootstrapping: false,
+        errorMessage: SESSION_EXPIRED_MESSAGE,
       });
     }
   },
@@ -141,7 +146,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (!tokens) {
         set({
           ...unauthenticatedState,
-          errorMessage: null,
+          errorMessage: SESSION_EXPIRED_MESSAGE,
         });
         return null;
       }
@@ -161,6 +166,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       return null;
     }
+  },
+
+  async forceSessionExpired(message = SESSION_EXPIRED_MESSAGE) {
+    const { status } = get();
+
+    if (status === 'unauthenticated' && get().errorMessage === message) {
+      return;
+    }
+
+    set({
+      ...unauthenticatedState,
+      isSubmitting: false,
+      errorMessage: message,
+    });
   },
 
   setUser(user) {

@@ -5,6 +5,7 @@ import { SubmitVerificationScreen } from '../features/verification/screens/Submi
 import { VerificationStatusScreen } from '../features/verification/screens/VerificationStatusScreen';
 import { hiddenStackScreenOptions } from './config/screenOptions';
 import { StudentSetupRoutes } from './routes';
+import { StudentSetupFlowResolver } from './StudentSetupFlowResolver';
 import type { StudentSetupStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<StudentSetupStackParamList>();
@@ -12,9 +13,10 @@ const Stack = createNativeStackNavigator<StudentSetupStackParamList>();
 export function StudentSetupNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName={StudentSetupRoutes.AcademicProfileSetup}
+      initialRouteName={StudentSetupRoutes.SetupFlow}
       screenOptions={hiddenStackScreenOptions}
     >
+      <Stack.Screen component={StudentSetupFlowResolver} name={StudentSetupRoutes.SetupFlow} />
       <Stack.Screen
         component={AcademicProfileSetupScreen}
         name={StudentSetupRoutes.AcademicProfileSetup}

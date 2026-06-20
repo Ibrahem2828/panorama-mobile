@@ -1,18 +1,26 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
+import { images } from '../../../assets/images';
 import {
   AppButton,
   AppHeader,
   AppScreen,
   AppText,
+  AppTextInput,
   EmptyState,
   ErrorState,
   LoadingState,
   SectionHeader,
   Stack,
 } from '../../../components';
+import {
+  SEARCH_CLEAR_LABEL,
+  SEARCH_NO_RESULTS_MESSAGE,
+  SEARCH_NO_RESULTS_TITLE,
+} from '../../../utils/searchEmptyState';
+import { getFileDisplayTitle, getFileDescription } from '../services';
 import { SharedRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -37,6 +45,20 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
   const loadGroupFiles = useFilesStore((state) => state.loadGroupFiles);
   const refreshGroupFiles = useFilesStore((state) => state.refreshGroupFiles);
   const setSelectedFile = useFilesStore((state) => state.setSelectedFile);
+  const [search, setSearch] = useState('');
+  const normalizedSearch = search.trim().toLowerCase();
+  const filteredGroupFiles = useMemo(() => {
+    if (!normalizedSearch) {
+      return groupFiles;
+    }
+
+    return groupFiles.filter((file) => {
+      const title = getFileDisplayTitle(file).toLowerCase();
+      const description = getFileDescription(file)?.toLowerCase() ?? '';
+
+      return title.includes(normalizedSearch) || description.includes(normalizedSearch);
+    });
+  }, [groupFiles, normalizedSearch]);
   const showInitialLoading = isLoadingGroupFiles && groupFiles.length === 0;
   const showInitialError = Boolean(errorMessage && groupFiles.length === 0);
 
@@ -89,8 +111,15 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
               variant="outline"
             />
           }
-          subtitle={`عدد الملفات المحملة: ${groupFiles.length}`}
+          subtitle={`عدد الملفات المعروضة: ${filteredGroupFiles.length}`}
           title="القائمة"
+        />
+
+        <AppTextInput
+          label="بحث محلي"
+          onChangeText={setSearch}
+          placeholder="ابحث بعنوان الملف أو الوصف"
+          value={search}
         />
 
         {errorMessage ? (
@@ -107,10 +136,26 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
             }
             message="لا توجد ملفات لهذا الغروب حاليا."
             title="لا توجد ملفات"
+            illustrationLabel="رسم يوضح عدم وجود ملفات"
+            illustrationSource={images.emptyStates.files}
+          />
+        ) : filteredGroupFiles.length === 0 ? (
+          <EmptyState
+            action={
+              <AppButton
+                onPress={() => setSearch('')}
+                title={SEARCH_CLEAR_LABEL}
+                variant="outline"
+              />
+            }
+            illustrationLabel="رسم يوضح عدم وجود نتائج بحث"
+            illustrationSource={images.illustrations.search}
+            message={SEARCH_NO_RESULTS_MESSAGE}
+            title={SEARCH_NO_RESULTS_TITLE}
           />
         ) : (
           <Stack gap="md">
-            {groupFiles.map((file) => (
+            {filteredGroupFiles.map((file) => (
               <FileCard file={file} key={String(file.id)} onPress={() => handleFilePress(file)} />
             ))}
           </Stack>

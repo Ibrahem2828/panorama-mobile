@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
 import { colors, spacing } from '../../../theme';
+import { getProfileRoleLabel } from '../../profile/services';
 
 type HomeGreetingCardProps = {
   displayName?: string | null;
@@ -29,7 +30,7 @@ export function HomeGreetingCard({
           <View style={styles.titleBlock}>
             <AppText variant="h2">{getGreeting(displayName)}</AppText>
             <AppText color="secondary" variant="body">
-              كل جامعتك في مكان واحد
+              لوحة الطالب — كل جامعتك في مكان واحد
             </AppText>
           </View>
           {unreadNotificationsCount > 0 ? (
@@ -39,7 +40,7 @@ export function HomeGreetingCard({
 
         {userRole ? (
           <AppText color="muted" variant="caption">
-            نوع الحساب: {userRole}
+            نوع الحساب: {getProfileRoleLabel(userRole)}
           </AppText>
         ) : null}
       </Stack>

@@ -5,6 +5,8 @@ import {
   type UpdateCurrentUserRequest,
 } from '../../../api';
 import type { AuthUser } from '../../auth/types';
+import type { VerificationStatus } from '../../../api';
+import type { StatusVariant } from '../../../types/common';
 import type { EditableProfileFields, ProfileStatusSummary, ProfileUser } from '../types';
 
 const NETWORK_MESSAGE = 'تعذر تحميل بيانات الحساب. تحقق من اتصال الإنترنت وحاول مرة أخرى.';
@@ -82,6 +84,51 @@ export function getProfileRoleLabel(role?: string): string {
 
 export function getProfileContactLabel(user: ProfileUser | null): string {
   return user?.email ?? user?.phone_number ?? 'لا توجد بيانات تواصل مؤكدة حاليا';
+}
+
+export function getVerificationStatusLabel(status?: string | VerificationStatus): string {
+  switch (status) {
+    case 'approved':
+      return 'موثق';
+    case 'pending':
+      return 'قيد المراجعة';
+    case 'rejected':
+      return 'مرفوض';
+    case 'needs_update':
+      return 'يحتاج تحديث';
+    case 'none':
+      return 'غير مقدم';
+    default:
+      return 'غير معروف';
+  }
+}
+
+export function getVerificationStatusVariant(status?: string | VerificationStatus): StatusVariant {
+  switch (status) {
+    case 'approved':
+      return 'success';
+    case 'pending':
+      return 'warning';
+    case 'rejected':
+      return 'error';
+    case 'needs_update':
+      return 'warning';
+    default:
+      return 'neutral';
+  }
+}
+
+export function getStudentCardVerificationSummary(
+  status?: string | VerificationStatus,
+): ProfileStatusSummary {
+  return {
+    label: getVerificationStatusLabel(status),
+    description:
+      status === 'approved'
+        ? 'تم التحقق من بطاقتك الجامعية.'
+        : 'حالة توثيق البطاقة الجامعية كما يعيدها الخادم.',
+    variant: getVerificationStatusVariant(status),
+  };
 }
 
 export function getBooleanStatusLabel(value?: boolean): string {

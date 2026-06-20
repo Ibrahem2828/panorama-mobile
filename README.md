@@ -8,7 +8,7 @@ Current status: **Phase 15 Chat Foundation**.
 
 Implemented so far:
 
-- Expo SDK 56 through `expo@~56.0.8`.
+- Expo SDK 56 through `expo@~56.0.11`.
 - React `19.2.3` and React Native `0.85`.
 - Secure token storage through Expo SecureStore.
 - Zustand auth store and real login session foundation.
@@ -84,11 +84,19 @@ Only public, non-secret values are documented in `.env.example`:
 
 ```bash
 EXPO_PUBLIC_APP_ENV=development
-EXPO_PUBLIC_API_BASE_URL=http://localhost:8000
-EXPO_PUBLIC_WS_BASE_URL=ws://localhost:8000
+EXPO_PUBLIC_API_BASE_URL=http://eby52x8qksscjvfeqxf0eob7.76.13.155.172.sslip.io
+EXPO_PUBLIC_WS_BASE_URL=ws://eby52x8qksscjvfeqxf0eob7.76.13.155.172.sslip.io
 ```
 
 No secrets or tokens belong in env files. Tokens are stored through SecureStore and are not stored in AsyncStorage.
+
+The current backend is a temporary HTTP VPS/Coolify deployment. Do not include `/api/v1` in
+`EXPO_PUBLIC_API_BASE_URL`; endpoint paths already include it. The WebSocket base is configured
+separately and uses WS while REST uses HTTP. Android cleartext is enabled only for this temporary
+HTTP runtime. Production must move to HTTPS/WSS, which disables Android cleartext.
+
+The runtime and required image checklist is documented in
+`docs/33_MOBILE_BACKEND_RUNTIME_INTEGRATION_AND_ASSETS_READINESS.md`.
 
 ## Validation Commands
 

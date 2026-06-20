@@ -1,3 +1,4 @@
+import { images } from '../../../assets/images';
 import { EmptyState } from '../../../components';
 
 export function ChatEmptyState() {
@@ -5,6 +6,8 @@ export function ChatEmptyState() {
     <EmptyState
       message="لا توجد رسائل بعد. كن أول من يبدأ النقاش إذا كانت صلاحية الإرسال متاحة."
       title="لا توجد رسائل بعد"
+      illustrationLabel="رسم يوضح عدم وجود رسائل"
+      illustrationSource={images.emptyStates.chat}
     />
   );
 }

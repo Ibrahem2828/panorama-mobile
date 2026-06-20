@@ -47,6 +47,7 @@ type SupportState = {
   clearError: () => void;
   clearMessages: () => void;
   setSelectedTicket: (ticket: SupportTicket | null) => void;
+  reset: () => void;
 };
 
 const DEFAULT_DRAFT: SupportTicketDraft = {
@@ -54,6 +55,25 @@ const DEFAULT_DRAFT: SupportTicketDraft = {
   subject: '',
   message: '',
 };
+
+function getInitialSupportState() {
+  return {
+    tickets: [],
+    selectedTicket: null,
+    createDraft: { ...DEFAULT_DRAFT },
+    replyMessage: '',
+    validation: {},
+    isLoadingTickets: false,
+    isLoadingDetail: false,
+    isCreating: false,
+    isSendingMessage: false,
+    isRefreshing: false,
+    errorMessage: null,
+    successMessage: null,
+    lastLoadedAt: null,
+    ticketsCount: 0,
+  };
+}
 
 const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
 const CREATE_SUCCESS_MESSAGE = 'تم إنشاء تذكرة الدعم.';
@@ -146,20 +166,7 @@ export const useSupportStore = create<SupportState>((set, get) => {
   }
 
   return {
-    tickets: [],
-    selectedTicket: null,
-    createDraft: DEFAULT_DRAFT,
-    replyMessage: '',
-    validation: {},
-    isLoadingTickets: false,
-    isLoadingDetail: false,
-    isCreating: false,
-    isSendingMessage: false,
-    isRefreshing: false,
-    errorMessage: null,
-    successMessage: null,
-    lastLoadedAt: null,
-    ticketsCount: 0,
+    ...getInitialSupportState(),
 
     async loadMyTickets() {
       if (get().isLoadingTickets) {
@@ -388,6 +395,10 @@ export const useSupportStore = create<SupportState>((set, get) => {
 
     setSelectedTicket(ticket) {
       set({ selectedTicket: ticket });
+    },
+
+    reset() {
+      set(getInitialSupportState());
     },
   };
 });

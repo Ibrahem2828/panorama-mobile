@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { useNavigation } from '@react-navigation/native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
 import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
+import { images } from '../../../assets/images';
 import {
   AppButton,
   AppHeader,
@@ -19,7 +20,9 @@ import {
   GroupsRoutes,
   PrintingRoutes,
   ProfileRoutes,
+  RootRoutes,
   SharedRoutes,
+  StudentSetupRoutes,
   SubjectsRoutes,
   TabRoutes,
 } from '../../../navigation/routes';
@@ -30,6 +33,7 @@ import { isStudentProfileComplete, useStudentProfileStore } from '../../student-
 import { getVerificationStatus, useVerificationStore } from '../../verification';
 import {
   AnnouncementCard,
+  HomeAcademicSummaryCard,
   HomeGreetingCard,
   HomeQuickActionCard,
   HomeSectionHeader,
@@ -48,9 +52,59 @@ const QUICK_ACTION_MARKERS: Record<HomeQuickActionKey, string> = {
   groups: 'غ',
   files: 'ف',
   printing: 'ط',
+  support: 'د',
   notifications: 'ن',
   profile: 'ح',
 };
+
+type StudentStatusAction = {
+  label: string;
+  route: (typeof StudentSetupRoutes)[keyof typeof StudentSetupRoutes];
+};
+
+function getStudentStatusAction({
+  profileComplete,
+  verificationStatus,
+  hasProfileState,
+  hasVerificationState,
+}: {
+  profileComplete: boolean;
+  verificationStatus: string;
+  hasProfileState: boolean;
+  hasVerificationState: boolean;
+}): StudentStatusAction | null {
+  if (!hasProfileState || !hasVerificationState) {
+    return null;
+  }
+
+  if (!profileComplete) {
+    return {
+      label: 'إكمال الملف الأكاديمي',
+      route: StudentSetupRoutes.AcademicProfileSetup,
+    };
+  }
+
+  switch (verificationStatus) {
+    case 'none':
+      return {
+        label: 'إرسال بطاقة الطالب',
+        route: StudentSetupRoutes.SubmitVerification,
+      };
+    case 'pending':
+      return {
+        label: 'متابعة حالة التوثيق',
+        route: StudentSetupRoutes.VerificationStatus,
+      };
+    case 'rejected':
+    case 'needs_update':
+      return {
+        label: 'إعادة إرسال التوثيق',
+        route: StudentSetupRoutes.SubmitVerification,
+      };
+    default:
+      return null;
+  }
+}
 
 function getQuickActions(unreadNotificationsCount: number): HomeQuickAction[] {
   return [
@@ -67,12 +121,17 @@ function getQuickActions(unreadNotificationsCount: number): HomeQuickAction[] {
     {
       key: 'files',
       title: 'الملفات',
-      description: 'افتح الملفات المتاحة داخل التطبيق بدون زر تنزيل مباشر.',
+      description: 'افتح الملفات المتاحة داخل التطبيق.',
     },
     {
       key: 'printing',
       title: 'الطباعة',
-      description: 'افتح مدخل خدمات الطباعة الحالي.',
+      description: 'اطلب طباعة الملفات ومتابعة الطلبات.',
+    },
+    {
+      key: 'support',
+      title: 'الدعم',
+      description: 'افتح تذاكر الدعم الفني ومتابعتها.',
     },
     {
       key: 'notifications',
@@ -83,7 +142,7 @@ function getQuickActions(unreadNotificationsCount: number): HomeQuickAction[] {
     {
       key: 'profile',
       title: 'حسابي',
-      description: 'راجع بيانات الحساب وحالة الجلسة.',
+      description: 'راجع بيانات الحساب والإعدادات.',
     },
   ];
 }
@@ -100,8 +159,10 @@ export function HomeScreen() {
   const loadHome = useHomeStore((state) => state.loadHome);
   const refreshHome = useHomeStore((state) => state.refreshHome);
   const profile = useStudentProfileStore((state) => state.profile);
+  const bootstrapStudentProfile = useStudentProfileStore((state) => state.bootstrap);
   const hasProfileState = useStudentProfileStore((state) => state.hasBootstrapped);
   const verification = useVerificationStore((state) => state.verification);
+  const loadVerification = useVerificationStore((state) => state.loadVerification);
   const hasVerificationState = useVerificationStore((state) => state.hasLoadedVerification);
   const displayName = user?.full_name ?? user?.username ?? null;
   const profileComplete = isStudentProfileComplete(profile);
@@ -109,10 +170,18 @@ export function HomeScreen() {
   const showInitialLoading = isLoading && !lastLoadedAt;
   const showInitialError = Boolean(errorMessage && !lastLoadedAt);
   const quickActions = getQuickActions(unreadNotificationsCount);
+  const studentStatusAction = getStudentStatusAction({
+    profileComplete,
+    verificationStatus,
+    hasProfileState,
+    hasVerificationState,
+  });
 
   useEffect(() => {
     void loadHome();
-  }, [loadHome]);
+    void bootstrapStudentProfile();
+    void loadVerification();
+  }, [bootstrapStudentProfile, loadHome, loadVerification]);
 
   function handleQuickActionPress(key: HomeQuickActionKey) {
     switch (key) {
@@ -124,6 +193,9 @@ export function HomeScreen() {
         break;
       case 'printing':
         navigation.navigate(TabRoutes.Printing, { screen: PrintingRoutes.PrintHome });
+        break;
+      case 'support':
+        navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.SupportTickets });
         break;
       case 'notifications':
         navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.Notifications });
@@ -139,6 +211,21 @@ export function HomeScreen() {
 
   function handleRefresh() {
     void refreshHome();
+  }
+
+  function handleStudentStatusAction() {
+    if (!studentStatusAction) {
+      return;
+    }
+
+    navigation
+      .getParent()
+      ?.getParent()
+      ?.dispatch(
+        CommonActions.navigate(RootRoutes.StudentSetup, {
+          screen: studentStatusAction.route,
+        }),
+      );
   }
 
   if (showInitialLoading) {
@@ -181,11 +268,15 @@ export function HomeScreen() {
         />
 
         <StudentStatusCard
+          actionLabel={studentStatusAction?.label}
           hasProfileState={hasProfileState}
           hasVerificationState={hasVerificationState}
+          onAction={studentStatusAction ? handleStudentStatusAction : undefined}
           profileComplete={profileComplete}
           verificationStatus={verificationStatus}
         />
+
+        <HomeAcademicSummaryCard profile={profile} />
 
         <Stack gap="md">
           <HomeSectionHeader
@@ -198,7 +289,7 @@ export function HomeScreen() {
                 variant="outline"
               />
             }
-            subtitle="إعلانات مرتبطة بحسابك حسب قواعد الباك إند."
+            subtitle="آخر الإعلانات المرتبطة بحسابك."
             title="الإعلانات"
           />
 
@@ -216,6 +307,8 @@ export function HomeScreen() {
               }
               message="ستظهر هنا الإعلانات المهمة عند توفرها."
               title="لا توجد إعلانات حاليا"
+              illustrationLabel="رسم يوضح عدم وجود إعلانات"
+              illustrationSource={images.emptyStates.announcements}
             />
           ) : (
             <Stack gap="md">
@@ -227,10 +320,7 @@ export function HomeScreen() {
         </Stack>
 
         <Stack gap="md">
-          <HomeSectionHeader
-            subtitle="اختصارات للشاشات الحالية، بدون تنفيذ بيانات الوحدات اللاحقة."
-            title="اختصارات سريعة"
-          />
+          <HomeSectionHeader subtitle="اختصارات سريعة لأهم خدمات الطالب." title="الخدمات" />
           <Stack direction="horizontal" gap="md" wrap>
             {quickActions.map((action) => (
               <HomeQuickActionCard

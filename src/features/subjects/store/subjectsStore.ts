@@ -23,6 +23,7 @@ type SubjectsState = {
   setSelectedSubject: (subject: Subject | null) => void;
   getSubjectById: (subjectId: Id) => Subject | null;
   clearError: () => void;
+  reset: () => void;
 };
 
 const MISSING_MAJOR_MESSAGE = 'لا يمكن تحميل المواد قبل إكمال البيانات الأكاديمية.';
@@ -80,6 +81,19 @@ function buildLoadKey(input: {
     input.semesterId ?? 'all-semesters',
   ].join(':');
 }
+
+const initialSubjectsState = {
+  subjects: [],
+  selectedSubject: null,
+  search: '',
+  isLoading: false,
+  isRefreshing: false,
+  errorMessage: null,
+  lastLoadedAt: null,
+  lastLoadKey: null,
+  totalCount: 0,
+  stateSource: 'unknown' as const,
+};
 
 export const useSubjectsStore = create<SubjectsState>((set, get) => {
   async function load(mode: 'load' | 'refresh') {
@@ -157,16 +171,7 @@ export const useSubjectsStore = create<SubjectsState>((set, get) => {
   }
 
   return {
-    subjects: [],
-    selectedSubject: null,
-    search: '',
-    isLoading: false,
-    isRefreshing: false,
-    errorMessage: null,
-    lastLoadedAt: null,
-    lastLoadKey: null,
-    totalCount: 0,
-    stateSource: 'unknown',
+    ...initialSubjectsState,
 
     async loadSubjects() {
       await load('load');
@@ -190,6 +195,10 @@ export const useSubjectsStore = create<SubjectsState>((set, get) => {
 
     clearError() {
       set({ errorMessage: null });
+    },
+
+    reset() {
+      set(initialSubjectsState);
     },
   };
 });

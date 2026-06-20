@@ -24,6 +24,7 @@ export type HomeQuickActionKey =
   | 'groups'
   | 'files'
   | 'printing'
+  | 'support'
   | 'notifications'
   | 'profile';
 

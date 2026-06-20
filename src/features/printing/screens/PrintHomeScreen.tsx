@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
+import { images } from '../../../assets/images';
 import {
   AppButton,
   AppCard,
@@ -9,6 +10,7 @@ import {
   AppScreen,
   AppText,
   ErrorState,
+  Illustration,
   LoadingState,
   SectionHeader,
   Stack,
@@ -41,6 +43,11 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
 
         <AppCard variant="elevated">
           <Stack gap="lg">
+            <Illustration
+              accessibilityLabel="رسم يوضح خدمة الطباعة"
+              size="lg"
+              source={images.printing.hero}
+            />
             <Stack gap="xs">
               <AppText variant="h2">طلب طباعة من ملفاتك</AppText>
               <AppText color="secondary" variant="bodySmall">

@@ -8,6 +8,7 @@ export type ApiErrorResponse<TErrors = unknown> = {
   success: false;
   message?: string;
   errors?: TErrors;
+  request_id?: string;
 };
 
 export type ApiResponse<TData, TErrors = unknown> =

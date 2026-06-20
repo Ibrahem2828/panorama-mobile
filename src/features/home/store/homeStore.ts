@@ -17,6 +17,7 @@ type HomeState = {
   refreshHome: () => Promise<void>;
   setUnreadNotificationsCount: (count: number) => void;
   clearError: () => void;
+  reset: () => void;
 };
 
 const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
@@ -69,7 +70,7 @@ type HomeSetState = (
   replace?: false,
 ) => void;
 
-export const useHomeStore = create<HomeState>((set, get) => ({
+const initialHomeState = {
   announcements: [],
   unreadNotificationsCount: 0,
   isLoading: false,
@@ -77,6 +78,10 @@ export const useHomeStore = create<HomeState>((set, get) => ({
   errorMessage: null,
   lastLoadedAt: null,
   lastAuthUserId: null,
+};
+
+export const useHomeStore = create<HomeState>((set, get) => ({
+  ...initialHomeState,
 
   async loadHome() {
     const { isLoading, isRefreshing, lastLoadedAt, lastAuthUserId } = get();
@@ -105,5 +110,9 @@ export const useHomeStore = create<HomeState>((set, get) => ({
 
   clearError() {
     set({ errorMessage: null });
+  },
+
+  reset() {
+    set(initialHomeState);
   },
 }));

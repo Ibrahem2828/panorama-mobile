@@ -26,12 +26,25 @@ type ProfileState = {
   resetDraft: () => void;
   clearError: () => void;
   clearMessages: () => void;
+  reset: () => void;
 };
 
 const EMPTY_DRAFT: ProfileEditDraft = {
   full_name: '',
   username: '',
 };
+
+function getInitialProfileState() {
+  return {
+    user: null,
+    editDraft: { ...EMPTY_DRAFT },
+    isLoading: false,
+    isSubmitting: false,
+    errorMessage: null,
+    successMessage: null,
+    lastLoadedAt: null,
+  };
+}
 
 const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
 const FULL_NAME_REQUIRED_MESSAGE = 'يرجى إدخال الاسم الكامل.';
@@ -65,13 +78,7 @@ export const useProfileStore = create<ProfileState>((set, get) => {
   }
 
   return {
-    user: null,
-    editDraft: EMPTY_DRAFT,
-    isLoading: false,
-    isSubmitting: false,
-    errorMessage: null,
-    successMessage: null,
-    lastLoadedAt: null,
+    ...getInitialProfileState(),
 
     async loadProfile() {
       if (get().isLoading) {
@@ -180,6 +187,10 @@ export const useProfileStore = create<ProfileState>((set, get) => {
 
     clearMessages() {
       set({ errorMessage: null, successMessage: null });
+    },
+
+    reset() {
+      set(getInitialProfileState());
     },
   };
 });

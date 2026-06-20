@@ -1,9 +1,9 @@
 const brand = {
-  primary: '#001B72',
+  primary: '#002B7F',
   primarySoft: '#E8EEFF',
-  secondary: '#3510A3',
+  secondary: '#3B0CA3',
   secondarySoft: '#EEE9FF',
-  accent: '#9B004B',
+  accent: '#A50D46',
   accentSoft: '#FFE8F2',
 } as const;
 
@@ -21,7 +21,7 @@ const semantic = {
 export const colors = {
   brand,
   background: {
-    primary: '#F8F9FC',
+    primary: '#F8FAFC',
     surface: '#FFFFFF',
     muted: '#F2F4F7',
     elevated: '#FFFFFF',
@@ -34,8 +34,8 @@ export const colors = {
     disabled: '#98A2B3',
   },
   border: {
-    default: '#E4E7EC',
-    strong: '#CBD5E1',
+    default: '#BFC0C2',
+    strong: '#98A2B3',
     focus: brand.secondary,
   },
   semantic,
@@ -59,12 +59,12 @@ export const colors = {
   primary: brand.primary,
   secondary: brand.secondary,
   accent: brand.accent,
-  backgroundPrimary: '#F8F9FC',
+  backgroundPrimary: '#F8FAFC',
   surface: '#FFFFFF',
   textPrimary: '#101828',
   textSecondary: '#667085',
-  borderDefault: '#E4E7EC',
-  borderStrong: '#CBD5E1',
+  borderDefault: '#BFC0C2',
+  borderStrong: '#98A2B3',
   success: semantic.success,
   warning: semantic.warning,
   error: semantic.error,

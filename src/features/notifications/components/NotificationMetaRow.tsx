@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '../../../components';
 import { colors, spacing } from '../../../theme';
+import { getNotificationTargetTypeLabel } from '../services';
 
 type NotificationMetaRowProps = {
   label: string;
@@ -13,13 +14,18 @@ export function NotificationMetaRow({ label, value }: NotificationMetaRowProps) 
     return null;
   }
 
+  const displayValue =
+    label === 'الوجهة' && typeof value === 'string'
+      ? (getNotificationTargetTypeLabel(value) ?? value)
+      : String(value);
+
   return (
     <View style={styles.row}>
       <AppText color="muted" variant="caption">
         {label}
       </AppText>
       <AppText color="secondary" style={styles.value} variant="caption">
-        {String(value)}
+        {displayValue}
       </AppText>
     </View>
   );

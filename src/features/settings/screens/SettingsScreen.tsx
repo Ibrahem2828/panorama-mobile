@@ -1,13 +1,28 @@
+import Constants from 'expo-constants';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
-import { AppButton, AppHeader, AppScreen, Stack } from '../../../components';
+import { AppButton, AppHeader, AppScreen, AppText, Stack } from '../../../components';
+import { env } from '../../../config/env';
 import { ProfileRoutes } from '../../../navigation/routes';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { SettingsOptionRow, SettingsSection } from '../components';
 
 type SettingsScreenProps = NativeStackScreenProps<ProfileStackParamList, 'Settings'>;
+
+const APP_VERSION = Constants.expoConfig?.version ?? '0.1.0';
+
+function getEnvironmentLabel(): string {
+  switch (env.appEnv) {
+    case 'production':
+      return 'إنتاج';
+    case 'preview':
+      return 'معاينة';
+    default:
+      return 'تطوير';
+  }
+}
 
 export function SettingsScreen({ navigation }: SettingsScreenProps) {
   return (
@@ -44,6 +59,18 @@ export function SettingsScreen({ navigation }: SettingsScreenProps) {
             title="اللغة"
             value="العربية"
           />
+          <SettingsOptionRow
+            description="رقم إصدار التطبيق الحالي"
+            disabled
+            title="إصدار التطبيق"
+            value={APP_VERSION}
+          />
+          <SettingsOptionRow
+            description="بيئة التشغيل الحالية"
+            disabled
+            title="بيئة التشغيل"
+            value={getEnvironmentLabel()}
+          />
         </SettingsSection>
 
         <SettingsSection subtitle="معلومات قانونية ثابتة لهذه النسخة" title="قانوني">
@@ -60,6 +87,10 @@ export function SettingsScreen({ navigation }: SettingsScreenProps) {
             title="عن بانوراما"
           />
         </SettingsSection>
+
+        <AppText align="center" color="muted" variant="caption">
+          Panorama Mobile · {APP_VERSION} · {getEnvironmentLabel()}
+        </AppText>
       </Stack>
     </AppScreen>
   );

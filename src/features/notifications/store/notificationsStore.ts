@@ -32,6 +32,7 @@ type NotificationsState = {
   markAllAsRead: () => Promise<void>;
   clearError: () => void;
   clearMessages: () => void;
+  reset: () => void;
 };
 
 const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
@@ -82,6 +83,20 @@ function markAllLocal(notifications: NotificationRecord[]): NotificationRecord[]
   }));
 }
 
+const initialNotificationsState = {
+  notifications: [],
+  unreadCount: 0,
+  isLoading: false,
+  isLoadingUnreadCount: false,
+  isRefreshing: false,
+  isMarkingRead: false,
+  isMarkingAllRead: false,
+  errorMessage: null,
+  successMessage: null,
+  lastLoadedAt: null,
+  notificationsCount: 0,
+};
+
 export const useNotificationsStore = create<NotificationsState>((set, get) => {
   function requireToken(): string | null {
     const accessToken = getAccessToken();
@@ -120,17 +135,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => {
   }
 
   return {
-    notifications: [],
-    unreadCount: 0,
-    isLoading: false,
-    isLoadingUnreadCount: false,
-    isRefreshing: false,
-    isMarkingRead: false,
-    isMarkingAllRead: false,
-    errorMessage: null,
-    successMessage: null,
-    lastLoadedAt: null,
-    notificationsCount: 0,
+    ...initialNotificationsState,
 
     async loadNotifications() {
       if (get().isLoading) {
@@ -294,6 +299,11 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => {
 
     clearMessages() {
       set({ errorMessage: null, successMessage: null });
+    },
+
+    reset() {
+      set(initialNotificationsState);
+      syncHomeUnreadCount(0);
     },
   };
 });

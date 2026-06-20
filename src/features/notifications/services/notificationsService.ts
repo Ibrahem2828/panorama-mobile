@@ -167,6 +167,32 @@ export function getNotificationTarget(notification: NotificationRecord): Notific
   };
 }
 
+export function getNotificationTargetTypeLabel(targetType?: string | null): string | null {
+  if (!targetType) {
+    return null;
+  }
+
+  switch (targetType.trim().toLowerCase()) {
+    case 'printing':
+    case 'print_order':
+      return 'طلب طباعة';
+    case 'group':
+      return 'غروب';
+    case 'file':
+      return 'ملف';
+    case 'support':
+    case 'support_ticket':
+    case 'ticket':
+      return 'دعم فني';
+    case 'verification':
+      return 'توثيق';
+    case 'announcement':
+      return 'إعلان';
+    default:
+      return targetType;
+  }
+}
+
 export function formatNotificationDate(value?: string | null): string | null {
   if (!value) {
     return null;

@@ -23,6 +23,7 @@ type SettingsState = {
   changePassword: () => Promise<boolean>;
   resetPasswordDraft: () => void;
   clearMessages: () => void;
+  reset: () => void;
 };
 
 const EMPTY_PASSWORD_DRAFT: ChangePasswordDraft = {
@@ -30,6 +31,16 @@ const EMPTY_PASSWORD_DRAFT: ChangePasswordDraft = {
   new_password: '',
   new_password_confirm: '',
 };
+
+function getInitialSettingsState() {
+  return {
+    passwordDraft: { ...EMPTY_PASSWORD_DRAFT },
+    passwordValidation: {},
+    isChangingPassword: false,
+    errorMessage: null,
+    successMessage: null,
+  };
+}
 
 const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
 const PASSWORD_SUCCESS_MESSAGE = 'تم تغيير كلمة المرور بنجاح.';
@@ -39,11 +50,7 @@ function getAccessToken(): string | null {
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
-  passwordDraft: EMPTY_PASSWORD_DRAFT,
-  passwordValidation: {},
-  isChangingPassword: false,
-  errorMessage: null,
-  successMessage: null,
+  ...getInitialSettingsState(),
 
   setOldPassword(value) {
     set((state) => ({
@@ -124,5 +131,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   clearMessages() {
     set({ errorMessage: null, successMessage: null });
+  },
+
+  reset() {
+    set(getInitialSettingsState());
   },
 }));

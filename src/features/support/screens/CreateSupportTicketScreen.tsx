@@ -9,6 +9,7 @@ import {
   AppScreen,
   AppText,
   AppTextInput,
+  ErrorState,
   Stack,
 } from '../../../components';
 import { ProfileRoutes } from '../../../navigation/routes';
@@ -89,13 +90,7 @@ export function CreateSupportTicketScreen({ navigation }: CreateSupportTicketScr
           value={createDraft.message}
         />
 
-        {errorMessage ? (
-          <AppCard variant="muted">
-            <AppText color="error" variant="bodySmall">
-              {errorMessage}
-            </AppText>
-          </AppCard>
-        ) : null}
+        {errorMessage ? <ErrorState kind="server" message={errorMessage} /> : null}
 
         <Stack gap="sm">
           <AppButton

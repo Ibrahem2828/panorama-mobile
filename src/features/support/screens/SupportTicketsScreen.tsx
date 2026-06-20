@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
+import { images } from '../../../assets/images';
+
 import {
   AppButton,
   AppCard,
@@ -111,6 +113,8 @@ export function SupportTicketsScreen({ navigation }: SupportTicketsScreenProps) 
             }
             message="لم يتم إنشاء أي تذاكر دعم بعد."
             title="لا توجد تذاكر دعم"
+            illustrationLabel="رسم يوضح عدم وجود تذاكر دعم"
+            illustrationSource={images.emptyStates.supportTickets}
           />
         )}
 

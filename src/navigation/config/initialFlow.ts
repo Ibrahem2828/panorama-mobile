@@ -18,6 +18,8 @@ export function getInitialRootRoute(flow: RootFlowMode): keyof RootStackParamLis
       return RootRoutes.StudentSetup;
     case 'app':
       return RootRoutes.App;
+    case 'accessDenied':
+      return RootRoutes.Public;
     case 'public':
       return RootRoutes.Public;
   }

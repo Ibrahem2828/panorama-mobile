@@ -2,8 +2,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
 import { colors, opacity, spacing } from '../../../theme';
+import { formatRelativeDateAr } from '../../../utils/formatRelativeDateAr';
 import {
-  formatNotificationDate,
   getNotificationBody,
   getNotificationTarget,
   getNotificationTitle,
@@ -12,6 +12,7 @@ import {
 import type { NotificationRecord } from '../types';
 import { NotificationMetaRow } from './NotificationMetaRow';
 import { NotificationStatusBadge } from './NotificationStatusBadge';
+import { NotificationTypeIcon } from './NotificationTypeIcon';
 
 type NotificationCardProps = {
   notification: NotificationRecord;
@@ -23,7 +24,7 @@ export function NotificationCard({ notification, onPress }: NotificationCardProp
   const body = getNotificationBody(notification);
   const unread = isNotificationUnread(notification);
   const target = getNotificationTarget(notification);
-  const date = formatNotificationDate(notification.created_at ?? notification.updated_at);
+  const date = formatRelativeDateAr(notification.created_at ?? notification.updated_at);
 
   return (
     <Pressable
@@ -35,6 +36,7 @@ export function NotificationCard({ notification, onPress }: NotificationCardProp
       <AppCard style={unread ? styles.unreadCard : null} variant={unread ? 'outlined' : 'default'}>
         <Stack gap="md">
           <Stack direction="horizontal" gap="md" style={styles.header}>
+            <NotificationTypeIcon type={notification.type} />
             <View style={[styles.unreadDot, unread ? styles.unreadDotActive : null]} />
             <Stack gap="xs" style={styles.titleBlock}>
               <AppText numberOfLines={2} variant="title">

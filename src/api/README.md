@@ -15,6 +15,18 @@ Central API layer for Panorama Mobile.
 - `services/`: API service foundations per module.
 - `index.ts`: public API exports.
 
+## Runtime configuration
+
+- The current backend is temporary HTTP.
+- `EXPO_PUBLIC_API_BASE_URL` must not include `/api/v1`.
+- Official endpoints in `endpoints.ts` include `/api/v1`.
+- `EXPO_PUBLIC_WS_BASE_URL` is configured separately as WS for HTTP and WSS for HTTPS.
+- Android cleartext is temporary and production must use HTTPS/WSS.
+- `health.service.ts` calls `GET /api/v1/health/` without authentication and returns a normalized
+  health status.
+- The asset readiness checklist is in
+  `docs/33_MOBILE_BACKEND_RUNTIME_INTEGRATION_AND_ASSETS_READINESS.md`.
+
 ## Phase 7 additions
 
 - `announcements.service.ts` exposes `listRelevantAnnouncements(authToken)`.
@@ -94,11 +106,20 @@ Central API layer for Panorama Mobile.
 - Chat sends use `POST /api/v1/groups/{group_id}/messages/` with `{ "type": "message", "content": "..." }`.
 - Message delete/report endpoints are intentionally not added to runtime behavior by Phase 15.
 
+## Phase 1 runtime hardening
+
+- `authBridge.ts` registers auth handlers from the auth feature at app startup.
+- Protected requests that pass `authToken` and are not auth-exempt paths retry once after a
+  single-flight `401` refresh.
+- Concurrent `401` responses wait on the same refresh promise before retrying.
+- Refresh failure calls `onSessionExpired()` and returns the user to login without retry loops.
+- `403` responses are never treated as refreshable `401` errors.
+- Auth-exempt paths include login, register, refresh, logout, OTP, password reset, and health.
+
 ## Rules
 
 - Do not store tokens in `src/api`.
 - Do not use SecureStore or Zustand inside the API layer.
-- Do not add automatic refresh interceptors until that phase is explicitly scoped.
 - Pass `authToken` explicitly from the feature/auth layer when needed.
 - Do not place endpoint strings outside `endpoints.ts`.
 - Do not call the API client directly from screens.

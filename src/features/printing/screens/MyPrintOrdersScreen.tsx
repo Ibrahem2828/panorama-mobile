@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
+import { images } from '../../../assets/images';
 import {
   AppButton,
   AppHeader,
@@ -75,6 +76,8 @@ export function MyPrintOrdersScreen({ navigation }: MyPrintOrdersScreenProps) {
             }
             message="أنشئ أول طلب طباعة من ملف متاح لك."
             title="لا توجد طلبات طباعة"
+            illustrationLabel="رسم يوضح عدم وجود طلبات طباعة"
+            illustrationSource={images.emptyStates.printingOrders}
           />
         )}
       </Stack>

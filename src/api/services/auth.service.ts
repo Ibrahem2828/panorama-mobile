@@ -1,14 +1,16 @@
 import { apiClient } from '../client';
 import { endpoints } from '../endpoints';
 import type {
-  CurrentUser,
   ChangePasswordRequest,
+  ConfirmPasswordResetRequest,
+  CurrentUser,
   EmptyResponse,
   LoginRequest,
   LoginResponse,
-  RefreshTokenResponse,
   RefreshTokenRequest,
+  RefreshTokenResponse,
   RegisterStudentRequest,
+  RequestPasswordResetRequest,
   SendOtpRequest,
   UpdateCurrentUserRequest,
   VerifyOtpRequest,
@@ -71,4 +73,18 @@ export function sendOtp(request: SendOtpRequest) {
 
 export function verifyOtp(request: VerifyOtpRequest) {
   return apiClient.post<EmptyResponse, VerifyOtpRequest>(endpoints.auth.verifyOtp, request);
+}
+
+export function requestPasswordReset(request: RequestPasswordResetRequest) {
+  return apiClient.post<EmptyResponse, RequestPasswordResetRequest>(
+    endpoints.auth.requestPasswordReset,
+    request,
+  );
+}
+
+export function confirmPasswordReset(request: ConfirmPasswordResetRequest) {
+  return apiClient.post<EmptyResponse, ConfirmPasswordResetRequest>(
+    endpoints.auth.confirmPasswordReset,
+    request,
+  );
 }

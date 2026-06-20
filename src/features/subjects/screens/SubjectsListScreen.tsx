@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
+import { images } from '../../../assets/images';
 import {
   AppButton,
   AppHeader,
@@ -16,6 +17,11 @@ import {
 import { SubjectsRoutes } from '../../../navigation/routes';
 import type { SubjectsStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
+import {
+  SEARCH_CLEAR_LABEL,
+  SEARCH_NO_RESULTS_MESSAGE,
+  SEARCH_NO_RESULTS_TITLE,
+} from '../../../utils/searchEmptyState';
 import { SubjectCard, SubjectSearchBar } from '../components';
 import { filterSubjectsBySearch } from '../services';
 import { useSubjectsStore } from '../store';
@@ -112,7 +118,11 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
           <EmptyState
             action={
               search ? (
-                <AppButton onPress={() => setSearch('')} title="مسح البحث" variant="outline" />
+                <AppButton
+                  onPress={() => setSearch('')}
+                  title={SEARCH_CLEAR_LABEL}
+                  variant="outline"
+                />
               ) : (
                 <AppButton
                   loading={isRefreshing}
@@ -122,8 +132,10 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
                 />
               )
             }
-            message={search ? 'لا توجد مادة تطابق البحث الحالي.' : 'لا توجد مواد متاحة حاليا.'}
-            title={search ? 'لا توجد نتائج' : 'لا توجد مواد'}
+            message={search ? SEARCH_NO_RESULTS_MESSAGE : 'لا توجد مواد متاحة حاليا.'}
+            title={search ? SEARCH_NO_RESULTS_TITLE : 'لا توجد مواد'}
+            illustrationLabel={search ? 'رسم يوضح عدم وجود نتائج بحث' : 'رسم يوضح عدم وجود مواد'}
+            illustrationSource={search ? images.illustrations.search : images.emptyStates.subjects}
           />
         ) : (
           <Stack gap="md">

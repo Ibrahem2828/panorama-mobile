@@ -5,12 +5,13 @@ export type PublicStackParamList = {
   Onboarding: undefined;
   Login: undefined;
   RegisterStudent: undefined;
-  OtpVerification: { phoneOrEmail?: string } | undefined;
+  OtpVerification: { phoneNumber: string; flow: 'register' };
   ForgotPassword: undefined;
-  ResetPassword: { resetToken?: string } | undefined;
+  ResetPassword: { phoneNumber: string };
 };
 
 export type StudentSetupStackParamList = {
+  SetupFlow: undefined;
   AcademicProfileSetup: undefined;
   SubmitVerification: undefined;
   VerificationStatus: undefined;
@@ -84,4 +85,4 @@ export type RootStackParamList = {
   App: NavigatorScreenParams<AppTabsParamList>;
 };
 
-export type RootFlowMode = 'public' | 'studentSetup' | 'app';
+export type RootFlowMode = 'public' | 'studentSetup' | 'app' | 'accessDenied';

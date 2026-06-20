@@ -57,5 +57,6 @@ export type PrintDraftValidation = {
 
 export type PrintStatusPresentation = {
   label: string;
+  actionMessage: string;
   variant: StatusVariant;
 };
