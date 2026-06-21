@@ -57,6 +57,7 @@ function isValidWebSocketUrl(value: string): boolean {
 
 const configuredApiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
 const configuredWsBaseUrl = process.env.EXPO_PUBLIC_WS_BASE_URL;
+const configuredDashboardUrl = process.env.EXPO_PUBLIC_DASHBOARD_URL;
 const appEnv = parseAppEnvironment(process.env.EXPO_PUBLIC_APP_ENV);
 const apiBaseUrl = normalizeApiBaseUrl(configuredApiBaseUrl || DEFAULT_API_BASE_URL);
 const wsBaseUrl = trimTrailingSlash(configuredWsBaseUrl || DEFAULT_WS_BASE_URL);
@@ -70,6 +71,7 @@ export const env = {
   wsBaseUrl,
   isHttpApi,
   enableSelfServiceAuth,
+  dashboardUrl: configuredDashboardUrl?.trim() || 'https://dashboard.xn--mgbaab0cxheq.tech',
   isDevelopment: appEnv === 'development',
   isPreview: appEnv === 'preview',
   isProduction: appEnv === 'production',
@@ -102,7 +104,7 @@ export function validateClientEnv(): string[] {
 
   if (!configuredApiBaseUrl?.trim()) {
     issues.push(
-      'EXPO_PUBLIC_API_BASE_URL is missing; the temporary development default is in use.',
+      'EXPO_PUBLIC_API_BASE_URL is missing; temporary default in use (preview/development only).',
     );
   }
 
@@ -111,7 +113,9 @@ export function validateClientEnv(): string[] {
   }
 
   if (env.isHttpApi) {
-    issues.push('The API uses temporary cleartext HTTP; production must use HTTPS.');
+    issues.push(
+      'The API uses temporary cleartext HTTP; preview/development only. Production must use HTTPS.',
+    );
   }
 
   const expectsSecureWebSocket = env.apiBaseUrl.toLowerCase().startsWith('https://');
@@ -127,18 +131,35 @@ export function validateClientEnv(): string[] {
 }
 
 export function validateClientEnvStrict(): string[] {
-  const issues = validateClientEnv();
+  const issues: string[] = [];
 
-  if (!configuredApiBaseUrl?.trim()) {
-    issues.push('EXPO_PUBLIC_API_BASE_URL is required for preview and production builds.');
-  } else if (!isValidHttpUrl(configuredApiBaseUrl.trim())) {
+  // Configured URLs are required only for production builds.
+  // Preview may rely on compile-time defaults (temporary HTTP/WS allowed).
+  if (env.isProduction) {
+    if (!configuredApiBaseUrl?.trim()) {
+      issues.push('EXPO_PUBLIC_API_BASE_URL is required for production builds.');
+    } else if (!isValidHttpUrl(configuredApiBaseUrl.trim())) {
+      issues.push('EXPO_PUBLIC_API_BASE_URL must be a valid HTTP or HTTPS URL.');
+    }
+
+    if (!configuredWsBaseUrl?.trim()) {
+      issues.push('EXPO_PUBLIC_WS_BASE_URL is required for production builds.');
+    } else if (!isValidWebSocketUrl(configuredWsBaseUrl.trim())) {
+      issues.push('EXPO_PUBLIC_WS_BASE_URL must be a valid WS or WSS URL.');
+    }
+  } else if (configuredApiBaseUrl && !isValidHttpUrl(configuredApiBaseUrl.trim())) {
     issues.push('EXPO_PUBLIC_API_BASE_URL must be a valid HTTP or HTTPS URL.');
+  } else if (configuredWsBaseUrl && !isValidWebSocketUrl(configuredWsBaseUrl.trim())) {
+    issues.push('EXPO_PUBLIC_WS_BASE_URL must be a valid WS or WSS URL.');
   }
 
-  if (!configuredWsBaseUrl?.trim()) {
-    issues.push('EXPO_PUBLIC_WS_BASE_URL is required for preview and production builds.');
-  } else if (!isValidWebSocketUrl(configuredWsBaseUrl.trim())) {
-    issues.push('EXPO_PUBLIC_WS_BASE_URL must be a valid WS or WSS URL.');
+  const expectsSecureWebSocket = env.apiBaseUrl.toLowerCase().startsWith('https://');
+  const hasSecureWebSocket = env.wsBaseUrl.toLowerCase().startsWith('wss://');
+
+  if (expectsSecureWebSocket !== hasSecureWebSocket) {
+    issues.push(
+      'EXPO_PUBLIC_WS_BASE_URL protocol must match the API protocol (HTTP/WS or HTTPS/WSS).',
+    );
   }
 
   if (env.isProduction && env.isHttpApi) {
@@ -153,6 +174,9 @@ export function validateClientEnvStrict(): string[] {
 }
 
 export function assertClientEnvForRelease(): void {
+  // Development: warnings only (soft validate).
+  // Preview: allow HTTP/WS + defaults (for temporary backend); only fatal on malformed provided values.
+  // Production: strict (HTTPS/WSS required; missing/malformed configured values fatal).
   if (env.isDevelopment) {
     return;
   }

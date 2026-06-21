@@ -83,11 +83,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         ...toAuthenticatedState(result.session.user, result.session.tokens),
         isBootstrapping: false,
       });
-    } catch {
+    } catch (error) {
       set({
         ...unauthenticatedState,
         isBootstrapping: false,
-        errorMessage: SESSION_EXPIRED_MESSAGE,
+        errorMessage:
+          error instanceof Error && error.message ? error.message : SESSION_EXPIRED_MESSAGE,
       });
     }
   },

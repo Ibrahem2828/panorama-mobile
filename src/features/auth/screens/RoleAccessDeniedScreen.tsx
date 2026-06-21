@@ -2,11 +2,8 @@ import { StyleSheet } from 'react-native';
 
 import { AppButton, AppScreen, AppText, ErrorState, Stack } from '../../../components';
 import { colors, spacing } from '../../../theme';
+import { env } from '../../../config/env';
 import { useAuthStore } from '../store';
-
-const DEFAULT_DASHBOARD_URL =
-  process.env.EXPO_PUBLIC_DASHBOARD_URL?.trim() ||
-  'http://zu642712hpki80yovl075v7z.76.13.155.172.sslip.io';
 
 export function RoleAccessDeniedScreen() {
   const logout = useAuthStore((state) => state.logout);
@@ -28,7 +25,7 @@ export function RoleAccessDeniedScreen() {
           لوحة التحكم:
         </AppText>
         <AppText align="center" color="primary" variant="bodySmall">
-          {DEFAULT_DASHBOARD_URL}
+          {env.dashboardUrl}
         </AppText>
         <AppButton
           disabled={isSubmitting}
