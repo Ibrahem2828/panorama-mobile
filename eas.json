@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 10.0.0"
+    "version": ">= 13.0.0",
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
@@ -19,7 +20,10 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_APP_ENV": "preview"
+        "EXPO_PUBLIC_APP_ENV": "preview",
+        "EXPO_PUBLIC_API_BASE_URL": "http://eby52x8qksscjvfeqxf0eob7.76.13.155.172.sslip.io",
+        "EXPO_PUBLIC_WS_BASE_URL": "ws://eby52x8qksscjvfeqxf0eob7.76.13.155.172.sslip.io",
+        "EXPO_PUBLIC_ENABLE_SELF_SERVICE_AUTH": "false"
       }
     },
     "production": {

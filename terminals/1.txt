@@ -1,7 +1,0 @@
----
-pid: 0
-cwd: "b:\panorama\panorama-mobile"
-command: "cd /d \"b:\\panorama\\panorama-mobile\" && npx expo start --non-interactive 2>&1"
-started_at: 2026-06-20T20:19:45.211Z
-running_for_ms: 0        
----

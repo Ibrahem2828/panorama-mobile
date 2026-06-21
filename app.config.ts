@@ -18,8 +18,11 @@ const withAndroidCleartextTraffic: ConfigPlugin<{ enabled: boolean }> = (config,
   });
 
 export default ({ config }: ConfigContext): ExpoConfig => {
+  const appEnv = (process.env.EXPO_PUBLIC_APP_ENV ?? 'development').trim();
   const apiBaseUrl = (process.env.EXPO_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE_URL).trim();
   const wsBaseUrl = (process.env.EXPO_PUBLIC_WS_BASE_URL ?? DEFAULT_WS_BASE_URL).trim();
+  const selfServiceAuthEnabled =
+    process.env.EXPO_PUBLIC_ENABLE_SELF_SERVICE_AUTH?.trim().toLowerCase() === 'true';
   const usesHttpApi = apiBaseUrl.toLowerCase().startsWith('http://');
 
   const expoConfig: ExpoConfig = {
@@ -67,9 +70,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     extra: {
       ...config.extra,
-      appEnv: process.env.EXPO_PUBLIC_APP_ENV ?? 'development',
+      appEnv,
       apiBaseUrl,
       wsBaseUrl,
+      selfServiceAuthEnabled,
+      eas: {
+        projectId: '3804d959-0d36-4747-aeb0-d3339ad57f90',
+      },
     },
   };
 
