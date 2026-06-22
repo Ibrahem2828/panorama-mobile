@@ -27,7 +27,9 @@ export function ChatRoomHeader({ group, connectionStatus }: ChatRoomHeaderProps)
     <AppCard padding="lg" variant="elevated">
       <Stack gap="md">
         <Stack gap="xs">
-          <AppText variant="title">{group ? getGroupDisplayName(group) : 'محادثة الغروب'}</AppText>
+          <AppText variant="title">
+            {group ? getGroupDisplayName(group) : 'محادثة المجموعة'}
+          </AppText>
           {group?.members_count !== undefined ? (
             <AppText color="secondary" variant="bodySmall">
               عدد الأعضاء: {group.members_count}

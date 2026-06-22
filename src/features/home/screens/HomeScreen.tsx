@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { StyleSheet } from 'react-native';
+import { Animated, StyleSheet } from 'react-native';
 
 import { images } from '../../../assets/images';
 import {
@@ -26,6 +26,7 @@ import {
 } from '../../../navigation/routes';
 import type { AppTabsParamList, HomeStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
+import { createEntranceAnim } from '../../../utils/motion';
 import { useAuthStore } from '../../auth/store';
 import { isStudentProfileComplete, useStudentProfileStore } from '../../student-profile';
 import { getVerificationStatus, useVerificationStore } from '../../verification';
@@ -64,8 +65,8 @@ function getQuickActions(unreadNotificationsCount: number): HomeQuickAction[] {
     },
     {
       key: 'groups',
-      title: 'الغروبات',
-      description: 'تصفح الغروبات والمساحات المرتبطة بالدراسة.',
+      title: 'المجموعات',
+      description: 'تصفح المجموعات والمساحات المرتبطة بالدراسة.',
     },
     {
       key: 'files',
@@ -119,11 +120,19 @@ export function HomeScreen() {
   const showInitialLoading = isLoading && !lastLoadedAt;
   const showInitialError = Boolean(errorMessage && !lastLoadedAt);
   const quickActions = getQuickActions(unreadNotificationsCount);
+
+  const mainContentAnim = useRef(createEntranceAnim(8)).current;
   useEffect(() => {
     void loadHome();
     void bootstrapStudentProfile();
     void loadVerification();
   }, [bootstrapStudentProfile, loadHome, loadVerification]);
+
+  useEffect(() => {
+    if (!showInitialLoading && !showInitialError) {
+      mainContentAnim.animate().start();
+    }
+  }, [showInitialLoading, showInitialError]);
 
   function handleQuickActionPress(key: HomeQuickActionKey) {
     switch (key) {
@@ -203,60 +212,67 @@ export function HomeScreen() {
 
         <HomeAcademicSummaryCard profile={profile} />
 
-        <Stack gap="md">
-          <HomeSectionHeader
-            action={
-              <AppButton
-                loading={isRefreshing}
-                onPress={handleRefresh}
-                size="sm"
-                title="تحديث"
-                variant="outline"
-              />
-            }
-            subtitle="آخر الإعلانات المرتبطة بحسابك."
-            title="الإعلانات"
-          />
-
-          {errorMessage ? (
-            <ErrorState message={errorMessage} onRetry={handleRefresh} />
-          ) : announcements.length === 0 ? (
-            <EmptyState
+        <Animated.View
+          style={{
+            opacity: mainContentAnim.opacity,
+            transform: [{ translateY: mainContentAnim.translateY }],
+          }}
+        >
+          <Stack gap="md">
+            <HomeSectionHeader
               action={
                 <AppButton
                   loading={isRefreshing}
                   onPress={handleRefresh}
-                  title="إعادة التحقق"
+                  size="sm"
+                  title="تحديث"
                   variant="outline"
                 />
               }
-              message="ستظهر هنا الإعلانات المهمة عند توفرها."
-              title="لا توجد إعلانات حاليا"
-              illustrationLabel="رسم يوضح عدم وجود إعلانات"
-              illustrationSource={images.emptyStates.announcements}
+              subtitle="آخر الإعلانات المرتبطة بحسابك."
+              title="الإعلانات"
             />
-          ) : (
-            <Stack gap="md">
-              {announcements.map((announcement) => (
-                <AnnouncementCard announcement={announcement} key={String(announcement.id)} />
+
+            {errorMessage ? (
+              <ErrorState message={errorMessage} onRetry={handleRefresh} />
+            ) : announcements.length === 0 ? (
+              <EmptyState
+                action={
+                  <AppButton
+                    loading={isRefreshing}
+                    onPress={handleRefresh}
+                    title="إعادة التحقق"
+                    variant="outline"
+                  />
+                }
+                message="ستظهر هنا الإعلانات المهمة عند توفرها."
+                title="لا توجد إعلانات حاليا"
+                illustrationLabel="رسم يوضح عدم وجود إعلانات"
+                illustrationSource={images.emptyStates.announcements}
+              />
+            ) : (
+              <Stack gap="md">
+                {announcements.map((announcement) => (
+                  <AnnouncementCard announcement={announcement} key={String(announcement.id)} />
+                ))}
+              </Stack>
+            )}
+          </Stack>
+
+          <Stack gap="md">
+            <HomeSectionHeader subtitle="اختصارات سريعة لأهم خدمات الطالب." title="الخدمات" />
+            <Stack direction="horizontal" gap="md" wrap>
+              {quickActions.map((action) => (
+                <HomeQuickActionCard
+                  action={action}
+                  key={action.key}
+                  marker={QUICK_ACTION_MARKERS[action.key]}
+                  onPress={action.disabled ? undefined : () => handleQuickActionPress(action.key)}
+                />
               ))}
             </Stack>
-          )}
-        </Stack>
-
-        <Stack gap="md">
-          <HomeSectionHeader subtitle="اختصارات سريعة لأهم خدمات الطالب." title="الخدمات" />
-          <Stack direction="horizontal" gap="md" wrap>
-            {quickActions.map((action) => (
-              <HomeQuickActionCard
-                action={action}
-                key={action.key}
-                marker={QUICK_ACTION_MARKERS[action.key]}
-                onPress={action.disabled ? undefined : () => handleQuickActionPress(action.key)}
-              />
-            ))}
           </Stack>
-        </Stack>
+        </Animated.View>
 
         {lastLoadedAt ? (
           <AppText align="center" color="muted" variant="caption">

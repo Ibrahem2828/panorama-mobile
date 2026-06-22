@@ -123,9 +123,9 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
             title="الملفات"
           />
           <SubjectLinkedSectionCard
-            description="افتح الغروبات العامة المتاحة. لا يوجد ربط موثق حسب المادة في هذه المرحلة."
+            description="افتح المجموعات العامة المتاحة. لا يوجد ربط موثق حسب المادة في هذه المرحلة."
             onPress={handleOpenGroups}
-            title="الغروبات"
+            title="المجموعات"
           />
           <SubjectLinkedSectionCard
             description="لا يوجد endpoint موثق لإعلانات المادة في هذه المرحلة."

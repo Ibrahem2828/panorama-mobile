@@ -77,8 +77,8 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
   if (showInitialLoading) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="الغروبات المرتبطة بحسابك" title="غروباتي" />
-        <LoadingState message="جاري تحميل غروباتك..." />
+        <AppHeader subtitle="المجموعات المرتبطة بحسابك" title="مجموعاتي" />
+        <LoadingState message="جاري تحميل مجموعاتك..." />
       </AppScreen>
     );
   }
@@ -86,7 +86,7 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
   if (showInitialError) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="الغروبات المرتبطة بحسابك" title="غروباتي" />
+        <AppHeader subtitle="المجموعات المرتبطة بحسابك" title="مجموعاتي" />
         <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
       </AppScreen>
     );
@@ -95,7 +95,7 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="الغروبات المرتبطة بحسابك" title="غروباتي" />
+        <AppHeader subtitle="المجموعات المرتبطة بحسابك" title="مجموعاتي" />
 
         <SectionHeader
           action={
@@ -107,7 +107,7 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
               variant="outline"
             />
           }
-          subtitle={`عدد الغروبات المحملة: ${myGroups.length}`}
+          subtitle={`عدد المجموعات المحملة: ${myGroups.length}`}
           title="القائمة"
         />
 
@@ -115,7 +115,7 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
           <AppTextInput
             label="بحث محلي"
             onChangeText={setSearchQuery}
-            placeholder="ابحث باسم الغروب أو وصفه"
+            placeholder="ابحث باسم المجموعة أو وصفها"
             value={searchQuery}
           />
         ) : null}
@@ -132,8 +132,8 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
                 variant="outline"
               />
             }
-            message="لم تنضم إلى أي غروب بعد."
-            title="لا توجد غروبات"
+            message="لم تنضم إلى أي مجموعة بعد."
+            title="لا توجد مجموعات"
             illustrationLabel="رسم يوضح عدم وجود مجموعات"
             illustrationSource={images.emptyStates.groups}
           />

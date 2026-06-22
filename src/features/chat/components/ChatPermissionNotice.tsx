@@ -14,15 +14,15 @@ function getPermissionMessage(permission: ChatSendPermission, reason?: string): 
   switch (permission) {
     case 'not_member':
     case 'members_only':
-      return 'يجب أن تكون عضوا في الغروب لإرسال الرسائل.';
+      return 'يجب أن تكون عضوا في المجموعة لإرسال الرسائل.';
     case 'admins_only':
-      return 'الإرسال متاح للمشرفين فقط في هذا الغروب.';
+      return 'الإرسال متاح للمشرفين فقط في هذه المجموعة.';
     case 'blocked':
-      return 'لا يمكنك إرسال رسائل في هذا الغروب حاليا.';
+      return 'لا يمكنك إرسال رسائل في هذه المجموعة حاليا.';
     case 'unknown':
       return 'يمكنك قراءة الرسائل فقط حاليا.';
     default:
-      return 'لا يمكنك إرسال رسائل في هذا الغروب حاليا.';
+      return 'لا يمكنك إرسال رسائل في هذه المجموعة حاليا.';
   }
 }
 

@@ -1,7 +1,9 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { useRef } from 'react';
+import { Animated, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
 import { colors, opacity, spacing } from '../../../theme';
+import { createPressScaleAnim } from '../../../utils/motion';
 import type { HomeQuickAction } from '../types';
 
 type HomeQuickActionCardProps = {
@@ -12,6 +14,7 @@ type HomeQuickActionCardProps = {
 
 export function HomeQuickActionCard({ action, marker, onPress }: HomeQuickActionCardProps) {
   const disabled = action.disabled || !onPress;
+  const { scale, onPressIn, onPressOut } = useRef(createPressScaleAnim()).current;
 
   return (
     <Pressable
@@ -19,31 +22,31 @@ export function HomeQuickActionCard({ action, marker, onPress }: HomeQuickAction
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.pressable,
-        disabled ? styles.disabled : null,
-        pressed && !disabled ? styles.pressed : null,
-      ]}
+      onPressIn={disabled ? undefined : onPressIn}
+      onPressOut={disabled ? undefined : onPressOut}
+      style={() => [styles.pressable, disabled ? styles.disabled : null]}
     >
-      <AppCard padding="md" style={styles.card} variant="default">
-        <Stack gap="md">
-          <View style={styles.header}>
-            <View style={styles.marker}>
-              <AppText align="center" color="brand" variant="button">
-                {marker}
-              </AppText>
+      <Animated.View style={{ transform: [{ scale }] }}>
+        <AppCard padding="md" style={styles.card} variant="default">
+          <Stack gap="md">
+            <View style={styles.header}>
+              <View style={styles.marker}>
+                <AppText align="center" color="brand" variant="button">
+                  {marker}
+                </AppText>
+              </View>
+              {action.badge ? <AppBadge label={action.badge} variant="warning" /> : null}
             </View>
-            {action.badge ? <AppBadge label={action.badge} variant="warning" /> : null}
-          </View>
 
-          <Stack gap="xs">
-            <AppText variant="title">{action.title}</AppText>
-            <AppText color="secondary" variant="bodySmall">
-              {action.description}
-            </AppText>
+            <Stack gap="xs">
+              <AppText variant="title">{action.title}</AppText>
+              <AppText color="secondary" variant="bodySmall">
+                {action.description}
+              </AppText>
+            </Stack>
           </Stack>
-        </Stack>
-      </AppCard>
+        </AppCard>
+      </Animated.View>
     </Pressable>
   );
 }

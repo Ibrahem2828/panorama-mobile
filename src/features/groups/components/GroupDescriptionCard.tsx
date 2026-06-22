@@ -18,9 +18,9 @@ export function GroupDescriptionCard({
   return (
     <AppCard variant="default">
       <Stack gap="md">
-        <AppText variant="title">وصف الغروب</AppText>
+        <AppText variant="title">وصف المجموعة</AppText>
         <AppText color={description ? 'secondary' : 'muted'} variant="bodySmall">
-          {description ?? 'لا يوجد وصف متاح لهذا الغروب حاليا.'}
+          {description ?? 'لا يوجد وصف متاح لهذه المجموعة حاليا.'}
         </AppText>
         {whatsAppLink && onOpenWhatsApp ? (
           <AppButton

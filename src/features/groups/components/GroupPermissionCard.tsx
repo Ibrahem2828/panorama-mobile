@@ -13,7 +13,7 @@ function getSendPermissionLabel(permission?: SendMessagesPermission) {
     case 'admins_only':
       return 'الإرسال للمشرفين فقط';
     default:
-      return 'صلاحيات الإرسال يحددها الغروب';
+      return 'صلاحيات الإرسال يحددها المجموعة';
   }
 }
 
@@ -24,7 +24,7 @@ function getRoleLabel(role?: GroupRole | null) {
     case 'moderator':
       return 'مشرف';
     case 'group_admin':
-      return 'مدير الغروب';
+      return 'مدير المجموعة';
     case 'admin':
       return 'أدمن';
     case 'it_support':

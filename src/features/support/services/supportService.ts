@@ -161,7 +161,7 @@ export function getSupportCategoryLabel(category?: SupportTicketCategory): strin
     case 'files':
       return 'الملفات';
     case 'groups':
-      return 'الغروبات';
+      return 'المجموعات';
     case 'other':
       return 'أخرى';
     default:

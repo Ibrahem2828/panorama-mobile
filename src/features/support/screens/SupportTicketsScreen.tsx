@@ -56,10 +56,6 @@ export function SupportTicketsScreen({ navigation }: SupportTicketsScreenProps) 
       <Stack gap="xl">
         <Stack gap="md">
           <AppHeader subtitle="تذاكر دعم الطلاب" title="الدعم الفني" />
-          <Stack direction="horizontal" gap="sm" wrap>
-            <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
-            <AppButton onPress={handleRefresh} title="تحديث" variant="outline" />
-          </Stack>
         </Stack>
 
         <AppCard variant="muted">

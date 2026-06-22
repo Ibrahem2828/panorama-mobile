@@ -6,9 +6,9 @@ export function PrintingFutureOptionsCard() {
   return (
     <AppCard variant="muted">
       <Stack gap="sm">
-        <AppText variant="title">خيارات مستقبلية</AppText>
+        <AppText variant="title">خيارات إضافية</AppText>
         <AppText color="secondary" variant="bodySmall">
-          تظهر هذه الخيارات كتجهيز للواجهة فقط. لا يتم إرسالها مع طلب Phase 11.
+          هذه الخيارات غير متاحة حالياً. ستتوفر في تحديثات قادمة.
         </AppText>
         <Stack direction="horizontal" gap="sm" wrap>
           {FUTURE_OPTIONS.map((option) => (

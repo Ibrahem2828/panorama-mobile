@@ -31,7 +31,7 @@ function isSameId(left: string | number, right: string | number): boolean {
   return String(left) === String(right);
 }
 
-export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
+export function ChatRoomScreen({ route }: ChatRoomScreenProps) {
   const { groupId } = route.params;
   const currentUserId = useAuthStore((state) => state.user?.id ?? null);
   const selectedGroup = useGroupsStore((state) => state.selectedGroup);
@@ -73,7 +73,7 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
     ? canSendMessageToGroup(group, currentUserId)
     : {
         allowed: false,
-        reason: 'جاري تحميل صلاحيات الغروب.',
+        reason: 'جاري تحميل صلاحيات المجموعة.',
         permission: 'unknown' as const,
       };
   const showInitialLoading = (isLoadingMessages || isLoadingDetail) && messages.length === 0;
@@ -110,18 +110,18 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <Stack gap="md">
-          <AppHeader subtitle="محادثة نصية داخل الغروب" title="المحادثة" />
-          <Stack direction="horizontal" gap="sm" wrap>
-            <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+        <AppHeader
+          rightAction={
             <AppButton
               loading={isRefreshing}
               onPress={handleRefresh}
               title="تحديث"
               variant="outline"
             />
-          </Stack>
-        </Stack>
+          }
+          subtitle="محادثة نصية داخل المجموعة"
+          title="المحادثة"
+        />
 
         <ChatRoomHeader connectionStatus={connectionStatus} group={group} />
         <ChatConnectionStatusIndicator status={connectionStatus} />

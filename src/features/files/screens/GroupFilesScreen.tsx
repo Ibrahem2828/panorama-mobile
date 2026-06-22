@@ -78,8 +78,8 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
   if (showInitialLoading) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="ملفات الغروب المتاحة للأعضاء" title="ملفات الغروب" />
-        <LoadingState message="جاري تحميل ملفات الغروب..." />
+        <AppHeader subtitle="ملفات المجموعة المتاحة للأعضاء" title="ملفات المجموعة" />
+        <LoadingState message="جاري تحميل ملفات المجموعة..." />
       </AppScreen>
     );
   }
@@ -87,7 +87,7 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
   if (showInitialError) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="ملفات الغروب المتاحة للأعضاء" title="ملفات الغروب" />
+        <AppHeader subtitle="ملفات المجموعة المتاحة للأعضاء" title="ملفات المجموعة" />
         <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
       </AppScreen>
     );
@@ -97,8 +97,12 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <Stack gap="md">
-          <AppHeader subtitle="ملفات الغروب المتاحة للأعضاء" title="ملفات الغروب" />
-          <AppButton onPress={() => navigation.goBack()} title="رجوع إلى الغروب" variant="ghost" />
+          <AppHeader subtitle="ملفات المجموعة المتاحة للأعضاء" title="ملفات المجموعة" />
+          <AppButton
+            onPress={() => navigation.goBack()}
+            title="رجوع إلى المجموعة"
+            variant="ghost"
+          />
         </Stack>
 
         <SectionHeader
@@ -134,7 +138,7 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
                 variant="outline"
               />
             }
-            message="لا توجد ملفات لهذا الغروب حاليا."
+            message="لا توجد ملفات لهذا المجموعة حاليا."
             title="لا توجد ملفات"
             illustrationLabel="رسم يوضح عدم وجود ملفات"
             illustrationSource={images.emptyStates.files}

@@ -123,6 +123,9 @@ export function SubmitVerificationScreen() {
         <Stack gap="xl">
           <Stack gap="md">
             <AppHeader
+              leftAction={
+                <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+              }
               subtitle="ارفع صورة واضحة لبطاقة الطالب من المعرض. التوثيق مطلوب للوصول إلى خدمات بانوراما."
               title={shouldResubmit ? 'إعادة إرسال التوثيق' : 'إرسال بطاقة الطالب'}
             />
@@ -133,7 +136,7 @@ export function SubmitVerificationScreen() {
             <Stack gap="xs">
               <AppText variant="title">لماذا التوثيق؟</AppText>
               <AppText color="secondary" variant="bodySmall">
-                يؤكد التوثيق هويتك كطالب جامعي ويفتح الوصول إلى الغروبات والملفات والطباعة والدعم.
+                يؤكد التوثيق هويتك كطالب جامعي ويفتح الوصول إلى المجموعات والملفات والطباعة والدعم.
                 بعد الإرسال، ستراجع الإدارة طلبك وتصلك الحالة في هذه الشاشة.
               </AppText>
             </Stack>

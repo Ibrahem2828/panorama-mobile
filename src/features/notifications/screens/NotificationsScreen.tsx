@@ -191,7 +191,7 @@ export function NotificationsScreen({ navigation }: NotificationsScreenProps) {
                 variant="outline"
               />
             }
-            message="ستظهر هنا تحديثات التوثيق والغروبات والملفات وطلبات الطباعة عند توفرها."
+            message="ستظهر هنا تحديثات التوثيق والمجموعات والملفات وطلبات الطباعة عند توفرها."
             title="لا توجد إشعارات حاليا"
             illustrationLabel="رسم يوضح عدم وجود إشعارات"
             illustrationSource={images.emptyStates.notifications}

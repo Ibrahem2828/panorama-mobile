@@ -57,7 +57,6 @@ export function CreateSupportTicketScreen({ navigation }: CreateSupportTicketScr
       <Stack gap="xl">
         <Stack gap="md">
           <AppHeader subtitle="إرسال مشكلة إلى فريق الدعم" title="إنشاء تذكرة دعم" />
-          <AppButton onPress={handleCancel} title="رجوع" variant="ghost" />
         </Stack>
 
         <AppCard variant="muted">

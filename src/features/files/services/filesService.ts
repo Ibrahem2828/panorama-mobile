@@ -220,7 +220,7 @@ export function getVisibilityLabel(visibility: FileResource['visibility']): stri
     case 'major_only':
       return 'حسب الاختصاص';
     case 'group_only':
-      return 'خاص بالغروب';
+      return 'خاص بالمجموعة';
     case 'admin_only':
       return 'إداري';
     default:

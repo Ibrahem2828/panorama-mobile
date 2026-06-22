@@ -51,7 +51,7 @@ function getStatusView(verification: VerificationRecord | null): VerificationSta
       return {
         label: 'غير مرسل',
         description:
-          'لم يتم إرسال طلب توثيق بعد. التوثيق مطلوب للوصول إلى الغروبات والملفات والخدمات الطلابية.',
+          'لم يتم إرسال طلب توثيق بعد. التوثيق مطلوب للوصول إلى المجموعات والملفات والخدمات الطلابية.',
         variant: 'neutral',
       };
   }

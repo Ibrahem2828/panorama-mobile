@@ -42,7 +42,7 @@ type ChatState = {
 const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
 const EMPTY_MESSAGE = 'يرجى كتابة رسالة قبل الإرسال.';
 const LONG_MESSAGE = 'يجب ألا تتجاوز الرسالة 1000 حرف.';
-const PERMISSION_MESSAGE = 'لا يمكنك إرسال رسائل في هذا الغروب حاليا.';
+const PERMISSION_MESSAGE = 'لا يمكنك إرسال رسائل في هذا المجموعة حاليا.';
 
 let chatWebSocketClient: ChatWebSocketClient | null = null;
 

@@ -15,10 +15,10 @@ import type {
   SendMessagesPermission,
 } from '../types';
 
-const NETWORK_MESSAGE = 'تعذر تحميل الغروبات. تحقق من اتصال الإنترنت وحاول مرة أخرى.';
+const NETWORK_MESSAGE = 'تعذر تحميل المجموعات. تحقق من اتصال الإنترنت وحاول مرة أخرى.';
 const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const PERMISSION_MESSAGE = 'لا تملك صلاحية الوصول إلى هذه الغروبات حاليا.';
-const GENERIC_MESSAGE = 'تعذر تحميل الغروبات. حاول مرة أخرى.';
+const PERMISSION_MESSAGE = 'لا تملك صلاحية الوصول إلى هذه المجموعات حاليا.';
+const GENERIC_MESSAGE = 'تعذر تحميل المجموعات. حاول مرة أخرى.';
 
 const SAFE_WHATSAPP_PREFIXES = [
   'https://chat.whatsapp.com/',
@@ -155,7 +155,7 @@ export function getGroupWhatsAppLink(group: Group): string | null {
 }
 
 export function getGroupDisplayName(group: Group): string {
-  return toText(group.name) ?? toText(group.title) ?? 'غروب بدون اسم';
+  return toText(group.name) ?? toText(group.title) ?? 'مجموعة بدون اسم';
 }
 
 export function getGroupDescription(group: Group): string | null {

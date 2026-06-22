@@ -205,7 +205,7 @@ export function FileDetailsScreen() {
               <FileMetaRow label="الامتداد" value={getFileExtension(activeFile)?.toUpperCase()} />
               <FileMetaRow label="الحجم" value={formatFileSize(getFileSize(activeFile))} />
               <FileMetaRow label="الصلاحية" value={getVisibilityLabel(activeFile.visibility)} />
-              <FileMetaRow label="الغروب" value={getEntityLabel(activeFile.group)} />
+              <FileMetaRow label="المجموعة" value={getEntityLabel(activeFile.group)} />
               <FileMetaRow label="المادة" value={getEntityLabel(activeFile.subject)} />
               <FileMetaRow label="تاريخ الإنشاء" value={formatDate(activeFile.created_at)} />
               <FileMetaRow label="آخر تحديث" value={formatDate(activeFile.updated_at)} />

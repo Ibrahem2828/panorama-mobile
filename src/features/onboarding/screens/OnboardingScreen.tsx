@@ -1,6 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Image, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import {
+  Animated,
+  Easing,
+  Image,
+  Pressable,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import { images } from '../../../assets/images';
 import { AppButton, AppScreen, AppText, Stack } from '../../../components';
@@ -23,7 +31,7 @@ const SLIDES = [
     image: images.onboarding.university,
     imageLabel: 'رسم يوضح الحياة الجامعية داخل تطبيق بانوراما',
     title: 'كل حياتك الجامعية في مكان واحد',
-    description: 'بانوراما يجمع ملفاتك، موادك، الغروبات، وإعلاناتك الجامعية في تجربة واحدة سهلة.',
+    description: 'بانوراما يجمع ملفاتك، موادك، المجموعات، وإعلاناتك الجامعية في تجربة واحدة سهلة.',
   },
   {
     image: images.onboarding.verification,
@@ -34,8 +42,8 @@ const SLIDES = [
   },
   {
     image: images.onboarding.groups,
-    imageLabel: 'رسم يوضح غروبات المواد الجامعية',
-    title: 'انضم إلى غروبات موادك',
+    imageLabel: 'رسم يوضح مجموعات المواد الجامعية',
+    title: 'انضم إلى مجموعات موادك',
     description: 'تابع النقاشات، الإعلانات، والملفات المرتبطة بموادك وجامعتك بسهولة.',
   },
   {
@@ -55,6 +63,31 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
   const activeSlide = SLIDES[activeIndex] ?? FIRST_SLIDE;
   const isFinalSlide = activeIndex === SLIDES.length - 1;
   const imageWidth = useMemo(() => Math.min(Math.max(width - spacing.xxl * 2, 220), 320), [width]);
+
+  // Subtle slide entrance + cross-fade animation (React Native Animated only)
+  const slideOpacity = useRef(new Animated.Value(1)).current;
+  const slideTranslate = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Reset and animate on slide change for smooth transition
+    slideOpacity.setValue(0.65);
+    slideTranslate.setValue(10);
+
+    Animated.parallel([
+      Animated.timing(slideOpacity, {
+        toValue: 1,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideTranslate, {
+        toValue: 0,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [activeIndex]);
 
   async function completeOnboarding() {
     setIsCompleting(true);
@@ -95,7 +128,15 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
           </Pressable>
         </View>
 
-        <View style={styles.illustrationFrame}>
+        <Animated.View
+          style={[
+            styles.illustrationFrame,
+            {
+              opacity: slideOpacity,
+              transform: [{ translateX: slideTranslate }],
+            },
+          ]}
+        >
           <Image
             accessibilityIgnoresInvertColors
             accessibilityLabel={activeSlide.imageLabel}
@@ -103,16 +144,24 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
             source={activeSlide.image}
             style={[styles.illustration, { width: imageWidth }]}
           />
-        </View>
+        </Animated.View>
 
-        <Stack align="center" gap="md" style={styles.textBlock}>
+        <Animated.View
+          style={[
+            styles.textBlock,
+            {
+              opacity: slideOpacity,
+              transform: [{ translateX: slideTranslate }],
+            },
+          ]}
+        >
           <AppText align="center" variant="h1">
             {activeSlide.title}
           </AppText>
           <AppText align="center" color="secondary" variant="body">
             {activeSlide.description}
           </AppText>
-        </Stack>
+        </Animated.View>
 
         <View accessibilityLabel="مؤشر صفحات التعريف" style={styles.pagination}>
           {SLIDES.map((slide, index) => (

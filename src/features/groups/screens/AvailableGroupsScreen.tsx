@@ -77,8 +77,8 @@ export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps
   if (showInitialLoading) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="الغروبات التي يمكنك طلب الانضمام إليها" title="الغروبات المتاحة" />
-        <LoadingState message="جاري تحميل الغروبات المتاحة..." />
+        <AppHeader subtitle="المجموعات التي يمكنك طلب الانضمام إليها" title="المجموعات المتاحة" />
+        <LoadingState message="جاري تحميل المجموعات المتاحة..." />
       </AppScreen>
     );
   }
@@ -86,7 +86,7 @@ export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps
   if (showInitialError) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="الغروبات التي يمكنك طلب الانضمام إليها" title="الغروبات المتاحة" />
+        <AppHeader subtitle="المجموعات التي يمكنك طلب الانضمام إليها" title="المجموعات المتاحة" />
         <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
       </AppScreen>
     );
@@ -95,7 +95,7 @@ export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="الغروبات التي يمكنك طلب الانضمام إليها" title="الغروبات المتاحة" />
+        <AppHeader subtitle="المجموعات التي يمكنك طلب الانضمام إليها" title="المجموعات المتاحة" />
 
         <SectionHeader
           action={
@@ -107,7 +107,7 @@ export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps
               variant="outline"
             />
           }
-          subtitle={`عدد الغروبات المحملة: ${availableGroups.length}`}
+          subtitle={`عدد المجموعات المحملة: ${availableGroups.length}`}
           title="القائمة"
         />
 
@@ -115,7 +115,7 @@ export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps
           <AppTextInput
             label="بحث محلي"
             onChangeText={setSearchQuery}
-            placeholder="ابحث باسم الغروب أو وصفه"
+            placeholder="ابحث باسم المجموعة أو وصفها"
             value={searchQuery}
           />
         ) : null}
@@ -132,8 +132,8 @@ export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps
                 variant="outline"
               />
             }
-            message="لا توجد غروبات متاحة حاليا."
-            title="لا توجد غروبات"
+            message="لا توجد مجموعات متاحة حاليا."
+            title="لا توجد مجموعات"
             illustrationLabel="رسم يوضح عدم وجود مجموعات"
             illustrationSource={images.emptyStates.groups}
           />

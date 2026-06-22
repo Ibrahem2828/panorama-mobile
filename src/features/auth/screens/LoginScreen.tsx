@@ -1,7 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet } from 'react-native';
+import {
+  Animated,
+  Easing,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+} from 'react-native';
 
 import { images } from '../../../assets/images';
 import { AppButton, AppCard, AppScreen, AppText, AppTextInput, Stack } from '../../../components';
@@ -27,6 +35,27 @@ export function LoginScreen() {
   const [password, setPassword] = useState('');
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const displayedError = validationMessage ?? errorMessage;
+
+  // Subtle card entrance animation (React Native Animated)
+  const cardOpacity = useRef(new Animated.Value(0)).current;
+  const cardTranslate = useRef(new Animated.Value(12)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(cardOpacity, {
+        toValue: 1,
+        duration: 260,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(cardTranslate, {
+        toValue: 0,
+        duration: 260,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [cardOpacity, cardTranslate]);
 
   function handleFieldChange(nextValue: string, field: 'identifier' | 'password') {
     if (field === 'identifier') {
@@ -83,40 +112,47 @@ export function LoginScreen() {
             </AppText>
           </Stack>
 
-          <AuthFormCard
-            subtitle="استخدم البريد الإلكتروني أو رقم الهاتف المرتبط بحسابك الطلابي."
-            title="تسجيل الدخول"
+          <Animated.View
+            style={{
+              opacity: cardOpacity,
+              transform: [{ translateY: cardTranslate }],
+            }}
           >
-            <Stack gap="md">
-              <AppTextInput
-                accessibilityLabel="البريد الإلكتروني أو رقم الهاتف"
-                autoCapitalize="none"
-                autoCorrect={false}
-                disabled={isSubmitting}
-                error={displayedError ?? undefined}
-                keyboardType="email-address"
-                label="البريد أو رقم الهاتف"
-                onChangeText={(value) => handleFieldChange(value, 'identifier')}
-                placeholder="student@university.edu"
-                textContentType="username"
-                value={identifier}
-              />
-              <PasswordInput
-                disabled={isSubmitting}
-                onChangeText={(value) => handleFieldChange(value, 'password')}
-                value={password}
-              />
+            <AuthFormCard
+              subtitle="استخدم البريد الإلكتروني أو رقم الهاتف المرتبط بحسابك الطلابي."
+              title="تسجيل الدخول"
+            >
+              <Stack gap="md">
+                <AppTextInput
+                  accessibilityLabel="البريد الإلكتروني أو رقم الهاتف"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  disabled={isSubmitting}
+                  error={displayedError ?? undefined}
+                  keyboardType="email-address"
+                  label="البريد أو رقم الهاتف"
+                  onChangeText={(value) => handleFieldChange(value, 'identifier')}
+                  placeholder="student@university.edu"
+                  textContentType="username"
+                  value={identifier}
+                />
+                <PasswordInput
+                  disabled={isSubmitting}
+                  onChangeText={(value) => handleFieldChange(value, 'password')}
+                  value={password}
+                />
 
-              <AppButton
-                accessibilityLabel="تسجيل الدخول"
-                disabled={isSubmitting}
-                fullWidth
-                loading={isSubmitting}
-                onPress={handleSubmit}
-                title="تسجيل الدخول"
-              />
-            </Stack>
-          </AuthFormCard>
+                <AppButton
+                  accessibilityLabel="تسجيل الدخول"
+                  disabled={isSubmitting}
+                  fullWidth
+                  loading={isSubmitting}
+                  onPress={handleSubmit}
+                  title="تسجيل الدخول"
+                />
+              </Stack>
+            </AuthFormCard>
+          </Animated.View>
 
           {selfServiceEnabled ? (
             <Stack gap="sm" style={styles.authLinks}>

@@ -95,8 +95,8 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
   if (showInitialLoading) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="تفاصيل الغروب" title="الغروبات" />
-        <LoadingState message="جاري تحميل تفاصيل الغروب..." />
+        <AppHeader subtitle="تفاصيل المجموعة" title="المجموعات" />
+        <LoadingState message="جاري تحميل تفاصيل المجموعة..." />
       </AppScreen>
     );
   }
@@ -105,16 +105,16 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         <Stack gap="lg">
-          <AppHeader subtitle="تفاصيل الغروب" title="الغروبات" />
+          <AppHeader subtitle="تفاصيل المجموعة" title="المجموعات" />
           <AppButton
             onPress={() => navigation.goBack()}
-            title="رجوع إلى الغروبات"
+            title="رجوع إلى المجموعات"
             variant="ghost"
           />
           <ErrorState
-            message={errorMessage ?? 'تعذر تحميل تفاصيل الغروب.'}
+            message={errorMessage ?? 'تعذر تحميل تفاصيل المجموعة.'}
             onRetry={handleRetry}
-            title="الغروب غير متاح"
+            title="المجموعة غير متاح"
           />
         </Stack>
       </AppScreen>
@@ -124,14 +124,13 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <Stack gap="md">
-          <AppHeader subtitle="تفاصيل الغروب" title="الغروبات" />
-          <AppButton
-            onPress={() => navigation.goBack()}
-            title="رجوع إلى الغروبات"
-            variant="ghost"
-          />
-        </Stack>
+        <AppHeader
+          leftAction={
+            <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+          }
+          subtitle="تفاصيل المجموعة"
+          title="المجموعات"
+        />
 
         <GroupDetailHeader group={activeGroup} />
 
@@ -153,7 +152,7 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
             <AppButton
               loading={isSubmittingMembership}
               onPress={handleLeave}
-              title="مغادرة الغروب"
+              title="مغادرة المجموعة"
               variant="danger"
             />
           ) : null}
@@ -174,15 +173,15 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
 
         <Stack gap="md">
           <SectionHeader
-            subtitle="المحادثة مؤجلة، وملفات الغروب أصبحت متاحة حسب صلاحيات الباك إند."
-            title="محتوى الغروب"
+            subtitle="المحادثة مؤجلة، وملفات المجموعة أصبحت متاحة حسب صلاحيات الباك إند."
+            title="محتوى المجموعة"
           />
           <AppCard variant="muted">
             <Stack gap="sm">
               <AppText variant="title">المحادثة</AppText>
               <AppText color="secondary" variant="bodySmall">
                 افتح المحادثة النصية داخل التطبيق. صلاحية الإرسال تعرض داخل شاشة المحادثة حسب عضوية
-                الغروب وقواعد الخادم.
+                المجموعة وقواعد الخادم.
               </AppText>
               <AppButton
                 onPress={handleOpenChatRoom}
@@ -193,13 +192,13 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
           </AppCard>
           <AppCard variant="muted">
             <Stack gap="sm">
-              <AppText variant="title">ملفات الغروب</AppText>
+              <AppText variant="title">ملفات المجموعة</AppText>
               <AppText color="secondary" variant="bodySmall">
-                افتح الملفات المرتبطة بهذا الغروب داخل التطبيق بدون زر تنزيل مباشر.
+                افتح الملفات المرتبطة بهذا المجموعة داخل التطبيق بدون زر تنزيل مباشر.
               </AppText>
               <AppButton
                 onPress={handleOpenGroupFiles}
-                title="فتح ملفات الغروب"
+                title="فتح ملفات المجموعة"
                 variant="outline"
               />
             </Stack>

@@ -6,7 +6,7 @@ import { TabRoutes } from '../routes';
 export const tabLabels = {
   [TabRoutes.Home]: 'الرئيسية',
   [TabRoutes.Subjects]: 'موادي',
-  [TabRoutes.Groups]: 'الغروبات',
+  [TabRoutes.Groups]: 'المجموعات',
   [TabRoutes.Printing]: 'الطباعة',
   [TabRoutes.Profile]: 'حسابي',
 } as const;

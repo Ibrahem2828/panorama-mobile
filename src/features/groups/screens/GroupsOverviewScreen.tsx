@@ -77,11 +77,11 @@ export function GroupsOverviewScreen({ navigation }: GroupsOverviewScreenProps) 
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="الغروبات الأكاديمية" title="الغروبات" />
+        <AppHeader subtitle="المجموعات الأكاديمية" title="المجموعات" />
 
         <AppCard variant="muted">
           <AppText color="secondary" variant="bodySmall">
-            انضم إلى الغروبات الأكاديمية المناسبة لبياناتك الجامعية.
+            انضم إلى المجموعات الأكاديمية المناسبة لبياناتك الجامعية.
           </AppText>
         </AppCard>
 
@@ -95,7 +95,7 @@ export function GroupsOverviewScreen({ navigation }: GroupsOverviewScreenProps) 
               variant="outline"
             />
           }
-          subtitle="يمكنك متابعة غروباتك أو تصفح الغروبات المتاحة حسب صلاحيات الباك إند."
+          subtitle="يمكنك متابعة مجموعاتك أو تصفح المجموعات المتاحة حسب صلاحيات الباك إند."
           title="الوجهات"
         />
 
@@ -104,15 +104,15 @@ export function GroupsOverviewScreen({ navigation }: GroupsOverviewScreenProps) 
         <Stack gap="md">
           <OverviewCard
             count={resolvedMyGroupsCount}
-            description="الغروبات التي تملك عضوية فيها أو طلبات مرتبطة بحسابك."
+            description="المجموعات التي تملك عضوية فيها أو طلبات مرتبطة بحسابك."
             onPress={() => navigation.navigate(GroupsRoutes.MyGroups)}
-            title="غروباتي"
+            title="مجموعاتي"
           />
           <OverviewCard
             count={resolvedAvailableCount}
-            description="الغروبات التي يمكنك طلب الانضمام إليها حسب بياناتك وحالة توثيقك."
+            description="المجموعات التي يمكنك طلب الانضمام إليها حسب بياناتك وحالة توثيقك."
             onPress={() => navigation.navigate(GroupsRoutes.AvailableGroups)}
-            title="الغروبات المتاحة"
+            title="المجموعات المتاحة"
           />
         </Stack>
       </Stack>

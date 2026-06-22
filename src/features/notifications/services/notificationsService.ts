@@ -108,7 +108,7 @@ export function getNotificationTypeLabel(type?: NotificationType): string {
     case 'printing':
       return 'طباعة';
     case 'group':
-      return 'غروب';
+      return 'مجموعة';
     case 'file':
       return 'ملف';
     case 'support':
@@ -177,7 +177,7 @@ export function getNotificationTargetTypeLabel(targetType?: string | null): stri
     case 'print_order':
       return 'طلب طباعة';
     case 'group':
-      return 'غروب';
+      return 'مجموعة';
     case 'file':
       return 'ملف';
     case 'support':

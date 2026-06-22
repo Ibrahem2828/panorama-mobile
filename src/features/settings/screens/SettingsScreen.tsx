@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
-import { AppButton, AppHeader, AppScreen, AppText, Stack } from '../../../components';
+import { AppHeader, AppScreen, AppText, Stack } from '../../../components';
 import { env } from '../../../config/env';
 import { ProfileRoutes } from '../../../navigation/routes';
 import type { ProfileStackParamList } from '../../../navigation/types';
@@ -28,10 +28,7 @@ export function SettingsScreen({ navigation }: SettingsScreenProps) {
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <Stack gap="md">
-          <AppHeader subtitle="إعدادات الحساب والتطبيق" title="الإعدادات" />
-          <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
-        </Stack>
+        <AppHeader subtitle="إعدادات الحساب والتطبيق" title="الإعدادات" />
 
         <SettingsSection subtitle="إجراءات الأمان الخاصة بالحساب الحالي" title="الحساب والأمان">
           <SettingsOptionRow

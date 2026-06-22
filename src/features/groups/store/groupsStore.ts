@@ -40,9 +40,9 @@ type GroupsState = {
 
 const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
 const JOIN_SUCCESS_MESSAGE = 'تم إرسال طلب الانضمام.';
-const LEAVE_SUCCESS_MESSAGE = 'تمت مغادرة الغروب.';
+const LEAVE_SUCCESS_MESSAGE = 'تمت مغادرة المجموعة.';
 const JOIN_ERROR_MESSAGE = 'تعذر إرسال طلب الانضمام.';
-const LEAVE_ERROR_MESSAGE = 'تعذر مغادرة الغروب.';
+const LEAVE_ERROR_MESSAGE = 'تعذر مغادرة المجموعة.';
 
 function isSameId(left: Id, right: Id): boolean {
   return String(left) === String(right);

@@ -14,7 +14,7 @@ import type {
 
 const NETWORK_MESSAGE = 'تعذر تحميل الرسائل. تحقق من اتصال الإنترنت وحاول مرة أخرى.';
 const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const PERMISSION_MESSAGE = 'لا يمكنك إرسال رسائل في هذا الغروب حاليا.';
+const PERMISSION_MESSAGE = 'لا يمكنك إرسال رسائل في هذا المجموعة حاليا.';
 const SEND_ERROR_MESSAGE = 'تعذر إرسال الرسالة. حاول مرة أخرى.';
 const GENERIC_MESSAGE = 'تعذر تحميل الرسائل. حاول مرة أخرى.';
 
@@ -170,7 +170,7 @@ export function canSendMessageToGroup(
   if (!isRecord(group)) {
     return {
       allowed: false,
-      reason: 'لا يمكن تحديد صلاحية الإرسال لهذا الغروب حاليا.',
+      reason: 'لا يمكن تحديد صلاحية الإرسال لهذا المجموعة حاليا.',
       permission: 'unknown',
     };
   }
@@ -184,7 +184,7 @@ export function canSendMessageToGroup(
   if (membershipStatus && BLOCKED_MEMBERSHIP_STATUSES.has(membershipStatus)) {
     return {
       allowed: false,
-      reason: 'يجب أن تكون عضوا في الغروب لإرسال الرسائل.',
+      reason: 'يجب أن تكون عضوا في المجموعة لإرسال الرسائل.',
       permission: membershipStatus === 'blocked' ? 'blocked' : 'not_member',
     };
   }
@@ -192,7 +192,7 @@ export function canSendMessageToGroup(
   if (sendPermission === 'admins_only') {
     return {
       allowed: isAdminRole(role),
-      reason: isAdminRole(role) ? undefined : 'الإرسال متاح للمشرفين فقط في هذا الغروب.',
+      reason: isAdminRole(role) ? undefined : 'الإرسال متاح للمشرفين فقط في هذا المجموعة.',
       permission: 'admins_only',
     };
   }
@@ -200,7 +200,7 @@ export function canSendMessageToGroup(
   if (sendPermission === 'all_members') {
     return {
       allowed: isApprovedMember,
-      reason: isApprovedMember ? undefined : 'يجب أن تكون عضوا في الغروب لإرسال الرسائل.',
+      reason: isApprovedMember ? undefined : 'يجب أن تكون عضوا في المجموعة لإرسال الرسائل.',
       permission: 'members_only',
     };
   }
@@ -215,7 +215,7 @@ export function canSendMessageToGroup(
 
   return {
     allowed: isApprovedMember,
-    reason: isApprovedMember ? undefined : 'لا يمكنك إرسال رسائل في هذا الغروب حاليا.',
+    reason: isApprovedMember ? undefined : 'لا يمكنك إرسال رسائل في هذا المجموعة حاليا.',
     permission: 'unknown',
   };
 }
