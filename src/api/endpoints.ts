@@ -16,6 +16,14 @@ export const endpoints = {
     verifyOtp: `${API_PREFIX}/auth/otp/verify/`,
     requestPasswordReset: `${API_PREFIX}/auth/request-password-reset/`,
     confirmPasswordReset: `${API_PREFIX}/auth/confirm-password-reset/`,
+    // D1: Student account request flow (admin approval then OTP)
+    studentAccountRequests: `${API_PREFIX}/auth/student-account-requests/`,
+    studentAccountRequestDetail: (uuid: string | number) =>
+      `${API_PREFIX}/auth/student-account-requests/${uuid}/`,
+    studentAccountRequestStatus: (uuid: string | number) =>
+      `${API_PREFIX}/auth/student-account-requests/${uuid}/status/`,
+    studentAccountRequestVerifyOtp: (uuid: string | number) =>
+      `${API_PREFIX}/auth/student-account-requests/${uuid}/verify-otp/`,
   },
   students: {
     profile: `${API_PREFIX}/students/me/profile/`,

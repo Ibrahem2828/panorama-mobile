@@ -65,12 +65,16 @@ const isHttpApi = apiBaseUrl.toLowerCase().startsWith('http://');
 const enableSelfServiceAuth =
   process.env.EXPO_PUBLIC_ENABLE_SELF_SERVICE_AUTH?.trim().toLowerCase() === 'true';
 
+const enableAccountRegistrationFlow =
+  process.env.EXPO_PUBLIC_ENABLE_ACCOUNT_REGISTRATION_FLOW?.trim().toLowerCase() === 'true';
+
 export const env = {
   appEnv,
   apiBaseUrl,
   wsBaseUrl,
   isHttpApi,
   enableSelfServiceAuth,
+  enableAccountRegistrationFlow,
   dashboardUrl: configuredDashboardUrl?.trim() || 'https://dashboard.xn--mgbaab0cxheq.tech',
   isDevelopment: appEnv === 'development',
   isPreview: appEnv === 'preview',
@@ -201,4 +205,12 @@ if (env.isDevelopment) {
   for (const issue of validateClientEnv()) {
     logger.warn('Client environment configuration warning', { issue });
   }
+}
+
+/**
+ * D1: Dedicated flag for the new registration flow (normal_user + student account requests).
+ * Separate from legacy self-service flag.
+ */
+export function isAccountRegistrationFlowEnabled(): boolean {
+  return env.enableAccountRegistrationFlow;
 }

@@ -7,6 +7,20 @@ export type PublicStackParamList = {
   OtpVerification: { phoneNumber: string; flow: 'register' };
   ForgotPassword: undefined;
   ResetPassword: { phoneNumber: string };
+  // D1
+  AccountTypeChoice: undefined;
+  NormalUserRegister: undefined;
+  PhoneOtpVerification: {
+    phoneNumber: string;
+    otpPurpose?: 'verify_phone';
+    expiresInSeconds?: number;
+    resendAfterSeconds?: number;
+    source?: 'normal_register';
+  };
+  StudentAccountRequest: undefined;
+  StudentRequestSubmitted: { requestId?: string | number };
+  StudentRequestStatus: { requestId: string | number };
+  StudentOtpVerification: { requestId: string | number };
 };
 
 export type StudentSetupStackParamList = {

@@ -19,6 +19,7 @@ import { spacing } from '../../../theme';
 import { AuthFormCard, PasswordInput } from '../components';
 import { useAuthStore } from '../store';
 import { isSelfServiceAuthEnabled } from '../utils/selfServiceAuthAccess';
+import { isAccountRegistrationFlowEnabled } from '../../../config/env';
 
 const REQUIRED_FIELDS_MESSAGE = 'يرجى إدخال البريد أو رقم الهاتف وكلمة المرور.';
 
@@ -86,6 +87,16 @@ export function LoginScreen() {
         identifier: normalizedIdentifier,
         password,
       });
+
+      // D1: Post-login phone verification gate for normal_user (if backend indicates requires_phone_verification)
+      const currentUser = useAuthStore.getState().user;
+      if (currentUser?.requires_phone_verification && currentUser.phone_number) {
+        // Navigate to the D1 phone OTP screen (safe additive behavior)
+        navigation.replace(PublicRoutes.PhoneOtpVerification, {
+          phoneNumber: currentUser.phone_number,
+          otpPurpose: 'verify_phone',
+        });
+      }
     } catch {
       // Auth store owns the user-facing error message.
     }
@@ -164,6 +175,29 @@ export function LoginScreen() {
               >
                 <AppText color="brand" variant="button">
                   إنشاء حساب طالب
+                </AppText>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                disabled={isSubmitting}
+                onPress={() => navigation.navigate(PublicRoutes.ForgotPassword)}
+                style={styles.authLink}
+              >
+                <AppText color="brand" variant="button">
+                  نسيت كلمة المرور؟
+                </AppText>
+              </Pressable>
+            </Stack>
+          ) : isAccountRegistrationFlowEnabled() ? (
+            <Stack gap="sm" style={styles.authLinks}>
+              <Pressable
+                accessibilityRole="button"
+                disabled={isSubmitting}
+                onPress={() => navigation.navigate(PublicRoutes.AccountTypeChoice)}
+                style={styles.authLink}
+              >
+                <AppText color="brand" variant="button">
+                  إنشاء حساب
                 </AppText>
               </Pressable>
               <Pressable

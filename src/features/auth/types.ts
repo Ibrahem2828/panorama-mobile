@@ -9,6 +9,8 @@ export type AuthUser = {
   role?: UserRole;
   is_phone_verified?: boolean;
   is_email_verified?: boolean;
+  // D1: may be present on login for normal_user flow
+  requires_phone_verification?: boolean;
 };
 
 export type AuthTokens = {

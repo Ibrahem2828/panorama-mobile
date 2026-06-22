@@ -365,3 +365,103 @@ export type CreateSupportTicketRequest = {
 export type AddSupportTicketMessageRequest = {
   message: string;
 };
+
+// ============================================
+// MOBILE-D1: Registration + Student Account Request types
+// ============================================
+
+export type NormalRegisterPayload = {
+  full_name: string;
+  email?: string;
+  phone_number: string;
+  password: string;
+  password_confirm: string;
+};
+
+export type NormalRegisterResponse = {
+  success?: boolean;
+  message?: string;
+  data?: {
+    requires_otp?: boolean;
+    otp_purpose?: string;
+    phone_verified?: boolean;
+    requires_phone_verification?: boolean;
+    next_step?: string;
+    expires_in_seconds?: number;
+    resend_after_seconds?: number;
+  };
+};
+
+export type VerifyPhonePayload = {
+  phone_number: string;
+  code: string;
+};
+
+export type VerifyPhoneResponse = {
+  success?: boolean;
+  message?: string;
+  data?: {
+    phone_verified?: boolean;
+    requires_phone_verification?: boolean;
+    next_step?: string;
+  };
+};
+
+export type StudentAccountRequestPayload = {
+  full_name: string;
+  email?: string;
+  phone_number: string;
+  whatsapp_phone?: string;
+  university: string;
+  faculty?: string;
+  major?: string;
+  student_number: string;
+  password: string;
+  password_confirm: string;
+};
+
+export type StudentAccountRequestResponse = {
+  success?: boolean;
+  message?: string;
+  data?: {
+    request_id?: string;
+    status?: StudentAccountRequestStatus;
+    next_step?: string;
+  };
+};
+
+export type StudentAccountRequestStatus =
+  | 'pending_review'
+  | 'approved_pending_otp'
+  | 'otp_sent'
+  | 'active'
+  | 'rejected'
+  | 'needs_update'
+  | 'expired';
+
+export type StudentAccountRequestStatusResponse = {
+  success?: boolean;
+  message?: string;
+  data?: {
+    request_id?: string;
+    status?: StudentAccountRequestStatus;
+    public_message?: string;
+    can_enter_otp?: boolean;
+    can_resubmit?: boolean;
+    rejection_reason?: string | null;
+    needs_update_reason?: string | null;
+  };
+};
+
+export type StudentVerifyOtpPayload = {
+  code: string;
+};
+
+export type StudentVerifyOtpResponse = {
+  success?: boolean;
+  message?: string;
+  data?: {
+    status?: StudentAccountRequestStatus;
+    next_step?: string;
+  };
+};

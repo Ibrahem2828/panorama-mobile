@@ -52,6 +52,9 @@ function normalizeUser(user: CurrentUser): AuthUser {
     role: user.role,
     is_phone_verified: user.is_phone_verified,
     is_email_verified: user.is_email_verified,
+    requires_phone_verification:
+      ((user as Record<string, unknown>).requires_phone_verification as boolean | undefined) ??
+      undefined,
   };
 }
 

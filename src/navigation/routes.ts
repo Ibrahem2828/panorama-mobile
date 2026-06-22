@@ -11,6 +11,14 @@ export const PublicRoutes = {
   OtpVerification: 'OtpVerification',
   ForgotPassword: 'ForgotPassword',
   ResetPassword: 'ResetPassword',
+  // D1 new registration flow
+  AccountTypeChoice: 'AccountTypeChoice',
+  NormalUserRegister: 'NormalUserRegister',
+  PhoneOtpVerification: 'PhoneOtpVerification',
+  StudentAccountRequest: 'StudentAccountRequest',
+  StudentRequestSubmitted: 'StudentRequestSubmitted',
+  StudentRequestStatus: 'StudentRequestStatus',
+  StudentOtpVerification: 'StudentOtpVerification',
 } as const;
 
 export const StudentSetupRoutes = {

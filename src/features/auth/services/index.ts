@@ -9,10 +9,16 @@ export {
 export type { BootstrapSessionResult } from './authSessionService';
 export { clearAuthTokens, getStoredAuthTokens, saveAuthTokens } from './authTokenStorage';
 export {
+  registerNormalUser,
   registerStudentAccount,
   sendRegistrationOtp,
-  toSafeRegistrationErrorMessage,
+  submitStudentAccountRequest,
+  getStudentAccountRequestStatus,
+  verifyPhoneOtp,
   verifyRegistrationOtp,
+  verifyStudentAccountOtp,
+  toSafeD1ErrorMessage,
+  toSafeRegistrationErrorMessage,
 } from './registrationService';
 export {
   confirmPasswordReset,
