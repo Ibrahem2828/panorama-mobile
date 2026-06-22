@@ -8,7 +8,6 @@ import { OtpVerificationScreen } from '../features/auth/screens/OtpVerificationS
 import { RegisterStudentScreen } from '../features/auth/screens/RegisterStudentScreen';
 import { ResetPasswordScreen } from '../features/auth/screens/ResetPasswordScreen';
 import { OnboardingScreen } from '../features/onboarding/screens/OnboardingScreen';
-import { SplashScreen } from '../features/onboarding/screens/SplashScreen';
 import { hasSeenOnboarding } from '../features/onboarding/services';
 import { hiddenStackScreenOptions } from './config/screenOptions';
 import { PublicRoutes } from './routes';
@@ -47,7 +46,6 @@ export function PublicNavigator() {
 
   return (
     <Stack.Navigator initialRouteName={initialRouteName} screenOptions={hiddenStackScreenOptions}>
-      <Stack.Screen component={SplashScreen} name={PublicRoutes.Splash} />
       <Stack.Screen component={OnboardingScreen} name={PublicRoutes.Onboarding} />
       <Stack.Screen component={LoginScreen} name={PublicRoutes.Login} />
       <Stack.Screen component={RegisterStudentScreen} name={PublicRoutes.RegisterStudent} />

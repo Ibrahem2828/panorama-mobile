@@ -79,7 +79,7 @@ export function LoginScreen() {
             />
             <AppText variant="h1">بانوراما</AppText>
             <AppText color="secondary" variant="body">
-              تطبيق الجامعة للطلاب — سجّل دخولك للوصول إلى المواد والغروبات والخدمات الطلابية.
+              تطبيق الجامعة للطلاب. سجّل دخولك للوصول إلى المواد والخدمات.
             </AppText>
           </Stack>
 
@@ -119,7 +119,7 @@ export function LoginScreen() {
           </AuthFormCard>
 
           {selfServiceEnabled ? (
-            <Stack direction="horizontal" gap="md" style={styles.authLinks}>
+            <Stack gap="sm" style={styles.authLinks}>
               <Pressable
                 accessibilityRole="button"
                 disabled={isSubmitting}
@@ -143,11 +143,13 @@ export function LoginScreen() {
             </Stack>
           ) : (
             <AppCard padding="lg" variant="muted">
-              <Stack gap="xs">
+              <Stack gap="sm">
                 <AppText variant="title">حساب جديد أو استعادة كلمة المرور</AppText>
                 <AppText color="secondary" variant="bodySmall">
-                  لإنشاء حساب جديد أو استعادة كلمة المرور، تواصل مع إدارة الجامعة. التسجيل الذاتي
-                  غير متاح حاليا في التطبيق.
+                  لإنشاء حساب طالب أو استعادة كلمة المرور، يرجى التواصل مع إدارة الجامعة حالياً.
+                </AppText>
+                <AppText color="muted" variant="caption">
+                  التسجيل الذاتي غير متاح حالياً من التطبيق.
                 </AppText>
               </Stack>
             </AppCard>
@@ -167,13 +169,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   logo: {
-    width: 220,
-    maxWidth: '80%',
-    height: 72,
+    width: 180,
+    maxWidth: '70%',
+    height: 56,
   },
   authLinks: {
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
+    alignItems: 'center',
   },
   authLink: {
     minHeight: 44,

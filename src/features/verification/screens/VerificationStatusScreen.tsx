@@ -94,7 +94,7 @@ export function VerificationStatusScreen() {
         {status === 'none' ? (
           <AppButton
             fullWidth
-            onPress={() => navigation.navigate(StudentSetupRoutes.SubmitVerification)}
+            onPress={() => navigation.replace(StudentSetupRoutes.SubmitVerification)}
             title="إرسال بطاقة الطالب"
           />
         ) : null}
@@ -102,7 +102,7 @@ export function VerificationStatusScreen() {
         {canResubmit ? (
           <AppButton
             fullWidth
-            onPress={() => navigation.navigate(StudentSetupRoutes.SubmitVerification)}
+            onPress={() => navigation.replace(StudentSetupRoutes.SubmitVerification)}
             title="إعادة إرسال صورة محدثة"
           />
         ) : null}

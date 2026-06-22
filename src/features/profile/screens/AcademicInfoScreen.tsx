@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { CommonActions } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
@@ -14,7 +13,6 @@ import {
   LoadingState,
   Stack,
 } from '../../../components';
-import { RootRoutes, StudentSetupRoutes } from '../../../navigation/routes';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import {
@@ -82,17 +80,6 @@ export function AcademicInfoScreen({ navigation }: AcademicInfoScreenProps) {
     void loadVerification({ force: true });
   }
 
-  function handleSetupPress() {
-    navigation
-      .getParent()
-      ?.getParent()
-      ?.dispatch(
-        CommonActions.navigate(RootRoutes.StudentSetup, {
-          screen: StudentSetupRoutes.AcademicProfileSetup,
-        }),
-      );
-  }
-
   const status = getVerificationStatus(verification);
   const hasProfile = isStudentProfileComplete(profile);
   const showLoading = (isBootstrapping || isLoadingVerification) && !profile;
@@ -148,14 +135,7 @@ export function AcademicInfoScreen({ navigation }: AcademicInfoScreenProps) {
           </Stack>
         ) : (
           <EmptyState
-            action={
-              <AppButton
-                onPress={handleSetupPress}
-                title="إكمال المعلومات الأكاديمية"
-                variant="outline"
-              />
-            }
-            message="لم يتم العثور على ملف أكاديمي مكتمل لهذا الحساب."
+            message="لم يتم العثور على ملف أكاديمي مكتمل. أعد تسجيل الدخول أو تواصل مع الإدارة إذا استمرت المشكلة."
             title="المعلومات الأكاديمية غير مكتملة"
           />
         )}

@@ -7,7 +7,11 @@ import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { AuthFormCard, PasswordInput, UnavailableAuthFlowScreen } from '../components';
-import { registerStudentAccount, toSafeRegistrationErrorMessage } from '../services';
+import {
+  registerStudentAccount,
+  sendRegistrationOtp,
+  toSafeRegistrationErrorMessage,
+} from '../services';
 import {
   isValidEmail,
   isValidPhoneNumber,
@@ -89,6 +93,13 @@ export function RegisterStudentScreen({ navigation }: RegisterStudentScreenProps
         password,
         password_confirm: passwordConfirm,
       });
+
+      // Best-effort: trigger OTP send for phone verification (register flow)
+      try {
+        await sendRegistrationOtp(normalizedPhone);
+      } catch {
+        // OTP screen will allow manual resend; non-fatal
+      }
 
       navigation.navigate(PublicRoutes.OtpVerification, {
         phoneNumber: normalizedPhone,

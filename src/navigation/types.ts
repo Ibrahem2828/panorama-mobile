@@ -1,7 +1,6 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 
 export type PublicStackParamList = {
-  Splash: undefined;
   Onboarding: undefined;
   Login: undefined;
   RegisterStudent: undefined;

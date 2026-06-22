@@ -5,10 +5,8 @@ import { StyleSheet } from 'react-native';
 
 import {
   AppButton,
-  AppCard,
   AppHeader,
   AppScreen,
-  AppText,
   ErrorState,
   LoadingState,
   SectionHeader,
@@ -87,8 +85,13 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         <Stack gap="lg">
-          <AppHeader subtitle="تفاصيل المادة" title="موادي" />
-          <AppButton onPress={() => navigation.goBack()} title="رجوع إلى المواد" variant="ghost" />
+          <AppHeader
+            leftAction={
+              <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+            }
+            subtitle="تفاصيل المادة"
+            title="موادي"
+          />
           <ErrorState
             message={errorMessage ?? 'تعذر العثور على المادة.'}
             onRetry={handleRetry}
@@ -102,25 +105,18 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <Stack gap="md">
-          <AppHeader subtitle="تفاصيل المادة من بيانات القائمة" title="موادي" />
-          <AppButton onPress={() => navigation.goBack()} title="رجوع إلى المواد" variant="ghost" />
-        </Stack>
+        <AppHeader
+          leftAction={
+            <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+          }
+          subtitle="تفاصيل المادة من بيانات القائمة"
+          title="موادي"
+        />
 
         <SubjectDetailHeader subject={subject} />
 
-        <AppCard variant="muted">
-          <AppText color="secondary" variant="bodySmall">
-            يمكن فتح قائمة الملفات العامة المتاحة لحسابك، ولا يوجد endpoint موثق لملفات مادة محددة
-            في هذه المرحلة.
-          </AppText>
-        </AppCard>
-
         <Stack gap="md">
-          <SectionHeader
-            subtitle="ملفات المادة الخاصة غير موثقة كـ endpoint مستقل، لذلك يعرض التطبيق كل الملفات المتاحة لحسابك."
-            title="المحتوى المرتبط"
-          />
+          <SectionHeader title="المحتوى المرتبط" />
           <SubjectLinkedSectionCard
             description="افتح قائمة الملفات المتاحة داخل التطبيق. لا يوجد فلتر موثق حسب المادة في هذه المرحلة."
             onPress={handleOpenFiles}

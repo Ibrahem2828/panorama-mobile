@@ -86,7 +86,7 @@ export function SubmitVerificationScreen() {
           action={
             <AppButton
               fullWidth
-              onPress={() => navigation.navigate(StudentSetupRoutes.VerificationStatus)}
+              onPress={() => navigation.replace(StudentSetupRoutes.VerificationStatus)}
               title="متابعة حالة التوثيق"
             />
           }
@@ -148,7 +148,7 @@ export function SubmitVerificationScreen() {
               </AppText>
               <AppButton
                 fullWidth
-                onPress={() => navigation.navigate(StudentSetupRoutes.VerificationStatus)}
+                onPress={() => navigation.replace(StudentSetupRoutes.VerificationStatus)}
                 title="متابعة حالة التوثيق"
                 variant="outline"
               />

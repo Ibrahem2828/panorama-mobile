@@ -5,7 +5,6 @@ export const RootRoutes = {
 } as const;
 
 export const PublicRoutes = {
-  Splash: 'Splash',
   Onboarding: 'Onboarding',
   Login: 'Login',
   RegisterStudent: 'RegisterStudent',

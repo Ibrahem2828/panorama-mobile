@@ -17,6 +17,7 @@ import {
 } from '../../../components';
 import { isNormalUser } from '../../../navigation/guards/navigationGuards';
 import { StudentSetupRoutes } from '../../../navigation/routes';
+import { isStudentProfileComplete } from '../services';
 import type { StudentSetupStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { useAuthStore } from '../../auth/store';
@@ -88,6 +89,7 @@ export function AcademicProfileSetupScreen() {
     (state) => state.parseCurrentStudentNumber,
   );
   const submitProfile = useStudentProfileStore((state) => state.submitProfile);
+  const profile = useStudentProfileStore((state) => state.profile);
   const initialLoading = isBootstrapping && universities.length === 0 && !hasBootstrapped;
   const hasProfileLoadError = Boolean(errorMessage && universities.length === 0 && hasBootstrapped);
   const showEmptyUniversities = hasBootstrapped && !isLoadingOptions && universities.length === 0;
@@ -104,6 +106,13 @@ export function AcademicProfileSetupScreen() {
     void bootstrap();
   }, [bootstrap]);
 
+  // Guard: if profile became complete (e.g. external update), advance
+  useEffect(() => {
+    if (hasBootstrapped && isStudentProfileComplete(profile)) {
+      navigation.replace(StudentSetupRoutes.SubmitVerification);
+    }
+  }, [hasBootstrapped, profile, navigation]);
+
   function handleRetry() {
     void bootstrap({ force: true });
   }
@@ -111,7 +120,7 @@ export function AcademicProfileSetupScreen() {
   async function handleSubmit() {
     try {
       await submitProfile();
-      navigation.navigate(StudentSetupRoutes.SubmitVerification);
+      navigation.replace(StudentSetupRoutes.SubmitVerification);
     } catch {
       // The student profile store owns the user-facing error message.
     }

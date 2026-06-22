@@ -7,7 +7,11 @@ import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { AuthFormCard, PasswordInput, UnavailableAuthFlowScreen } from '../components';
-import { confirmPasswordReset, toSafePasswordResetErrorMessage } from '../services';
+import {
+  confirmPasswordReset,
+  requestPasswordResetCode,
+  toSafePasswordResetErrorMessage,
+} from '../services';
 import { validateOtpCode, validatePasswordPair } from '../utils/authFormValidation';
 import { isSelfServiceAuthEnabled } from '../utils/selfServiceAuthAccess';
 
@@ -30,6 +34,8 @@ export function ResetPasswordScreen({ navigation, route }: ResetPasswordScreenPr
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   const displayedError = validationMessage ?? errorMessage;
 
@@ -69,6 +75,24 @@ export function ResetPasswordScreen({ navigation, route }: ResetPasswordScreenPr
       setErrorMessage(toSafePasswordResetErrorMessage(error));
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleResend() {
+    if (!phoneNumber) return;
+
+    setIsResending(true);
+    setResendMessage(null);
+    setErrorMessage(null);
+    setValidationMessage(null);
+
+    try {
+      await requestPasswordResetCode(phoneNumber);
+      setResendMessage('تم إرسال رمز جديد إلى رقم هاتفك.');
+    } catch (error) {
+      setErrorMessage(toSafePasswordResetErrorMessage(error));
+    } finally {
+      setIsResending(false);
     }
   }
 
@@ -138,18 +162,44 @@ export function ResetPasswordScreen({ navigation, route }: ResetPasswordScreenPr
                 }}
                 title="حفظ كلمة المرور"
               />
+              {resendMessage ? (
+                <AppText color="success" variant="bodySmall">
+                  {resendMessage}
+                </AppText>
+              ) : null}
+              <AppButton
+                disabled={isSubmitting || isResending}
+                fullWidth
+                loading={isResending}
+                onPress={() => {
+                  void handleResend();
+                }}
+                title="إعادة إرسال الرمز"
+                variant="outline"
+              />
             </Stack>
           </AuthFormCard>
 
-          <Pressable
-            accessibilityRole="button"
-            disabled={isSubmitting}
-            onPress={() => navigation.navigate(PublicRoutes.Login)}
-          >
-            <AppText align="center" color="brand" variant="body">
-              العودة لتسجيل الدخول
-            </AppText>
-          </Pressable>
+          <Stack align="center" gap="xs">
+            <Pressable
+              accessibilityRole="button"
+              disabled={isSubmitting}
+              onPress={() => navigation.navigate(PublicRoutes.Login)}
+            >
+              <AppText align="center" color="brand" variant="body">
+                العودة لتسجيل الدخول
+              </AppText>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              disabled={isSubmitting}
+              onPress={() => navigation.navigate(PublicRoutes.ForgotPassword)}
+            >
+              <AppText align="center" color="brand" variant="bodySmall">
+                طلب رمز جديد
+              </AppText>
+            </Pressable>
+          </Stack>
         </Stack>
       </KeyboardAvoidingView>
     </AppScreen>

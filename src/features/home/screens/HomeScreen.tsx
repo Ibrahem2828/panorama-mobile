@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { CommonActions, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
@@ -20,9 +20,7 @@ import {
   GroupsRoutes,
   PrintingRoutes,
   ProfileRoutes,
-  RootRoutes,
   SharedRoutes,
-  StudentSetupRoutes,
   SubjectsRoutes,
   TabRoutes,
 } from '../../../navigation/routes';
@@ -56,55 +54,6 @@ const QUICK_ACTION_MARKERS: Record<HomeQuickActionKey, string> = {
   notifications: 'ن',
   profile: 'ح',
 };
-
-type StudentStatusAction = {
-  label: string;
-  route: (typeof StudentSetupRoutes)[keyof typeof StudentSetupRoutes];
-};
-
-function getStudentStatusAction({
-  profileComplete,
-  verificationStatus,
-  hasProfileState,
-  hasVerificationState,
-}: {
-  profileComplete: boolean;
-  verificationStatus: string;
-  hasProfileState: boolean;
-  hasVerificationState: boolean;
-}): StudentStatusAction | null {
-  if (!hasProfileState || !hasVerificationState) {
-    return null;
-  }
-
-  if (!profileComplete) {
-    return {
-      label: 'إكمال الملف الأكاديمي',
-      route: StudentSetupRoutes.AcademicProfileSetup,
-    };
-  }
-
-  switch (verificationStatus) {
-    case 'none':
-      return {
-        label: 'إرسال بطاقة الطالب',
-        route: StudentSetupRoutes.SubmitVerification,
-      };
-    case 'pending':
-      return {
-        label: 'متابعة حالة التوثيق',
-        route: StudentSetupRoutes.VerificationStatus,
-      };
-    case 'rejected':
-    case 'needs_update':
-      return {
-        label: 'إعادة إرسال التوثيق',
-        route: StudentSetupRoutes.SubmitVerification,
-      };
-    default:
-      return null;
-  }
-}
 
 function getQuickActions(unreadNotificationsCount: number): HomeQuickAction[] {
   return [
@@ -170,13 +119,6 @@ export function HomeScreen() {
   const showInitialLoading = isLoading && !lastLoadedAt;
   const showInitialError = Boolean(errorMessage && !lastLoadedAt);
   const quickActions = getQuickActions(unreadNotificationsCount);
-  const studentStatusAction = getStudentStatusAction({
-    profileComplete,
-    verificationStatus,
-    hasProfileState,
-    hasVerificationState,
-  });
-
   useEffect(() => {
     void loadHome();
     void bootstrapStudentProfile();
@@ -211,21 +153,6 @@ export function HomeScreen() {
 
   function handleRefresh() {
     void refreshHome();
-  }
-
-  function handleStudentStatusAction() {
-    if (!studentStatusAction) {
-      return;
-    }
-
-    navigation
-      .getParent()
-      ?.getParent()
-      ?.dispatch(
-        CommonActions.navigate(RootRoutes.StudentSetup, {
-          screen: studentStatusAction.route,
-        }),
-      );
   }
 
   if (showInitialLoading) {
@@ -268,10 +195,8 @@ export function HomeScreen() {
         />
 
         <StudentStatusCard
-          actionLabel={studentStatusAction?.label}
           hasProfileState={hasProfileState}
           hasVerificationState={hasVerificationState}
-          onAction={studentStatusAction ? handleStudentStatusAction : undefined}
           profileComplete={profileComplete}
           verificationStatus={verificationStatus}
         />
