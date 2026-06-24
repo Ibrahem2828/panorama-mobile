@@ -88,14 +88,19 @@ export function LoginScreen() {
         password,
       });
 
-      // D1: Post-login phone verification gate for normal_user (if backend indicates requires_phone_verification)
+      // D1/D2: Post-login phone verification gate for normal_user
       const currentUser = useAuthStore.getState().user;
-      if (currentUser?.requires_phone_verification && currentUser.phone_number) {
-        // Navigate to the D1 phone OTP screen (safe additive behavior)
-        navigation.replace(PublicRoutes.PhoneOtpVerification, {
-          phoneNumber: currentUser.phone_number,
-          otpPurpose: 'verify_phone',
-        });
+      if (currentUser?.requires_phone_verification) {
+        if (currentUser.phone_number) {
+          navigation.replace(PublicRoutes.PhoneOtpVerification, {
+            phoneNumber: currentUser.phone_number,
+            otpPurpose: 'verify_phone',
+          });
+        } else {
+          const MISSING_PHONE =
+            'لا يمكن التحقق من رقم الجوال حالياً. يرجى تسجيل الدخول مرة أخرى أو التواصل مع الدعم.';
+          useAuthStore.getState().forceSessionExpired(MISSING_PHONE);
+        }
       }
     } catch {
       // Auth store owns the user-facing error message.

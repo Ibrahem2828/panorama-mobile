@@ -26,7 +26,7 @@ export function createEntranceAnim(initialTranslate = 12) {
   const opacity = new Animated.Value(0);
   const translateY = new Animated.Value(initialTranslate);
 
-  const animate = (duration = MOTION.duration.normal) => {
+  const animate = (duration: number = MOTION.duration.normal) => {
     opacity.setValue(0);
     translateY.setValue(initialTranslate);
     return Animated.parallel([
@@ -81,7 +81,7 @@ export function createPressScaleAnim() {
 export function createFadeInAnim() {
   const opacity = new Animated.Value(0);
 
-  const animate = (duration = MOTION.duration.normal) =>
+  const animate = (duration: number = MOTION.duration.normal) =>
     Animated.timing(opacity, {
       toValue: 1,
       duration,

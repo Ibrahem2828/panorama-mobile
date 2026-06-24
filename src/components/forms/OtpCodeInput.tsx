@@ -3,7 +3,7 @@ import { StyleSheet, TextInput, View } from 'react-native';
 import type { NativeSyntheticEvent, TextInputKeyPressEventData } from 'react-native';
 
 import { AppText } from '../common';
-import { colors, spacing, typography } from '../../theme';
+import { colors, radius, spacing, typography } from '../../theme';
 
 interface OtpCodeInputProps {
   value: string;
@@ -11,6 +11,8 @@ interface OtpCodeInputProps {
   onComplete?: (code: string) => void;
   error?: string | null;
   disabled?: boolean;
+  loading?: boolean;
+  success?: boolean;
   length?: number;
   autoFocus?: boolean;
 }
@@ -23,6 +25,8 @@ export function OtpCodeInput({
   onComplete,
   error,
   disabled = false,
+  loading = false,
+  success = false,
   length = OTP_LENGTH,
   autoFocus = true,
 }: OtpCodeInputProps) {
@@ -39,9 +43,8 @@ export function OtpCodeInput({
   };
 
   const handleChangeText = (text: string, index: number) => {
-    if (disabled) return;
+    if (disabled || loading) return;
 
-    // Only digits
     const digit = text.replace(/[^0-9]/g, '').slice(-1);
 
     const newValueArr = normalizedValue.split('');
@@ -52,22 +55,20 @@ export function OtpCodeInput({
 
     if (digit && index < length - 1) {
       focusInput(index + 1);
-    } else if (digit && index === length - 1 && newValue.length === length) {
+    } else if (digit && index === length - 1 && newValue.replace(/\s/g, '').length === length) {
       onComplete?.(newValue);
     }
   };
 
   const handleKeyPress = (e: NativeSyntheticEvent<TextInputKeyPressEventData>, index: number) => {
-    if (disabled) return;
+    if (disabled || loading) return;
 
     if (e.nativeEvent.key === 'Backspace') {
       if (normalizedValue[index]) {
-        // Clear current
         const newValueArr = normalizedValue.split('');
         newValueArr[index] = '';
         onChange(newValueArr.join(''));
       } else if (index > 0) {
-        // Move back and clear previous
         const prevIndex = index - 1;
         const newValueArr = normalizedValue.split('');
         newValueArr[prevIndex] = '';
@@ -81,9 +82,8 @@ export function OtpCodeInput({
     setFocusedIndex(index);
   };
 
-  // Support paste into any box
   const handlePaste = (pasted: string, index: number) => {
-    if (disabled) return;
+    if (disabled || loading) return;
 
     const digits = pasted.replace(/[^0-9]/g, '').slice(0, length);
     if (!digits) return;
@@ -103,17 +103,19 @@ export function OtpCodeInput({
       setTimeout(() => focusInput(nextFocus), 10);
     }
 
-    if (newValue.length === length) {
+    if (newValue.replace(/\s/g, '').length === length) {
       onComplete?.(newValue);
     }
   };
 
+  const isDisabled = disabled || loading;
+
   return (
-    <View>
+    <View style={styles.wrapper}>
       <View style={styles.container}>
         {Array.from({ length }).map((_, index) => {
           const char = normalizedValue[index] || '';
-          const isFocused = focusedIndex === index && !disabled;
+          const isFocused = focusedIndex === index && !isDisabled && !success;
 
           return (
             <TextInput
@@ -121,11 +123,13 @@ export function OtpCodeInput({
               ref={(ref) => {
                 inputsRef.current[index] = ref;
               }}
+              accessibilityLabel={`الرقم ${index + 1} من ${length}`}
               style={[
                 styles.box,
                 isFocused && styles.boxFocused,
-                error && styles.boxError,
-                disabled && styles.boxDisabled,
+                !!error && styles.boxError,
+                success && styles.boxSuccess,
+                isDisabled && !success && styles.boxDisabled,
               ]}
               value={char}
               onChangeText={(text) => {
@@ -139,7 +143,7 @@ export function OtpCodeInput({
               onFocus={() => handleFocus(index)}
               keyboardType="number-pad"
               maxLength={1}
-              editable={!disabled}
+              editable={!isDisabled && !success}
               selectTextOnFocus
               caretHidden
               textAlign="center"
@@ -150,30 +154,41 @@ export function OtpCodeInput({
       </View>
 
       {error ? (
-        <AppText color="error" variant="bodySmall" style={styles.errorText}>
+        <AppText color="error" variant="caption" style={styles.feedback}>
           {error}
+        </AppText>
+      ) : null}
+
+      {success ? (
+        <AppText color="success" variant="caption" style={styles.feedback}>
+          تم التحقق بنجاح
         </AppText>
       ) : null}
     </View>
   );
 }
 
-const BOX_SIZE = 44;
+const BOX_SIZE = 48;
 
 const styles = StyleSheet.create({
+  wrapper: {
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   container: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     gap: spacing.sm,
+    direction: 'ltr',
   },
   box: {
     width: BOX_SIZE,
     height: BOX_SIZE,
     borderWidth: 1.5,
     borderColor: colors.border.default,
-    borderRadius: 8,
+    borderRadius: radius.input,
     backgroundColor: colors.background.surface,
-    fontSize: typography.size.lg,
+    fontSize: typography.size.xl,
     fontWeight: typography.weight.semibold,
     color: colors.text.primary,
     textAlign: 'center',
@@ -184,14 +199,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.primary,
   },
   boxError: {
-    borderColor: colors.status.blocked,
+    borderColor: colors.semantic.error,
+  },
+  boxSuccess: {
+    borderColor: colors.semantic.success,
+    backgroundColor: colors.semantic.successSoft,
   },
   boxDisabled: {
     backgroundColor: colors.background.muted,
     opacity: 0.6,
   },
-  errorText: {
-    marginTop: spacing.xs,
+  feedback: {
     textAlign: 'center',
   },
 });

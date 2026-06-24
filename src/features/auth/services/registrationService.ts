@@ -2,6 +2,7 @@ import { apiClient, authService, endpoints, normalizeApiError } from '../../../a
 import type {
   NormalRegisterPayload,
   NormalRegisterResponse,
+  NormalizedApiError,
   OtpPurpose,
   RegisterStudentRequest,
   SendOtpRequest,
@@ -52,18 +53,172 @@ export async function verifyRegistrationOtp(phoneNumber: string, code: string) {
 }
 
 // ============================================
-// D1: Normal user + Student Account Request flows
+// D1/D2: Normal user + Student Account Request flows
 // ============================================
 
-const D1_NETWORK = 'تعذر الاتصال بالخادم. تحقق من الإنترنت.';
+const D1_NETWORK = 'تعذر الاتصال بالخادم. تحقق من الإنترنت وحاول مرة أخرى.';
+const D1_TIMEOUT = 'استغرق الاتصال وقتاً أطول من المتوقع. حاول مرة أخرى.';
 const D1_GENERIC = 'حدث خطأ غير متوقع. حاول مرة أخرى.';
+
+const D1_ERROR_MAP: Record<string, string> = {
+  duplicate_phone: 'رقم الجوال مسجل مسبقاً.',
+  duplicate_email: 'البريد الإلكتروني مسجل مسبقاً.',
+  invalid_phone: 'رقم الجوال غير صحيح.',
+  invalid_email: 'البريد الإلكتروني غير صحيح.',
+  password_mismatch: 'كلمتا المرور غير متطابقتين.',
+  weak_password: 'كلمة المرور ضعيفة. يجب أن تكون 8 أحرف على الأقل.',
+  file_required: 'يرجى إرفاق صورة البطاقة الجامعية.',
+  invalid_file: 'تعذر استخدام هذا الملف. اختر صورة أخرى.',
+  invalid_otp: 'رمز التحقق غير صحيح.',
+  expired_otp: 'انتهت صلاحية الرمز. يرجى طلب رمز جديد.',
+  too_many_attempts: 'عدد محاولات خاطئة كثير. حاول لاحقاً.',
+  resend_cooldown: 'انتظر قليلاً قبل طلب رمز جديد.',
+  not_approved_yet: 'لم تتم الموافقة على طلبك بعد.',
+  request_not_found: 'الطلب غير موجود.',
+  forbidden: 'لا تملك صلاحية تنفيذ هذا الإجراء.',
+  server_unavailable: 'الخدمة غير متاحة حالياً. حاول لاحقاً.',
+};
 
 export function toSafeD1ErrorMessage(error: unknown): string {
   const normalized = normalizeApiError(error);
-  if (normalized.code === 'NETWORK_ERROR' || normalized.code === 'TIMEOUT') {
+
+  if (normalized.code === 'NETWORK_ERROR') {
     return D1_NETWORK;
   }
-  return normalized.message || D1_GENERIC;
+
+  if (normalized.code === 'TIMEOUT') {
+    return D1_TIMEOUT;
+  }
+
+  const mapped = mapD1Error(normalized);
+  if (mapped) return mapped;
+
+  return D1_GENERIC;
+}
+
+function mapD1Error(normalized: NormalizedApiError): string | null {
+  const message = (normalized.message || '').toLowerCase();
+  const technical = (normalized.technicalMessage || '').toLowerCase();
+  const combined = `${message} ${technical}`;
+  const m = (key: keyof typeof D1_ERROR_MAP): string => D1_ERROR_MAP[key] as string;
+
+  if (
+    message.includes('duplicate') ||
+    message.includes('already exists') ||
+    message.includes('مسجل')
+  ) {
+    if (combined.includes('phone') || combined.includes('جوال') || combined.includes('رقم')) {
+      return m('duplicate_phone');
+    }
+    if (combined.includes('email') || combined.includes('بريد')) {
+      return m('duplicate_email');
+    }
+    return 'البيانات المدخلة مسجلة مسبقاً.';
+  }
+
+  if (
+    combined.includes('invalid_otp') ||
+    combined.includes('invalid otp') ||
+    combined.includes('رمز التحقق غير صحيح') ||
+    combined.includes('incorrect otp') ||
+    combined.includes('wrong otp')
+  ) {
+    return m('invalid_otp');
+  }
+
+  if (
+    combined.includes('expired_otp') ||
+    combined.includes('expired otp') ||
+    combined.includes('انتهت صلاحية') ||
+    combined.includes('otp expired')
+  ) {
+    return m('expired_otp');
+  }
+
+  if (
+    combined.includes('too_many') ||
+    combined.includes('many attempts') ||
+    combined.includes('محاولات') ||
+    combined.includes('rate limit') ||
+    combined.includes('rate_limit')
+  ) {
+    return m('too_many_attempts');
+  }
+
+  if (
+    combined.includes('not approved') ||
+    combined.includes('not_approved') ||
+    combined.includes('لم تتم الموافقة') ||
+    combined.includes('pending_review') ||
+    combined.includes('pending review')
+  ) {
+    return m('not_approved_yet');
+  }
+
+  if (
+    combined.includes('not found') ||
+    combined.includes('not_found') ||
+    combined.includes('غير موجود')
+  ) {
+    return m('request_not_found');
+  }
+
+  if (normalized.code === 'FORBIDDEN') {
+    return m('forbidden');
+  }
+
+  if (normalized.code === 'SERVER_ERROR') {
+    return m('server_unavailable');
+  }
+
+  const fieldErrors = normalized.fieldErrors;
+  if (fieldErrors) {
+    const allErrors = Object.values(fieldErrors)
+      .flat()
+      .map((e) => e.toLowerCase());
+    for (const err of allErrors) {
+      if (err.includes('phone') || err.includes('جوال') || err.includes('رقم')) {
+        return m('invalid_phone');
+      }
+      if (err.includes('email') || err.includes('بريد')) {
+        return m('invalid_email');
+      }
+      if (err.includes('password') || err.includes('كلمة المرور') || err.includes('pass')) {
+        if (err.includes('match') || err.includes('غير متطابقة') || err.includes('mismatch')) {
+          return m('password_mismatch');
+        }
+        if (
+          err.includes('weak') ||
+          err.includes('ضعيفة') ||
+          err.includes('short') ||
+          err.includes('قصيرة')
+        ) {
+          return m('weak_password');
+        }
+      }
+      if (
+        err.includes('file') ||
+        err.includes('card') ||
+        err.includes('صورة') ||
+        err.includes('بطاقة')
+      ) {
+        if (err.includes('required') || err.includes('مطلوبة') || err.includes('required')) {
+          return m('file_required');
+        }
+        return m('invalid_file');
+      }
+    }
+  }
+
+  if (
+    normalized.code === 'VALIDATION_ERROR' &&
+    normalized.message &&
+    normalized.message !== D1_GENERIC
+  ) {
+    return normalized.message;
+  }
+
+  return null;
 }
 
 export async function registerNormalUser(
