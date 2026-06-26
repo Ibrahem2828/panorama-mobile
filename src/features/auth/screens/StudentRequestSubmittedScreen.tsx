@@ -60,7 +60,7 @@ export function StudentRequestSubmittedScreen({ route, navigation }: Props) {
             <AppButton
               fullWidth
               variant="outline"
-              onPress={() => navigation.navigate(PublicRoutes.Login)}
+              onPress={() => navigation.reset({ index: 0, routes: [{ name: PublicRoutes.Login }] })}
               title="العودة لتسجيل الدخول"
             />
           </Stack>

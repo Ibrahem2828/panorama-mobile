@@ -8,6 +8,7 @@ export type ApiErrorCode =
   | 'NOT_FOUND'
   | 'VALIDATION_ERROR'
   | 'SERVER_ERROR'
+  | 'RATE_LIMITED'
   | 'UNKNOWN_ERROR';
 
 export type FieldErrors = Record<string, string[]>;
@@ -19,6 +20,8 @@ export type NormalizedApiError = {
   technicalMessage?: string;
   requestId?: string;
   fieldErrors?: FieldErrors;
+  errorCode?: string;
+  retryAfterSeconds?: number;
   raw?: unknown;
 };
 
@@ -32,6 +35,7 @@ const defaultMessages: Record<ApiErrorCode, string> = {
   NOT_FOUND: 'العنصر المطلوب غير موجود.',
   VALIDATION_ERROR: 'تعذر التحقق من البيانات المدخلة.',
   SERVER_ERROR: 'حدث خطأ في الخادم. حاول لاحقا.',
+  RATE_LIMITED: 'تم تجاوز عدد المحاولات المسموح. حاول مرة أخرى بعد قليل.',
   UNKNOWN_ERROR: 'حدث خطأ غير متوقع. حاول مرة أخرى.',
 };
 
@@ -41,6 +45,8 @@ export class ApiClientError extends Error implements NormalizedApiError {
   technicalMessage?: string;
   requestId?: string;
   fieldErrors?: FieldErrors;
+  errorCode?: string;
+  retryAfterSeconds?: number;
   raw?: unknown;
 
   constructor(error: NormalizedApiError) {
@@ -51,6 +57,8 @@ export class ApiClientError extends Error implements NormalizedApiError {
     this.technicalMessage = error.technicalMessage;
     this.requestId = error.requestId;
     this.fieldErrors = error.fieldErrors;
+    this.errorCode = error.errorCode;
+    this.retryAfterSeconds = error.retryAfterSeconds;
     this.raw = error.raw;
   }
 }
@@ -81,6 +89,27 @@ function toFieldErrors(errors: unknown): FieldErrors | undefined {
       return [key, [String(value)]];
     }),
   );
+}
+
+function extractErrorCode(responseBody: unknown): string | undefined {
+  if (!isRecord(responseBody)) return undefined;
+  const data = isRecord(responseBody.data) ? responseBody.data : undefined;
+  if (data && typeof data.error_code === 'string') {
+    return data.error_code;
+  }
+  return undefined;
+}
+
+function extractRetryAfter(responseBody: unknown): number | undefined {
+  if (!isRecord(responseBody)) return undefined;
+  const data = isRecord(responseBody.data) ? responseBody.data : undefined;
+  if (data && typeof data.retry_after_seconds === 'number') {
+    return data.retry_after_seconds;
+  }
+  if (data && typeof data.retry_after_minutes === 'number') {
+    return data.retry_after_minutes * 60;
+  }
+  return undefined;
 }
 
 function extractRequestId(responseBody: unknown): string | undefined {
@@ -128,6 +157,10 @@ function codeFromStatus(status?: number): ApiErrorCode {
     return 'NOT_FOUND';
   }
 
+  if (status === 429) {
+    return 'RATE_LIMITED';
+  }
+
   if (status && status >= 500) {
     return 'SERVER_ERROR';
   }
@@ -142,6 +175,8 @@ export function createApiError(input: {
   technicalMessage?: string;
   requestId?: string;
   fieldErrors?: FieldErrors;
+  errorCode?: string;
+  retryAfterSeconds?: number;
   raw?: unknown;
 }): ApiClientError {
   const code = input.code ?? codeFromStatus(input.status);
@@ -153,6 +188,8 @@ export function createApiError(input: {
     technicalMessage: input.technicalMessage,
     requestId: input.requestId,
     fieldErrors: input.fieldErrors,
+    errorCode: input.errorCode,
+    retryAfterSeconds: input.retryAfterSeconds,
     raw: input.raw,
   });
 }
@@ -179,6 +216,8 @@ export function normalizeHttpError({
     technicalMessage: backendMessage,
     requestId,
     fieldErrors,
+    errorCode: extractErrorCode(responseBody),
+    retryAfterSeconds: extractRetryAfter(responseBody),
     raw: responseBody,
   };
 }
@@ -192,6 +231,8 @@ export function normalizeApiError(error: unknown): NormalizedApiError {
       technicalMessage: error.technicalMessage,
       requestId: error.requestId,
       fieldErrors: error.fieldErrors,
+      errorCode: error.errorCode,
+      retryAfterSeconds: error.retryAfterSeconds,
       raw: error.raw,
     };
   }

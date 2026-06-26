@@ -2,11 +2,11 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
 import {
+  Animated,
   Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
@@ -24,8 +24,10 @@ import {
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { colors, radius, spacing } from '../../../theme';
-import { AuthFormCard } from '../components';
+import { createEntranceAnim, MOTION } from '../../../utils/motion';
+import { AuthFormCard, PhoneInputWithCountryCode } from '../components';
 import { submitStudentAccountRequest, toSafeD1ErrorMessage } from '../services';
+import { validatePhoneNumber } from '../utils/authFormValidation';
 
 type Props = NativeStackScreenProps<PublicStackParamList, 'StudentAccountRequest'>;
 
@@ -50,12 +52,13 @@ type CardAsset = {
   fileSize?: number;
 };
 
-const PERMISSION_DENIED =
-  'Ù„Ù… Ù†ØªÙ…ÙƒÙ† Ù…Ù† Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ù„Ù‰ Ø§Ù„ØµÙˆØ±. ÙŠÙ…ÙƒÙ†Ùƒ Ø§Ù„Ø³Ù…Ø§Ø­ Ù…Ù† Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§Ù„Ø¬Ù‡Ø§Ø².';
-const INVALID_ASSET = 'ØªØ¹Ø°Ø± Ø§Ø³ØªØ®Ø¯Ø§Ù… Ù‡Ø°Ø§ Ø§Ù„Ù…Ù„Ù. Ø§Ø®ØªØ± ØµÙˆØ±Ø© Ø£Ø®Ø±Ù‰.';
+const PERMISSION_DENIED = 'لم نتمكن من الوصول إلى الصور. يمكنك السماح من إعدادات الجهاز.';
+const INVALID_ASSET = 'تعذر استخدام هذا الملف. اختر صورة أخرى.';
 
 export function StudentAccountRequestScreen({ navigation }: Props) {
-  const scrollRef = useRef<ScrollView>(null);
+  const cardAnim = useRef(createEntranceAnim(12)).current;
+  cardAnim.animate(MOTION.duration.slow).start();
+
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -78,17 +81,17 @@ export function StudentAccountRequestScreen({ navigation }: Props) {
 
   function validate(): FormErrors {
     const errors: FormErrors = {};
-    if (!fullName.trim()) errors.fullName = 'ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ Ø§Ù„Ø§Ø³Ù… Ø§Ù„ÙƒØ§Ù…Ù„.';
-    if (!phone.trim()) errors.phone = 'ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ Ø±Ù‚Ù… Ø§Ù„Ø¬ÙˆØ§Ù„.';
-    if (!university.trim()) errors.university = 'ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ Ø§Ø³Ù… Ø§Ù„Ø¬Ø§Ù…Ø¹Ø©.';
-    if (!studentNumber.trim())
-      errors.studentNumber = 'ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ Ø§Ù„Ø±Ù‚Ù… Ø§Ù„Ø¬Ø§Ù…Ø¹ÙŠ.';
-    if (!password) errors.password = 'ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ±.';
-    if (!passwordConfirm) errors.passwordConfirm = 'ÙŠØ±Ø¬Ù‰ ØªØ£ÙƒÙŠØ¯ ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ±.';
+    if (!fullName.trim()) errors.fullName = 'يرجى إدخال الاسم الكامل.';
+    const phoneErr = validatePhoneNumber(phone);
+    if (phoneErr) errors.phone = phoneErr;
+    if (!university.trim()) errors.university = 'يرجى إدخال اسم الجامعة.';
+    if (!studentNumber.trim()) errors.studentNumber = 'يرجى إدخال الرقم الجامعي.';
+    if (!password) errors.password = 'يرجى إدخال كلمة المرور.';
+    if (!passwordConfirm) errors.passwordConfirm = 'يرجى تأكيد كلمة المرور.';
     if (password && passwordConfirm && password !== passwordConfirm) {
-      errors.passwordConfirm = 'ÙƒÙ„Ù…ØªØ§ Ø§Ù„Ù…Ø±ÙˆØ± ØºÙŠØ± Ù…ØªØ·Ø§Ø¨Ù‚ØªÙŠÙ†.';
+      errors.passwordConfirm = 'كلمتا المرور غير متطابقتين.';
     }
-    if (!selectedCard) errors.card = 'ÙŠØ±Ø¬Ù‰ Ø¥Ø±ÙØ§Ù‚ ØµÙˆØ±Ø© Ø§Ù„Ø¨Ø·Ø§Ù‚Ø© Ø§Ù„Ø¬Ø§Ù…Ø¹ÙŠØ©.';
+    if (!selectedCard) errors.card = 'يرجى إرفاق صورة البطاقة الجامعية.';
     return errors;
   }
 
@@ -123,7 +126,7 @@ export function StudentAccountRequestScreen({ navigation }: Props) {
       }
       setError(null);
     } catch {
-      setError('ØªØ¹Ø°Ø± Ø§Ø®ØªÙŠØ§Ø± Ø§Ù„ØµÙˆØ±Ø©. Ø­Ø§ÙˆÙ„ Ù…Ø±Ø© Ø£Ø®Ø±Ù‰.');
+      setError('تعذر اختيار الصورة. حاول مرة أخرى.');
     }
   }
 
@@ -172,19 +175,24 @@ export function StudentAccountRequestScreen({ navigation }: Props) {
   return (
     <AppScreen contentContainerStyle={styles.content} scroll safeArea>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled">
-          <Stack gap="xl">
+        <Stack gap="xl">
+          <Animated.View
+            style={{
+              opacity: cardAnim.opacity,
+              transform: [{ translateY: cardAnim.translateY }],
+            }}
+          >
             <AuthFormCard
-              title="Ø·Ù„Ø¨ Ø¥Ù†Ø´Ø§Ø¡ Ø­Ø³Ø§Ø¨ Ø·Ø§Ù„Ø¨"
-              subtitle="Ù‚Ø¯Ù‘Ù… Ø·Ù„Ø¨Ùƒ ÙˆØ³ÙŠØªÙ… Ù…Ø±Ø§Ø¬Ø¹ØªÙ‡ Ù…Ù† Ù‚Ø¨Ù„ Ø§Ù„Ø¥Ø¯Ø§Ø±Ø©."
+              title="طلب إنشاء حساب طالب"
+              subtitle="قدّم طلبك وسيتم مراجعته من قبل الإدارة."
             >
               <Stack gap="lg">
-                {/* Section 1: Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø·Ø§Ù„Ø¨ */}
+                {/* Section 1: بيانات الطالب */}
                 <Stack gap="sm">
-                  <SectionHeader title="Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø·Ø§Ù„Ø¨" />
+                  <SectionHeader title="بيانات الطالب" />
                   <Stack gap="md">
                     <AppTextInput
-                      label="Ø§Ù„Ø§Ø³Ù… Ø§Ù„ÙƒØ§Ù…Ù„"
+                      label="الاسم الكامل"
                       value={fullName}
                       onChangeText={(v) => {
                         setFullName(v);
@@ -195,7 +203,7 @@ export function StudentAccountRequestScreen({ navigation }: Props) {
                       error={fieldErrors.fullName}
                     />
                     <AppTextInput
-                      label="Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ"
+                      label="البريد الإلكتروني"
                       value={email}
                       onChangeText={(v) => {
                         setEmail(v);
@@ -204,41 +212,41 @@ export function StudentAccountRequestScreen({ navigation }: Props) {
                       keyboardType="email-address"
                       autoCapitalize="none"
                       disabled={isSubmitting}
-                      helperText="Ø§Ø®ØªÙŠØ§Ø±ÙŠ"
+                      helperText="اختياري"
                     />
-                    <AppTextInput
-                      label="Ø±Ù‚Ù… Ø§Ù„Ø¬ÙˆØ§Ù„"
+                    <PhoneInputWithCountryCode
+                      label="رقم الجوال"
                       value={phone}
                       onChangeText={(v) => {
                         setPhone(v);
                         setFieldErrors((prev) => ({ ...prev, phone: undefined }));
                       }}
-                      keyboardType="phone-pad"
                       disabled={isSubmitting}
                       error={fieldErrors.phone}
+                      placeholder="أدخل رقم الجوال"
                     />
-                    <AppTextInput
-                      label="Ø±Ù‚Ù… ÙˆØ§ØªØ³Ø§Ø¨ (Ø§Ø®ØªÙŠØ§Ø±ÙŠ)"
+                    <PhoneInputWithCountryCode
+                      label="رقم واتساب (اختياري)"
                       value={whatsapp}
                       onChangeText={(v) => {
                         setWhatsapp(v);
                         setFieldErrors((prev) => ({ ...prev, whatsapp: undefined }));
                       }}
-                      keyboardType="phone-pad"
                       disabled={isSubmitting}
-                      helperText="Ù„Ø¥Ø±Ø³Ø§Ù„ Ø±Ù…Ø² Ø§Ù„ØªÙØ¹ÙŠÙ„ Ø¨Ø¹Ø¯ Ø§Ù„Ù…ÙˆØ§ÙÙ‚Ø©"
+                      helperText="لإرسال رمز التفعيل بعد الموافقة"
+                      placeholder="أدخل رقم واتساب"
                     />
                   </Stack>
                 </Stack>
 
                 <Divider />
 
-                {/* Section 2: Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø¬Ø§Ù…Ø¹Ø© */}
+                {/* Section 2: بيانات الجامعة */}
                 <Stack gap="sm">
-                  <SectionHeader title="Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø¬Ø§Ù…Ø¹Ø©" />
+                  <SectionHeader title="بيانات الجامعة" />
                   <Stack gap="md">
                     <AppTextInput
-                      label="Ø§Ù„Ø¬Ø§Ù…Ø¹Ø©"
+                      label="الجامعة"
                       value={university}
                       onChangeText={(v) => {
                         setUniversity(v);
@@ -248,19 +256,19 @@ export function StudentAccountRequestScreen({ navigation }: Props) {
                       error={fieldErrors.university}
                     />
                     <AppTextInput
-                      label="Ø§Ù„ÙƒÙ„ÙŠØ© (Ø§Ø®ØªÙŠØ§Ø±ÙŠ)"
+                      label="الكلية (اختياري)"
                       value={faculty}
                       onChangeText={setFaculty}
                       disabled={isSubmitting}
                     />
                     <AppTextInput
-                      label="Ø§Ù„ØªØ®ØµØµ (Ø§Ø®ØªÙŠØ§Ø±ÙŠ)"
+                      label="التخصص (اختياري)"
                       value={major}
                       onChangeText={setMajor}
                       disabled={isSubmitting}
                     />
                     <AppTextInput
-                      label="Ø§Ù„Ø±Ù‚Ù… Ø§Ù„Ø¬Ø§Ù…Ø¹ÙŠ"
+                      label="الرقم الجامعي"
                       value={studentNumber}
                       onChangeText={(v) => {
                         setStudentNumber(v);
@@ -275,23 +283,23 @@ export function StudentAccountRequestScreen({ navigation }: Props) {
 
                 <Divider />
 
-                {/* Section 3: Ø¥Ø«Ø¨Ø§Øª Ø§Ù„Ø·Ø§Ù„Ø¨ */}
+                {/* Section 3: إثبات الطالب */}
                 <Stack gap="sm">
                   <SectionHeader
-                    title="Ø¥Ø«Ø¨Ø§Øª Ø§Ù„Ø·Ø§Ù„Ø¨"
-                    subtitle="ÙŠØ¬Ø¨ Ø£Ù† ÙŠØ¸Ù‡Ø± Ø§Ù„Ø§Ø³Ù… ÙˆØ§Ù„Ø±Ù‚Ù… Ø§Ù„Ø¬Ø§Ù…Ø¹ÙŠ Ø¨ÙˆØ¶ÙˆØ­."
+                    title="إثبات الطالب"
+                    subtitle="يجب أن يظهر الاسم والرقم الجامعي بوضوح."
                   />
                   <AppCard padding="md" variant="outlined">
                     <Stack gap="md">
                       <AppText variant="bodySmall" color="secondary">
-                        Ø£Ø±ÙÙ‚ ØµÙˆØ±Ø© Ø§Ù„Ø¨Ø·Ø§Ù‚Ø© Ø§Ù„Ø¬Ø§Ù…Ø¹ÙŠØ©
+                        أرفق صورة البطاقة الجامعية
                       </AppText>
 
                       {!selectedCard ? (
                         <AppButton
                           fullWidth
                           onPress={pickCard}
-                          title="Ø§Ø®ØªÙŠØ§Ø± ØµÙˆØ±Ø©"
+                          title="اختيار صورة"
                           variant="outline"
                           disabled={isSubmitting}
                         />
@@ -317,7 +325,7 @@ export function StudentAccountRequestScreen({ navigation }: Props) {
                           <Stack direction="horizontal" gap="sm">
                             <AppButton
                               onPress={pickCard}
-                              title="Ø§Ø³ØªØ¨Ø¯Ø§Ù„ Ø§Ù„ØµÙˆØ±Ø©"
+                              title="استبدال الصورة"
                               variant="outline"
                               size="sm"
                               disabled={isSubmitting}
@@ -331,7 +339,7 @@ export function StudentAccountRequestScreen({ navigation }: Props) {
                               disabled={isSubmitting}
                             >
                               <AppText color="error" variant="button">
-                                Ø¥Ø²Ø§Ù„Ø©
+                                إزالة
                               </AppText>
                             </Pressable>
                           </Stack>
@@ -349,12 +357,12 @@ export function StudentAccountRequestScreen({ navigation }: Props) {
 
                 <Divider />
 
-                {/* Section 4: ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ± */}
+                {/* Section 4: كلمة المرور */}
                 <Stack gap="sm">
-                  <SectionHeader title="ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ±" />
+                  <SectionHeader title="كلمة المرور" />
                   <Stack gap="md">
                     <AppTextInput
-                      label="ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ±"
+                      label="كلمة المرور"
                       value={password}
                       onChangeText={(v) => {
                         setPassword(v);
@@ -365,7 +373,7 @@ export function StudentAccountRequestScreen({ navigation }: Props) {
                       error={fieldErrors.password}
                     />
                     <AppTextInput
-                      label="ØªØ£ÙƒÙŠØ¯ ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ±"
+                      label="تأكيد كلمة المرور"
                       value={passwordConfirm}
                       onChangeText={(v) => {
                         setPasswordConfirm(v);
@@ -389,22 +397,22 @@ export function StudentAccountRequestScreen({ navigation }: Props) {
                   loading={isSubmitting}
                   disabled={isSubmitting}
                   onPress={handleSubmit}
-                  title="Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„Ø·Ù„Ø¨"
+                  title={isSubmitting ? 'جاري إرسال الطلب...' : 'إرسال الطلب'}
                 />
               </Stack>
             </AuthFormCard>
+          </Animated.View>
 
-            <Pressable
-              onPress={() => navigation.goBack()}
-              style={styles.backLink}
-              disabled={isSubmitting}
-            >
-              <AppText color="brand" variant="button">
-                Ø§Ù„Ø¹ÙˆØ¯Ø©
-              </AppText>
-            </Pressable>
-          </Stack>
-        </ScrollView>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={styles.backLink}
+            disabled={isSubmitting}
+          >
+            <AppText color="brand" variant="button">
+              العودة
+            </AppText>
+          </Pressable>
+        </Stack>
       </KeyboardAvoidingView>
     </AppScreen>
   );

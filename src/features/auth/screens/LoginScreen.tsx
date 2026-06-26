@@ -119,7 +119,7 @@ export function LoginScreen() {
               accessibilityIgnoresInvertColors
               accessibilityLabel="شعار بانوراما"
               resizeMode="contain"
-              source={images.brand.logoFullBilingual}
+              source={images.brand.logoFullAr}
               style={styles.logo}
             />
             <AppText variant="h1">بانوراما</AppText>

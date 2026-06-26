@@ -387,6 +387,7 @@ export type NormalRegisterResponse = {
     phone_verified?: boolean;
     requires_phone_verification?: boolean;
     next_step?: string;
+    phone_number?: string;
     expires_in_seconds?: number;
     resend_after_seconds?: number;
   };

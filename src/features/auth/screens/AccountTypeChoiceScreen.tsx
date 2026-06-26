@@ -85,6 +85,11 @@ export function AccountTypeChoiceScreen() {
           <Animated.View style={{ transform: [{ scale: normalAnim.scale }] }}>
             <AppCard variant="elevated" padding="lg">
               <Stack gap="sm">
+                <Illustration
+                  accessibilityLabel="مستخدم عادي"
+                  size="sm"
+                  source={images.illustrations.studyDesk}
+                />
                 <AppText variant="title">مستخدم عادي</AppText>
                 <AppText color="secondary" variant="bodySmall">
                   أنشئ حساباً عاماً لاستخدام الخدمات المتاحة بعد التحقق من رقم الجوال.

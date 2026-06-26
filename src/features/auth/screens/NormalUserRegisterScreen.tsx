@@ -7,13 +7,13 @@ import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { createEntranceAnim, MOTION } from '../../../utils/motion';
-import { AuthFormCard, PasswordInput } from '../components';
+import { AuthFormCard, PasswordInput, PhoneInputWithCountryCode } from '../components';
 import { registerNormalUser, toSafeD1ErrorMessage } from '../services';
 import {
   isValidEmail,
-  isValidPhoneNumber,
   normalizePhoneNumber,
   validatePasswordPair,
+  validatePhoneNumber,
 } from '../utils/authFormValidation';
 
 type Props = NativeStackScreenProps<PublicStackParamList, 'NormalUserRegister'>;
@@ -58,8 +58,8 @@ export function NormalUserRegisterScreen({ navigation }: Props) {
     if (!name) errors.fullName = 'يرجى إدخال الاسم الكامل.';
     if (!em) errors.email = 'يرجى إدخال البريد الإلكتروني.';
     else if (!isValidEmail(em)) errors.email = 'يرجى إدخال بريد إلكتروني صحيح.';
-    if (!phone) errors.phone = 'يرجى إدخال رقم الجوال.';
-    else if (!isValidPhoneNumber(phone)) errors.phone = 'يرجى إدخال رقم جوال صحيح.';
+    const phoneErr = validatePhoneNumber(phone);
+    if (phoneErr) errors.phone = phoneErr;
     if (!password) errors.password = 'يرجى إدخال كلمة المرور.';
     if (!passwordConfirm) errors.passwordConfirm = 'يرجى تأكيد كلمة المرور.';
     if (password && passwordConfirm && passErr) {
@@ -82,17 +82,20 @@ export function NormalUserRegisterScreen({ navigation }: Props) {
     }
     setIsSubmitting(true);
     try {
-      await registerNormalUser({
+      const response = await registerNormalUser({
         full_name: fullName.trim(),
         email: email.trim(),
         phone_number: normalizePhoneNumber(phoneNumber),
         password,
         password_confirm: passwordConfirm,
       });
+      const backendPhone = response?.data?.phone_number;
       navigation.replace(PublicRoutes.PhoneOtpVerification, {
-        phoneNumber: normalizePhoneNumber(phoneNumber),
+        phoneNumber: backendPhone || normalizePhoneNumber(phoneNumber),
         otpPurpose: 'verify_phone',
         source: 'normal_register',
+        expiresInSeconds: response?.data?.expires_in_seconds,
+        resendAfterSeconds: response?.data?.resend_after_seconds,
       });
     } catch (err) {
       setErrorMessage(toSafeD1ErrorMessage(err));
@@ -142,16 +145,16 @@ export function NormalUserRegisterScreen({ navigation }: Props) {
                   disabled={isSubmitting}
                   error={fieldErrors.email}
                 />
-                <AppTextInput
+                <PhoneInputWithCountryCode
                   label="رقم الجوال"
                   value={phoneNumber}
                   onChangeText={(v) => {
                     setPhoneNumber(v);
                     setFieldErrors((prev) => ({ ...prev, phone: undefined }));
                   }}
-                  keyboardType="phone-pad"
                   disabled={isSubmitting}
                   error={fieldErrors.phone}
+                  placeholder="أدخل رقم الجوال"
                 />
                 <PasswordInput
                   value={password}
@@ -185,7 +188,7 @@ export function NormalUserRegisterScreen({ navigation }: Props) {
                   loading={isSubmitting}
                   disabled={isSubmitting}
                   onPress={handleSubmit}
-                  title="إنشاء الحساب"
+                  title={isSubmitting ? 'جاري إنشاء الحساب...' : 'إنشاء الحساب'}
                 />
               </Stack>
             </AuthFormCard>

@@ -1,4 +1,4 @@
-const PHONE_PATTERN = /^\+?[0-9]{8,15}$/u;
+const PHONE_PATTERN = /^\+[0-9]{8,15}$/u;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u;
 
 export function isValidEmail(value: string): boolean {
@@ -12,7 +12,24 @@ export function isValidPhoneNumber(value: string): boolean {
 }
 
 export function normalizePhoneNumber(value: string): string {
-  return value.trim().replace(/[\s-]/gu, '');
+  const cleaned = value.trim().replace(/[\s-]/gu, '');
+  // Normalize Syrian local mobile numbers (09xxxxxxxx) to international format (+9639xxxxxxx)
+  if (/^09\d{8}$/u.test(cleaned)) {
+    return '+963' + cleaned.slice(1);
+  }
+  return cleaned;
+}
+
+export function validatePhoneNumber(value: string): string | null {
+  const cleaned = value.trim().replace(/[\s-]/gu, '');
+  if (!cleaned) return 'يرجى إدخال رقم الجوال.';
+  if (!cleaned.startsWith('+')) return 'صيغة رقم الجوال غير صحيحة. يجب أن يبدأ بمفتاح الدولة.';
+  const digits = cleaned.slice(1);
+  if (!/^\d+$/u.test(digits)) return 'رقم الجوال يجب أن يحتوي على أرقام فقط.';
+  if (digits.length < 8)
+    return 'رقم الجوال قصير جداً. يجب أن يتكون من 8 أرقام على الأقل بعد مفتاح الدولة.';
+  if (digits.length > 15) return 'رقم الجوال طويل جداً.';
+  return null;
 }
 
 export function validatePasswordPair(password: string, confirmPassword: string): string | null {

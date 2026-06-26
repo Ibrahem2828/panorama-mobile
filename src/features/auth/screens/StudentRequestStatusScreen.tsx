@@ -34,7 +34,7 @@ function getStatusInfo(
         title: 'طلبك قيد المراجعة',
         message:
           'يقوم فريق الإدارة بمراجعة بياناتك والبطاقة الجامعية. سيتم إرسال رمز التفعيل بعد الموافقة.',
-        illustration: images.illustrations.universityBuilding,
+        illustration: images.illustrations.studentFemale,
       };
     case 'approved_pending_otp':
     case 'otp_sent':

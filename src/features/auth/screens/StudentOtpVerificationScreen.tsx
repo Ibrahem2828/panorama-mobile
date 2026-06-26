@@ -68,7 +68,7 @@ export function StudentOtpVerificationScreen({ route, navigation }: Props) {
       setSuccess(true);
       successAnim.animate(MOTION.duration.slow).start();
       setTimeout(() => {
-        navigation.navigate(PublicRoutes.Login);
+        navigation.reset({ index: 0, routes: [{ name: PublicRoutes.Login }] });
       }, 2000);
     } catch (e) {
       setError(toSafeD1ErrorMessage(e));
@@ -132,7 +132,7 @@ export function StudentOtpVerificationScreen({ route, navigation }: Props) {
             </Stack>
             <AppButton
               fullWidth
-              onPress={() => navigation.navigate(PublicRoutes.Login)}
+              onPress={() => navigation.reset({ index: 0, routes: [{ name: PublicRoutes.Login }] })}
               title="تسجيل الدخول"
             />
           </Stack>

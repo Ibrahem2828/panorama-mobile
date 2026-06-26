@@ -61,23 +61,35 @@ const D1_TIMEOUT = 'استغرق الاتصال وقتاً أطول من الم�
 const D1_GENERIC = 'حدث خطأ غير متوقع. حاول مرة أخرى.';
 
 const D1_ERROR_MAP: Record<string, string> = {
-  duplicate_phone: 'رقم الجوال مسجل مسبقاً.',
-  duplicate_email: 'البريد الإلكتروني مسجل مسبقاً.',
-  invalid_phone: 'رقم الجوال غير صحيح.',
-  invalid_email: 'البريد الإلكتروني غير صحيح.',
+  duplicate_phone: 'رقم الجوال مستخدم مسبقاً.',
+  duplicate_email: 'البريد الإلكتروني مستخدم مسبقاً.',
+  invalid_phone: 'صيغة رقم الجوال غير صحيحة. استخدم مثالاً مثل: +963994109259.',
+  invalid_email: 'صيغة البريد الإلكتروني غير صحيحة.',
   password_mismatch: 'كلمتا المرور غير متطابقتين.',
-  weak_password: 'كلمة المرور ضعيفة. يجب أن تكون 8 أحرف على الأقل.',
+  weak_password: 'كلمة المرور ضعيفة. استخدم كلمة مرور أقوى.',
   file_required: 'يرجى إرفاق صورة البطاقة الجامعية.',
   invalid_file: 'تعذر استخدام هذا الملف. اختر صورة أخرى.',
   invalid_otp: 'رمز التحقق غير صحيح.',
-  expired_otp: 'انتهت صلاحية الرمز. يرجى طلب رمز جديد.',
-  too_many_attempts: 'عدد محاولات خاطئة كثير. حاول لاحقاً.',
+  expired_otp: 'انتهت صلاحية رمز التحقق.',
+  too_many_attempts: 'تم تجاوز عدد المحاولات المسموح. حاول لاحقاً.',
+  too_many_otp_attempts: 'تم تجاوز عدد المحاولات المسموح. حاول لاحقاً.',
   resend_cooldown: 'انتظر قليلاً قبل طلب رمز جديد.',
-  not_approved_yet: 'لم تتم الموافقة على طلبك بعد.',
+  not_approved_yet: 'لم تتم الموافقة على الطلب بعد.',
+  request_not_approved: 'لم تتم الموافقة على الطلب بعد.',
   request_not_found: 'الطلب غير موجود.',
+  validation_error: 'تحقق من البيانات المدخلة وحاول مرة أخرى.',
+  server_error: 'الخدمة غير متاحة حالياً. حاول لاحقاً.',
   forbidden: 'لا تملك صلاحية تنفيذ هذا الإجراء.',
   server_unavailable: 'الخدمة غير متاحة حالياً. حاول لاحقاً.',
 };
+
+function formatRetryAfter(seconds?: number): string {
+  if (!seconds || seconds <= 0) return 'قليل';
+  const minutes = Math.ceil(seconds / 60);
+  if (minutes === 1) return 'دقيقة واحدة';
+  if (minutes === 2) return 'دقيقتين';
+  return `${minutes} دقيقة`;
+}
 
 export function toSafeD1ErrorMessage(error: unknown): string {
   const normalized = normalizeApiError(error);
@@ -90,6 +102,11 @@ export function toSafeD1ErrorMessage(error: unknown): string {
     return D1_TIMEOUT;
   }
 
+  if (normalized.code === 'RATE_LIMITED') {
+    const retryText = formatRetryAfter(normalized.retryAfterSeconds);
+    return `تم تجاوز عدد المحاولات المسموح. حاول مرة أخرى بعد ${retryText}.`;
+  }
+
   const mapped = mapD1Error(normalized);
   if (mapped) return mapped;
 
@@ -97,6 +114,12 @@ export function toSafeD1ErrorMessage(error: unknown): string {
 }
 
 function mapD1Error(normalized: NormalizedApiError): string | null {
+  // Direct backend error_code mapping (most reliable)
+  if (normalized.errorCode) {
+    const mapped = D1_ERROR_MAP[normalized.errorCode as keyof typeof D1_ERROR_MAP];
+    if (mapped) return mapped;
+  }
+
   const message = (normalized.message || '').toLowerCase();
   const technical = (normalized.technicalMessage || '').toLowerCase();
   const combined = `${message} ${technical}`;
@@ -211,7 +234,7 @@ function mapD1Error(normalized: NormalizedApiError): string | null {
   }
 
   if (
-    normalized.code === 'VALIDATION_ERROR' &&
+    (normalized.code === 'VALIDATION_ERROR' || normalized.code === 'UNKNOWN_ERROR') &&
     normalized.message &&
     normalized.message !== D1_GENERIC
   ) {
