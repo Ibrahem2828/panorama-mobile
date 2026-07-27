@@ -18,6 +18,7 @@ import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { SupportMessageBubble, SupportMessageInput, SupportTicketSummaryCard } from '../components';
 import { canReplyToSupportTicket } from '../services';
+import { useFeedbackStore } from '../../feedback/store';
 import { useSupportStore } from '../store';
 
 type TicketDetailsScreenProps = NativeStackScreenProps<ProfileStackParamList, 'TicketDetails'>;
@@ -38,6 +39,7 @@ export function TicketDetailsScreen({ navigation, route }: TicketDetailsScreenPr
   const addMessage = useSupportStore((state) => state.addMessage);
   const setReplyMessage = useSupportStore((state) => state.setReplyMessage);
   const clearMessages = useSupportStore((state) => state.clearMessages);
+  const requestFeedbackPrompt = useFeedbackStore((state) => state.requestPrompt);
 
   const activeTicket = useMemo(() => {
     if (selectedTicket && String(selectedTicket.id) === String(ticketId)) {
@@ -51,6 +53,18 @@ export function TicketDetailsScreen({ navigation, route }: TicketDetailsScreenPr
     clearMessages();
     void loadTicketDetail(ticketId);
   }, [clearMessages, loadTicketDetail, ticketId]);
+
+  useEffect(() => {
+    if (activeTicket?.status && ['resolved', 'closed'].includes(activeTicket.status)) {
+      void requestFeedbackPrompt({
+        context: 'support',
+        actionKey: 'support.ticket.resolved',
+        objectType: 'support_ticket',
+        objectId: activeTicket.id,
+        metadata: { status: activeTicket.status },
+      });
+    }
+  }, [activeTicket, requestFeedbackPrompt]);
 
   function handleRefresh() {
     void loadTicketDetail(ticketId);

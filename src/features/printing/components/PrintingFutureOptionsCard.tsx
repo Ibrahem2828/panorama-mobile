@@ -1,17 +1,24 @@
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
 
-const FUTURE_OPTIONS = ['الألوان', 'وجه واحد/وجهين', 'التجليد', 'حجم الورق', 'السعر'];
+const ACTIVE_OPTIONS = [
+  'أبيض وأسود أو ملون',
+  'وجه واحد أو وجهين',
+  'حجم الورق',
+  'التجليد والتسليك',
+  'نقطة الاستلام',
+];
 
 export function PrintingFutureOptionsCard() {
   return (
     <AppCard variant="muted">
       <Stack gap="sm">
-        <AppText variant="title">خيارات إضافية</AppText>
+        <AppText variant="title">تسعير آمن ومرن</AppText>
         <AppText color="secondary" variant="bodySmall">
-          هذه الخيارات غير متاحة حالياً. ستتوفر في تحديثات قادمة.
+          تُرسل خياراتك فقط إلى الخادم، ثم يحسب Backend بانوراما السعر النهائي ويحفظ نسخة من قواعد
+          التسعير المستخدمة. لا يعتمد التطبيق أي سعر محسوب على الجهاز.
         </AppText>
         <Stack direction="horizontal" gap="sm" wrap>
-          {FUTURE_OPTIONS.map((option) => (
+          {ACTIVE_OPTIONS.map((option) => (
             <AppBadge key={option} label={option} variant="neutral" />
           ))}
         </Stack>

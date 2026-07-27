@@ -4,12 +4,7 @@ import { Animated, Pressable, StyleSheet } from 'react-native';
 import { AppAvatar, AppBadge, AppCard, AppText, Stack } from '../../../components';
 import { opacity } from '../../../theme';
 import { createPressScaleAnim } from '../../../utils/motion';
-import {
-  getGroupDescription,
-  getGroupDisplayName,
-  getGroupImageUri,
-  getGroupWhatsAppLink,
-} from '../services';
+import { getGroupDescription, getGroupDisplayName, getGroupImageUri } from '../services';
 import type { Group } from '../types';
 import { GroupMembershipBadge } from './GroupMembershipBadge';
 import { GroupStatsRow } from './GroupStatsRow';
@@ -36,7 +31,7 @@ export function GroupCard({ group, onPress }: GroupCardProps) {
   const description = getGroupDescription(group);
   const imageUri = getGroupImageUri(group) ?? undefined;
   const sendPermissionLabel = getSendPermissionLabel(group.send_messages_permission);
-  const hasWhatsAppLink = Boolean(getGroupWhatsAppLink(group));
+  const hasWhatsAppLink = group.has_whatsapp_channel === true;
 
   const { scale, onPressIn, onPressOut } = useRef(createPressScaleAnim()).current;
 

@@ -50,14 +50,15 @@ const QUICK_ACTION_MARKERS: Record<HomeQuickActionKey, string> = {
   subjects: 'م',
   groups: 'غ',
   files: 'ف',
+  search: 'ب',
   printing: 'ط',
   support: 'د',
   notifications: 'ن',
   profile: 'ح',
 };
 
-function getQuickActions(unreadNotificationsCount: number): HomeQuickAction[] {
-  return [
+function getQuickActions(unreadNotificationsCount: number, isStudent: boolean): HomeQuickAction[] {
+  const actions: HomeQuickAction[] = [
     {
       key: 'subjects',
       title: 'موادي',
@@ -72,6 +73,11 @@ function getQuickActions(unreadNotificationsCount: number): HomeQuickAction[] {
       key: 'files',
       title: 'الملفات',
       description: 'افتح الملفات المتاحة داخل التطبيق.',
+    },
+    {
+      key: 'search',
+      title: 'البحث',
+      description: 'ابحث في المواد والمجموعات والملفات المسموحة لحسابك.',
     },
     {
       key: 'printing',
@@ -95,6 +101,9 @@ function getQuickActions(unreadNotificationsCount: number): HomeQuickAction[] {
       description: 'راجع بيانات الحساب والإعدادات.',
     },
   ];
+  return isStudent
+    ? actions
+    : actions.filter((action) => !['subjects', 'groups', 'files'].includes(action.key));
 }
 
 export function HomeScreen() {
@@ -115,18 +124,21 @@ export function HomeScreen() {
   const loadVerification = useVerificationStore((state) => state.loadVerification);
   const hasVerificationState = useVerificationStore((state) => state.hasLoadedVerification);
   const displayName = user?.full_name ?? user?.username ?? null;
+  const isStudent = user?.role?.toLowerCase() === 'student';
   const profileComplete = isStudentProfileComplete(profile);
   const verificationStatus = getVerificationStatus(verification);
   const showInitialLoading = isLoading && !lastLoadedAt;
   const showInitialError = Boolean(errorMessage && !lastLoadedAt);
-  const quickActions = getQuickActions(unreadNotificationsCount);
+  const quickActions = getQuickActions(unreadNotificationsCount, isStudent);
 
   const mainContentAnim = useRef(createEntranceAnim(8)).current;
   useEffect(() => {
     void loadHome();
-    void bootstrapStudentProfile();
-    void loadVerification();
-  }, [bootstrapStudentProfile, loadHome, loadVerification]);
+    if (isStudent) {
+      void bootstrapStudentProfile();
+      void loadVerification();
+    }
+  }, [bootstrapStudentProfile, isStudent, loadHome, loadVerification]);
 
   useEffect(() => {
     if (!showInitialLoading && !showInitialError) {
@@ -156,6 +168,9 @@ export function HomeScreen() {
         break;
       case 'files':
         navigation.navigate(SharedRoutes.FilesList);
+        break;
+      case 'search':
+        navigation.navigate(SharedRoutes.Search);
         break;
     }
   }
@@ -203,14 +218,17 @@ export function HomeScreen() {
           userRole={user?.role}
         />
 
-        <StudentStatusCard
-          hasProfileState={hasProfileState}
-          hasVerificationState={hasVerificationState}
-          profileComplete={profileComplete}
-          verificationStatus={verificationStatus}
-        />
-
-        <HomeAcademicSummaryCard profile={profile} />
+        {isStudent ? (
+          <>
+            <StudentStatusCard
+              hasProfileState={hasProfileState}
+              hasVerificationState={hasVerificationState}
+              profileComplete={profileComplete}
+              verificationStatus={verificationStatus}
+            />
+            <HomeAcademicSummaryCard profile={profile} />
+          </>
+        ) : null}
 
         <Animated.View
           style={{

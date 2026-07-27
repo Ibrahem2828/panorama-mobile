@@ -1,23 +1,34 @@
 import { apiClient } from '../client';
 import { endpoints } from '../endpoints';
 import type {
+  ApiListParams,
   EmptyResponse,
   GroupJoinResult,
   GroupMessage,
   GroupRecord,
+  GroupWhatsAppTicket,
   SendGroupMessageRequest,
 } from '../types';
 import type { PaginatedResult } from '../pagination';
+import { toPaginationQuery } from '../pagination';
 
-export function listAvailableGroups(authToken: string): Promise<PaginatedResult<GroupRecord>> {
+export function listAvailableGroups(
+  authToken: string,
+  params?: ApiListParams,
+): Promise<PaginatedResult<GroupRecord>> {
   return apiClient.get<PaginatedResult<GroupRecord>>(endpoints.groups.available, {
     authToken,
+    query: toPaginationQuery(params),
   });
 }
 
-export function listMyGroups(authToken: string): Promise<PaginatedResult<GroupRecord>> {
+export function listMyGroups(
+  authToken: string,
+  params?: ApiListParams,
+): Promise<PaginatedResult<GroupRecord>> {
   return apiClient.get<PaginatedResult<GroupRecord>>(endpoints.groups.my, {
     authToken,
+    query: toPaginationQuery(params),
   });
 }
 
@@ -60,6 +71,17 @@ export function sendGroupMessage(
   return apiClient.post<GroupMessage, SendGroupMessageRequest>(
     endpoints.groups.messages(groupId),
     input,
+    { authToken },
+  );
+}
+
+export function requestGroupWhatsAppTicket(
+  groupId: string | number,
+  authToken: string,
+): Promise<GroupWhatsAppTicket> {
+  return apiClient.post<GroupWhatsAppTicket, EmptyResponse>(
+    endpoints.groups.whatsappTicket(groupId),
+    {},
     { authToken },
   );
 }

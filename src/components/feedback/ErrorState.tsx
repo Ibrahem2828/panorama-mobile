@@ -33,7 +33,9 @@ export function ErrorState({
   kind = 'server',
   style,
 }: ErrorStateProps) {
-  const resolvedIllustration = illustrationSource ?? images.errors[kind];
+  const resolvedIllustration =
+    illustrationSource ??
+    (kind === 'network' ? images.illustrations.search : images.illustrations.warning);
 
   return (
     <View style={[styles.container, style]}>

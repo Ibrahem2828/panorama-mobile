@@ -6,44 +6,25 @@ import { AppButton, AppScreen, AppText, AppTextInput, Stack } from '../../../com
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
-import { AuthFormCard, UnavailableAuthFlowScreen } from '../components';
+import { AuthFormCard } from '../components';
 import { requestPasswordResetCode, toSafePasswordResetErrorMessage } from '../services';
-import { isValidPhoneNumber, normalizePhoneNumber } from '../utils/authFormValidation';
-import { isSelfServiceAuthEnabled } from '../utils/selfServiceAuthAccess';
+import { isValidEmail } from '../utils/authFormValidation';
 
-type ForgotPasswordScreenProps = NativeStackScreenProps<PublicStackParamList, 'ForgotPassword'>;
+type Props = NativeStackScreenProps<PublicStackParamList, 'ForgotPassword'>;
 
-export function ForgotPasswordScreen({ navigation }: ForgotPasswordScreenProps) {
-  if (!isSelfServiceAuthEnabled()) {
-    return (
-      <UnavailableAuthFlowScreen
-        message="استعادة كلمة المرور غير متاحة حاليا من التطبيق. تواصل مع إدارة الجامعة أو فريق الدعم الفني."
-        title="نسيت كلمة المرور"
-      />
-    );
-  }
-
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [validationMessage, setValidationMessage] = useState<string | null>(null);
+export function ForgotPasswordScreen({ navigation }: Props) {
+  const [email, setEmail] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit() {
-    const normalizedPhone = normalizePhoneNumber(phoneNumber);
-
-    if (!isValidPhoneNumber(normalizedPhone)) {
-      setValidationMessage('يرجى إدخال رقم هاتف صالح مرتبط بحسابك.');
-      setErrorMessage(null);
-      return;
-    }
-
+    const identifier = email.trim().toLowerCase();
+    if (!isValidEmail(identifier)) return setErrorMessage('يرجى إدخال بريد إلكتروني صالح.');
     setIsSubmitting(true);
-    setValidationMessage(null);
     setErrorMessage(null);
-
     try {
-      await requestPasswordResetCode(normalizedPhone);
-      navigation.navigate(PublicRoutes.ResetPassword, { phoneNumber: normalizedPhone });
+      await requestPasswordResetCode(identifier, 'email');
+      navigation.navigate(PublicRoutes.ResetPassword, { identifier, channel: 'email' });
     } catch (error) {
       setErrorMessage(toSafePasswordResetErrorMessage(error));
     } finally {
@@ -60,46 +41,38 @@ export function ForgotPasswordScreen({ navigation }: ForgotPasswordScreenProps) 
         <Stack gap="lg">
           <Stack gap="xs">
             <AppText variant="h1">استعادة كلمة المرور</AppText>
-            <AppText color="secondary" variant="body">
-              سنرسل لك رمز تحقق لإعادة تعيين كلمة المرور.
+            <AppText color="secondary">
+              سنرسل رمزًا إلى البريد المرتبط بالحساب دون كشف وجود الحساب.
             </AppText>
           </Stack>
-
-          <AuthFormCard subtitle="أدخل رقم الهاتف المرتبط بحسابك الطلابي." title="رقم الهاتف">
+          <AuthFormCard
+            subtitle="أدخل البريد الإلكتروني المستخدم في بانوراما."
+            title="البريد الإلكتروني"
+          >
             <Stack gap="md">
               <AppTextInput
                 autoCapitalize="none"
                 disabled={isSubmitting}
-                error={validationMessage ?? errorMessage ?? undefined}
-                keyboardType="phone-pad"
-                label="رقم الهاتف"
+                error={errorMessage ?? undefined}
+                keyboardType="email-address"
+                label="البريد الإلكتروني"
                 onChangeText={(value) => {
-                  setPhoneNumber(value);
-                  setValidationMessage(null);
+                  setEmail(value);
                   setErrorMessage(null);
                 }}
-                placeholder="+963900000000"
-                textContentType="telephoneNumber"
-                value={phoneNumber}
+                value={email}
               />
               <AppButton
                 disabled={isSubmitting}
                 fullWidth
                 loading={isSubmitting}
-                onPress={() => {
-                  void handleSubmit();
-                }}
-                title="إرسال رمز التحقق"
+                onPress={() => void handleSubmit()}
+                title="إرسال رمز الاستعادة"
               />
             </Stack>
           </AuthFormCard>
-
-          <Pressable
-            accessibilityRole="button"
-            disabled={isSubmitting}
-            onPress={() => navigation.navigate(PublicRoutes.Login)}
-          >
-            <AppText align="center" color="brand" variant="body">
+          <Pressable onPress={() => navigation.navigate(PublicRoutes.Login)}>
+            <AppText align="center" color="brand">
               العودة لتسجيل الدخول
             </AppText>
           </Pressable>
@@ -110,11 +83,6 @@ export function ForgotPasswordScreen({ navigation }: ForgotPasswordScreenProps) 
 }
 
 const styles = StyleSheet.create({
-  content: {
-    justifyContent: 'center',
-    gap: spacing.xl,
-  },
-  keyboardAvoid: {
-    flex: 1,
-  },
+  content: { justifyContent: 'center', gap: spacing.xl },
+  keyboardAvoid: { flex: 1 },
 });

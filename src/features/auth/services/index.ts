@@ -12,11 +12,7 @@ export {
   registerNormalUser,
   registerStudentAccount,
   sendRegistrationOtp,
-  submitStudentAccountRequest,
-  getStudentAccountRequestStatus,
-  verifyPhoneOtp,
   verifyRegistrationOtp,
-  verifyStudentAccountOtp,
   toSafeD1ErrorMessage,
   toSafeRegistrationErrorMessage,
 } from './registrationService';

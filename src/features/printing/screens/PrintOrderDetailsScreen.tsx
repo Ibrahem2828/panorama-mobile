@@ -114,8 +114,7 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
                   </AppText>
                 ) : null}
                 <AppText color="secondary" variant="bodySmall">
-                  {formatPrintOrderDate(activeOrder.created_at ?? activeOrder.submitted_at) ??
-                    'تاريخ الطلب غير متاح'}
+                  {formatPrintOrderDate(activeOrder.created_at) ?? 'تاريخ الطلب غير متاح'}
                 </AppText>
               </Stack>
               <PrintOrderStatusBadge status={activeOrder.status} />
@@ -136,34 +135,26 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
 
         <PrintOrderSummaryCard order={activeOrder} />
 
-        {activeOrder.ready_at ||
-        activeOrder.delivered_at ||
-        activeOrder.updated_at ||
-        activeOrder.internal_notes ? (
+        {activeOrder.completed_at || activeOrder.cancelled_at || activeOrder.updated_at ? (
           <AppCard variant="muted">
             <Stack gap="sm">
               <AppText variant="title">تفاصيل إضافية</AppText>
-              {activeOrder.ready_at ? (
+              {activeOrder.completed_at ? (
                 <AppText color="secondary" variant="bodySmall">
-                  جاهز للاستلام:{' '}
-                  {formatPrintOrderDate(activeOrder.ready_at) ?? activeOrder.ready_at}
+                  اكتمل الطلب:{' '}
+                  {formatPrintOrderDate(activeOrder.completed_at) ?? activeOrder.completed_at}
                 </AppText>
               ) : null}
-              {activeOrder.delivered_at ? (
+              {activeOrder.cancelled_at ? (
                 <AppText color="secondary" variant="bodySmall">
-                  تم التسليم:{' '}
-                  {formatPrintOrderDate(activeOrder.delivered_at) ?? activeOrder.delivered_at}
+                  أُلغي الطلب:{' '}
+                  {formatPrintOrderDate(activeOrder.cancelled_at) ?? activeOrder.cancelled_at}
                 </AppText>
               ) : null}
               {activeOrder.updated_at ? (
                 <AppText color="secondary" variant="bodySmall">
                   آخر تحديث:{' '}
                   {formatPrintOrderDate(activeOrder.updated_at) ?? activeOrder.updated_at}
-                </AppText>
-              ) : null}
-              {activeOrder.internal_notes ? (
-                <AppText color="secondary" variant="bodySmall">
-                  ملاحظات داخلية: {activeOrder.internal_notes}
                 </AppText>
               ) : null}
             </Stack>
@@ -208,14 +199,14 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
           </AppCard>
         ) : null}
 
-        {activeOrder.rejection_reason ? (
+        {activeOrder.rejected_reason ? (
           <AppCard variant="muted">
             <Stack gap="xs">
               <AppText color="error" variant="title">
                 سبب الرفض
               </AppText>
               <AppText color="secondary" variant="bodySmall">
-                {activeOrder.rejection_reason}
+                {activeOrder.rejected_reason}
               </AppText>
             </Stack>
           </AppCard>

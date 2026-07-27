@@ -13,12 +13,19 @@ module.exports = tseslint.config(
       'ios/',
       'coverage/',
       'eslint.config.js',
+      '**/__tests__/**',
     ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}', 'App.tsx', 'app.config.ts'],
     languageOptions: {
       parserOptions: {
         project: './tsconfig.json',
@@ -37,6 +44,12 @@ module.exports = tseslint.config(
           varsIgnorePattern: '^_',
         },
       ],
+    },
+  },
+  {
+    files: ['src/assets/images/index.ts'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
     },
   },
 );

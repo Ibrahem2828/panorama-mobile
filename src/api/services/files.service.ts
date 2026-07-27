@@ -1,11 +1,16 @@
 import { apiClient } from '../client';
 import { endpoints } from '../endpoints';
-import type { FileRecord } from '../types';
+import type { ApiListParams, FileAccessTicket, FileRecord } from '../types';
 import type { PaginatedResult } from '../pagination';
+import { toPaginationQuery } from '../pagination';
 
-export function listFiles(authToken: string): Promise<PaginatedResult<FileRecord>> {
+export function listFiles(
+  authToken: string,
+  params?: ApiListParams,
+): Promise<PaginatedResult<FileRecord>> {
   return apiClient.get<PaginatedResult<FileRecord>>(endpoints.files.list, {
     authToken,
+    query: toPaginationQuery(params),
   });
 }
 
@@ -22,4 +27,15 @@ export function listGroupFiles(
   return apiClient.get<PaginatedResult<FileRecord>>(endpoints.groups.files(groupId), {
     authToken,
   });
+}
+
+export function requestFileAccessTicket(
+  fileId: string | number,
+  authToken: string,
+): Promise<FileAccessTicket> {
+  return apiClient.post<FileAccessTicket, { purpose: 'view' }>(
+    endpoints.files.accessTicket(fileId),
+    { purpose: 'view' },
+    { authToken },
+  );
 }

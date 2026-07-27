@@ -38,7 +38,7 @@ function normalizeRefreshResponse(
 
   return {
     accessToken: response.access,
-    refreshToken: currentRefreshToken,
+    refreshToken: isNonEmptyString(response.refresh) ? response.refresh : currentRefreshToken,
   };
 }
 

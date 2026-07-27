@@ -5,6 +5,7 @@ import {
   type GroupJoinResult as ApiGroupJoinResult,
   type GroupRecord,
   type PaginatedResult,
+  type GroupWhatsAppTicket,
 } from '../../../api';
 import type {
   Group,
@@ -19,12 +20,6 @@ const NETWORK_MESSAGE = 'تعذر تحميل المجموعات. تحقق من �
 const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
 const PERMISSION_MESSAGE = 'لا تملك صلاحية الوصول إلى هذه المجموعات حاليا.';
 const GENERIC_MESSAGE = 'تعذر تحميل المجموعات. حاول مرة أخرى.';
-
-const SAFE_WHATSAPP_PREFIXES = [
-  'https://chat.whatsapp.com/',
-  'https://wa.me/',
-  'whatsapp://',
-] as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -83,10 +78,7 @@ function normalizeGroup(record: GroupRecord): Group {
     current_user_membership_status: toGroupMembershipStatus(record.current_user_membership_status),
     current_user_group_role: toGroupRole(record.current_user_group_role),
     send_messages_permission: toSendMessagesPermission(record.send_messages_permission),
-    whatsapp_url: toNullableText(record.whatsapp_url),
-    whatsapp_link: toNullableText(record.whatsapp_link),
-    external_chat_url: toNullableText(record.external_chat_url),
-    external_link: toNullableText(record.external_link),
+    has_whatsapp_channel: record.has_whatsapp_channel === true,
     university: toRelation(record.university),
     major: toRelation(record.major),
     academic_year: toRelation(record.academic_year),
@@ -102,56 +94,6 @@ function normalizeGroupList(response: PaginatedResult<GroupRecord>): PaginatedRe
     ...response,
     results: response.results.map(normalizeGroup),
   };
-}
-
-function trimDetectedLink(value: string): string {
-  return value.replace(/[)\].,،؛;!?]+$/u, '');
-}
-
-export function isSafeWhatsAppLink(value: string | null | undefined): value is string {
-  if (!value) {
-    return false;
-  }
-
-  return SAFE_WHATSAPP_PREFIXES.some((prefix) => value.startsWith(prefix));
-}
-
-function getFirstSafeWhatsAppField(group: Group): string | null {
-  const candidates = [
-    group.whatsapp_url,
-    group.whatsapp_link,
-    group.external_chat_url,
-    group.external_link,
-  ];
-
-  for (const candidate of candidates) {
-    if (isSafeWhatsAppLink(candidate)) {
-      return candidate;
-    }
-  }
-
-  return null;
-}
-
-export function getGroupWhatsAppLink(group: Group): string | null {
-  const fieldLink = getFirstSafeWhatsAppField(group);
-
-  if (fieldLink) {
-    return fieldLink;
-  }
-
-  const description = group.description;
-
-  if (!description) {
-    return null;
-  }
-
-  const match = description.match(
-    /(?:https:\/\/chat\.whatsapp\.com\/[^\s<]+|https:\/\/wa\.me\/[^\s<]+|whatsapp:\/\/[^\s<]+)/u,
-  );
-  const detectedLink = match ? trimDetectedLink(match[0]) : null;
-
-  return isSafeWhatsAppLink(detectedLink) ? detectedLink : null;
 }
 
 export function getGroupDisplayName(group: Group): string {
@@ -249,4 +191,11 @@ export async function requestJoinGroup(groupId: Id, authToken: string): Promise<
 
 export function requestLeaveGroup(groupId: Id, authToken: string): Promise<EmptyResponse> {
   return apiGroupsService.leaveGroup(groupId, authToken);
+}
+
+export async function requestWhatsAppAccess(
+  groupId: Id,
+  authToken: string,
+): Promise<GroupWhatsAppTicket> {
+  return apiGroupsService.requestGroupWhatsAppTicket(groupId, authToken);
 }

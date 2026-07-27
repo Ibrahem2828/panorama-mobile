@@ -9,6 +9,7 @@ import { StudentContextLoadingScreen } from '../features/auth/screens/StudentCon
 import { useAuthStore } from '../features/auth/store';
 import { navigationTheme } from './config/navigationTheme';
 import { hiddenStackScreenOptions } from './config/screenOptions';
+import { navigationRef } from './navigationRef';
 import { useStudentAccessGate } from './guards/useStudentAccessGate';
 import { useSessionStateCleanup } from './guards/useSessionStateCleanup';
 import { PublicNavigator } from './PublicNavigator';
@@ -45,7 +46,7 @@ export function RootNavigator() {
   }
 
   return (
-    <NavigationContainer theme={navigationTheme}>
+    <NavigationContainer ref={navigationRef} theme={navigationTheme}>
       <RootStack.Navigator screenOptions={hiddenStackScreenOptions}>
         {rootFlow === 'app' ? (
           <RootStack.Screen component={AppTabsNavigator} name={RootRoutes.App} />

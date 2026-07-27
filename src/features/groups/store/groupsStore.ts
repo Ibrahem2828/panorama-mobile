@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { useAuthStore } from '../../auth/store';
+import { useFeedbackStore } from '../../feedback/store';
 import {
   loadAvailableGroups,
   loadGroupDetail,
@@ -264,6 +265,12 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
         set({
           isSubmittingMembership: false,
           successMessage: JOIN_SUCCESS_MESSAGE,
+        });
+        void useFeedbackStore.getState().requestPrompt({
+          context: 'group',
+          actionKey: 'group.joined',
+          objectType: 'group',
+          objectId: groupId,
         });
       } catch (error) {
         set({

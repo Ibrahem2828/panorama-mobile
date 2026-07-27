@@ -44,11 +44,11 @@ function canSubmitProfile(input: {
 }): boolean {
   return Boolean(
     input.selectedUniversityId &&
-    input.selectedFacultyId &&
-    input.selectedMajorId &&
-    input.selectedAcademicYearId &&
-    input.selectedSemesterId &&
-    input.studentNumber.trim(),
+      input.selectedFacultyId &&
+      input.selectedMajorId &&
+      input.selectedAcademicYearId &&
+      input.selectedSemesterId &&
+      input.studentNumber.trim(),
   );
 }
 

@@ -1,5 +1,4 @@
-import { env } from '../../../config/env';
-
+/** Self-service registration and password recovery are supported by Backend v2. */
 export function isSelfServiceAuthEnabled(): boolean {
-  return env.enableSelfServiceAuth;
+  return true;
 }

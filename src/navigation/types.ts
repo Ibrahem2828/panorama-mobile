@@ -3,24 +3,16 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 export type PublicStackParamList = {
   Onboarding: undefined;
   Login: undefined;
-  RegisterStudent: undefined;
-  OtpVerification: { phoneNumber: string; flow: 'register' };
-  ForgotPassword: undefined;
-  ResetPassword: { phoneNumber: string };
-  // D1
   AccountTypeChoice: undefined;
+  RegisterStudent: undefined;
   NormalUserRegister: undefined;
-  PhoneOtpVerification: {
-    phoneNumber: string;
-    otpPurpose?: 'verify_phone';
-    expiresInSeconds?: number;
-    resendAfterSeconds?: number;
-    source?: 'normal_register';
+  OtpVerification: {
+    identifier: string;
+    channel: 'email' | 'phone';
+    source: 'student_register' | 'normal_register';
   };
-  StudentAccountRequest: undefined;
-  StudentRequestSubmitted: { requestId?: string | number };
-  StudentRequestStatus: { requestId: string | number };
-  StudentOtpVerification: { requestId: string | number };
+  ForgotPassword: undefined;
+  ResetPassword: { identifier: string; channel: 'email' | 'phone' };
 };
 
 export type StudentSetupStackParamList = {
@@ -35,6 +27,7 @@ export type HomeStackParamList = {
   FilesList: undefined;
   FileDetails: { fileId: string | number };
   PdfViewer: { fileId: string | number; title?: string };
+  Search: { query?: string } | undefined;
 };
 
 export type SubjectsStackParamList = {
@@ -74,6 +67,9 @@ export type ProfileStackParamList = {
   PrivacyPolicy: undefined;
   Terms: undefined;
   About: undefined;
+  FeedbackCenter: undefined;
+  MyFeedback: undefined;
+  PublicSuggestions: undefined;
 };
 
 export type SharedStackParamList = {

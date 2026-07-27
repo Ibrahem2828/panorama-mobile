@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { useAuthStore } from '../../auth/store';
+import { useFeedbackStore } from '../../feedback/store';
 import {
   getMyVerification,
   resubmitStudentVerification,
@@ -131,6 +132,14 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
         hasLoadedVerification: true,
         isSubmitting: false,
       });
+      if (verification) {
+        void useFeedbackStore.getState().requestPrompt({
+          context: 'verification',
+          actionKey: 'verification.submitted',
+          objectType: 'verification',
+          objectId: verification.id,
+        });
+      }
 
       return verification;
     } catch (error) {
@@ -164,6 +173,14 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
         hasLoadedVerification: true,
         isSubmitting: false,
       });
+      if (verification) {
+        void useFeedbackStore.getState().requestPrompt({
+          context: 'verification',
+          actionKey: 'verification.submitted',
+          objectType: 'verification',
+          objectId: verification.id,
+        });
+      }
 
       return verification;
     } catch (error) {

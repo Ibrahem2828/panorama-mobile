@@ -5,3 +5,5 @@ export { PrintOrderStatusBadge } from './PrintOrderStatusBadge';
 export { PrintOrderStatusIcon, getPrintOrderStatusImage } from './PrintOrderStatusIcon';
 export { PrintOrderSummaryCard } from './PrintOrderSummaryCard';
 export { PrintingFutureOptionsCard } from './PrintingFutureOptionsCard';
+
+export { PrintOptionsCard } from './PrintOptionsCard';

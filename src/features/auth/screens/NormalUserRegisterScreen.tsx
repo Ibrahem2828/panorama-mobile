@@ -1,14 +1,13 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Animated, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet } from 'react-native';
 
 import { AppButton, AppScreen, AppText, AppTextInput, Stack } from '../../../components';
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
-import { createEntranceAnim, MOTION } from '../../../utils/motion';
 import { AuthFormCard, PasswordInput, PhoneInputWithCountryCode } from '../components';
-import { registerNormalUser, toSafeD1ErrorMessage } from '../services';
+import { registerNormalUser, toSafeRegistrationErrorMessage } from '../services';
 import {
   isValidEmail,
   normalizePhoneNumber,
@@ -18,87 +17,44 @@ import {
 
 type Props = NativeStackScreenProps<PublicStackParamList, 'NormalUserRegister'>;
 
-type FormErrors = {
-  fullName?: string;
-  email?: string;
-  phone?: string;
-  password?: string;
-  passwordConfirm?: string;
-};
-
 export function NormalUserRegisterScreen({ navigation }: Props) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const cardAnim = useRef(createEntranceAnim(12)).current;
-  cardAnim.animate(MOTION.duration.slow).start();
-
-  const displayedError = validationMessage ?? errorMessage;
-
-  function clearErrors() {
-    setValidationMessage(null);
-    setErrorMessage(null);
-    setFieldErrors({});
-  }
-
-  function validate(): FormErrors {
-    const errors: FormErrors = {};
-    const name = fullName.trim();
-    const em = email.trim();
-    const phone = normalizePhoneNumber(phoneNumber);
-    const passErr = validatePasswordPair(password, passwordConfirm);
-
-    if (!name) errors.fullName = 'يرجى إدخال الاسم الكامل.';
-    if (!em) errors.email = 'يرجى إدخال البريد الإلكتروني.';
-    else if (!isValidEmail(em)) errors.email = 'يرجى إدخال بريد إلكتروني صحيح.';
-    const phoneErr = validatePhoneNumber(phone);
-    if (phoneErr) errors.phone = phoneErr;
-    if (!password) errors.password = 'يرجى إدخال كلمة المرور.';
-    if (!passwordConfirm) errors.passwordConfirm = 'يرجى تأكيد كلمة المرور.';
-    if (password && passwordConfirm && passErr) {
-      errors.passwordConfirm = passErr;
-    }
-    return errors;
-  }
-
-  function hasErrors(errors: FormErrors): boolean {
-    return Object.keys(errors).length > 0;
-  }
-
   async function handleSubmit() {
-    if (isSubmitting) return;
-    clearErrors();
-    const errors = validate();
-    if (hasErrors(errors)) {
-      setFieldErrors(errors);
-      return;
-    }
+    const name = fullName.trim();
+    const mail = email.trim().toLowerCase();
+    const phone = normalizePhoneNumber(phoneNumber);
+    const passwordError = validatePasswordPair(password, passwordConfirm);
+    if (!name) return setErrorMessage('يرجى إدخال الاسم الكامل.');
+    if (!isValidEmail(mail)) return setErrorMessage('يرجى إدخال بريد إلكتروني صالح.');
+    const phoneError = validatePhoneNumber(phone);
+    if (phoneError) return setErrorMessage(phoneError);
+    if (passwordError) return setErrorMessage(passwordError);
+
     setIsSubmitting(true);
+    setErrorMessage(null);
     try {
       const response = await registerNormalUser({
-        full_name: fullName.trim(),
-        email: email.trim(),
-        phone_number: normalizePhoneNumber(phoneNumber),
+        full_name: name,
+        email: mail,
+        phone_number: phone,
         password,
         password_confirm: passwordConfirm,
+        otp_channel: 'email',
       });
-      const backendPhone = response?.data?.phone_number;
-      navigation.replace(PublicRoutes.PhoneOtpVerification, {
-        phoneNumber: backendPhone || normalizePhoneNumber(phoneNumber),
-        otpPurpose: 'verify_phone',
+      navigation.replace(PublicRoutes.OtpVerification, {
+        identifier: response.user.email ?? mail,
+        channel: response.otp_channel,
         source: 'normal_register',
-        expiresInSeconds: response?.data?.expires_in_seconds,
-        resendAfterSeconds: response?.data?.resend_after_seconds,
       });
-    } catch (err) {
-      setErrorMessage(toSafeD1ErrorMessage(err));
+    } catch (error) {
+      setErrorMessage(toSafeRegistrationErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -108,100 +64,65 @@ export function NormalUserRegisterScreen({ navigation }: Props) {
     <AppScreen contentContainerStyle={styles.content} scroll>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboard}
+        style={styles.keyboardAvoid}
       >
         <Stack gap="lg">
-          <Animated.View
-            style={{
-              opacity: cardAnim.opacity,
-              transform: [{ translateY: cardAnim.translateY }],
-            }}
+          <Stack gap="xs">
+            <AppText variant="h1">إنشاء حساب عام</AppText>
+            <AppText color="secondary">سيتم التحقق عبر البريد الإلكتروني.</AppText>
+          </Stack>
+          <AuthFormCard
+            subtitle="يمكن استخدام الخدمات العامة وفق صلاحيات النظام."
+            title="بيانات الحساب"
           >
-            <AuthFormCard
-              title="إنشاء حساب مستخدم عادي"
-              subtitle="سيتم التحقق من رقم الجوال برمز التحقق."
-            >
-              <Stack gap="md">
-                <AppTextInput
-                  label="الاسم الكامل"
-                  value={fullName}
-                  onChangeText={(v) => {
-                    setFullName(v);
-                    setFieldErrors((prev) => ({ ...prev, fullName: undefined }));
-                  }}
-                  autoCapitalize="words"
-                  disabled={isSubmitting}
-                  error={fieldErrors.fullName}
-                />
-                <AppTextInput
-                  label="البريد الإلكتروني"
-                  value={email}
-                  onChangeText={(v) => {
-                    setEmail(v);
-                    setFieldErrors((prev) => ({ ...prev, email: undefined }));
-                  }}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  disabled={isSubmitting}
-                  error={fieldErrors.email}
-                />
-                <PhoneInputWithCountryCode
-                  label="رقم الجوال"
-                  value={phoneNumber}
-                  onChangeText={(v) => {
-                    setPhoneNumber(v);
-                    setFieldErrors((prev) => ({ ...prev, phone: undefined }));
-                  }}
-                  disabled={isSubmitting}
-                  error={fieldErrors.phone}
-                  placeholder="أدخل رقم الجوال"
-                />
-                <PasswordInput
-                  value={password}
-                  onChangeText={(v) => {
-                    setPassword(v);
-                    setFieldErrors((prev) => ({ ...prev, password: undefined }));
-                  }}
-                  disabled={isSubmitting}
-                  error={fieldErrors.password}
-                />
-                <AppTextInput
-                  label="تأكيد كلمة المرور"
-                  value={passwordConfirm}
-                  onChangeText={(v) => {
-                    setPasswordConfirm(v);
-                    setFieldErrors((prev) => ({ ...prev, passwordConfirm: undefined }));
-                  }}
-                  secureTextEntry
-                  disabled={isSubmitting}
-                  error={fieldErrors.passwordConfirm}
-                />
-
-                {displayedError ? (
-                  <AppText color="error" variant="bodySmall">
-                    {displayedError}
-                  </AppText>
-                ) : null}
-
-                <AppButton
-                  fullWidth
-                  loading={isSubmitting}
-                  disabled={isSubmitting}
-                  onPress={handleSubmit}
-                  title={isSubmitting ? 'جاري إنشاء الحساب...' : 'إنشاء الحساب'}
-                />
-              </Stack>
-            </AuthFormCard>
-          </Animated.View>
-
-          <AppText
-            align="center"
-            color="muted"
-            variant="caption"
-            onPress={() => navigation.goBack()}
-          >
-            العودة
-          </AppText>
+            <Stack gap="md">
+              <AppTextInput
+                disabled={isSubmitting}
+                label="الاسم الكامل"
+                onChangeText={setFullName}
+                value={fullName}
+              />
+              <AppTextInput
+                autoCapitalize="none"
+                disabled={isSubmitting}
+                keyboardType="email-address"
+                label="البريد الإلكتروني"
+                onChangeText={setEmail}
+                value={email}
+              />
+              <PhoneInputWithCountryCode
+                disabled={isSubmitting}
+                label="رقم الهاتف"
+                onChangeText={setPhoneNumber}
+                value={phoneNumber}
+              />
+              <PasswordInput disabled={isSubmitting} onChangeText={setPassword} value={password} />
+              <AppTextInput
+                disabled={isSubmitting}
+                label="تأكيد كلمة المرور"
+                onChangeText={setPasswordConfirm}
+                secureTextEntry
+                value={passwordConfirm}
+              />
+              {errorMessage ? (
+                <AppText color="error" variant="bodySmall">
+                  {errorMessage}
+                </AppText>
+              ) : null}
+              <AppButton
+                disabled={isSubmitting}
+                fullWidth
+                loading={isSubmitting}
+                onPress={() => void handleSubmit()}
+                title="إنشاء الحساب"
+              />
+            </Stack>
+          </AuthFormCard>
+          <Pressable onPress={() => navigation.goBack()}>
+            <AppText align="center" color="brand">
+              العودة
+            </AppText>
+          </Pressable>
         </Stack>
       </KeyboardAvoidingView>
     </AppScreen>
@@ -210,5 +131,5 @@ export function NormalUserRegisterScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   content: { paddingVertical: spacing.lg },
-  keyboard: { flex: 1 },
+  keyboardAvoid: { flex: 1 },
 });

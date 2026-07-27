@@ -1,5 +1,5 @@
 import { AppCard, AppText, Stack } from '../../../components';
-import type { PrintDraft, PrintOrder } from '../types';
+import type { PrintDraft, PrintOrder, PrintQuote } from '../types';
 import {
   formatPrintOrderPrice,
   getPrintOrderCopiesCount,
@@ -7,14 +7,14 @@ import {
   getPrintOrderItemsCount,
 } from '../services';
 
-type PrintOrderSummaryCardProps = {
-  draft?: PrintDraft;
-  order?: PrintOrder;
-};
+type Props = { draft?: PrintDraft; order?: PrintOrder; quote?: PrintQuote | null };
 
-export function PrintOrderSummaryCard({ draft, order }: PrintOrderSummaryCardProps) {
-  const price = order ? formatPrintOrderPrice(order) : null;
-
+export function PrintOrderSummaryCard({ draft, order, quote }: Props) {
+  const price = order
+    ? formatPrintOrderPrice(order)
+    : quote
+      ? `${quote.total_price} ${quote.currency}`
+      : null;
   return (
     <AppCard variant="outlined">
       <Stack gap="sm">
@@ -27,27 +27,21 @@ export function PrintOrderSummaryCard({ draft, order }: PrintOrderSummaryCardPro
             <AppText color="secondary" variant="bodySmall">
               {getPrintOrderItemsCount(order)} ملف - {getPrintOrderCopiesCount(order)} نسخة
             </AppText>
-            <AppText
-              color={price ? 'brand' : 'muted'}
-              variant="bodySmall"
-              weight={price ? '600' : undefined}
-            >
-              {price ?? 'السعر غير متاح من الباك إند بعد.'}
-            </AppText>
           </>
         ) : (
           <>
             <AppText color="secondary" variant="bodySmall">
-              {draft?.sourceFileTitle ?? 'لم يتم اختيار ملف بعد.'}
+              {draft?.sourceFileTitle ?? 'لم يتم اختيار ملف.'}
             </AppText>
             <AppText color="secondary" variant="bodySmall">
-              {draft?.copies ?? 1} نسخة
-            </AppText>
-            <AppText color="muted" variant="caption">
-              لا يوجد حساب سعر في Phase 11 لأن endpoint التسعير غير ضمن نطاق التنفيذ الحالي.
+              {draft?.copies ?? 1} نسخة · {draft?.paperSize.toUpperCase()} ·{' '}
+              {draft?.sides === 'double' ? 'وجهان' : 'وجه واحد'}
             </AppText>
           </>
         )}
+        <AppText color={price ? 'brand' : 'muted'} variant="title">
+          {price ?? 'احسب السعر من الخادم قبل الإرسال'}
+        </AppText>
       </Stack>
     </AppCard>
   );

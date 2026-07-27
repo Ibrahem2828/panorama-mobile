@@ -16,13 +16,11 @@ import {
 import { GroupsRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
+import { isTrustedBackendUrl } from '../../../utils/trustedUrl';
+import { useAuthStore } from '../../auth/store';
+import { useFeedbackStore } from '../../feedback/store';
 import { GroupDescriptionCard, GroupDetailHeader, GroupPermissionCard } from '../components';
-import {
-  canLeaveGroup,
-  canRequestJoin,
-  getGroupWhatsAppLink,
-  isSafeWhatsAppLink,
-} from '../services';
+import { canLeaveGroup, canRequestJoin, requestWhatsAppAccess } from '../services';
 import { useGroupsStore } from '../store';
 import type { Id } from '../types';
 
@@ -36,6 +34,8 @@ function isSameId(left: Id, right: Id): boolean {
 
 export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProps) {
   const { groupId } = route.params;
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const requestFeedbackPrompt = useFeedbackStore((state) => state.requestPrompt);
   const selectedGroup = useGroupsStore((state) => state.selectedGroup);
   const isLoadingDetail = useGroupsStore((state) => state.isLoadingDetail);
   const isSubmittingMembership = useGroupsStore((state) => state.isSubmittingMembership);
@@ -47,7 +47,6 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
   const [isOpeningWhatsApp, setIsOpeningWhatsApp] = useState(false);
   const [whatsAppErrorMessage, setWhatsAppErrorMessage] = useState<string | null>(null);
   const activeGroup = selectedGroup && isSameId(selectedGroup.id, groupId) ? selectedGroup : null;
-  const whatsAppLink = activeGroup ? getGroupWhatsAppLink(activeGroup) : null;
   const showInitialLoading = isLoadingDetail && !activeGroup;
 
   useEffect(() => {
@@ -75,7 +74,7 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
   }
 
   async function handleOpenWhatsApp() {
-    if (!isSafeWhatsAppLink(whatsAppLink)) {
+    if (!accessToken || !activeGroup?.has_whatsapp_channel) {
       setWhatsAppErrorMessage(WHATSAPP_OPEN_ERROR);
       return;
     }
@@ -84,7 +83,21 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
     setWhatsAppErrorMessage(null);
 
     try {
-      await Linking.openURL(whatsAppLink);
+      const ticket = await requestWhatsAppAccess(groupId, accessToken);
+      const trusted = isTrustedBackendUrl(ticket.open_url, {
+        pathPrefixes: ['/api/v1/external-channels/open/'],
+        allowHttpInDevelopment: true,
+      });
+      if (!trusted) throw new Error('untrusted_url');
+      const supported = await Linking.canOpenURL(ticket.open_url);
+      if (!supported) throw new Error('unsupported');
+      await Linking.openURL(ticket.open_url);
+      void requestFeedbackPrompt({
+        context: 'group',
+        actionKey: 'group.whatsapp.opened',
+        objectType: 'group',
+        objectId: groupId,
+      });
     } catch {
       setWhatsAppErrorMessage(WHATSAPP_OPEN_ERROR);
     } finally {
@@ -161,9 +174,9 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
         <GroupDescriptionCard
           description={activeGroup.description}
           isOpeningWhatsApp={isOpeningWhatsApp}
-          onOpenWhatsApp={whatsAppLink ? handleOpenWhatsApp : undefined}
+          hasWhatsAppChannel={activeGroup.has_whatsapp_channel}
+          onOpenWhatsApp={activeGroup.has_whatsapp_channel ? handleOpenWhatsApp : undefined}
           whatsAppErrorMessage={whatsAppErrorMessage}
-          whatsAppLink={whatsAppLink}
         />
 
         <GroupPermissionCard

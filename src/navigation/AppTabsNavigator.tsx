@@ -1,5 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
+import { useAuthStore } from '../features/auth/store';
 import { bottomTabScreenOptions, tabLabels } from './config/tabOptions';
 import { GroupsStackNavigator } from './stacks/GroupsStackNavigator';
 import { HomeStackNavigator } from './stacks/HomeStackNavigator';
@@ -12,6 +13,9 @@ import type { AppTabsParamList } from './types';
 const Tabs = createBottomTabNavigator<AppTabsParamList>();
 
 export function AppTabsNavigator() {
+  const role = useAuthStore((state) => state.user?.role?.toLowerCase());
+  const isStudent = role === 'student';
+
   return (
     <Tabs.Navigator initialRouteName={TabRoutes.Home} screenOptions={bottomTabScreenOptions}>
       <Tabs.Screen
@@ -19,16 +23,20 @@ export function AppTabsNavigator() {
         name={TabRoutes.Home}
         options={{ tabBarLabel: tabLabels[TabRoutes.Home] }}
       />
-      <Tabs.Screen
-        component={SubjectsStackNavigator}
-        name={TabRoutes.Subjects}
-        options={{ tabBarLabel: tabLabels[TabRoutes.Subjects] }}
-      />
-      <Tabs.Screen
-        component={GroupsStackNavigator}
-        name={TabRoutes.Groups}
-        options={{ tabBarLabel: tabLabels[TabRoutes.Groups] }}
-      />
+      {isStudent ? (
+        <>
+          <Tabs.Screen
+            component={SubjectsStackNavigator}
+            name={TabRoutes.Subjects}
+            options={{ tabBarLabel: tabLabels[TabRoutes.Subjects] }}
+          />
+          <Tabs.Screen
+            component={GroupsStackNavigator}
+            name={TabRoutes.Groups}
+            options={{ tabBarLabel: tabLabels[TabRoutes.Groups] }}
+          />
+        </>
+      ) : null}
       <Tabs.Screen
         component={PrintingStackNavigator}
         name={TabRoutes.Printing}

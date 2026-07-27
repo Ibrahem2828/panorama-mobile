@@ -1,7 +1,8 @@
-import { StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 
+import { images } from '../../../assets/images';
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
-import { colors, spacing } from '../../../theme';
+import { colors, radius, spacing } from '../../../theme';
 import { getProfileRoleLabel } from '../../profile/services';
 
 type HomeGreetingCardProps = {
@@ -33,6 +34,13 @@ export function HomeGreetingCard({
               لوحة الطالب — كل جامعتك في مكان واحد
             </AppText>
           </View>
+          <Image
+            accessibilityIgnoresInvertColors
+            accessibilityLabel="Panorama student journey illustration"
+            resizeMode="cover"
+            source={images.illustrations.dashboardHero}
+            style={styles.heroImage}
+          />
           {unreadNotificationsCount > 0 ? (
             <AppBadge label={`${unreadNotificationsCount} جديد`} size="md" variant="warning" />
           ) : null}
@@ -62,5 +70,11 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     gap: spacing.xs,
+  },
+  heroImage: {
+    width: 74,
+    height: 74,
+    borderRadius: radius.card,
+    backgroundColor: colors.background.muted,
   },
 });

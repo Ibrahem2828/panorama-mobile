@@ -1,9 +1,9 @@
-import { buildApiUrl } from '../../../config/env';
 import {
   filesService as apiFilesService,
   normalizeApiError,
   type FileRecord,
   type PaginatedResult,
+  type FileAccessTicket,
 } from '../../../api';
 import type { FileResource, FileViewerType, Id } from '../types';
 
@@ -47,18 +47,6 @@ function toRelation(value: unknown): Id | Record<string, unknown> | null {
   return null;
 }
 
-function toAbsoluteViewUri(value: string): string | null {
-  if (/^https?:\/\//u.test(value)) {
-    return value;
-  }
-
-  if (value.startsWith('/')) {
-    return buildApiUrl(value);
-  }
-
-  return null;
-}
-
 function normalizeFile(record: FileRecord): FileResource {
   return {
     ...record,
@@ -66,10 +54,13 @@ function normalizeFile(record: FileRecord): FileResource {
     title: toText(record.title),
     name: toText(record.name),
     description: toNullableText(record.description),
-    file: toNullableText(record.file),
-    file_url: toNullableText(record.file_url),
-    url: toNullableText(record.url),
-    download_url: toNullableText(record.download_url),
+    file_type: toNullableText(record.file_type),
+    file_size: toNumber(record.file_size),
+    pages_count: toNumber(record.pages_count),
+    preview_ticket_endpoint: toNullableText(record.preview_ticket_endpoint),
+    download_allowed: record.download_allowed === true,
+    is_printable: record.is_printable !== false,
+    is_active: record.is_active !== false,
     mime_type: toNullableText(record.mime_type),
     content_type: toNullableText(record.content_type),
     mimeType: toNullableText(record.mimeType),
@@ -103,10 +94,8 @@ export function getFileDescription(file: FileResource): string | null {
   return toText(file.description) ?? null;
 }
 
-export function getFileUri(file: FileResource): string | null {
-  const candidate = toText(file.file_url) ?? toText(file.file) ?? toText(file.url);
-
-  return candidate ? toAbsoluteViewUri(candidate) : null;
+export function canRequestProtectedPreview(file: FileResource): boolean {
+  return file.is_active !== false && Boolean(file.preview_ticket_endpoint || file.id);
 }
 
 function getMimeType(file: FileResource): string | null {
@@ -125,16 +114,9 @@ export function getFileExtension(file: FileResource): string | null {
     return explicitExtension;
   }
 
-  const uri = getFileUri(file);
-
-  if (!uri) {
-    return null;
-  }
-
-  const pathWithoutQuery = uri.split('?')[0]?.split('#')[0] ?? '';
-  const match = pathWithoutQuery.match(/\.([a-zA-Z0-9]+)$/u);
-
-  return match?.[1]?.toLowerCase() ?? null;
+  const backendType = toText(file.file_type)?.replace(/^\./u, '').toLowerCase();
+  if (backendType) return backendType;
+  return null;
 }
 
 export function getFileViewerType(file: FileResource): FileViewerType {
@@ -183,7 +165,7 @@ export function formatFileSize(bytes?: number | null): string | null {
 }
 
 export function getFileSize(file: FileResource): number | null {
-  return file.size_bytes ?? file.sizeBytes ?? file.size ?? null;
+  return file.file_size ?? file.size_bytes ?? file.sizeBytes ?? file.size ?? null;
 }
 
 export function getFileUpdatedAt(file: FileResource): string | null {
@@ -259,4 +241,11 @@ export async function loadGroupFiles(
   authToken: string,
 ): Promise<PaginatedResult<FileResource>> {
   return normalizeFileList(await apiFilesService.listGroupFiles(groupId, authToken));
+}
+
+export async function requestProtectedFileTicket(
+  fileId: Id,
+  authToken: string,
+): Promise<FileAccessTicket> {
+  return apiFilesService.requestFileAccessTicket(fileId, authToken);
 }

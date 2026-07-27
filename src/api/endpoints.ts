@@ -1,5 +1,4 @@
 export const API_PREFIX = '/api/v1';
-
 type EndpointId = string | number;
 
 export const endpoints = {
@@ -16,14 +15,6 @@ export const endpoints = {
     verifyOtp: `${API_PREFIX}/auth/otp/verify/`,
     requestPasswordReset: `${API_PREFIX}/auth/request-password-reset/`,
     confirmPasswordReset: `${API_PREFIX}/auth/confirm-password-reset/`,
-    // D1: Student account request flow (admin approval then OTP)
-    studentAccountRequests: `${API_PREFIX}/auth/student-account-requests/`,
-    studentAccountRequestDetail: (uuid: string | number) =>
-      `${API_PREFIX}/auth/student-account-requests/${uuid}/`,
-    studentAccountRequestStatus: (uuid: string | number) =>
-      `${API_PREFIX}/auth/student-account-requests/${uuid}/status/`,
-    studentAccountRequestVerifyOtp: (uuid: string | number) =>
-      `${API_PREFIX}/auth/student-account-requests/${uuid}/verify-otp/`,
   },
   students: {
     profile: `${API_PREFIX}/students/me/profile/`,
@@ -33,7 +24,6 @@ export const endpoints = {
     universities: `${API_PREFIX}/universities/`,
     academicYears: `${API_PREFIX}/academic-years/`,
     semesters: `${API_PREFIX}/semesters/`,
-    universityDetail: (universityId: EndpointId) => `${API_PREFIX}/universities/${universityId}/`,
     facultiesForUniversity: (universityId: EndpointId) =>
       `${API_PREFIX}/universities/${universityId}/faculties/`,
     majorsForFaculty: (facultyId: EndpointId) => `${API_PREFIX}/faculties/${facultyId}/majors/`,
@@ -44,9 +34,7 @@ export const endpoints = {
     me: `${API_PREFIX}/verification/me/`,
     resubmit: `${API_PREFIX}/verification/resubmit/`,
   },
-  announcements: {
-    list: `${API_PREFIX}/announcements/`,
-  },
+  announcements: { list: `${API_PREFIX}/announcements/` },
   groups: {
     available: `${API_PREFIX}/groups/available/`,
     my: `${API_PREFIX}/groups/my/`,
@@ -55,16 +43,22 @@ export const endpoints = {
     leave: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/leave/`,
     files: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/files/`,
     messages: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/messages/`,
+    whatsappTicket: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/whatsapp-ticket/`,
   },
   files: {
     list: `${API_PREFIX}/files/`,
     detail: (fileId: EndpointId) => `${API_PREFIX}/files/${fileId}/`,
+    accessTicket: (fileId: EndpointId) => `${API_PREFIX}/files/${fileId}/access-ticket/`,
   },
   printing: {
+    quote: `${API_PREFIX}/printing/quote/`,
     createOrder: `${API_PREFIX}/printing/orders/`,
     myOrders: `${API_PREFIX}/printing/orders/my/`,
-    orderDetail: (orderId: EndpointId) => `${API_PREFIX}/printing/orders/${orderId}/`,
+    orderDetail: (orderId: EndpointId) => `${API_PREFIX}/printing/orders/my/${orderId}/`,
     cancelOrder: (orderId: EndpointId) => `${API_PREFIX}/printing/orders/${orderId}/cancel/`,
+    pickupLocations: `${API_PREFIX}/printing/pickup-locations/`,
+    itemAccessTicket: (itemId: EndpointId) =>
+      `${API_PREFIX}/printing/items/${itemId}/access-ticket/`,
   },
   notifications: {
     list: `${API_PREFIX}/notifications/`,
@@ -80,5 +74,15 @@ export const endpoints = {
     myTickets: `${API_PREFIX}/support/tickets/my/`,
     ticketDetail: (ticketId: EndpointId) => `${API_PREFIX}/support/tickets/${ticketId}/`,
     addMessage: (ticketId: EndpointId) => `${API_PREFIX}/support/tickets/${ticketId}/messages/`,
+    attachmentTicket: (messageId: EndpointId) =>
+      `${API_PREFIX}/support/messages/${messageId}/attachment-ticket/`,
+  },
+  feedback: {
+    submit: `${API_PREFIX}/feedback/`,
+    prompt: `${API_PREFIX}/feedback/prompt/`,
+    promptEvent: `${API_PREFIX}/feedback/prompt-event/`,
+    mine: `${API_PREFIX}/feedback/mine/`,
+    suggestions: `${API_PREFIX}/feedback/suggestions/`,
+    vote: (feedbackId: EndpointId) => `${API_PREFIX}/feedback/${feedbackId}/vote/`,
   },
 } as const;

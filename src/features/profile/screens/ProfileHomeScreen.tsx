@@ -67,14 +67,17 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
   const loadVerification = useVerificationStore((state) => state.loadVerification);
 
   const user = profileUser ?? authUser;
+  const isStudent = user?.role?.toLowerCase() === 'student';
   const verificationStatus = getVerificationStatus(verification);
   const cardVerificationSummary = getStudentCardVerificationSummary(verificationStatus);
 
   useEffect(() => {
     void loadProfile();
-    void bootstrapStudentProfile();
-    void loadVerification();
-  }, [bootstrapStudentProfile, loadProfile, loadVerification]);
+    if (isStudent) {
+      void bootstrapStudentProfile();
+      void loadVerification();
+    }
+  }, [bootstrapStudentProfile, isStudent, loadProfile, loadVerification]);
 
   function handleLogoutPress() {
     if (!isConfirmingLogout) {
@@ -101,17 +104,19 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
 
         <ProfileSummaryCard user={user} />
 
-        <AcademicInfoCard
-          fields={[
-            { label: 'الجامعة', value: getAcademicValue(studentProfile?.university) },
-            { label: 'الكلية', value: getAcademicValue(studentProfile?.faculty) },
-            { label: 'التحقق', value: getVerificationLabel(verificationStatus) },
-          ]}
-          note="للتفاصيل الكاملة افتح شاشة المعلومات الأكاديمية."
-          statusLabel={getVerificationLabel(verificationStatus)}
-          statusVariant={verificationStatus === 'approved' ? 'success' : 'warning'}
-          title="ملخص الطالب"
-        />
+        {isStudent ? (
+          <AcademicInfoCard
+            fields={[
+              { label: 'الجامعة', value: getAcademicValue(studentProfile?.university) },
+              { label: 'الكلية', value: getAcademicValue(studentProfile?.faculty) },
+              { label: 'التحقق', value: getVerificationLabel(verificationStatus) },
+            ]}
+            note="للتفاصيل الكاملة افتح شاشة المعلومات الأكاديمية."
+            statusLabel={getVerificationLabel(verificationStatus)}
+            statusVariant={verificationStatus === 'approved' ? 'success' : 'warning'}
+            title="ملخص الطالب"
+          />
+        ) : null}
 
         <ProfileActionSection subtitle="إدارة البيانات وخدمات الحساب" title="الحساب">
           <ProfileActionItem
@@ -119,13 +124,15 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
             subtitle="تعديل الاسم واسم المستخدم فقط"
             title="تعديل الملف الشخصي"
           />
-          <ProfileActionItem
-            badge={cardVerificationSummary.label}
-            badgeVariant={cardVerificationSummary.variant}
-            onPress={() => navigation.navigate(ProfileRoutes.AcademicInfo)}
-            subtitle="عرض بيانات الجامعة والتوثيق"
-            title="المعلومات الأكاديمية"
-          />
+          {isStudent ? (
+            <ProfileActionItem
+              badge={cardVerificationSummary.label}
+              badgeVariant={cardVerificationSummary.variant}
+              onPress={() => navigation.navigate(ProfileRoutes.AcademicInfo)}
+              subtitle="عرض بيانات الجامعة والتوثيق"
+              title="المعلومات الأكاديمية"
+            />
+          ) : null}
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.Settings)}
             subtitle="الأمان والمعلومات القانونية"
@@ -148,6 +155,11 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
             onPress={() => navigation.navigate(ProfileRoutes.SupportTickets)}
             subtitle="إنشاء ومتابعة تذاكر الدعم"
             title="الدعم الفني"
+          />
+          <ProfileActionItem
+            onPress={() => navigation.navigate(ProfileRoutes.FeedbackCenter)}
+            subtitle="قيّم التطبيق وشارك اقتراحاتك"
+            title="رأيك يهمنا"
           />
         </ProfileActionSection>
 

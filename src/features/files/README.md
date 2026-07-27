@@ -48,7 +48,7 @@ No `react-native-webview` dependency was installed in Phase 10.
 ## No-Download Rule
 
 There is no direct download button, share button, save-to-device action, document picker, or
-filesystem integration. If the backend returns a `download_url` field, the UI still does not
+filesystem integration. The mobile contract never consumes a raw storage URL, and the UI does not
 expose download behavior.
 
 This is a UI/product decision and not a DRM guarantee. Backend authorization remains the source

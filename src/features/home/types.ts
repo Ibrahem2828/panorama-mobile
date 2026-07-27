@@ -23,6 +23,7 @@ export type HomeQuickActionKey =
   | 'subjects'
   | 'groups'
   | 'files'
+  | 'search'
   | 'printing'
   | 'support'
   | 'notifications'

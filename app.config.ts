@@ -1,53 +1,76 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 import { withAndroidManifest, type ConfigPlugin } from 'expo/config-plugins';
 
-// Production/preview EAS profiles must inject HTTPS/WSS URLs via EAS secrets or env.
-// Do not ship store releases with the temporary HTTP defaults below.
-const DEFAULT_API_BASE_URL = 'http://eby52x8qksscjvfeqxf0eob7.76.13.155.172.sslip.io';
-const DEFAULT_WS_BASE_URL = 'ws://eby52x8qksscjvfeqxf0eob7.76.13.155.172.sslip.io';
+const DEVELOPMENT_API_BASE_URL = 'http://127.0.0.1:8000';
+const DEVELOPMENT_WS_BASE_URL = 'ws://127.0.0.1:8000';
 
 const withAndroidCleartextTraffic: ConfigPlugin<{ enabled: boolean }> = (config, { enabled }) =>
   withAndroidManifest(config, (androidConfig) => {
     const application = androidConfig.modResults.manifest.application?.[0];
-
-    if (application) {
-      application.$['android:usesCleartextTraffic'] = enabled ? 'true' : 'false';
-    }
-
+    if (application) application.$['android:usesCleartextTraffic'] = enabled ? 'true' : 'false';
     return androidConfig;
   });
 
+function requiredReleaseValue(name: string, value: string | undefined, appEnv: string): string {
+  const normalized = value?.trim();
+  if (appEnv !== 'development' && !normalized) {
+    throw new Error(`${name} is required for ${appEnv} builds.`);
+  }
+  return normalized ?? '';
+}
+
 export default ({ config }: ConfigContext): ExpoConfig => {
   const appEnv = (process.env.EXPO_PUBLIC_APP_ENV ?? 'development').trim();
-  const apiBaseUrl = (process.env.EXPO_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE_URL).trim();
-  const wsBaseUrl = (process.env.EXPO_PUBLIC_WS_BASE_URL ?? DEFAULT_WS_BASE_URL).trim();
-  const selfServiceAuthEnabled =
-    process.env.EXPO_PUBLIC_ENABLE_SELF_SERVICE_AUTH?.trim().toLowerCase() === 'true';
-  const usesHttpApi = apiBaseUrl.toLowerCase().startsWith('http://');
+  const configuredApi = requiredReleaseValue(
+    'EXPO_PUBLIC_API_BASE_URL',
+    process.env.EXPO_PUBLIC_API_BASE_URL,
+    appEnv,
+  );
+  const configuredWs = requiredReleaseValue(
+    'EXPO_PUBLIC_WS_BASE_URL',
+    process.env.EXPO_PUBLIC_WS_BASE_URL,
+    appEnv,
+  );
+  const apiBaseUrl = configuredApi || DEVELOPMENT_API_BASE_URL;
+  const wsBaseUrl = configuredWs || DEVELOPMENT_WS_BASE_URL;
+  const allowDevelopmentCleartext =
+    appEnv === 'development' &&
+    process.env.EXPO_PUBLIC_ALLOW_CLEARTEXT?.trim().toLowerCase() === 'true';
+
+  if (appEnv !== 'development' && !apiBaseUrl.startsWith('https://')) {
+    throw new Error('Release builds require an HTTPS API URL.');
+  }
+  if (appEnv !== 'development' && !wsBaseUrl.startsWith('wss://')) {
+    throw new Error('Release builds require a WSS WebSocket URL.');
+  }
 
   const expoConfig: ExpoConfig = {
     ...config,
     name: 'Panorama',
     slug: 'panorama-mobile',
-    version: '0.1.0',
+    version: '2.0.0',
     orientation: 'portrait',
     scheme: 'panorama',
     icon: './src/assets/app/icon.png',
-    userInterfaceStyle: 'light',
-    // Native splash deferred: ExpoConfig (SDK 56) has no top-level splash field.
-    // Asset ready at ./src/assets/app/splash.png — wire via expo-splash-screen plugin when upgrading.
-    web: {
-      ...config.web,
-      favicon: './src/assets/app/favicon.png',
-    },
+    userInterfaceStyle: 'automatic',
     plugins: [
       'expo-secure-store',
-      'expo-status-bar',
+      'expo-notifications',
+      [
+        'expo-splash-screen',
+        {
+          image: './src/assets/app/splash.png',
+          imageWidth: 220,
+          resizeMode: 'contain',
+          backgroundColor: '#FFFFFF',
+          dark: { backgroundColor: '#080D22' },
+        },
+      ],
       [
         'expo-image-picker',
         {
           photosPermission:
-            'Panorama needs access to your photo library so you can upload your student card for verification.',
+            'يحتاج بانوراما للوصول إلى الصور لرفع البطاقة الجامعية أو المرفقات التي تختارها.',
           cameraPermission: false,
           microphonePermission: false,
         },
@@ -56,30 +79,34 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ios: {
       ...config.ios,
       bundleIdentifier: 'com.panorama.student',
-      supportsTablet: false,
+      supportsTablet: true,
+      infoPlist: {
+        ...config.ios?.infoPlist,
+        NSAppTransportSecurity: { NSAllowsArbitraryLoads: false },
+      },
     },
     android: {
       ...config.android,
       package: 'com.panorama.student',
-      versionCode: 1,
+      versionCode: 200,
       adaptiveIcon: {
-        ...config.android?.adaptiveIcon,
         foregroundImage: './src/assets/app/adaptive-icon.png',
-        backgroundColor: '#001B72',
+        backgroundColor: '#FFFFFF',
       },
+      permissions: ['POST_NOTIFICATIONS'],
     },
+    web: { ...config.web, favicon: './src/assets/app/favicon.png' },
     extra: {
       ...config.extra,
       appEnv,
       apiBaseUrl,
       wsBaseUrl,
-      selfServiceAuthEnabled,
-      eas: {
-        projectId: '3804d959-0d36-4747-aeb0-d3339ad57f90',
-      },
+      supportEmail: process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? 'panoramacompany31@gmail.com',
+      sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN ?? '',
+      dashboardUrl: process.env.EXPO_PUBLIC_DASHBOARD_URL ?? '',
+      eas: { projectId: '3804d959-0d36-4747-aeb0-d3339ad57f90' },
     },
   };
 
-  // Temporary for the current HTTP VPS/Coolify backend. HTTPS makes this false.
-  return withAndroidCleartextTraffic(expoConfig, { enabled: usesHttpApi });
+  return withAndroidCleartextTraffic(expoConfig, { enabled: allowDevelopmentCleartext });
 };

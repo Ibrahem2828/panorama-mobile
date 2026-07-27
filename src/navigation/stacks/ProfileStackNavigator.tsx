@@ -1,6 +1,11 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { NotificationsScreen } from '../../features/notifications/screens/NotificationsScreen';
+import {
+  FeedbackCenterScreen,
+  MyFeedbackScreen,
+  PublicSuggestionsScreen,
+} from '../../features/feedback/screens';
 import { AboutScreen } from '../../features/profile/screens/AboutScreen';
 import { AcademicInfoScreen } from '../../features/profile/screens/AcademicInfoScreen';
 import { EditProfileScreen } from '../../features/profile/screens/EditProfileScreen';
@@ -39,6 +44,9 @@ export function ProfileStackNavigator() {
       <Stack.Screen component={PrivacyPolicyScreen} name={ProfileRoutes.PrivacyPolicy} />
       <Stack.Screen component={TermsScreen} name={ProfileRoutes.Terms} />
       <Stack.Screen component={AboutScreen} name={ProfileRoutes.About} />
+      <Stack.Screen component={FeedbackCenterScreen} name={ProfileRoutes.FeedbackCenter} />
+      <Stack.Screen component={MyFeedbackScreen} name={ProfileRoutes.MyFeedback} />
+      <Stack.Screen component={PublicSuggestionsScreen} name={ProfileRoutes.PublicSuggestions} />
     </Stack.Navigator>
   );
 }

@@ -22,7 +22,13 @@ type AuthGuardInput = {
   isLoadingVerification?: boolean;
 };
 
-const OPERATIONAL_ROLES = new Set(['admin', 'it_support', 'print_staff']);
+const OPERATIONAL_ROLES = new Set([
+  'admin',
+  'it_support',
+  'print_staff',
+  'support_staff',
+  'content_manager',
+]);
 
 export function canAccessApp({ status, user }: AuthGuardInput): boolean {
   return status === 'authenticated' && user !== null;
@@ -47,7 +53,7 @@ export function shouldDenyMobileAccess(user: AuthUser | null): boolean {
 }
 
 export function canAccessStudentSetup({ status, user }: AuthGuardInput): boolean {
-  return status === 'authenticated' && (isStudentUser(user) || isNormalUser(user));
+  return status === 'authenticated' && isStudentUser(user);
 }
 
 export function hasCompletedAcademicProfile(profile?: StudentProfile | null): boolean {

@@ -6,104 +6,55 @@ import { AppButton, AppScreen, AppText, AppTextInput, Stack } from '../../../com
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
-import { AuthFormCard, PasswordInput, UnavailableAuthFlowScreen } from '../components';
-import {
-  registerStudentAccount,
-  sendRegistrationOtp,
-  toSafeRegistrationErrorMessage,
-} from '../services';
+import { AuthFormCard, PasswordInput, PhoneInputWithCountryCode } from '../components';
+import { registerStudentAccount, toSafeRegistrationErrorMessage } from '../services';
 import {
   isValidEmail,
-  isValidPhoneNumber,
   normalizePhoneNumber,
   validatePasswordPair,
+  validatePhoneNumber,
 } from '../utils/authFormValidation';
-import { isSelfServiceAuthEnabled } from '../utils/selfServiceAuthAccess';
 
-type RegisterStudentScreenProps = NativeStackScreenProps<PublicStackParamList, 'RegisterStudent'>;
+type Props = NativeStackScreenProps<PublicStackParamList, 'RegisterStudent'>;
 
-export function RegisterStudentScreen({ navigation }: RegisterStudentScreenProps) {
-  if (!isSelfServiceAuthEnabled()) {
-    return (
-      <UnavailableAuthFlowScreen
-        message="إنشاء حساب الطالب غير متاح حاليا من التطبيق. تواصل مع إدارة الجامعة للحصول على حساب أو لاستكمال التسجيل."
-        title="إنشاء حساب طالب"
-      />
-    );
-  }
-
+export function RegisterStudentScreen({ navigation }: Props) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [studentNumber, setStudentNumber] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const displayedError = validationMessage ?? errorMessage;
-
-  function clearErrors() {
-    setValidationMessage(null);
-    setErrorMessage(null);
-  }
-
   async function handleSubmit() {
-    const normalizedName = fullName.trim();
-    const normalizedEmail = email.trim();
-    const normalizedPhone = normalizePhoneNumber(phoneNumber);
-    const normalizedStudentNumber = studentNumber.trim();
+    const name = fullName.trim();
+    const mail = email.trim().toLowerCase();
+    const phone = normalizePhoneNumber(phoneNumber);
     const passwordError = validatePasswordPair(password, passwordConfirm);
-
-    if (!normalizedName) {
-      setValidationMessage('يرجى إدخال الاسم الكامل.');
-      return;
-    }
-
-    if (!isValidEmail(normalizedEmail)) {
-      setValidationMessage('يرجى إدخال بريد إلكتروني صالح.');
-      return;
-    }
-
-    if (!isValidPhoneNumber(normalizedPhone)) {
-      setValidationMessage('يرجى إدخال رقم هاتف صالح.');
-      return;
-    }
-
-    if (!normalizedStudentNumber) {
-      setValidationMessage('يرجى إدخال الرقم الجامعي.');
-      return;
-    }
-
-    if (passwordError) {
-      setValidationMessage(passwordError);
-      return;
-    }
+    if (!name) return setErrorMessage('يرجى إدخال الاسم الكامل.');
+    if (!isValidEmail(mail)) return setErrorMessage('يرجى إدخال بريد إلكتروني صالح.');
+    const phoneError = validatePhoneNumber(phone);
+    if (phoneError) return setErrorMessage(phoneError);
+    if (!studentNumber.trim()) return setErrorMessage('يرجى إدخال الرقم الجامعي.');
+    if (passwordError) return setErrorMessage(passwordError);
 
     setIsSubmitting(true);
-    clearErrors();
-
+    setErrorMessage(null);
     try {
-      await registerStudentAccount({
-        full_name: normalizedName,
-        email: normalizedEmail,
-        phone_number: normalizedPhone,
-        student_number: normalizedStudentNumber,
+      const response = await registerStudentAccount({
+        full_name: name,
+        email: mail,
+        phone_number: phone,
+        student_number: studentNumber.trim(),
         password,
         password_confirm: passwordConfirm,
+        otp_channel: 'email',
       });
-
-      // Best-effort: trigger OTP send for phone verification (register flow)
-      try {
-        await sendRegistrationOtp(normalizedPhone);
-      } catch {
-        // OTP screen will allow manual resend; non-fatal
-      }
-
-      navigation.navigate(PublicRoutes.OtpVerification, {
-        phoneNumber: normalizedPhone,
-        flow: 'register',
+      navigation.replace(PublicRoutes.OtpVerification, {
+        identifier: response.user.email ?? mail,
+        channel: response.otp_channel,
+        source: 'student_register',
       });
     } catch (error) {
       setErrorMessage(toSafeRegistrationErrorMessage(error));
@@ -122,102 +73,66 @@ export function RegisterStudentScreen({ navigation }: RegisterStudentScreenProps
           <Stack gap="xs">
             <AppText variant="h1">إنشاء حساب طالب</AppText>
             <AppText color="secondary" variant="body">
-              أدخل بياناتك الأساسية لبدء استخدام بانوراما.
+              سيصل رمز التحقق إلى البريد الإلكتروني.
             </AppText>
           </Stack>
-
-          <AuthFormCard subtitle="جميع الحقول مطلوبة لإنشاء حساب طالب جديد." title="بيانات الحساب">
+          <AuthFormCard
+            subtitle="بعد التحقق ستكمل بياناتك الأكاديمية وترفع البطاقة الجامعية."
+            title="بيانات الحساب"
+          >
             <Stack gap="md">
               <AppTextInput
-                autoCapitalize="words"
                 disabled={isSubmitting}
                 label="الاسم الكامل"
-                onChangeText={(value) => {
-                  setFullName(value);
-                  clearErrors();
-                }}
-                placeholder="الاسم كما في السجلات الجامعية"
+                onChangeText={setFullName}
                 value={fullName}
               />
               <AppTextInput
                 autoCapitalize="none"
-                autoCorrect={false}
                 disabled={isSubmitting}
                 keyboardType="email-address"
                 label="البريد الإلكتروني"
-                onChangeText={(value) => {
-                  setEmail(value);
-                  clearErrors();
-                }}
-                placeholder="student@university.edu"
-                textContentType="emailAddress"
+                onChangeText={setEmail}
                 value={email}
               />
-              <AppTextInput
-                autoCapitalize="none"
+              <PhoneInputWithCountryCode
                 disabled={isSubmitting}
-                keyboardType="phone-pad"
                 label="رقم الهاتف"
-                onChangeText={(value) => {
-                  setPhoneNumber(value);
-                  clearErrors();
-                }}
-                placeholder="+963900000000"
-                textContentType="telephoneNumber"
+                onChangeText={setPhoneNumber}
                 value={phoneNumber}
               />
               <AppTextInput
-                autoCapitalize="none"
                 disabled={isSubmitting}
+                keyboardType="number-pad"
                 label="الرقم الجامعي"
-                onChangeText={(value) => {
-                  setStudentNumber(value);
-                  clearErrors();
-                }}
-                placeholder="2150094"
+                onChangeText={setStudentNumber}
                 value={studentNumber}
               />
-              <PasswordInput
-                disabled={isSubmitting}
-                error={displayedError ?? undefined}
-                onChangeText={(value) => {
-                  setPassword(value);
-                  clearErrors();
-                }}
-                value={password}
-              />
+              <PasswordInput disabled={isSubmitting} onChangeText={setPassword} value={password} />
               <AppTextInput
-                autoCapitalize="none"
                 disabled={isSubmitting}
                 label="تأكيد كلمة المرور"
-                onChangeText={(value) => {
-                  setPasswordConfirm(value);
-                  clearErrors();
-                }}
-                placeholder="أعد إدخال كلمة المرور"
+                onChangeText={setPasswordConfirm}
                 secureTextEntry
-                textContentType="password"
                 value={passwordConfirm}
               />
+              {errorMessage ? (
+                <AppText color="error" variant="bodySmall">
+                  {errorMessage}
+                </AppText>
+              ) : null}
               <AppButton
                 disabled={isSubmitting}
                 fullWidth
                 loading={isSubmitting}
-                onPress={() => {
-                  void handleSubmit();
-                }}
+                onPress={() => void handleSubmit()}
                 title="إنشاء الحساب"
               />
             </Stack>
           </AuthFormCard>
-
-          <Pressable
-            accessibilityRole="button"
-            disabled={isSubmitting}
-            onPress={() => navigation.navigate(PublicRoutes.Login)}
-          >
-            <AppText align="center" color="brand" variant="body">
-              لديك حساب؟ العودة لتسجيل الدخول
+          <Pressable onPress={() => navigation.navigate(PublicRoutes.Login)}>
+            <AppText align="center" color="brand">
+              لديك حساب؟ تسجيل الدخول
             </AppText>
           </Pressable>
         </Stack>
@@ -227,11 +142,6 @@ export function RegisterStudentScreen({ navigation }: RegisterStudentScreenProps
 }
 
 const styles = StyleSheet.create({
-  content: {
-    justifyContent: 'center',
-    gap: spacing.xl,
-  },
-  keyboardAvoid: {
-    flex: 1,
-  },
+  content: { justifyContent: 'center', gap: spacing.xl },
+  keyboardAvoid: { flex: 1 },
 });

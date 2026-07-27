@@ -2,7 +2,7 @@ import { AppButton, AppCard, AppText, Stack } from '../../../components';
 
 type GroupDescriptionCardProps = {
   description?: string | null;
-  whatsAppLink?: string | null;
+  hasWhatsAppChannel?: boolean;
   isOpeningWhatsApp?: boolean;
   whatsAppErrorMessage?: string | null;
   onOpenWhatsApp?: () => void;
@@ -10,7 +10,7 @@ type GroupDescriptionCardProps = {
 
 export function GroupDescriptionCard({
   description,
-  whatsAppLink,
+  hasWhatsAppChannel = false,
   isOpeningWhatsApp = false,
   whatsAppErrorMessage,
   onOpenWhatsApp,
@@ -20,15 +20,20 @@ export function GroupDescriptionCard({
       <Stack gap="md">
         <AppText variant="title">وصف المجموعة</AppText>
         <AppText color={description ? 'secondary' : 'muted'} variant="bodySmall">
-          {description ?? 'لا يوجد وصف متاح لهذه المجموعة حاليا.'}
+          {description ?? 'لا يوجد وصف متاح لهذه المجموعة حاليًا.'}
         </AppText>
-        {whatsAppLink && onOpenWhatsApp ? (
+        {hasWhatsAppChannel && onOpenWhatsApp ? (
           <AppButton
             loading={isOpeningWhatsApp}
             onPress={onOpenWhatsApp}
-            title="فتح رابط واتساب"
+            title="فتح قناة واتساب المصرح بها"
             variant="outline"
           />
+        ) : null}
+        {hasWhatsAppChannel ? (
+          <AppText color="muted" variant="caption">
+            لا يظهر رابط واتساب داخل بيانات المجموعة. يطلب التطبيق إذنًا مؤقتًا من الخادم عند الفتح.
+          </AppText>
         ) : null}
         {whatsAppErrorMessage ? (
           <AppText color="error" variant="caption">

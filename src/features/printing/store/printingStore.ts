@@ -1,43 +1,71 @@
 import { create } from 'zustand';
 
 import { useAuthStore } from '../../auth/store';
+import { useFeedbackStore } from '../../feedback/store';
 import {
   buildCreatePrintOrderRequest,
+  calculatePrintQuote,
   cancelPrintOrder,
   createPrintOrder,
   hasPrintDraftValidationErrors,
   loadMyPrintOrders,
+  loadPickupLocations,
   loadPrintOrderDetail,
   toSafePrintingErrorMessage,
   validatePrintDraft,
 } from '../services';
-import type { Id, PrintDraft, PrintDraftValidation, PrintOrder } from '../types';
+import type {
+  Id,
+  PrintDraft,
+  PrintDraftValidation,
+  PrintOrder,
+  PrintPickupLocation,
+  PrintQuote,
+} from '../types';
 
-type PrintingState = {
+const DEFAULT_DRAFT: PrintDraft = {
+  sourceFileId: null,
+  sourceFileTitle: null,
+  copies: 1,
+  colorMode: 'black_white',
+  paperSize: 'a4',
+  sides: 'single',
+  binding: 'none',
+  pickupLocationId: null,
+  userNotes: '',
+};
+
+type State = {
   orders: PrintOrder[];
   selectedOrder: PrintOrder | null;
   draft: PrintDraft;
   validation: PrintDraftValidation;
+  quote: PrintQuote | null;
+  pickupLocations: PrintPickupLocation[];
   isLoadingOrders: boolean;
   isLoadingDetail: boolean;
   isRefreshing: boolean;
   isSubmitting: boolean;
   isCancelling: boolean;
+  isQuoting: boolean;
+  isLoadingPickupLocations: boolean;
   errorMessage: string | null;
   successMessage: string | null;
   lastLoadedAt: string | null;
   ordersCount: number;
-
   loadMyOrders: () => Promise<void>;
   refreshMyOrders: () => Promise<void>;
-  loadOrderDetail: (orderId: Id) => Promise<void>;
+  loadOrderDetail: (id: Id) => Promise<void>;
+  loadPrintingConfiguration: () => Promise<void>;
+  calculateQuote: () => Promise<PrintQuote | null>;
   createOrder: () => Promise<PrintOrder | null>;
-  cancelOrder: (orderId: Id) => Promise<void>;
-  setDraftFile: (fileId: Id | null, fileTitle?: string | null) => void;
+  cancelOrder: (id: Id) => Promise<void>;
+  setDraftFile: (id: Id | null, title?: string | null) => void;
   setDraftCopies: (copies: number) => void;
   incrementCopies: () => void;
   decrementCopies: () => void;
   setDraftNotes: (notes: string) => void;
+  setDraftOption: <K extends keyof PrintDraft>(key: K, value: PrintDraft[K]) => void;
   validateDraft: () => boolean;
   resetDraft: () => void;
   clearError: () => void;
@@ -46,324 +74,204 @@ type PrintingState = {
   reset: () => void;
 };
 
-const DEFAULT_DRAFT: PrintDraft = {
-  sourceFileId: null,
-  sourceFileTitle: null,
-  copies: 1,
-  userNotes: '',
-};
-
-function getInitialPrintingState() {
+function initial() {
   return {
-    orders: [],
+    orders: [] as PrintOrder[],
     selectedOrder: null,
     draft: { ...DEFAULT_DRAFT },
     validation: {},
+    quote: null,
+    pickupLocations: [] as PrintPickupLocation[],
     isLoadingOrders: false,
     isLoadingDetail: false,
     isRefreshing: false,
     isSubmitting: false,
     isCancelling: false,
+    isQuoting: false,
+    isLoadingPickupLocations: false,
     errorMessage: null,
     successMessage: null,
     lastLoadedAt: null,
     ordersCount: 0,
   };
 }
-
-const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const CREATE_SUCCESS_MESSAGE = 'تم إرسال طلب الطباعة.';
-const CANCEL_SUCCESS_MESSAGE = 'تم إلغاء طلب الطباعة.';
-
-function getAccessToken(): string | null {
+function token() {
   return useAuthStore.getState().accessToken;
 }
-
-function isSameId(left: Id, right: Id): boolean {
-  return String(left) === String(right);
+function sameId(a: Id, b: Id) {
+  return String(a) === String(b);
+}
+function upsert(items: PrintOrder[], item: PrintOrder) {
+  return items.some((candidate) => sameId(candidate.id, item.id))
+    ? items.map((candidate) => (sameId(candidate.id, item.id) ? item : candidate))
+    : [item, ...items];
 }
 
-function upsertOrder(orders: PrintOrder[], nextOrder: PrintOrder): PrintOrder[] {
-  const existingIndex = orders.findIndex((order) => isSameId(order.id, nextOrder.id));
-
-  if (existingIndex === -1) {
-    return [nextOrder, ...orders];
-  }
-
-  return orders.map((order, index) => (index === existingIndex ? nextOrder : order));
-}
-
-function clampCopies(copies: number): number {
-  if (!Number.isFinite(copies)) {
-    return 1;
-  }
-
-  return Math.max(1, Math.min(99, Math.round(copies)));
-}
-
-export const usePrintingStore = create<PrintingState>((set, get) => {
-  function requireToken(): string | null {
-    const accessToken = getAccessToken();
-
-    if (!accessToken) {
+export const usePrintingStore = create<State>((set, get) => ({
+  ...initial(),
+  async loadMyOrders() {
+    const authToken = token();
+    if (!authToken || get().isLoadingOrders) return;
+    set({ isLoadingOrders: true, errorMessage: null });
+    try {
+      const response = await loadMyPrintOrders(authToken);
       set({
-        errorMessage: MISSING_SESSION_MESSAGE,
+        orders: response.results,
+        ordersCount: response.count,
         isLoadingOrders: false,
-        isLoadingDetail: false,
-        isRefreshing: false,
-        isSubmitting: false,
-        isCancelling: false,
+        lastLoadedAt: new Date().toISOString(),
       });
+    } catch (error) {
+      set({ isLoadingOrders: false, errorMessage: toSafePrintingErrorMessage(error) });
+    }
+  },
+  async refreshMyOrders() {
+    if (get().isRefreshing) return;
+    set({ isRefreshing: true });
+    await get().loadMyOrders();
+    set({ isRefreshing: false });
+  },
+  async loadOrderDetail(id) {
+    const authToken = token();
+    if (!authToken || get().isLoadingDetail) return;
+    set({ isLoadingDetail: true, errorMessage: null });
+    try {
+      const order = await loadPrintOrderDetail(id, authToken);
+      set((state) => ({
+        selectedOrder: order,
+        orders: upsert(state.orders, order),
+        isLoadingDetail: false,
+      }));
+    } catch (error) {
+      set({ isLoadingDetail: false, errorMessage: toSafePrintingErrorMessage(error) });
+    }
+  },
+  async loadPrintingConfiguration() {
+    const authToken = token();
+    if (!authToken || get().isLoadingPickupLocations) return;
+    set({ isLoadingPickupLocations: true });
+    try {
+      const locations = await loadPickupLocations(authToken);
+      const defaultPickupLocation = locations[0];
+      set((state) => ({
+        pickupLocations: locations,
+        isLoadingPickupLocations: false,
+        draft:
+          state.draft.pickupLocationId == null && defaultPickupLocation
+            ? { ...state.draft, pickupLocationId: defaultPickupLocation.id }
+            : state.draft,
+      }));
+    } catch (error) {
+      set({ isLoadingPickupLocations: false, errorMessage: toSafePrintingErrorMessage(error) });
+    }
+  },
+  async calculateQuote() {
+    const authToken = token();
+    if (!authToken || get().isQuoting || !get().validateDraft()) return null;
+    set({ isQuoting: true, errorMessage: null });
+    try {
+      const quote = await calculatePrintQuote(get().draft, authToken);
+      set({ quote, isQuoting: false });
+      void useFeedbackStore
+        .getState()
+        .requestPrompt({ context: 'printing', actionKey: 'printing.quote.completed' });
+      return quote;
+    } catch (error) {
+      set({ isQuoting: false, errorMessage: toSafePrintingErrorMessage(error) });
       return null;
     }
-
-    return accessToken;
-  }
-
-  async function reloadOrders(accessToken: string) {
-    const response = await loadMyPrintOrders(accessToken);
-
-    set({
-      orders: response.results,
-      ordersCount: response.count,
-      lastLoadedAt: new Date().toISOString(),
-    });
-  }
-
-  async function reloadDetail(orderId: Id, accessToken: string) {
-    const order = await loadPrintOrderDetail(orderId, accessToken);
-
+  },
+  async createOrder() {
+    const authToken = token();
+    if (!authToken || get().isSubmitting || !get().validateDraft()) return null;
+    const request = buildCreatePrintOrderRequest(get().draft);
+    if (!request) return null;
+    set({ isSubmitting: true, errorMessage: null, successMessage: null });
+    try {
+      const order = await createPrintOrder(request, authToken);
+      set((state) => ({
+        orders: upsert(state.orders, order),
+        selectedOrder: order,
+        draft: { ...DEFAULT_DRAFT },
+        quote: null,
+        validation: {},
+        isSubmitting: false,
+        successMessage: 'تم إرسال طلب الطباعة.',
+      }));
+      void useFeedbackStore.getState().requestPrompt({
+        context: 'printing',
+        actionKey: 'printing.order.created',
+        objectType: 'print_order',
+        objectId: order.id,
+      });
+      return order;
+    } catch (error) {
+      set({ isSubmitting: false, errorMessage: toSafePrintingErrorMessage(error) });
+      return null;
+    }
+  },
+  async cancelOrder(id) {
+    const authToken = token();
+    if (!authToken || get().isCancelling) return;
+    set({ isCancelling: true, errorMessage: null });
+    try {
+      await cancelPrintOrder(id, authToken);
+      await get().loadOrderDetail(id);
+      set({ isCancelling: false, successMessage: 'تم إلغاء الطلب.' });
+    } catch (error) {
+      set({ isCancelling: false, errorMessage: toSafePrintingErrorMessage(error) });
+    }
+  },
+  setDraftFile(id, title) {
     set((state) => ({
-      selectedOrder: order,
-      orders: upsertOrder(state.orders, order),
-      lastLoadedAt: new Date().toISOString(),
+      draft: { ...state.draft, sourceFileId: id, sourceFileTitle: title ?? null },
+      quote: null,
+      validation: { ...state.validation, sourceFileId: undefined },
     }));
-  }
-
-  return {
-    ...getInitialPrintingState(),
-
-    async loadMyOrders() {
-      if (get().isLoadingOrders) {
-        return;
-      }
-
-      const accessToken = requireToken();
-
-      if (!accessToken) {
-        return;
-      }
-
-      set({ isLoadingOrders: true, errorMessage: null, successMessage: null });
-
-      try {
-        await reloadOrders(accessToken);
-        set({ isLoadingOrders: false });
-      } catch (error) {
-        set({
-          isLoadingOrders: false,
-          errorMessage: toSafePrintingErrorMessage(error),
-        });
-      }
-    },
-
-    async refreshMyOrders() {
-      if (get().isRefreshing) {
-        return;
-      }
-
-      const accessToken = requireToken();
-
-      if (!accessToken) {
-        return;
-      }
-
-      set({ isRefreshing: true, errorMessage: null, successMessage: null });
-
-      try {
-        await reloadOrders(accessToken);
-        set({ isRefreshing: false });
-      } catch (error) {
-        set({
-          isRefreshing: false,
-          errorMessage: toSafePrintingErrorMessage(error),
-        });
-      }
-    },
-
-    async loadOrderDetail(orderId) {
-      if (get().isLoadingDetail) {
-        return;
-      }
-
-      const accessToken = requireToken();
-
-      if (!accessToken) {
-        return;
-      }
-
-      set({ isLoadingDetail: true, errorMessage: null, successMessage: null });
-
-      try {
-        await reloadDetail(orderId, accessToken);
-        set({ isLoadingDetail: false });
-      } catch (error) {
-        set({
-          isLoadingDetail: false,
-          errorMessage: toSafePrintingErrorMessage(error),
-        });
-      }
-    },
-
-    async createOrder() {
-      if (get().isSubmitting) {
-        return null;
-      }
-
-      const isValid = get().validateDraft();
-
-      if (!isValid) {
-        return null;
-      }
-
-      const accessToken = requireToken();
-
-      if (!accessToken) {
-        return null;
-      }
-
-      const request = buildCreatePrintOrderRequest(get().draft);
-
-      if (!request) {
-        return null;
-      }
-
-      set({ isSubmitting: true, errorMessage: null, successMessage: null });
-
-      try {
-        const order = await createPrintOrder(request, accessToken);
-
-        set((state) => ({
-          orders: upsertOrder(state.orders, order),
-          selectedOrder: order,
-          ordersCount: Math.max(state.ordersCount, state.orders.length + 1),
-          draft: DEFAULT_DRAFT,
-          validation: {},
-          isSubmitting: false,
-          successMessage: CREATE_SUCCESS_MESSAGE,
-        }));
-
-        await reloadOrders(accessToken);
-
-        return order;
-      } catch (error) {
-        set({
-          isSubmitting: false,
-          errorMessage: toSafePrintingErrorMessage(error),
-        });
-        return null;
-      }
-    },
-
-    async cancelOrder(orderId) {
-      if (get().isCancelling) {
-        return;
-      }
-
-      const accessToken = requireToken();
-
-      if (!accessToken) {
-        return;
-      }
-
-      set({ isCancelling: true, errorMessage: null, successMessage: null });
-
-      try {
-        await cancelPrintOrder(orderId, accessToken);
-        await Promise.all([reloadOrders(accessToken), reloadDetail(orderId, accessToken)]);
-
-        set({
-          isCancelling: false,
-          successMessage: CANCEL_SUCCESS_MESSAGE,
-        });
-      } catch (error) {
-        set({
-          isCancelling: false,
-          errorMessage: toSafePrintingErrorMessage(error),
-        });
-      }
-    },
-
-    setDraftFile(fileId, fileTitle) {
-      set((state) => ({
-        draft: {
-          ...state.draft,
-          sourceFileId: fileId,
-          sourceFileTitle: fileTitle ?? null,
-        },
-        validation: {
-          ...state.validation,
-          sourceFileId: undefined,
-        },
-      }));
-    },
-
-    setDraftCopies(copies) {
-      set((state) => ({
-        draft: {
-          ...state.draft,
-          copies: clampCopies(copies),
-        },
-        validation: {
-          ...state.validation,
-          copies: undefined,
-        },
-      }));
-    },
-
-    incrementCopies() {
-      get().setDraftCopies(get().draft.copies + 1);
-    },
-
-    decrementCopies() {
-      get().setDraftCopies(get().draft.copies - 1);
-    },
-
-    setDraftNotes(notes) {
-      set((state) => ({
-        draft: {
-          ...state.draft,
-          userNotes: notes,
-        },
-      }));
-    },
-
-    validateDraft() {
-      const validation = validatePrintDraft(get().draft);
-
-      set({ validation });
-
-      return !hasPrintDraftValidationErrors(validation);
-    },
-
-    resetDraft() {
-      set({ draft: DEFAULT_DRAFT, validation: {}, errorMessage: null, successMessage: null });
-    },
-
-    clearError() {
-      set({ errorMessage: null });
-    },
-
-    clearMessages() {
-      set({ errorMessage: null, successMessage: null });
-    },
-
-    setSelectedOrder(order) {
-      set({ selectedOrder: order });
-    },
-
-    reset() {
-      set(getInitialPrintingState());
-    },
-  };
-});
+  },
+  setDraftCopies(copies) {
+    set((state) => ({
+      draft: { ...state.draft, copies: Math.max(1, Math.min(99, Math.round(copies))) },
+      quote: null,
+      validation: { ...state.validation, copies: undefined },
+    }));
+  },
+  incrementCopies() {
+    get().setDraftCopies(get().draft.copies + 1);
+  },
+  decrementCopies() {
+    get().setDraftCopies(get().draft.copies - 1);
+  },
+  setDraftNotes(notes) {
+    set((state) => ({ draft: { ...state.draft, userNotes: notes } }));
+  },
+  setDraftOption(key, value) {
+    set((state) => ({ draft: { ...state.draft, [key]: value }, quote: null }));
+  },
+  validateDraft() {
+    const validation = validatePrintDraft(get().draft);
+    set({ validation });
+    return !hasPrintDraftValidationErrors(validation);
+  },
+  resetDraft() {
+    set({
+      draft: { ...DEFAULT_DRAFT },
+      validation: {},
+      quote: null,
+      errorMessage: null,
+      successMessage: null,
+    });
+  },
+  clearError() {
+    set({ errorMessage: null });
+  },
+  clearMessages() {
+    set({ errorMessage: null, successMessage: null });
+  },
+  setSelectedOrder(order) {
+    set({ selectedOrder: order });
+  },
+  reset() {
+    set(initial());
+  },
+}));

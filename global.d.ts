@@ -5,6 +5,9 @@ declare namespace NodeJS {
     readonly EXPO_PUBLIC_WS_BASE_URL?: string;
     readonly EXPO_PUBLIC_ENABLE_SELF_SERVICE_AUTH?: string;
     readonly EXPO_PUBLIC_DASHBOARD_URL?: string;
+    readonly EXPO_PUBLIC_ALLOW_CLEARTEXT?: string;
+    readonly EXPO_PUBLIC_SUPPORT_EMAIL?: string;
+    readonly EXPO_PUBLIC_SENTRY_DSN?: string;
     readonly NODE_ENV?: 'development' | 'production' | 'test';
   }
 }

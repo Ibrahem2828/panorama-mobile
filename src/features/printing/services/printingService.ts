@@ -1,294 +1,144 @@
 import {
   normalizeApiError,
-  printingService as apiPrintingService,
+  printingService as api,
   type CreatePrintOrderRequest,
   type PaginatedResult,
   type PrintOrder as ApiPrintOrder,
-  type PrintOrderItem as ApiPrintOrderItem,
 } from '../../../api';
 import type {
   Id,
   PrintDraft,
   PrintDraftValidation,
   PrintOrder,
-  PrintOrderItem,
-  PrintOrderStatus,
+  PrintPickupLocation,
+  PrintQuote,
   PrintStatusPresentation,
 } from '../types';
 
-const NETWORK_MESSAGE = 'تعذر تحميل طلبات الطباعة. تحقق من اتصال الإنترنت وحاول مرة أخرى.';
-const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const PERMISSION_MESSAGE = 'لا تملك صلاحية الوصول إلى طلبات الطباعة حاليا.';
-const GENERIC_MESSAGE = 'تعذر تنفيذ عملية الطباعة. حاول مرة أخرى.';
-const MISSING_FILE_MESSAGE = 'اختر ملفا قابلا للوصول قبل إنشاء طلب الطباعة.';
+const MISSING_FILE_MESSAGE = 'اختر ملفًا قابلًا للطباعة.';
 const INVALID_COPIES_MESSAGE = 'عدد النسخ يجب أن يكون بين 1 و99.';
-
-const CANCELLABLE_STATUSES = new Set<PrintOrderStatus>(['submitted', 'pending', 'accepted']);
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-function toText(value: unknown): string | undefined {
-  if (typeof value === 'string' && value.trim().length > 0) {
-    return value.trim();
-  }
-
-  if (typeof value === 'number') {
-    return String(value);
-  }
-
-  return undefined;
-}
-
-function toNullableText(value: unknown): string | null {
-  return toText(value) ?? null;
-}
-
-function toId(value: unknown): Id | null {
-  if (typeof value === 'string' || typeof value === 'number') {
-    return value;
-  }
-
-  return null;
-}
-
-function toNumber(value: unknown, fallback: number): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
-}
-
-function toStatus(value: unknown): PrintOrderStatus {
-  return toText(value) ?? 'submitted';
-}
-
-function normalizeItem(item: ApiPrintOrderItem): PrintOrderItem {
-  return {
-    ...item,
-    id: toId(item.id) ?? item.id,
-    source_file:
-      typeof item.source_file === 'string' ||
-      typeof item.source_file === 'number' ||
-      isRecord(item.source_file)
-        ? item.source_file
-        : null,
-    copies: Math.max(1, Math.min(99, toNumber(item.copies, 1))),
-    pages_count: typeof item.pages_count === 'number' ? item.pages_count : null,
-    created_at: toText(item.created_at),
-    updated_at: toText(item.updated_at),
-  };
-}
 
 function normalizeOrder(order: ApiPrintOrder): PrintOrder {
   return {
     ...order,
     id: order.id,
-    status: toStatus(order.status),
-    items: Array.isArray(order.items) ? order.items.map(normalizeItem) : [],
-    user_notes: toNullableText(order.user_notes),
-    internal_notes: toNullableText(order.internal_notes),
-    rejection_reason: toNullableText(order.rejection_reason),
-    total_price: order.total_price ?? null,
-    totalPrice: order.totalPrice ?? null,
-    created_at: toText(order.created_at),
-    updated_at: toText(order.updated_at),
-    submitted_at: toText(order.submitted_at),
-    ready_at: toNullableText(order.ready_at),
-    delivered_at: toNullableText(order.delivered_at),
-  };
+    status: order.status ?? 'submitted',
+    items: Array.isArray(order.items)
+      ? order.items.map((item) => ({ ...item, copies: Number(item.copies ?? 1) }))
+      : [],
+  } as PrintOrder;
 }
 
-function normalizeList(response: PaginatedResult<ApiPrintOrder>): PaginatedResult<PrintOrder> {
-  return {
-    ...response,
-    results: response.results.map(normalizeOrder),
-  };
-}
-
-function getRelatedEntityLabel(value: unknown): string | null {
-  if (typeof value === 'string' || typeof value === 'number') {
-    return String(value);
-  }
-
-  if (!isRecord(value)) {
-    return null;
-  }
-
-  return (
-    toText(value.title) ??
-    toText(value.name) ??
-    toText(value.label) ??
-    toText(value.filename) ??
-    toText(value.id) ??
-    null
-  );
-}
-
-export function getPrintOrderStatusPresentation(status: PrintOrderStatus): PrintStatusPresentation {
+export function getPrintOrderStatusPresentation(status: string): PrintStatusPresentation {
   switch (status) {
     case 'submitted':
-    case 'pending':
-      return {
-        label: 'بانتظار المراجعة',
-        actionMessage: 'تم استلام طلبك',
-        variant: 'warning',
-      };
+      return { label: 'تم الإرسال', actionMessage: 'تم استلام طلبك', variant: 'warning' };
+    case 'under_review':
+      return { label: 'قيد المراجعة', actionMessage: 'تتم مراجعة الطلب', variant: 'info' };
     case 'accepted':
-      return { label: 'مقبول', actionMessage: 'تم قبول طلبك', variant: 'info' };
-    case 'in_progress':
+      return { label: 'مقبول', actionMessage: 'تم قبول الطلب', variant: 'info' };
     case 'printing':
-      return {
-        label: 'قيد الطباعة',
-        actionMessage: 'طلبك قيد التجهيز',
-        variant: 'brand',
-      };
+      return { label: 'قيد الطباعة', actionMessage: 'يتم تجهيز طلبك', variant: 'brand' };
     case 'ready':
-    case 'ready_for_pickup':
-      return {
-        label: 'جاهز للاستلام',
-        actionMessage: 'طلبك جاهز للاستلام',
-        variant: 'success',
-      };
+      return { label: 'جاهز للاستلام', actionMessage: 'يمكنك استلام الطلب', variant: 'success' };
     case 'delivered':
-      return {
-        label: 'تم التسليم',
-        actionMessage: 'تم إكمال الطلب',
-        variant: 'success',
-      };
+      return { label: 'تم التسليم', actionMessage: 'اكتمل الطلب', variant: 'success' };
     case 'cancelled':
-    case 'canceled':
-      return {
-        label: 'ملغي',
-        actionMessage: 'تم إلغاء الطلب',
-        variant: 'neutral',
-      };
+      return { label: 'ملغي', actionMessage: 'تم إلغاء الطلب', variant: 'neutral' };
     case 'rejected':
-      return {
-        label: 'مرفوض',
-        actionMessage: 'تم إلغاء الطلب',
-        variant: 'error',
-      };
+      return { label: 'مرفوض', actionMessage: 'تعذر تنفيذ الطلب', variant: 'error' };
     default:
-      return {
-        label: status || 'حالة غير معروفة',
-        actionMessage: 'تابع حالة الطلب من هذه الشاشة',
-        variant: 'neutral',
-      };
+      return { label: status || 'غير معروف', actionMessage: 'تابع حالة الطلب', variant: 'neutral' };
   }
 }
 
 export function canCancelPrintOrder(order: PrintOrder): boolean {
-  return CANCELLABLE_STATUSES.has(order.status);
+  return ['submitted', 'under_review', 'accepted'].includes(order.status);
 }
-
-export function getPrintOrderDisplayTitle(order: PrintOrder): string {
+export function getPrintOrderDisplayTitle(order: PrintOrder) {
   return `طلب طباعة #${String(order.id)}`;
 }
-
-export function getPrintOrderItemsCount(order: PrintOrder): number {
+export function getPrintOrderItemsCount(order: PrintOrder) {
   return order.items.length;
 }
-
-export function getPrintOrderCopiesCount(order: PrintOrder): number {
-  return order.items.reduce((total, item) => total + item.copies, 0);
+export function getPrintOrderCopiesCount(order: PrintOrder) {
+  return order.items.reduce((sum, item) => sum + item.copies, 0);
 }
-
-export function getPrintOrderItemFileLabel(item: PrintOrderItem): string {
-  return getRelatedEntityLabel(item.source_file) ?? 'ملف مطبوع';
+export function getPrintOrderItemFileLabel(item: PrintOrder['items'][number]) {
+  return (
+    item.source_file_title ||
+    (typeof item.source_file === 'object' && item.source_file && 'title' in item.source_file
+      ? String(item.source_file.title)
+      : 'ملف مطبوع')
+  );
 }
-
-export function formatPrintOrderDate(value?: string | null): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return date.toLocaleDateString('ar-SY');
+export function formatPrintOrderDate(value?: string | null) {
+  return value ? new Date(value).toLocaleDateString('ar-SY') : null;
 }
-
-export function formatPrintOrderPrice(order: PrintOrder): string | null {
-  const price = order.total_price ?? order.totalPrice;
-
-  if (price === null || price === undefined || price === '') {
-    return null;
-  }
-
-  return typeof price === 'number' ? `${price} ل.س` : price;
+export function formatPrintOrderPrice(order: PrintOrder) {
+  if (order.total_price == null) return null;
+  return `${order.total_price} ${order.currency ?? 'SYP'}`;
 }
 
 export function validatePrintDraft(draft: PrintDraft): PrintDraftValidation {
   const validation: PrintDraftValidation = {};
-
-  if (draft.sourceFileId === null) {
-    validation.sourceFileId = MISSING_FILE_MESSAGE;
-  }
-
-  if (!Number.isInteger(draft.copies) || draft.copies < 1 || draft.copies > 99) {
+  if (draft.sourceFileId == null) validation.sourceFileId = MISSING_FILE_MESSAGE;
+  if (!Number.isInteger(draft.copies) || draft.copies < 1 || draft.copies > 99)
     validation.copies = INVALID_COPIES_MESSAGE;
-  }
-
   return validation;
 }
-
-export function hasPrintDraftValidationErrors(validation: PrintDraftValidation): boolean {
-  return Boolean(validation.sourceFileId || validation.copies);
+export function hasPrintDraftValidationErrors(v: PrintDraftValidation) {
+  return Boolean(v.sourceFileId || v.copies);
 }
 
-export function buildCreatePrintOrderRequest(draft: PrintDraft): CreatePrintOrderRequest | null {
-  if (draft.sourceFileId === null) {
-    return null;
-  }
-
-  const notes = draft.userNotes.trim();
-
+export function buildPrintItem(draft: PrintDraft) {
+  if (draft.sourceFileId == null) return null;
   return {
-    items: [
-      {
-        source_file: draft.sourceFileId,
-        copies: draft.copies,
-      },
-    ],
-    ...(notes ? { user_notes: notes } : {}),
+    source_file: draft.sourceFileId,
+    copies: draft.copies,
+    color_mode: draft.colorMode,
+    paper_size: draft.paperSize,
+    sides: draft.sides,
+    binding: draft.binding,
+  } as const;
+}
+export function buildCreatePrintOrderRequest(draft: PrintDraft): CreatePrintOrderRequest | null {
+  const item = buildPrintItem(draft);
+  if (!item) return null;
+  return {
+    items: [item],
+    user_notes: draft.userNotes.trim() || undefined,
+    pickup_location: draft.pickupLocationId,
   };
 }
 
 export function toSafePrintingErrorMessage(error: unknown): string {
-  const normalizedError = normalizeApiError(error);
-
-  if (normalizedError.code === 'NETWORK_ERROR' || normalizedError.code === 'TIMEOUT') {
-    return NETWORK_MESSAGE;
-  }
-
-  if (normalizedError.code === 'UNAUTHORIZED') {
-    return UNAUTHORIZED_MESSAGE;
-  }
-
-  if (normalizedError.code === 'FORBIDDEN') {
-    return PERMISSION_MESSAGE;
-  }
-
-  return normalizedError.message || GENERIC_MESSAGE;
+  const normalized = normalizeApiError(error);
+  if (normalized.code === 'NETWORK_ERROR' || normalized.code === 'TIMEOUT')
+    return 'تعذر الاتصال بخدمة الطباعة.';
+  if (normalized.code === 'UNAUTHORIZED') return 'انتهت الجلسة. يرجى تسجيل الدخول.';
+  if (normalized.code === 'FORBIDDEN') return 'لا تملك صلاحية استخدام هذه الخدمة.';
+  return normalized.message || 'تعذر تنفيذ عملية الطباعة.';
 }
 
-export async function createPrintOrder(
-  request: CreatePrintOrderRequest,
-  authToken: string,
-): Promise<PrintOrder> {
-  return normalizeOrder(await apiPrintingService.createPrintOrder(request, authToken));
+export async function calculatePrintQuote(draft: PrintDraft, token: string): Promise<PrintQuote> {
+  const item = buildPrintItem(draft);
+  if (!item) throw new Error(MISSING_FILE_MESSAGE);
+  return api.quotePrintOrder({ items: [item] }, token) as Promise<PrintQuote>;
 }
-
-export async function loadMyPrintOrders(authToken: string): Promise<PaginatedResult<PrintOrder>> {
-  return normalizeList(await apiPrintingService.listMyPrintOrders(authToken));
+export async function loadPickupLocations(token: string): Promise<PrintPickupLocation[]> {
+  return api.listPickupLocations(token) as Promise<PrintPickupLocation[]>;
 }
-
-export async function loadPrintOrderDetail(orderId: Id, authToken: string): Promise<PrintOrder> {
-  return normalizeOrder(await apiPrintingService.getPrintOrderDetail(orderId, authToken));
+export async function createPrintOrder(request: CreatePrintOrderRequest, token: string) {
+  return normalizeOrder(await api.createPrintOrder(request, token));
 }
-
-export async function cancelPrintOrder(orderId: Id, authToken: string): Promise<void> {
-  await apiPrintingService.cancelPrintOrder(orderId, authToken);
+export async function loadMyPrintOrders(token: string): Promise<PaginatedResult<PrintOrder>> {
+  const response = await api.listMyPrintOrders(token);
+  return { ...response, results: response.results.map(normalizeOrder) };
+}
+export async function loadPrintOrderDetail(id: Id, token: string) {
+  return normalizeOrder(await api.getPrintOrderDetail(id, token));
+}
+export async function cancelPrintOrder(id: Id, token: string) {
+  await api.cancelPrintOrder(id, token);
 }

@@ -14,10 +14,13 @@ export type FileResource = {
   title?: string;
   name?: string;
   description?: string | null;
-  file?: string | null;
-  file_url?: string | null;
-  url?: string | null;
-  download_url?: string | null;
+  file_type?: string | null;
+  file_size?: number | null;
+  pages_count?: number | null;
+  preview_ticket_endpoint?: string | null;
+  download_allowed?: boolean;
+  is_printable?: boolean;
+  is_active?: boolean;
   mime_type?: string | null;
   content_type?: string | null;
   mimeType?: string | null;
@@ -39,3 +42,9 @@ export type FileResource = {
 export type FileListSource = 'all' | 'group';
 
 export type FileViewerType = 'pdf' | 'image' | 'document' | 'unknown';
+
+export type ProtectedFileTicket = {
+  preview_url: string;
+  expires_at: string;
+  download_allowed: false;
+};

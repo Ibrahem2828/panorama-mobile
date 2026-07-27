@@ -31,9 +31,7 @@ export function useStudentAccessGate(): StudentAccessGate {
   const isLoadingVerification = useVerificationStore((state) => state.isLoadingVerification);
   const loadVerification = useVerificationStore((state) => state.loadVerification);
   const resetVerification = useVerificationStore((state) => state.reset);
-  const isStudentAccount = isStudentUser(user) || isNormalUser(user);
-  const userId = user?.id ?? null;
-  const userRole = user?.role ?? null;
+  const isStudentAccount = isStudentUser(user);
 
   const journeyInput = {
     user,
@@ -49,18 +47,11 @@ export function useStudentAccessGate(): StudentAccessGate {
     status === 'authenticated' && isStudentAccount && journeyPhase === 'loading';
 
   useEffect(() => {
-    if (status !== 'authenticated' || !user) {
+    if (status !== 'authenticated' || !user || !isStudentAccount) {
       resetStudentProfile();
       resetVerification();
       return;
     }
-
-    if (!isStudentAccount || shouldDenyMobileAccess(user)) {
-      resetStudentProfile();
-      resetVerification();
-      return;
-    }
-
     void bootstrapStudentProfile();
     void loadVerification();
   }, [
@@ -71,53 +62,32 @@ export function useStudentAccessGate(): StudentAccessGate {
     resetVerification,
     status,
     user,
-    userId,
-    userRole,
   ]);
 
   if (status !== 'authenticated' || !user) {
-    return {
-      rootFlow: 'public',
-      isStudentAccount: false,
-      isResolvingStudentContext: false,
-    };
+    return { rootFlow: 'public', isStudentAccount: false, isResolvingStudentContext: false };
   }
 
   if (shouldDenyMobileAccess(user)) {
-    return {
-      rootFlow: 'accessDenied',
-      isStudentAccount: false,
-      isResolvingStudentContext: false,
-    };
+    return { rootFlow: 'accessDenied', isStudentAccount: false, isResolvingStudentContext: false };
+  }
+
+  // Normal users enter the general app directly and never call student-only profile APIs.
+  if (isNormalUser(user)) {
+    return { rootFlow: 'app', isStudentAccount: false, isResolvingStudentContext: false };
   }
 
   if (isResolvingStudentContext) {
-    return {
-      rootFlow: 'studentSetup',
-      isStudentAccount,
-      isResolvingStudentContext: true,
-    };
+    return { rootFlow: 'studentSetup', isStudentAccount: true, isResolvingStudentContext: true };
   }
 
   if (canEnterMainStudentApp(journeyInput)) {
-    return {
-      rootFlow: 'app',
-      isStudentAccount,
-      isResolvingStudentContext: false,
-    };
+    return { rootFlow: 'app', isStudentAccount: true, isResolvingStudentContext: false };
   }
 
   if (canAccessStudentSetup({ status, user })) {
-    return {
-      rootFlow: 'studentSetup',
-      isStudentAccount: true,
-      isResolvingStudentContext: false,
-    };
+    return { rootFlow: 'studentSetup', isStudentAccount: true, isResolvingStudentContext: false };
   }
 
-  return {
-    rootFlow: 'accessDenied',
-    isStudentAccount: false,
-    isResolvingStudentContext: false,
-  };
+  return { rootFlow: 'accessDenied', isStudentAccount: false, isResolvingStudentContext: false };
 }

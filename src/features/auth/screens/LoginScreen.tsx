@@ -12,22 +12,17 @@ import {
 } from 'react-native';
 
 import { images } from '../../../assets/images';
-import { AppButton, AppCard, AppScreen, AppText, AppTextInput, Stack } from '../../../components';
+import { AppButton, AppScreen, AppText, AppTextInput, Stack } from '../../../components';
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { AuthFormCard, PasswordInput } from '../components';
 import { useAuthStore } from '../store';
-import { isSelfServiceAuthEnabled } from '../utils/selfServiceAuthAccess';
-import { isAccountRegistrationFlowEnabled } from '../../../config/env';
-
-const REQUIRED_FIELDS_MESSAGE = 'يرجى إدخال البريد أو رقم الهاتف وكلمة المرور.';
 
 type PublicNavigation = NativeStackNavigationProp<PublicStackParamList>;
 
 export function LoginScreen() {
   const navigation = useNavigation<PublicNavigation>();
-  const selfServiceEnabled = isSelfServiceAuthEnabled();
   const login = useAuthStore((state) => state.login);
   const clearError = useAuthStore((state) => state.clearError);
   const isSubmitting = useAuthStore((state) => state.isSubmitting);
@@ -35,9 +30,6 @@ export function LoginScreen() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
-  const displayedError = validationMessage ?? errorMessage;
-
-  // Subtle card entrance animation (React Native Animated)
   const cardOpacity = useRef(new Animated.Value(0)).current;
   const cardTranslate = useRef(new Animated.Value(12)).current;
 
@@ -58,52 +50,22 @@ export function LoginScreen() {
     ]).start();
   }, [cardOpacity, cardTranslate]);
 
-  function handleFieldChange(nextValue: string, field: 'identifier' | 'password') {
-    if (field === 'identifier') {
-      setIdentifier(nextValue);
-    } else {
-      setPassword(nextValue);
-    }
-
-    if (validationMessage) {
-      setValidationMessage(null);
-    }
-
-    if (errorMessage) {
-      clearError();
-    }
+  function updateField(value: string, field: 'identifier' | 'password') {
+    if (field === 'identifier') setIdentifier(value);
+    else setPassword(value);
+    setValidationMessage(null);
+    clearError();
   }
 
   async function handleSubmit() {
-    const normalizedIdentifier = identifier.trim();
-
-    if (!normalizedIdentifier || !password) {
-      setValidationMessage(REQUIRED_FIELDS_MESSAGE);
+    if (!identifier.trim() || !password) {
+      setValidationMessage('يرجى إدخال البريد أو رقم الهاتف وكلمة المرور.');
       return;
     }
-
     try {
-      await login({
-        identifier: normalizedIdentifier,
-        password,
-      });
-
-      // D1/D2: Post-login phone verification gate for normal_user
-      const currentUser = useAuthStore.getState().user;
-      if (currentUser?.requires_phone_verification) {
-        if (currentUser.phone_number) {
-          navigation.replace(PublicRoutes.PhoneOtpVerification, {
-            phoneNumber: currentUser.phone_number,
-            otpPurpose: 'verify_phone',
-          });
-        } else {
-          const MISSING_PHONE =
-            'لا يمكن التحقق من رقم الجوال حالياً. يرجى تسجيل الدخول مرة أخرى أو التواصل مع الدعم.';
-          useAuthStore.getState().forceSessionExpired(MISSING_PHONE);
-        }
-      }
+      await login({ identifier: identifier.trim(), password });
     } catch {
-      // Auth store owns the user-facing error message.
+      // Auth store owns the safe user-facing message.
     }
   }
 
@@ -123,112 +85,69 @@ export function LoginScreen() {
               style={styles.logo}
             />
             <AppText variant="h1">بانوراما</AppText>
-            <AppText color="secondary" variant="body">
-              تطبيق الجامعة للطلاب. سجّل دخولك للوصول إلى المواد والخدمات.
+            <AppText align="center" color="secondary" variant="body">
+              موادك، مجموعاتك، ملفاتك وخدماتك الجامعية في مكان واحد.
             </AppText>
           </Stack>
 
           <Animated.View
-            style={{
-              opacity: cardOpacity,
-              transform: [{ translateY: cardTranslate }],
-            }}
+            style={{ opacity: cardOpacity, transform: [{ translateY: cardTranslate }] }}
           >
             <AuthFormCard
-              subtitle="استخدم البريد الإلكتروني أو رقم الهاتف المرتبط بحسابك الطلابي."
+              subtitle="يمكنك استخدام البريد الإلكتروني أو رقم الهاتف."
               title="تسجيل الدخول"
             >
               <Stack gap="md">
                 <AppTextInput
-                  accessibilityLabel="البريد الإلكتروني أو رقم الهاتف"
                   autoCapitalize="none"
                   autoCorrect={false}
                   disabled={isSubmitting}
-                  error={displayedError ?? undefined}
+                  error={validationMessage ?? errorMessage ?? undefined}
                   keyboardType="email-address"
                   label="البريد أو رقم الهاتف"
-                  onChangeText={(value) => handleFieldChange(value, 'identifier')}
-                  placeholder="student@university.edu"
+                  onChangeText={(value) => updateField(value, 'identifier')}
+                  placeholder="student@example.com"
                   textContentType="username"
                   value={identifier}
                 />
                 <PasswordInput
                   disabled={isSubmitting}
-                  onChangeText={(value) => handleFieldChange(value, 'password')}
+                  onChangeText={(value) => updateField(value, 'password')}
                   value={password}
                 />
-
                 <AppButton
-                  accessibilityLabel="تسجيل الدخول"
                   disabled={isSubmitting}
                   fullWidth
                   loading={isSubmitting}
-                  onPress={handleSubmit}
+                  onPress={() => void handleSubmit()}
                   title="تسجيل الدخول"
                 />
               </Stack>
             </AuthFormCard>
           </Animated.View>
 
-          {selfServiceEnabled ? (
-            <Stack gap="sm" style={styles.authLinks}>
-              <Pressable
-                accessibilityRole="button"
-                disabled={isSubmitting}
-                onPress={() => navigation.navigate(PublicRoutes.RegisterStudent)}
-                style={styles.authLink}
-              >
-                <AppText color="brand" variant="button">
-                  إنشاء حساب طالب
-                </AppText>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                disabled={isSubmitting}
-                onPress={() => navigation.navigate(PublicRoutes.ForgotPassword)}
-                style={styles.authLink}
-              >
-                <AppText color="brand" variant="button">
-                  نسيت كلمة المرور؟
-                </AppText>
-              </Pressable>
-            </Stack>
-          ) : isAccountRegistrationFlowEnabled() ? (
-            <Stack gap="sm" style={styles.authLinks}>
-              <Pressable
-                accessibilityRole="button"
-                disabled={isSubmitting}
-                onPress={() => navigation.navigate(PublicRoutes.AccountTypeChoice)}
-                style={styles.authLink}
-              >
-                <AppText color="brand" variant="button">
-                  إنشاء حساب
-                </AppText>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                disabled={isSubmitting}
-                onPress={() => navigation.navigate(PublicRoutes.ForgotPassword)}
-                style={styles.authLink}
-              >
-                <AppText color="brand" variant="button">
-                  نسيت كلمة المرور؟
-                </AppText>
-              </Pressable>
-            </Stack>
-          ) : (
-            <AppCard padding="lg" variant="muted">
-              <Stack gap="sm">
-                <AppText variant="title">حساب جديد أو استعادة كلمة المرور</AppText>
-                <AppText color="secondary" variant="bodySmall">
-                  لإنشاء حساب طالب أو استعادة كلمة المرور، يرجى التواصل مع إدارة الجامعة حالياً.
-                </AppText>
-                <AppText color="muted" variant="caption">
-                  التسجيل الذاتي غير متاح حالياً من التطبيق.
-                </AppText>
-              </Stack>
-            </AppCard>
-          )}
+          <Stack align="center" gap="sm">
+            <Pressable
+              accessibilityRole="button"
+              disabled={isSubmitting}
+              onPress={() => navigation.navigate(PublicRoutes.AccountTypeChoice)}
+              style={styles.link}
+            >
+              <AppText color="brand" variant="button">
+                إنشاء حساب جديد
+              </AppText>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              disabled={isSubmitting}
+              onPress={() => navigation.navigate(PublicRoutes.ForgotPassword)}
+              style={styles.link}
+            >
+              <AppText color="brand" variant="button">
+                نسيت كلمة المرور؟
+              </AppText>
+            </Pressable>
+          </Stack>
         </Stack>
       </KeyboardAvoidingView>
     </AppScreen>
@@ -236,24 +155,8 @@ export function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: {
-    justifyContent: 'center',
-    gap: spacing.xl,
-  },
-  keyboardAvoid: {
-    flex: 1,
-  },
-  logo: {
-    width: 180,
-    maxWidth: '70%',
-    height: 56,
-  },
-  authLinks: {
-    alignItems: 'center',
-  },
-  authLink: {
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.sm,
-  },
+  content: { justifyContent: 'center', gap: spacing.xl },
+  keyboardAvoid: { flex: 1 },
+  logo: { width: 230, maxWidth: '84%', height: 150 },
+  link: { minHeight: 44, justifyContent: 'center', paddingHorizontal: spacing.sm },
 });

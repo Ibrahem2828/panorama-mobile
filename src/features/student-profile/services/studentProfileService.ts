@@ -201,10 +201,10 @@ export function isStudentProfileComplete(profile: StudentProfile | null): boolea
 
   return Boolean(
     profile.university &&
-    profile.faculty &&
-    profile.major &&
-    getStudentProfileAcademicYear(profile) &&
-    profile.semester &&
-    getStudentProfileStudentNumber(profile),
+      profile.faculty &&
+      profile.major &&
+      getStudentProfileAcademicYear(profile) &&
+      profile.semester &&
+      getStudentProfileStudentNumber(profile),
   );
 }

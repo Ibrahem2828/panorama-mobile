@@ -1,41 +1,38 @@
-﻿{
+{
   "cli": {
     "version": ">= 13.0.0",
-    "appVersionSource": "local"
+    "appVersionSource": "local",
+    "requireCommit": true
   },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      },
+      "android": { "buildType": "apk" },
       "env": {
-        "EXPO_PUBLIC_APP_ENV": "development"
+        "EXPO_PUBLIC_APP_ENV": "development",
+        "EXPO_PUBLIC_ALLOW_CLEARTEXT": "true",
+        "EXPO_PUBLIC_SUPPORT_EMAIL": "panoramacompany31@gmail.com"
       }
     },
     "preview": {
       "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      },
+      "android": { "buildType": "apk" },
       "env": {
         "EXPO_PUBLIC_APP_ENV": "preview",
         "EXPO_PUBLIC_API_BASE_URL": "https://api.xn--mgbaab0cxheq.tech",
         "EXPO_PUBLIC_WS_BASE_URL": "wss://api.xn--mgbaab0cxheq.tech",
-        "EXPO_PUBLIC_ENABLE_SELF_SERVICE_AUTH": "false",
-        "EXPO_PUBLIC_ENABLE_ACCOUNT_REGISTRATION_FLOW": "true"
+        "EXPO_PUBLIC_SUPPORT_EMAIL": "panoramacompany31@gmail.com"
       }
     },
     "production": {
-      "android": {
-        "buildType": "app-bundle"
-      },
+      "autoIncrement": true,
+      "android": { "buildType": "app-bundle" },
       "env": {
         "EXPO_PUBLIC_APP_ENV": "production",
         "EXPO_PUBLIC_API_BASE_URL": "https://api.xn--mgbaab0cxheq.tech",
         "EXPO_PUBLIC_WS_BASE_URL": "wss://api.xn--mgbaab0cxheq.tech",
-        "EXPO_PUBLIC_ENABLE_SELF_SERVICE_AUTH": "false"
+        "EXPO_PUBLIC_SUPPORT_EMAIL": "panoramacompany31@gmail.com"
       }
     }
   },

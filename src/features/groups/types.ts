@@ -24,10 +24,7 @@ export type Group = {
   current_user_membership_status?: GroupMembershipStatus;
   current_user_group_role?: GroupRole | null;
   send_messages_permission?: SendMessagesPermission;
-  whatsapp_url?: string | null;
-  whatsapp_link?: string | null;
-  external_chat_url?: string | null;
-  external_link?: string | null;
+  has_whatsapp_channel?: boolean;
   university?: Id | Record<string, unknown> | null;
   major?: Id | Record<string, unknown> | null;
   academic_year?: Id | Record<string, unknown> | null;
@@ -45,3 +42,5 @@ export type GroupJoinResult = {
   group?: Group;
   [key: string]: unknown;
 };
+
+export type WhatsAppAccessTicket = { open_url: string; expires_at: string };

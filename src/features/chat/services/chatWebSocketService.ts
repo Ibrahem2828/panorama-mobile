@@ -124,7 +124,9 @@ export function createChatWebSocketClient({
     setStatus(reconnectAttempts > 0 ? 'reconnecting' : 'connecting');
 
     try {
-      socket = new WebSocket(buildGroupChatWebSocketUrl({ groupId, accessToken: authToken }));
+      socket = new WebSocket(
+        `${buildGroupChatWebSocketUrl(groupId)}?token=${encodeURIComponent(authToken)}`,
+      );
     } catch {
       setStatus('error');
       handlers?.onError?.(WEBSOCKET_ERROR_MESSAGE);

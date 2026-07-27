@@ -27,7 +27,7 @@ import {
   getFileDisplayTitle,
   getFileExtension,
   getFileSize,
-  getFileUri,
+  canRequestProtectedPreview,
   getFileViewerType,
   getVisibilityLabel,
 } from '../services';
@@ -103,7 +103,7 @@ export function FileDetailsScreen() {
   const cachedFile = findFileById(fileId, files, groupFilesByGroupId);
   const activeFile = selectedFile && isSameId(selectedFile.id, fileId) ? selectedFile : cachedFile;
   const showInitialLoading = isLoadingDetail && !activeFile;
-  const fileUri = activeFile ? getFileUri(activeFile) : null;
+  const canPreview = activeFile ? canRequestProtectedPreview(activeFile) : false;
 
   useEffect(() => {
     void loadFileDetail(fileId);
@@ -169,7 +169,7 @@ export function FileDetailsScreen() {
 
         <Stack direction="horizontal" gap="md" wrap>
           <AppButton
-            disabled={!fileUri}
+            disabled={!canPreview}
             onPress={() => handleOpenViewer(activeFile)}
             title="فتح داخل التطبيق"
           />
@@ -180,10 +180,10 @@ export function FileDetailsScreen() {
           />
         </Stack>
 
-        {!fileUri ? (
+        {!canPreview ? (
           <AppCard variant="muted">
             <AppText color="error" variant="bodySmall">
-              لا يتوفر رابط صالح لعرض الملف.
+              لا يمكن إصدار تذكرة عرض لهذا الملف حاليًا.
             </AppText>
           </AppCard>
         ) : null}

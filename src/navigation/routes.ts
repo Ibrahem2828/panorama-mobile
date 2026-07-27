@@ -7,18 +7,12 @@ export const RootRoutes = {
 export const PublicRoutes = {
   Onboarding: 'Onboarding',
   Login: 'Login',
+  AccountTypeChoice: 'AccountTypeChoice',
   RegisterStudent: 'RegisterStudent',
+  NormalUserRegister: 'NormalUserRegister',
   OtpVerification: 'OtpVerification',
   ForgotPassword: 'ForgotPassword',
   ResetPassword: 'ResetPassword',
-  // D1 new registration flow
-  AccountTypeChoice: 'AccountTypeChoice',
-  NormalUserRegister: 'NormalUserRegister',
-  PhoneOtpVerification: 'PhoneOtpVerification',
-  StudentAccountRequest: 'StudentAccountRequest',
-  StudentRequestSubmitted: 'StudentRequestSubmitted',
-  StudentRequestStatus: 'StudentRequestStatus',
-  StudentOtpVerification: 'StudentOtpVerification',
 } as const;
 
 export const StudentSetupRoutes = {
@@ -75,6 +69,9 @@ export const ProfileRoutes = {
   PrivacyPolicy: 'PrivacyPolicy',
   Terms: 'Terms',
   About: 'About',
+  FeedbackCenter: 'FeedbackCenter',
+  MyFeedback: 'MyFeedback',
+  PublicSuggestions: 'PublicSuggestions',
 } as const;
 
 export const SharedRoutes = {

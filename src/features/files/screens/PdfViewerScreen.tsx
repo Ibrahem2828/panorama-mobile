@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { StyleSheet } from 'react-native';
+import * as ScreenCapture from 'expo-screen-capture';
+import { StyleSheet, View } from 'react-native';
+import { WebView } from 'react-native-webview';
 
 import {
   AppButton,
@@ -14,124 +16,119 @@ import {
   LoadingState,
   Stack,
 } from '../../../components';
-import { spacing } from '../../../theme';
+import { colors, spacing } from '../../../theme';
+import { isTrustedBackendUrl } from '../../../utils/trustedUrl';
 import { useAuthStore } from '../../auth/store';
-import { InAppFileViewer } from '../components';
-import { getFileDisplayTitle } from '../services';
+import { useFeedbackStore } from '../../feedback/store';
+import {
+  getFileDisplayTitle,
+  requestProtectedFileTicket,
+  toSafeFilesErrorMessage,
+} from '../services';
 import { useFilesStore } from '../store';
-import type { FileResource, Id } from '../types';
+import type { Id } from '../types';
 
-type PdfViewerRouteParamList = {
-  PdfViewer: { fileId: Id; title?: string };
-};
-
-type PdfViewerNavigationParamList = {
-  PdfViewer: { fileId: Id; title?: string };
-};
-
-type PdfViewerRoute = RouteProp<PdfViewerRouteParamList, 'PdfViewer'>;
-type PdfViewerNavigation = NativeStackNavigationProp<PdfViewerNavigationParamList, 'PdfViewer'>;
-
-function isSameId(left: Id, right: Id): boolean {
-  return String(left) === String(right);
-}
-
-function findFileById(
-  fileId: Id,
-  files: FileResource[],
-  groupFilesByGroupId: Record<string, FileResource[]>,
-): FileResource | null {
-  const fromFiles = files.find((file) => isSameId(file.id, fileId));
-
-  if (fromFiles) {
-    return fromFiles;
-  }
-
-  for (const groupFiles of Object.values(groupFilesByGroupId)) {
-    const fromGroupFiles = groupFiles.find((file) => isSameId(file.id, fileId));
-
-    if (fromGroupFiles) {
-      return fromGroupFiles;
-    }
-  }
-
-  return null;
-}
+type ParamList = { PdfViewer: { fileId: Id; title?: string } };
+type ViewerRoute = RouteProp<ParamList, 'PdfViewer'>;
+type ViewerNavigation = NativeStackNavigationProp<ParamList, 'PdfViewer'>;
 
 export function PdfViewerScreen() {
-  const navigation = useNavigation<PdfViewerNavigation>();
-  const route = useRoute<PdfViewerRoute>();
+  const navigation = useNavigation<ViewerNavigation>();
+  const route = useRoute<ViewerRoute>();
   const { fileId, title } = route.params;
   const accessToken = useAuthStore((state) => state.accessToken);
-  const files = useFilesStore((state) => state.files);
-  const groupFilesByGroupId = useFilesStore((state) => state.groupFilesByGroupId);
-  const selectedFile = useFilesStore((state) => state.selectedFile);
-  const isLoadingDetail = useFilesStore((state) => state.isLoadingDetail);
-  const errorMessage = useFilesStore((state) => state.errorMessage);
+  const requestFeedbackPrompt = useFeedbackStore((state) => state.requestPrompt);
+  const file = useFilesStore((state) => state.getFileById(fileId));
   const loadFileDetail = useFilesStore((state) => state.loadFileDetail);
-  const cachedFile = findFileById(fileId, files, groupFilesByGroupId);
-  const activeFile = selectedFile && isSameId(selectedFile.id, fileId) ? selectedFile : cachedFile;
-  const showInitialLoading = isLoadingDetail && !activeFile;
-  const displayTitle = activeFile ? getFileDisplayTitle(activeFile) : (title ?? 'عارض الملفات');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadPreview = useCallback(async () => {
+    if (!accessToken) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      await loadFileDetail(fileId);
+      const ticket = await requestProtectedFileTicket(fileId, accessToken);
+      const trusted = isTrustedBackendUrl(ticket.preview_url, {
+        pathPrefixes: ['/api/v1/protected-files/'],
+        allowHttpInDevelopment: true,
+      });
+      if (!trusted) throw new Error('UNTRUSTED_PREVIEW_URL');
+      setPreviewUrl(ticket.preview_url);
+    } catch (loadError) {
+      setError(toSafeFilesErrorMessage(loadError));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [accessToken, fileId, loadFileDetail]);
 
   useEffect(() => {
-    void loadFileDetail(fileId);
-  }, [fileId, loadFileDetail]);
+    void ScreenCapture.preventScreenCaptureAsync();
+    void loadPreview();
+    return () => {
+      void ScreenCapture.allowScreenCaptureAsync();
+    };
+  }, [loadPreview]);
 
-  function handleRetry() {
-    void loadFileDetail(fileId);
-  }
-
-  if (showInitialLoading) {
-    return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="عارض داخلي" title="الملفات" />
-        <LoadingState message="جاري تجهيز الملف..." />
-      </AppScreen>
-    );
-  }
-
-  if (!activeFile) {
-    return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <Stack gap="lg">
-          <AppHeader subtitle="عارض داخلي" title="الملفات" />
-          <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
-          <ErrorState
-            message={errorMessage ?? 'لا يمكن فتح هذا الملف حاليا.'}
-            onRetry={handleRetry}
-            title="الملف غير متاح"
-          />
-        </Stack>
-      </AppScreen>
-    );
-  }
+  const displayTitle = file ? getFileDisplayTitle(file) : (title ?? 'عارض الملفات');
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
-      <Stack gap="xl">
-        <Stack gap="md">
-          <AppHeader subtitle="عارض داخلي بدون تنزيل مباشر" title={displayTitle} />
-          <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
-        </Stack>
+    <AppScreen horizontalPadding={false} safeArea style={styles.screen}>
+      <View style={styles.header}>
+        <AppHeader subtitle="عرض محمي داخل التطبيق" title={displayTitle} />
+        <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+      </View>
 
-        {errorMessage ? <ErrorState message={errorMessage} onRetry={handleRetry} /> : null}
+      {isLoading ? <LoadingState message="جاري إصدار تذكرة عرض آمنة..." /> : null}
+      {error ? <ErrorState message={error} onRetry={() => void loadPreview()} /> : null}
 
-        <InAppFileViewer authToken={accessToken} file={activeFile} />
+      {previewUrl && !isLoading ? (
+        <WebView
+          allowsBackForwardNavigationGestures={false}
+          allowsLinkPreview={false}
+          cacheEnabled={false}
+          incognito
+          javaScriptEnabled
+          onError={() => setError('تعذر عرض الملف. قد تكون التذكرة انتهت؛ أعد المحاولة.')}
+          onLoadEnd={() => {
+            void requestFeedbackPrompt({
+              context: 'file',
+              actionKey: 'file.viewed',
+              objectType: 'file',
+              objectId: fileId,
+            });
+          }}
+          onShouldStartLoadWithRequest={(request: { url: string }) =>
+            isTrustedBackendUrl(request.url, {
+              pathPrefixes: ['/api/v1/protected-files/'],
+              allowHttpInDevelopment: true,
+            })
+          }
+          originWhitelist={['https://*', 'http://127.0.0.1:*', 'http://localhost:*']}
+          pullToRefreshEnabled
+          setSupportMultipleWindows={false}
+          source={{ uri: previewUrl }}
+          style={styles.webView}
+        />
+      ) : null}
 
-        <AppCard variant="muted">
+      <AppCard padding="sm" style={styles.notice} variant="muted">
+        <Stack gap="xs">
           <AppText color="secondary" variant="caption">
-            يعرض التطبيق الملف داخل الواجهة عند توفر نوع مدعوم. لا توجد أزرار تنزيل أو مشاركة أو فتح
-            خارجي تلقائي.
+            يستخدم العرض رابطًا مؤقتًا من الخادم، ويعطّل التطبيق لقطات الشاشة أثناء فتح الملف قدر
+            الإمكان. لا توجد أزرار تنزيل أو مشاركة.
           </AppText>
-        </AppCard>
-      </Stack>
+        </Stack>
+      </AppCard>
     </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    gap: spacing.xl,
-  },
+  screen: { backgroundColor: colors.background.primary },
+  header: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, gap: spacing.sm },
+  webView: { flex: 1, backgroundColor: colors.background.surface },
+  notice: { margin: spacing.sm },
 });
