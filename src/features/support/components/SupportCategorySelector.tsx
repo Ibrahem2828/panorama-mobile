@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { opacity } from '../../../theme';
 import { getSupportCategoryLabel } from '../services';
 import type { SupportTicketCategory } from '../types';
@@ -22,9 +23,11 @@ type SupportCategorySelectorProps = {
 };
 
 export function SupportCategorySelector({ value, error, onChange }: SupportCategorySelectorProps) {
+  const { t } = useTranslation();
+
   return (
     <Stack gap="sm">
-      <AppText variant="title">تصنيف التذكرة</AppText>
+      <AppText variant="title">{t.support.create.categoryTitle}</AppText>
       <Stack direction="horizontal" gap="sm" wrap>
         {SUPPORT_CATEGORIES.map((category) => {
           const isSelected = category === value;
@@ -37,7 +40,7 @@ export function SupportCategorySelector({ value, error, onChange }: SupportCateg
               style={({ pressed }) => [pressed ? styles.pressed : null]}
             >
               <AppBadge
-                label={getSupportCategoryLabel(category)}
+                label={getSupportCategoryLabel(category, t.support)}
                 size="md"
                 variant={isSelected ? 'brand' : 'neutral'}
               />
@@ -52,7 +55,7 @@ export function SupportCategorySelector({ value, error, onChange }: SupportCateg
       ) : null}
       <AppCard variant="muted">
         <AppText color="secondary" variant="caption">
-          التصنيفات ثابتة محليا في MVP ولا يتم جلبها من API في هذه المرحلة.
+          {t.support.create.categoryNote}
         </AppText>
       </AppCard>
     </Stack>

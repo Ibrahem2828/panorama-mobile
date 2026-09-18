@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { useLocaleStore } from '../../../i18n';
+
 import { useAuthStore } from '../../auth/store';
 import {
   addSupportTicketMessage,
@@ -75,14 +77,10 @@ function getInitialSupportState() {
   };
 }
 
-const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const CREATE_SUCCESS_MESSAGE = 'تم إنشاء تذكرة الدعم.';
-const MESSAGE_SUCCESS_MESSAGE = 'تم إرسال الرسالة.';
-const CATEGORY_REQUIRED_MESSAGE = 'يرجى اختيار التصنيف.';
-const SUBJECT_REQUIRED_MESSAGE = 'يرجى إدخال عنوان المشكلة.';
-const MESSAGE_REQUIRED_MESSAGE = 'يرجى كتابة تفاصيل المشكلة.';
-const REPLY_REQUIRED_MESSAGE = 'يرجى كتابة الرسالة قبل الإرسال.';
-const CLOSED_TICKET_MESSAGE = 'لا يمكن إضافة رسائل جديدة على تذكرة مغلقة أو محلولة.';
+// Read when the action runs so the message follows the current locale.
+function supportCatalog() {
+  return useLocaleStore.getState().t.support;
+}
 
 function getAccessToken(): string | null {
   return useAuthStore.getState().accessToken;
@@ -106,15 +104,15 @@ function validateCreateDraft(draft: SupportTicketDraft): SupportTicketDraftValid
   const validation: SupportTicketDraftValidation = {};
 
   if (!draft.category.trim()) {
-    validation.category = CATEGORY_REQUIRED_MESSAGE;
+    validation.category = supportCatalog().validation.categoryRequired;
   }
 
   if (!draft.subject.trim()) {
-    validation.subject = SUBJECT_REQUIRED_MESSAGE;
+    validation.subject = supportCatalog().validation.subjectRequired;
   }
 
   if (!draft.message.trim()) {
-    validation.message = MESSAGE_REQUIRED_MESSAGE;
+    validation.message = supportCatalog().validation.messageRequired;
   }
 
   return validation;
@@ -132,7 +130,7 @@ export const useSupportStore = create<SupportState>((set, get) => {
 
     if (!accessToken) {
       set({
-        errorMessage: MISSING_SESSION_MESSAGE,
+        errorMessage: supportCatalog().errors.unauthorized,
         isLoadingTickets: false,
         isLoadingDetail: false,
         isCreating: false,
@@ -187,7 +185,7 @@ export const useSupportStore = create<SupportState>((set, get) => {
       } catch (error) {
         set({
           isLoadingTickets: false,
-          errorMessage: toSafeSupportErrorMessage(error),
+          errorMessage: toSafeSupportErrorMessage(error, supportCatalog()),
         });
       }
     },
@@ -217,7 +215,7 @@ export const useSupportStore = create<SupportState>((set, get) => {
       } catch (error) {
         set({
           isRefreshing: false,
-          errorMessage: toSafeSupportErrorMessage(error),
+          errorMessage: toSafeSupportErrorMessage(error, supportCatalog()),
         });
       }
     },
@@ -241,7 +239,7 @@ export const useSupportStore = create<SupportState>((set, get) => {
       } catch (error) {
         set({
           isLoadingDetail: false,
-          errorMessage: toSafeSupportErrorMessage(error),
+          errorMessage: toSafeSupportErrorMessage(error, supportCatalog()),
         });
       }
     },
@@ -284,7 +282,7 @@ export const useSupportStore = create<SupportState>((set, get) => {
           createDraft: DEFAULT_DRAFT,
           validation: {},
           isCreating: false,
-          successMessage: CREATE_SUCCESS_MESSAGE,
+          successMessage: supportCatalog().messages.createSuccess,
         }));
 
         await reloadTickets(accessToken);
@@ -293,7 +291,7 @@ export const useSupportStore = create<SupportState>((set, get) => {
       } catch (error) {
         set({
           isCreating: false,
-          errorMessage: toSafeSupportErrorMessage(error),
+          errorMessage: toSafeSupportErrorMessage(error, supportCatalog()),
         });
         return null;
       }
@@ -308,8 +306,8 @@ export const useSupportStore = create<SupportState>((set, get) => {
 
       if (selectedTicket && !canReplyToSupportTicket(selectedTicket)) {
         set({
-          errorMessage: CLOSED_TICKET_MESSAGE,
-          validation: { replyMessage: CLOSED_TICKET_MESSAGE },
+          errorMessage: supportCatalog().validation.closedTicket,
+          validation: { replyMessage: supportCatalog().validation.closedTicket },
         });
         return;
       }
@@ -317,7 +315,7 @@ export const useSupportStore = create<SupportState>((set, get) => {
       const message = get().replyMessage.trim();
 
       if (!message) {
-        set({ validation: { replyMessage: REPLY_REQUIRED_MESSAGE } });
+        set({ validation: { replyMessage: supportCatalog().validation.replyRequired } });
         return;
       }
 
@@ -336,12 +334,12 @@ export const useSupportStore = create<SupportState>((set, get) => {
           replyMessage: '',
           validation: {},
           isSendingMessage: false,
-          successMessage: MESSAGE_SUCCESS_MESSAGE,
+          successMessage: supportCatalog().messages.sendSuccess,
         });
       } catch (error) {
         set({
           isSendingMessage: false,
-          errorMessage: toSafeSupportErrorMessage(error),
+          errorMessage: toSafeSupportErrorMessage(error, supportCatalog()),
         });
       }
     },

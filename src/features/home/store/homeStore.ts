@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { useLocaleStore } from '../../../i18n';
+
 import { useAuthStore } from '../../auth/store';
 import { getHomeData, toSafeHomeErrorMessage } from '../services';
 import type { Announcement } from '../types';
@@ -20,7 +22,10 @@ type HomeState = {
   reset: () => void;
 };
 
-const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
+// Read when the action runs so the message follows the current locale.
+function homeCatalog() {
+  return useLocaleStore.getState().t.home;
+}
 
 async function loadHomeData(set: HomeSetState, mode: 'load' | 'refresh') {
   const { accessToken, user } = useAuthStore.getState();
@@ -31,7 +36,7 @@ async function loadHomeData(set: HomeSetState, mode: 'load' | 'refresh') {
       unreadNotificationsCount: 0,
       isLoading: false,
       isRefreshing: false,
-      errorMessage: MISSING_SESSION_MESSAGE,
+      errorMessage: homeCatalog().errors.unauthorized,
       lastLoadedAt: null,
       lastAuthUserId: null,
     });
@@ -60,7 +65,7 @@ async function loadHomeData(set: HomeSetState, mode: 'load' | 'refresh') {
     set({
       isLoading: false,
       isRefreshing: false,
-      errorMessage: toSafeHomeErrorMessage(error),
+      errorMessage: toSafeHomeErrorMessage(error, homeCatalog()),
     });
   }
 }

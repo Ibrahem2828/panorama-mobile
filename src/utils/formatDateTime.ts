@@ -11,14 +11,26 @@ export function getIntlLocale(locale: Locale): string {
   return INTL_LOCALES[locale];
 }
 
-export function formatDate(value: string | null | undefined, locale: Locale): string | null {
+export function formatDate(
+  value: string | null | undefined,
+  locale: Locale,
+  options?: Intl.DateTimeFormatOptions,
+): string | null {
   if (!value) return null;
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString(INTL_LOCALES[locale]);
+  return Number.isNaN(date.getTime())
+    ? null
+    : date.toLocaleDateString(INTL_LOCALES[locale], options);
 }
 
 export function formatTime(value: string | null | undefined, locale: Locale): string | null {
   if (!value) return null;
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date.toLocaleTimeString(INTL_LOCALES[locale]);
+}
+
+export function formatDateTime(value: string | null | undefined, locale: Locale): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toLocaleString(INTL_LOCALES[locale]);
 }

@@ -15,6 +15,8 @@ import {
   LoadingState,
   Stack,
 } from '../../../components';
+import { useTranslation } from '../../../i18n';
+import { formatTime } from '../../../utils/formatDateTime';
 import { ProfileRoutes } from '../../../navigation/routes';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -24,6 +26,7 @@ import { useSupportStore } from '../store';
 type SupportTicketsScreenProps = NativeStackScreenProps<ProfileStackParamList, 'SupportTickets'>;
 
 export function SupportTicketsScreen({ navigation }: SupportTicketsScreenProps) {
+  const { t, locale } = useTranslation();
   const tickets = useSupportStore((state) => state.tickets);
   const ticketsCount = useSupportStore((state) => state.ticketsCount);
   const isLoadingTickets = useSupportStore((state) => state.isLoadingTickets);
@@ -55,22 +58,21 @@ export function SupportTicketsScreen({ navigation }: SupportTicketsScreenProps) 
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <Stack gap="md">
-          <AppHeader subtitle="تذاكر دعم الطلاب" title="الدعم الفني" />
+          <AppHeader subtitle={t.support.subtitle} title={t.support.title} />
         </Stack>
 
         <AppCard variant="muted">
           <Stack gap="sm">
             <AppText color="secondary" variant="bodySmall">
-              يمكنك إنشاء تذكرة دعم ومتابعة الردود الخاصة بك فقط. لا توجد مرفقات أو محادثة فورية في
-              هذه المرحلة.
+              {t.support.intro}
             </AppText>
             <AppText color="muted" variant="caption">
-              عدد التذاكر: {ticketsCount}
+              {t.support.ticketsCount(ticketsCount)}
             </AppText>
           </Stack>
         </AppCard>
 
-        <AppButton fullWidth onPress={handleCreatePress} title="إنشاء تذكرة جديدة" />
+        <AppButton fullWidth onPress={handleCreatePress} title={t.support.createTicket} />
 
         {successMessage ? (
           <AppCard variant="muted">
@@ -83,7 +85,7 @@ export function SupportTicketsScreen({ navigation }: SupportTicketsScreenProps) 
         {errorMessage ? <ErrorState message={errorMessage} onRetry={handleRefresh} /> : null}
 
         {showInitialLoading ? (
-          <LoadingState message="جاري تحميل تذاكر الدعم..." />
+          <LoadingState message={t.support.loading} />
         ) : tickets.length > 0 ? (
           <Stack gap="md">
             {tickets.map((ticket) => (
@@ -103,20 +105,20 @@ export function SupportTicketsScreen({ navigation }: SupportTicketsScreenProps) 
               <AppButton
                 loading={isRefreshing}
                 onPress={handleCreatePress}
-                title="إنشاء أول تذكرة"
+                title={t.support.createFirstTicket}
                 variant="outline"
               />
             }
-            message="لم يتم إنشاء أي تذاكر دعم بعد."
-            title="لا توجد تذاكر دعم"
-            illustrationLabel="رسم يوضح عدم وجود تذاكر دعم"
+            message={t.support.emptyMessage}
+            title={t.support.emptyTitle}
+            illustrationLabel={t.support.emptyIllustrationAlt}
             illustrationSource={images.emptyStates.supportTickets}
           />
         )}
 
         {lastLoadedAt ? (
           <AppText align="center" color="muted" variant="caption">
-            آخر تحديث: {new Date(lastLoadedAt).toLocaleTimeString('ar-SY')}
+            {t.common.lastUpdatedAt(formatTime(lastLoadedAt, locale) ?? '')}
           </AppText>
         ) : null}
       </Stack>

@@ -14,6 +14,7 @@ import {
   SectionHeader,
   Stack,
 } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { SupportMessageBubble, SupportMessageInput, SupportTicketSummaryCard } from '../components';
@@ -23,9 +24,8 @@ import { useSupportStore } from '../store';
 
 type TicketDetailsScreenProps = NativeStackScreenProps<ProfileStackParamList, 'TicketDetails'>;
 
-const CLOSED_REPLY_MESSAGE = 'لا يمكن إضافة رسائل جديدة على تذكرة مغلقة أو محلولة.';
-
 export function TicketDetailsScreen({ navigation, route }: TicketDetailsScreenProps) {
+  const { t } = useTranslation();
   const { ticketId } = route.params;
   const tickets = useSupportStore((state) => state.tickets);
   const selectedTicket = useSupportStore((state) => state.selectedTicket);
@@ -82,10 +82,10 @@ export function TicketDetailsScreen({ navigation, route }: TicketDetailsScreenPr
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <Stack gap="md">
-          <AppHeader subtitle="متابعة المحادثة مع فريق الدعم" title="تفاصيل التذكرة" />
+          <AppHeader subtitle={t.support.details.subtitle} title={t.support.details.title} />
           <Stack direction="horizontal" gap="sm" wrap>
-            <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
-            <AppButton onPress={handleRefresh} title="تحديث" variant="outline" />
+            <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
+            <AppButton onPress={handleRefresh} title={t.common.refresh} variant="outline" />
           </Stack>
         </Stack>
 
@@ -100,13 +100,16 @@ export function TicketDetailsScreen({ navigation, route }: TicketDetailsScreenPr
         {errorMessage ? <ErrorState message={errorMessage} onRetry={handleRefresh} /> : null}
 
         {showInitialLoading ? (
-          <LoadingState message="جاري تحميل تفاصيل التذكرة..." />
+          <LoadingState message={t.support.details.loading} />
         ) : activeTicket ? (
           <Stack gap="xl">
             <SupportTicketSummaryCard ticket={activeTicket} />
 
             <Stack gap="md">
-              <SectionHeader subtitle="الرسائل المرتبطة بهذه التذكرة" title="سجل الرسائل" />
+              <SectionHeader
+                subtitle={t.support.details.messagesSubtitle}
+                title={t.support.details.messagesTitle}
+              />
               {messages.length > 0 ? (
                 <Stack gap="md">
                   {messages.map((message, index) => (
@@ -118,14 +121,17 @@ export function TicketDetailsScreen({ navigation, route }: TicketDetailsScreenPr
                 </Stack>
               ) : (
                 <EmptyState
-                  message="ستظهر ردود فريق الدعم والرسائل الإضافية هنا عند توفرها."
-                  title="لا توجد رسائل إضافية"
+                  message={t.support.details.noMessagesMessage}
+                  title={t.support.details.noMessagesTitle}
                 />
               )}
             </Stack>
 
             <Stack gap="md">
-              <SectionHeader subtitle="إرسال تحديث لفريق الدعم" title="إضافة رسالة" />
+              <SectionHeader
+                subtitle={t.support.details.addMessageSubtitle}
+                title={t.support.details.addMessageTitle}
+              />
               {canReply ? (
                 <SupportMessageInput
                   error={validation.replyMessage}
@@ -137,7 +143,7 @@ export function TicketDetailsScreen({ navigation, route }: TicketDetailsScreenPr
               ) : (
                 <AppCard variant="muted">
                   <AppText color="muted" variant="bodySmall">
-                    {CLOSED_REPLY_MESSAGE}
+                    {t.support.validation.closedTicket}
                   </AppText>
                 </AppCard>
               )}
@@ -145,9 +151,15 @@ export function TicketDetailsScreen({ navigation, route }: TicketDetailsScreenPr
           </Stack>
         ) : (
           <EmptyState
-            action={<AppButton onPress={handleRefresh} title="إعادة التحميل" variant="outline" />}
-            message="تعذر العثور على التذكرة محليا. حاول إعادة التحميل."
-            title="التذكرة غير متوفرة"
+            action={
+              <AppButton
+                onPress={handleRefresh}
+                title={t.support.details.reload}
+                variant="outline"
+              />
+            }
+            message={t.support.details.notFoundMessage}
+            title={t.support.details.notFoundTitle}
           />
         )}
       </Stack>

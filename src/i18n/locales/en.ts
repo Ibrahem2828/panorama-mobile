@@ -390,6 +390,197 @@ export const en: TranslationCatalog = {
     },
   },
 
+  home: {
+    title: 'Home',
+    subtitle: 'Student dashboard',
+    loading: 'Loading your home screen...',
+
+    greeting: {
+      withName: (name: string) => `Hello, ${name}`,
+      generic: 'Welcome to Panorama',
+      tagline: 'Your student dashboard — your whole university in one place',
+      unread: (count: number) => `${count} new`,
+      accountType: (role: string) => `Account type: ${role}`,
+    },
+
+    academicSummary: {
+      title: 'Your academic summary',
+      university: (value: string) => `University: ${value}`,
+      faculty: (value: string) => `Faculty: ${value}`,
+      major: (value: string) => `Major: ${value}`,
+    },
+
+    studentStatus: {
+      title: 'Student status',
+      loadingLabel: 'Updating',
+      loadingDescription:
+        'Your profile and verification status will appear once your account finishes loading.',
+      incompleteLabel: 'Incomplete profile',
+      incompleteDescription: 'Complete your academic details to use the student services.',
+      verifiedLabel: 'Your account is verified',
+      verifiedDescription: 'You can now use the services reserved for verified students.',
+      pendingLabel: 'Under review',
+      pendingDescription: 'Your verification request is being reviewed by the administration.',
+      rejectedLabel: 'Rejected',
+      rejectedDescription:
+        'Your verification request was rejected. Check the reason on the verification screen.',
+      needsUpdateLabel: 'Needs an update',
+      needsUpdateDescription: 'Your verification request needs a clearer image or clearer details.',
+      unknownLabel: 'Complete your academic details',
+      unknownDescription: 'Your verification status has not been confirmed yet.',
+    },
+
+    announcements: {
+      title: 'Announcements',
+      subtitle: 'The latest announcements for your account.',
+      emptyTitle: 'No announcements',
+      emptyMessage: 'Important announcements will appear here when there are any.',
+      emptyIllustrationAlt: 'Illustration showing no announcements',
+      untitled: 'Announcement',
+      noDetails: 'There are no further details for this announcement.',
+    },
+
+    services: {
+      title: 'Services',
+      subtitle: 'Quick shortcuts to the main student services.',
+      subjects: 'My subjects',
+      subjectsDescription: 'Go to your list of subjects.',
+      groups: 'Groups',
+      groupsDescription: 'Browse the groups and spaces linked to your studies.',
+      files: 'Files',
+      filesDescription: 'Open the files available to you inside the app.',
+      search: 'Search',
+      searchDescription: 'Search the subjects, groups and files your account can reach.',
+      printing: 'Printing',
+      printingDescription: 'Request file printing and track your orders.',
+      support: 'Support',
+      supportDescription: 'Open and follow technical support tickets.',
+      notifications: 'Notifications',
+      notificationsDescription: 'Keep up with the alerts on your account.',
+      profile: 'My account',
+      profileDescription: 'Review your account details and settings.',
+    },
+
+    serviceInitials: {
+      subjects: 'S',
+      groups: 'G',
+      files: 'F',
+      search: 'Q',
+      printing: 'P',
+      support: 'H',
+      notifications: 'N',
+      profile: 'A',
+    },
+
+    errors: {
+      network: 'Could not load the home screen. Check your connection and try again.',
+      unauthorized: 'Your session has expired. Please sign in again.',
+      generic: 'Could not load the home screen. Please try again.',
+    },
+  },
+
+  support: {
+    title: 'Support',
+    subtitle: 'Student support tickets',
+    loading: 'Loading support tickets...',
+    intro:
+      'You can create a support ticket and follow the replies to it. There are no attachments or live chat at this stage.',
+    ticketsCount: (count: number) => `Tickets: ${count}`,
+    createTicket: 'New ticket',
+    createFirstTicket: 'Create your first ticket',
+    emptyTitle: 'No support tickets',
+    emptyMessage: 'You have not created any support tickets yet.',
+    emptyIllustrationAlt: 'Illustration showing no support tickets',
+    fallbackTitle: (id: string) => `Support ticket #${id}`,
+    emptyMessageBody: 'Message with no text',
+
+    create: {
+      title: 'New support ticket',
+      subtitle: 'Send a problem to the support team',
+      notice:
+        'Only the category, title and message are sent, as the support API defines. Attachments and server-provided categories are not part of this stage.',
+      subjectLabel: 'Problem title',
+      subjectPlaceholder: 'For example: cannot open a file',
+      messageLabel: 'Problem details',
+      messagePlaceholder: 'Describe what will help the support team understand the problem',
+      submit: 'Send ticket',
+      categoryTitle: 'Ticket category',
+      categoryNote: 'Categories are fixed in the app for the MVP and are not fetched from the API.',
+    },
+
+    details: {
+      title: 'Ticket details',
+      subtitle: 'Follow the conversation with the support team',
+      loading: 'Loading ticket details...',
+      messagesTitle: 'Message history',
+      messagesSubtitle: 'Messages on this ticket',
+      noMessagesTitle: 'No further messages',
+      noMessagesMessage: 'Replies from the support team will appear here when there are any.',
+      addMessageTitle: 'Add a message',
+      addMessageSubtitle: 'Send an update to the support team',
+      reload: 'Reload',
+      notFoundTitle: 'Ticket unavailable',
+      notFoundMessage: 'This ticket could not be found locally. Try reloading.',
+      primaryMessage: 'Original message',
+      staffSender: 'Support team',
+      selfSender: 'You',
+      replyLabel: 'Add a message',
+      replyPlaceholder: 'Write extra details for the support team',
+      sendReply: 'Send message',
+    },
+
+    status: {
+      open: 'Open',
+      waiting: 'Waiting',
+      inProgress: 'In progress',
+      answered: 'Answered',
+      resolved: 'Resolved',
+      closed: 'Closed',
+      rejected: 'Rejected',
+    },
+
+    category: {
+      technical: 'Technical problem',
+      account: 'Account',
+      verification: 'Verification',
+      printing: 'Printing',
+      files: 'Files',
+      groups: 'Groups',
+      other: 'Other',
+      custom: 'Custom category',
+      none: 'Uncategorised',
+    },
+
+    priority: {
+      low: 'Low',
+      medium: 'Medium',
+      high: 'High',
+      urgent: 'Urgent',
+      custom: 'Custom priority',
+      none: 'Not set',
+    },
+
+    validation: {
+      categoryRequired: 'Choose a category.',
+      subjectRequired: 'Enter a title for the problem.',
+      messageRequired: 'Describe the problem.',
+      replyRequired: 'Write your message before sending.',
+      closedTicket: 'New messages cannot be added to a closed or resolved ticket.',
+    },
+
+    messages: {
+      createSuccess: 'Your support ticket has been created.',
+      sendSuccess: 'Your message has been sent.',
+    },
+
+    errors: {
+      network: 'Could not load support tickets. Check your connection and try again.',
+      unauthorized: 'Your session has expired. Please sign in again.',
+      permission: 'You do not have access to this ticket right now.',
+      generic: 'Could not complete the support action. Please try again.',
+    },
+  },
+
   files: {
     title: 'Files',
     subtitle: 'Files available to your account',

@@ -1,4 +1,4 @@
-import { formatDate, formatTime, getIntlLocale } from '../formatDateTime';
+import { formatDate, formatDateTime, formatTime, getIntlLocale } from '../formatDateTime';
 
 /**
  * Dates were formatted with a hardcoded 'ar-SY' in five places, so an English user still
@@ -30,5 +30,16 @@ describe('locale-aware date and time formatting', () => {
   it('returns null for an unparseable value instead of "Invalid Date"', () => {
     expect(formatDate('not-a-date', 'en')).toBeNull();
     expect(formatTime('not-a-date', 'ar')).toBeNull();
+    expect(formatDateTime('not-a-date', 'en')).toBeNull();
+  });
+
+  it('passes format options through, which the announcement card relies on', () => {
+    expect(formatDate(iso, 'en', { day: 'numeric', month: 'short', year: 'numeric' })).toBe(
+      '5 Mar 2026',
+    );
+  });
+
+  it('formats a combined date and time', () => {
+    expect(formatDateTime(iso, 'en')).toContain('05/03/2026');
   });
 });

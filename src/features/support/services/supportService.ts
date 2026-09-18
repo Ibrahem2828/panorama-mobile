@@ -5,6 +5,7 @@ import {
   type SupportTicket as ApiSupportTicket,
   type SupportTicketMessage as ApiSupportTicketMessage,
 } from '../../../api';
+import type { TranslationCatalog } from '../../../i18n';
 import type { StatusVariant } from '../../../types/common';
 import type {
   AddSupportTicketMessageInput,
@@ -17,10 +18,7 @@ import type {
   SupportTicketStatus,
 } from '../types';
 
-const NETWORK_MESSAGE = 'تعذر تحميل تذاكر الدعم. تحقق من اتصال الإنترنت وحاول مرة أخرى.';
-const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const PERMISSION_MESSAGE = 'لا تملك صلاحية الوصول إلى هذه التذكرة حاليا.';
-const GENERIC_MESSAGE = 'تعذر تنفيذ عملية الدعم. حاول مرة أخرى.';
+type SupportCatalog = TranslationCatalog['support'];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -98,32 +96,36 @@ function normalizeList(
   };
 }
 
-export function getSupportTicketTitle(ticket: SupportTicket): string {
-  return toText(ticket.subject) ?? toText(ticket.title) ?? `تذكرة دعم #${String(ticket.id)}`;
+export function getSupportTicketTitle(ticket: SupportTicket, t: SupportCatalog): string {
+  return toText(ticket.subject) ?? toText(ticket.title) ?? t.fallbackTitle(String(ticket.id));
 }
 
 export function getSupportTicketPreview(ticket: SupportTicket): string | null {
   return toText(ticket.message) ?? null;
 }
 
-export function getSupportTicketStatusLabel(status?: SupportTicketStatus): string {
+export function getSupportTicketStatusLabel(
+  status: SupportTicketStatus | undefined,
+  t: SupportCatalog,
+  unknownLabel: string,
+): string {
   switch (status) {
     case 'open':
-      return 'مفتوحة';
+      return t.status.open;
     case 'pending':
-      return 'قيد الانتظار';
+      return t.status.waiting;
     case 'in_progress':
-      return 'قيد المعالجة';
+      return t.status.inProgress;
     case 'answered':
-      return 'تم الرد';
+      return t.status.answered;
     case 'resolved':
-      return 'محلولة';
+      return t.status.resolved;
     case 'closed':
-      return 'مغلقة';
+      return t.status.closed;
     case 'rejected':
-      return 'مرفوضة';
+      return t.status.rejected;
     default:
-      return 'غير معروف';
+      return unknownLabel;
   }
 }
 
@@ -148,39 +150,45 @@ export function getSupportTicketStatusVariant(status?: SupportTicketStatus): Sta
   }
 }
 
-export function getSupportCategoryLabel(category?: SupportTicketCategory): string {
+export function getSupportCategoryLabel(
+  category: SupportTicketCategory | undefined,
+  t: SupportCatalog,
+): string {
   switch (category) {
     case 'technical':
-      return 'مشكلة تقنية';
+      return t.category.technical;
     case 'account':
-      return 'الحساب';
+      return t.category.account;
     case 'verification':
-      return 'التوثيق';
+      return t.category.verification;
     case 'printing':
-      return 'الطباعة';
+      return t.category.printing;
     case 'files':
-      return 'الملفات';
+      return t.category.files;
     case 'groups':
-      return 'المجموعات';
+      return t.category.groups;
     case 'other':
-      return 'أخرى';
+      return t.category.other;
     default:
-      return category ? 'تصنيف مخصص' : 'غير مصنف';
+      return category ? t.category.custom : t.category.none;
   }
 }
 
-export function getSupportPriorityLabel(priority?: SupportTicketPriority): string {
+export function getSupportPriorityLabel(
+  priority: SupportTicketPriority | undefined,
+  t: SupportCatalog,
+): string {
   switch (priority) {
     case 'low':
-      return 'منخفضة';
+      return t.priority.low;
     case 'medium':
-      return 'متوسطة';
+      return t.priority.medium;
     case 'high':
-      return 'عالية';
+      return t.priority.high;
     case 'urgent':
-      return 'عاجلة';
+      return t.priority.urgent;
     default:
-      return priority ? 'أولوية مخصصة' : 'غير محددة';
+      return priority ? t.priority.custom : t.priority.none;
   }
 }
 
@@ -193,9 +201,9 @@ export function canReplyToSupportTicket(ticket: SupportTicket): boolean {
   );
 }
 
-export function getSupportMessageText(message: SupportTicketMessage): string {
+export function getSupportMessageText(message: SupportTicketMessage, t: SupportCatalog): string {
   return (
-    toText(message.message) ?? toText(message.body) ?? toText(message.content) ?? 'رسالة بدون نص'
+    toText(message.message) ?? toText(message.body) ?? toText(message.content) ?? t.emptyMessageBody
   );
 }
 
@@ -213,36 +221,22 @@ export function isSupportStaffMessage(message: SupportTicketMessage): boolean {
   return role === 'admin' || role === 'it_support' || role === 'support' || role === 'staff';
 }
 
-export function formatSupportDate(value?: string | null): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return date.toLocaleString('ar-SY');
-}
-
-export function toSafeSupportErrorMessage(error: unknown): string {
+export function toSafeSupportErrorMessage(error: unknown, t: SupportCatalog): string {
   const normalizedError = normalizeApiError(error);
 
   if (normalizedError.code === 'NETWORK_ERROR' || normalizedError.code === 'TIMEOUT') {
-    return NETWORK_MESSAGE;
+    return t.errors.network;
   }
 
   if (normalizedError.code === 'UNAUTHORIZED') {
-    return UNAUTHORIZED_MESSAGE;
+    return t.errors.unauthorized;
   }
 
   if (normalizedError.code === 'FORBIDDEN') {
-    return PERMISSION_MESSAGE;
+    return t.errors.permission;
   }
 
-  return normalizedError.message || GENERIC_MESSAGE;
+  return normalizedError.message || t.errors.generic;
 }
 
 export async function createSupportTicket(

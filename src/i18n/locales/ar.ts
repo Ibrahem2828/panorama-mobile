@@ -393,6 +393,197 @@ export const ar = {
     },
   },
 
+  home: {
+    title: 'الرئيسية',
+    subtitle: 'لوحة الطالب',
+    loading: 'جاري تحميل الصفحة الرئيسية...',
+
+    greeting: {
+      withName: (name: string) => `مرحبا، ${name}`,
+      generic: 'مرحبا بك في بانوراما',
+      tagline: 'لوحة الطالب — كل جامعتك في مكان واحد',
+      unread: (count: number) => `${count} جديد`,
+      accountType: (role: string) => `نوع الحساب: ${role}`,
+    },
+
+    academicSummary: {
+      title: 'ملخصك الأكاديمي',
+      university: (value: string) => `الجامعة: ${value}`,
+      faculty: (value: string) => `الكلية: ${value}`,
+      major: (value: string) => `الاختصاص: ${value}`,
+    },
+
+    studentStatus: {
+      title: 'حالة الطالب',
+      loadingLabel: 'قيد التحديث',
+      loadingDescription: 'سيتم عرض حالة الملف والتوثيق بعد اكتمال تحميل بيانات الحساب.',
+      incompleteLabel: 'ملف غير مكتمل',
+      incompleteDescription: 'أكمل بياناتك الأكاديمية للاستفادة من خدمات الطالب.',
+      verifiedLabel: 'حسابك موثق',
+      verifiedDescription: 'يمكنك الآن استخدام الخدمات المخصصة للطلاب الموثقين.',
+      pendingLabel: 'قيد المراجعة',
+      pendingDescription: 'طلب التوثيق قيد المراجعة من الإدارة.',
+      rejectedLabel: 'مرفوض',
+      rejectedDescription: 'طلب التوثيق مرفوض. راجع سبب الرفض من شاشة التوثيق.',
+      needsUpdateLabel: 'يحتاج تحديث',
+      needsUpdateDescription: 'طلب التوثيق يحتاج صورة أو بيانات أوضح.',
+      unknownLabel: 'أكمل بياناتك الأكاديمية',
+      unknownDescription: 'لم يتم تأكيد حالة التوثيق بعد.',
+    },
+
+    announcements: {
+      title: 'الإعلانات',
+      subtitle: 'آخر الإعلانات المرتبطة بحسابك.',
+      emptyTitle: 'لا توجد إعلانات حاليا',
+      emptyMessage: 'ستظهر هنا الإعلانات المهمة عند توفرها.',
+      emptyIllustrationAlt: 'رسم يوضح عدم وجود إعلانات',
+      untitled: 'إعلان',
+      noDetails: 'لا توجد تفاصيل إضافية لهذا الإعلان.',
+    },
+
+    services: {
+      title: 'الخدمات',
+      subtitle: 'اختصارات سريعة لأهم خدمات الطالب.',
+      subjects: 'موادي',
+      subjectsDescription: 'انتقل إلى قائمة المواد الدراسية.',
+      groups: 'المجموعات',
+      groupsDescription: 'تصفح المجموعات والمساحات المرتبطة بالدراسة.',
+      files: 'الملفات',
+      filesDescription: 'افتح الملفات المتاحة داخل التطبيق.',
+      search: 'البحث',
+      searchDescription: 'ابحث في المواد والمجموعات والملفات المسموحة لحسابك.',
+      printing: 'الطباعة',
+      printingDescription: 'اطلب طباعة الملفات ومتابعة الطلبات.',
+      support: 'الدعم',
+      supportDescription: 'افتح تذاكر الدعم الفني ومتابعتها.',
+      notifications: 'الإشعارات',
+      notificationsDescription: 'تابع التنبيهات المهمة داخل حسابك.',
+      profile: 'حسابي',
+      profileDescription: 'راجع بيانات الحساب والإعدادات.',
+    },
+
+    /** Single-letter glyphs standing in for service icons; each locale picks its own. */
+    serviceInitials: {
+      subjects: 'م',
+      groups: 'غ',
+      files: 'ف',
+      search: 'ب',
+      printing: 'ط',
+      support: 'د',
+      notifications: 'ن',
+      profile: 'ح',
+    },
+
+    errors: {
+      network: 'تعذر تحميل الصفحة الرئيسية. تحقق من اتصال الإنترنت ثم حاول مرة أخرى.',
+      unauthorized: 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.',
+      generic: 'تعذر تحميل الصفحة الرئيسية. حاول مرة أخرى.',
+    },
+  },
+
+  support: {
+    title: 'الدعم الفني',
+    subtitle: 'تذاكر دعم الطلاب',
+    loading: 'جاري تحميل تذاكر الدعم...',
+    intro:
+      'يمكنك إنشاء تذكرة دعم ومتابعة الردود الخاصة بك فقط. لا توجد مرفقات أو محادثة فورية في هذه المرحلة.',
+    ticketsCount: (count: number) => `عدد التذاكر: ${count}`,
+    createTicket: 'إنشاء تذكرة جديدة',
+    createFirstTicket: 'إنشاء أول تذكرة',
+    emptyTitle: 'لا توجد تذاكر دعم',
+    emptyMessage: 'لم يتم إنشاء أي تذاكر دعم بعد.',
+    emptyIllustrationAlt: 'رسم يوضح عدم وجود تذاكر دعم',
+    fallbackTitle: (id: string) => `تذكرة دعم #${id}`,
+    emptyMessageBody: 'رسالة بدون نص',
+
+    create: {
+      title: 'إنشاء تذكرة دعم',
+      subtitle: 'إرسال مشكلة إلى فريق الدعم',
+      notice:
+        'يتم إرسال التصنيف والعنوان والرسالة فقط حسب واجهة الدعم الرسمية. لا يتم رفع مرفقات أو طلب تصنيفات من الخادم في هذه المرحلة.',
+      subjectLabel: 'عنوان المشكلة',
+      subjectPlaceholder: 'مثال: مشكلة في فتح ملف',
+      messageLabel: 'تفاصيل المشكلة',
+      messagePlaceholder: 'اكتب التفاصيل التي تساعد فريق الدعم على فهم المشكلة',
+      submit: 'إرسال التذكرة',
+      categoryTitle: 'تصنيف التذكرة',
+      categoryNote: 'التصنيفات ثابتة محليا في MVP ولا يتم جلبها من API في هذه المرحلة.',
+    },
+
+    details: {
+      title: 'تفاصيل التذكرة',
+      subtitle: 'متابعة المحادثة مع فريق الدعم',
+      loading: 'جاري تحميل تفاصيل التذكرة...',
+      messagesTitle: 'سجل الرسائل',
+      messagesSubtitle: 'الرسائل المرتبطة بهذه التذكرة',
+      noMessagesTitle: 'لا توجد رسائل إضافية',
+      noMessagesMessage: 'ستظهر ردود فريق الدعم والرسائل الإضافية هنا عند توفرها.',
+      addMessageTitle: 'إضافة رسالة',
+      addMessageSubtitle: 'إرسال تحديث لفريق الدعم',
+      reload: 'إعادة التحميل',
+      notFoundTitle: 'التذكرة غير متوفرة',
+      notFoundMessage: 'تعذر العثور على التذكرة محليا. حاول إعادة التحميل.',
+      primaryMessage: 'الرسالة الأساسية',
+      staffSender: 'فريق الدعم',
+      selfSender: 'أنت',
+      replyLabel: 'إضافة رسالة',
+      replyPlaceholder: 'اكتب تفاصيل إضافية لفريق الدعم',
+      sendReply: 'إرسال الرسالة',
+    },
+
+    status: {
+      open: 'مفتوحة',
+      waiting: 'قيد الانتظار',
+      inProgress: 'قيد المعالجة',
+      answered: 'تم الرد',
+      resolved: 'محلولة',
+      closed: 'مغلقة',
+      rejected: 'مرفوضة',
+    },
+
+    category: {
+      technical: 'مشكلة تقنية',
+      account: 'الحساب',
+      verification: 'التوثيق',
+      printing: 'الطباعة',
+      files: 'الملفات',
+      groups: 'المجموعات',
+      other: 'أخرى',
+      custom: 'تصنيف مخصص',
+      none: 'غير مصنف',
+    },
+
+    priority: {
+      low: 'منخفضة',
+      medium: 'متوسطة',
+      high: 'عالية',
+      urgent: 'عاجلة',
+      custom: 'أولوية مخصصة',
+      none: 'غير محددة',
+    },
+
+    validation: {
+      categoryRequired: 'يرجى اختيار التصنيف.',
+      subjectRequired: 'يرجى إدخال عنوان المشكلة.',
+      messageRequired: 'يرجى كتابة تفاصيل المشكلة.',
+      replyRequired: 'يرجى كتابة الرسالة قبل الإرسال.',
+      /** Shown by both the store and the ticket screen, which each had their own copy. */
+      closedTicket: 'لا يمكن إضافة رسائل جديدة على تذكرة مغلقة أو محلولة.',
+    },
+
+    messages: {
+      createSuccess: 'تم إنشاء تذكرة الدعم.',
+      sendSuccess: 'تم إرسال الرسالة.',
+    },
+
+    errors: {
+      network: 'تعذر تحميل تذاكر الدعم. تحقق من اتصال الإنترنت وحاول مرة أخرى.',
+      unauthorized: 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.',
+      permission: 'لا تملك صلاحية الوصول إلى هذه التذكرة حاليا.',
+      generic: 'تعذر تنفيذ عملية الدعم. حاول مرة أخرى.',
+    },
+  },
+
   files: {
     title: 'الملفات',
     subtitle: 'الملفات المتاحة حسب صلاحيات حسابك',

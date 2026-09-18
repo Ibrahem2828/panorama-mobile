@@ -12,6 +12,7 @@ import {
   ErrorState,
   Stack,
 } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { ProfileRoutes } from '../../../navigation/routes';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -24,6 +25,7 @@ type CreateSupportTicketScreenProps = NativeStackScreenProps<
 >;
 
 export function CreateSupportTicketScreen({ navigation }: CreateSupportTicketScreenProps) {
+  const { t } = useTranslation();
   const createDraft = useSupportStore((state) => state.createDraft);
   const validation = useSupportStore((state) => state.validation);
   const isCreating = useSupportStore((state) => state.isCreating);
@@ -56,13 +58,12 @@ export function CreateSupportTicketScreen({ navigation }: CreateSupportTicketScr
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <Stack gap="md">
-          <AppHeader subtitle="إرسال مشكلة إلى فريق الدعم" title="إنشاء تذكرة دعم" />
+          <AppHeader subtitle={t.support.create.subtitle} title={t.support.create.title} />
         </Stack>
 
         <AppCard variant="muted">
           <AppText color="secondary" variant="bodySmall">
-            يتم إرسال التصنيف والعنوان والرسالة فقط حسب واجهة الدعم الرسمية. لا يتم رفع مرفقات أو
-            طلب تصنيفات من الخادم في هذه المرحلة.
+            {t.support.create.notice}
           </AppText>
         </AppCard>
 
@@ -74,18 +75,18 @@ export function CreateSupportTicketScreen({ navigation }: CreateSupportTicketScr
 
         <AppTextInput
           error={validation.subject}
-          label="عنوان المشكلة"
+          label={t.support.create.subjectLabel}
           onChangeText={setSubject}
-          placeholder="مثال: مشكلة في فتح ملف"
+          placeholder={t.support.create.subjectPlaceholder}
           value={createDraft.subject}
         />
 
         <AppTextInput
           error={validation.message}
-          label="تفاصيل المشكلة"
+          label={t.support.create.messageLabel}
           multiline
           onChangeText={setMessage}
-          placeholder="اكتب التفاصيل التي تساعد فريق الدعم على فهم المشكلة"
+          placeholder={t.support.create.messagePlaceholder}
           value={createDraft.message}
         />
 
@@ -98,9 +99,9 @@ export function CreateSupportTicketScreen({ navigation }: CreateSupportTicketScr
             onPress={() => {
               void handleSubmit();
             }}
-            title="إرسال التذكرة"
+            title={t.support.create.submit}
           />
-          <AppButton fullWidth onPress={handleCancel} title="إلغاء" variant="outline" />
+          <AppButton fullWidth onPress={handleCancel} title={t.common.cancel} variant="outline" />
         </Stack>
       </Stack>
     </AppScreen>
