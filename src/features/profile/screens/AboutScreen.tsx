@@ -3,6 +3,7 @@ import Constants from 'expo-constants';
 import { StyleSheet } from 'react-native';
 
 import { AppCard, AppHeader, AppScreen, AppText, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { LegalContentBlock } from '../components';
@@ -10,29 +11,26 @@ import { LegalContentBlock } from '../components';
 type AboutScreenProps = NativeStackScreenProps<ProfileStackParamList, 'About'>;
 
 export function AboutScreen(_props: AboutScreenProps) {
-  const appVersion = Constants.expoConfig?.version ?? 'غير متاح';
+  const { t } = useTranslation();
+  const appVersion = Constants.expoConfig?.version ?? t.common.notAvailable;
 
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="معلومات التطبيق" title="عن بانوراما" />
+        <AppHeader subtitle={t.profile.about.subtitle} title={t.profile.about.title} />
 
         <AppCard padding="lg" variant="elevated">
           <Stack gap="sm">
             <AppText variant="h2">Panorama</AppText>
             <AppText color="secondary" variant="bodySmall">
-              الإصدار {appVersion}
+              {t.profile.about.version(appVersion)}
             </AppText>
           </Stack>
         </AppCard>
 
         <LegalContentBlock
-          paragraphs={[
-            'Panorama تطبيق طلابي عربي وRTL يجمع المواد والمجموعات والملفات والطباعة والإشعارات والدعم في تجربة واحدة منظمة.',
-            'يركز التطبيق على خدمات الطالب الأكاديمية اليومية، مع إبقاء الصلاحيات والبيانات التشغيلية خاضعة للخادم.',
-            'هذه نسخة MVP مخصصة للوصول العملي والواضح إلى الخدمات الأساسية دون وعود تشغيلية مبالغ فيها.',
-          ]}
-          title="الغرض من التطبيق"
+          paragraphs={t.profile.about.purpose}
+          title={t.profile.about.purposeTitle}
         />
       </Stack>
     </AppScreen>

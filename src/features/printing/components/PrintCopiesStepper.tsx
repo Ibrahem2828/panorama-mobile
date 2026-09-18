@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { AppButton, AppText, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { colors, radius, spacing } from '../../../theme';
 
 type PrintCopiesStepperProps = {
@@ -16,12 +17,14 @@ export function PrintCopiesStepper({
   onIncrement,
   onDecrement,
 }: PrintCopiesStepperProps) {
+  const { t } = useTranslation();
+
   return (
     <Stack gap="sm">
-      <AppText variant="title">عدد النسخ</AppText>
+      <AppText variant="title">{t.printing.copies.title}</AppText>
       <Stack direction="horizontal" gap="md" style={styles.controls}>
         <AppButton
-          accessibilityLabel="إنقاص عدد النسخ"
+          accessibilityLabel={t.printing.copies.decrease}
           disabled={value <= 1}
           onPress={onDecrement}
           size="sm"
@@ -34,7 +37,7 @@ export function PrintCopiesStepper({
           </AppText>
         </View>
         <AppButton
-          accessibilityLabel="زيادة عدد النسخ"
+          accessibilityLabel={t.printing.copies.increase}
           disabled={value >= 99}
           onPress={onIncrement}
           size="sm"
@@ -48,7 +51,7 @@ export function PrintCopiesStepper({
         </AppText>
       ) : (
         <AppText color="muted" variant="caption">
-          الحد المسموح حاليا من 1 إلى 99 نسخة.
+          {t.printing.copies.limit}
         </AppText>
       )}
     </Stack>

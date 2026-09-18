@@ -13,6 +13,7 @@ import {
   LoadingState,
   Stack,
 } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { PrintingRoutes } from '../../../navigation/routes';
 import type { PrintingStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -30,6 +31,7 @@ import { usePrintingStore } from '../store';
 type Props = NativeStackScreenProps<PrintingStackParamList, 'CreatePrintOrder'>;
 
 export function CreatePrintOrderScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const files = useFilesStore((state) => state.files).filter((file) => file.is_printable !== false);
   const isLoadingFiles = useFilesStore((state) => state.isLoadingFiles);
   const filesError = useFilesStore((state) => state.errorMessage);
@@ -68,10 +70,10 @@ export function CreatePrintOrderScreen({ navigation, route }: Props) {
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="تسعير آمن من الخادم" title="طلب طباعة جديد" />
-        <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+        <AppHeader subtitle={t.printing.create.subtitle} title={t.printing.create.title} />
+        <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
         {isLoadingFiles && files.length === 0 ? (
-          <LoadingState message="جاري تحميل الملفات..." />
+          <LoadingState message={t.printing.create.loadingFiles} />
         ) : null}
         {filesError ? <ErrorState message={filesError} onRetry={refreshFiles} /> : null}
         {error ? <ErrorState message={error} /> : null}
@@ -93,12 +95,12 @@ export function CreatePrintOrderScreen({ navigation, route }: Props) {
         />
         <PrintOptionsCard draft={draft} locations={locations} onChange={setDraftOption} />
         <AppTextInput
-          helperText="ملاحظات تظهر لموظف الطباعة. لا تضع معلومات حساسة."
-          label="ملاحظات الطلب"
+          helperText={t.printing.create.notesHelper}
+          label={t.printing.create.notesLabel}
           maxLength={2000}
           multiline
           onChangeText={setDraftNotes}
-          placeholder="مثال: ترتيب محدد للصفحات"
+          placeholder={t.printing.create.notesPlaceholder}
           value={draft.userNotes}
         />
 
@@ -106,7 +108,7 @@ export function CreatePrintOrderScreen({ navigation, route }: Props) {
         {!quote ? (
           <AppCard variant="muted">
             <AppText color="secondary" variant="caption">
-              السعر لا يُحسب في الهاتف. يرسل التطبيق الخيارات فقط ويعيد الخادم سعرًا موثقًا.
+              {t.printing.create.pricingNotice}
             </AppText>
           </AppCard>
         ) : null}
@@ -115,14 +117,14 @@ export function CreatePrintOrderScreen({ navigation, route }: Props) {
           <AppButton
             loading={isQuoting}
             onPress={() => void calculateQuote()}
-            title="احسب السعر"
+            title={t.printing.create.calculatePrice}
             variant="outline"
           />
           <AppButton
             disabled={!quote}
             loading={isSubmitting}
             onPress={() => void handleSubmit()}
-            title="تأكيد وإرسال الطلب"
+            title={t.printing.create.submit}
           />
         </Stack>
       </Stack>

@@ -9,6 +9,8 @@ jest.mock('expo-constants', () => ({
     },
   },
 }));
+import { ar } from '../../../i18n/locales/ar';
+import { en } from '../../../i18n/locales/en';
 import {
   buildCreatePrintOrderRequest,
   canCancelPrintOrder,
@@ -50,7 +52,9 @@ describe('printing contract', () => {
   });
 
   it('rejects a draft without a source file', () => {
-    expect(validatePrintDraft({ ...draft, sourceFileId: null }).sourceFileId).toBeTruthy();
+    expect(
+      validatePrintDraft({ ...draft, sourceFileId: null }, ar.printing).sourceFileId,
+    ).toBeTruthy();
   });
 
   it('limits cancellation to non-terminal workflow states', () => {
@@ -60,7 +64,22 @@ describe('printing contract', () => {
     expect(canCancelPrintOrder({ ...base, status: 'delivered' })).toBe(false);
   });
 
-  it('maps backend statuses to Arabic presentation', () => {
-    expect(getPrintOrderStatusPresentation('ready').label).toBe('جاهز للاستلام');
+  it('maps a backend status through whichever catalog it is given', () => {
+    expect(getPrintOrderStatusPresentation('ready', ar.printing, ar.common.unknown).label).toBe(
+      ar.printing.status.ready.label,
+    );
+    expect(getPrintOrderStatusPresentation('ready', en.printing, en.common.unknown).label).toBe(
+      en.printing.status.ready.label,
+    );
+  });
+
+  it('falls back to the raw status when the backend sends an unmapped one', () => {
+    const presentation = getPrintOrderStatusPresentation(
+      'brand_new',
+      ar.printing,
+      ar.common.unknown,
+    );
+    expect(presentation.label).toBe('brand_new');
+    expect(presentation.variant).toBe('neutral');
   });
 });

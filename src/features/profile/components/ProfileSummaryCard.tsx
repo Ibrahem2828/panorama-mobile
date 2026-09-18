@@ -1,4 +1,5 @@
 import { AppAvatar, AppBadge, AppCard, AppText, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import {
   getAccountVerificationSummary,
   getProfileContactLabel,
@@ -12,8 +13,9 @@ type ProfileSummaryCardProps = {
 };
 
 export function ProfileSummaryCard({ user }: ProfileSummaryCardProps) {
-  const displayName = getProfileDisplayName(user);
-  const summary = getAccountVerificationSummary(user);
+  const { t } = useTranslation();
+  const displayName = getProfileDisplayName(user, t.profile);
+  const summary = getAccountVerificationSummary(user, t.profile);
 
   return (
     <AppCard padding="lg" variant="elevated">
@@ -25,10 +27,10 @@ export function ProfileSummaryCard({ user }: ProfileSummaryCardProps) {
               {displayName}
             </AppText>
             <AppText color="secondary" numberOfLines={1} variant="bodySmall">
-              {getProfileContactLabel(user)}
+              {getProfileContactLabel(user, t.profile)}
             </AppText>
             <AppText color="muted" variant="caption">
-              {getProfileRoleLabel(user?.role)}
+              {getProfileRoleLabel(user?.role, t.profile)}
             </AppText>
           </Stack>
         </Stack>
@@ -37,13 +39,21 @@ export function ProfileSummaryCard({ user }: ProfileSummaryCardProps) {
           <AppBadge label={summary.label} variant={summary.variant} />
           {user?.is_email_verified !== undefined ? (
             <AppBadge
-              label={user.is_email_verified ? 'البريد مؤكد' : 'البريد غير مؤكد'}
+              label={
+                user.is_email_verified
+                  ? t.profile.summary.emailVerified
+                  : t.profile.summary.emailUnverified
+              }
               variant={user.is_email_verified ? 'success' : 'warning'}
             />
           ) : null}
           {user?.is_phone_verified !== undefined ? (
             <AppBadge
-              label={user.is_phone_verified ? 'الهاتف مؤكد' : 'الهاتف غير مؤكد'}
+              label={
+                user.is_phone_verified
+                  ? t.profile.summary.phoneVerified
+                  : t.profile.summary.phoneUnverified
+              }
               variant={user.is_phone_verified ? 'success' : 'warning'}
             />
           ) : null}

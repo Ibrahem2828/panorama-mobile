@@ -3,6 +3,7 @@ import { Image, StyleSheet, View } from 'react-native';
 import { images } from '../../../assets/images';
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
 import { colors, radius, spacing } from '../../../theme';
+import { useTranslation } from '../../../i18n';
 import { getProfileRoleLabel } from '../../profile/services';
 
 type HomeGreetingCardProps = {
@@ -24,6 +25,8 @@ export function HomeGreetingCard({
   userRole,
   unreadNotificationsCount,
 }: HomeGreetingCardProps) {
+  const { t } = useTranslation();
+
   return (
     <AppCard padding="lg" variant="elevated">
       <Stack gap="md">
@@ -48,7 +51,7 @@ export function HomeGreetingCard({
 
         {userRole ? (
           <AppText color="muted" variant="caption">
-            نوع الحساب: {getProfileRoleLabel(userRole)}
+            نوع الحساب: {getProfileRoleLabel(userRole, t.profile)}
           </AppText>
         ) : null}
       </Stack>

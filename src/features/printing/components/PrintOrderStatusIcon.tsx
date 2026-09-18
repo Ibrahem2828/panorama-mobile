@@ -1,6 +1,7 @@
 import { Image, StyleSheet, View } from 'react-native';
 
 import { images } from '../../../assets/images';
+import { useTranslation } from '../../../i18n';
 import { colors } from '../../../theme';
 import type { PrintOrderStatus } from '../types';
 
@@ -33,11 +34,13 @@ export function getPrintOrderStatusImage(status: PrintOrderStatus) {
 }
 
 export function PrintOrderStatusIcon({ status, size = 'sm' }: PrintOrderStatusIconProps) {
+  const { t } = useTranslation();
+
   return (
     <View style={[styles.container, size === 'sm' ? styles.sm : styles.md]}>
       <Image
         accessibilityIgnoresInvertColors
-        accessibilityLabel="أيقونة حالة طلب الطباعة"
+        accessibilityLabel={t.printing.details.statusIconAlt}
         resizeMode="contain"
         source={getPrintOrderStatusImage(status)}
         style={styles.image}

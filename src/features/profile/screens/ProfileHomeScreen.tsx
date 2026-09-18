@@ -26,32 +26,19 @@ import {
   ProfileActionSection,
   ProfileSummaryCard,
 } from '../components';
-import { getStudentCardVerificationSummary } from '../services';
+import { getStudentCardVerificationSummary, getVerificationStatusLabel } from '../services';
 import { useProfileStore } from '../store';
+import { useTranslation } from '../../../i18n';
 
 type ProfileHomeScreenProps = NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>;
 type AppTabsNavigation = BottomTabNavigationProp<AppTabsParamList>;
 
-function getVerificationLabel(status?: string | null): string {
-  switch (status) {
-    case 'approved':
-      return 'موثق';
-    case 'pending':
-      return 'قيد المراجعة';
-    case 'rejected':
-      return 'مرفوض';
-    case 'needs_update':
-      return 'بحاجة إلى تحديث';
-    default:
-      return 'غير مقدم';
-  }
-}
-
-function getAcademicValue(value?: { name?: string } | null): string {
-  return value?.name ?? 'غير محدد';
+function getAcademicValue(value: { name?: string } | null | undefined, fallback: string): string {
+  return value?.name ?? fallback;
 }
 
 export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
+  const { t } = useTranslation();
   const [isConfirmingLogout, setIsConfirmingLogout] = useState(false);
   const tabNavigation = navigation.getParent<AppTabsNavigation>();
   const authUser = useAuthStore((state) => state.user);
@@ -69,7 +56,12 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
   const user = profileUser ?? authUser;
   const isStudent = user?.role?.toLowerCase() === 'student';
   const verificationStatus = getVerificationStatus(verification);
-  const cardVerificationSummary = getStudentCardVerificationSummary(verificationStatus);
+  const cardVerificationSummary = getStudentCardVerificationSummary(
+    verificationStatus,
+    t.profile,
+    t.verification,
+    t.common,
+  );
 
   useEffect(() => {
     void loadProfile();
@@ -97,9 +89,9 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="الحساب والخدمات الشخصية" title="حسابي" />
+        <AppHeader subtitle={t.profile.subtitle} title={t.profile.title} />
 
-        {isLoadingProfile && !user ? <LoadingState message="جاري تحميل بيانات الحساب..." /> : null}
+        {isLoadingProfile && !user ? <LoadingState message={t.profile.loadingAccount} /> : null}
         {profileError ? <ErrorState message={profileError} onRetry={loadProfile} /> : null}
 
         <ProfileSummaryCard user={user} />
@@ -107,101 +99,132 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
         {isStudent ? (
           <AcademicInfoCard
             fields={[
-              { label: 'الجامعة', value: getAcademicValue(studentProfile?.university) },
-              { label: 'الكلية', value: getAcademicValue(studentProfile?.faculty) },
-              { label: 'التحقق', value: getVerificationLabel(verificationStatus) },
+              {
+                label: t.profile.summary.university,
+                value: getAcademicValue(studentProfile?.university, t.common.notSpecified),
+              },
+              {
+                label: t.profile.summary.faculty,
+                value: getAcademicValue(studentProfile?.faculty, t.common.notSpecified),
+              },
+              {
+                label: t.profile.summary.verification,
+                value: getVerificationStatusLabel(
+                  verificationStatus,
+                  t.verification,
+                  t.common.unknown,
+                ),
+              },
             ]}
-            note="للتفاصيل الكاملة افتح شاشة المعلومات الأكاديمية."
-            statusLabel={getVerificationLabel(verificationStatus)}
+            note={t.profile.summary.note}
+            statusLabel={getVerificationStatusLabel(
+              verificationStatus,
+              t.verification,
+              t.common.unknown,
+            )}
             statusVariant={verificationStatus === 'approved' ? 'success' : 'warning'}
-            title="ملخص الطالب"
+            title={t.profile.summary.title}
           />
         ) : null}
 
-        <ProfileActionSection subtitle="إدارة البيانات وخدمات الحساب" title="الحساب">
+        <ProfileActionSection
+          subtitle={t.profile.accountSection.subtitle}
+          title={t.profile.accountSection.title}
+        >
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.EditProfile)}
-            subtitle="تعديل الاسم واسم المستخدم فقط"
-            title="تعديل الملف الشخصي"
+            subtitle={t.profile.accountSection.editProfileSubtitle}
+            title={t.profile.accountSection.editProfile}
           />
           {isStudent ? (
             <ProfileActionItem
               badge={cardVerificationSummary.label}
               badgeVariant={cardVerificationSummary.variant}
               onPress={() => navigation.navigate(ProfileRoutes.AcademicInfo)}
-              subtitle="عرض بيانات الجامعة والتوثيق"
-              title="المعلومات الأكاديمية"
+              subtitle={t.profile.accountSection.academicInfoSubtitle}
+              title={t.profile.accountSection.academicInfo}
             />
           ) : null}
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.Settings)}
-            subtitle="الأمان والمعلومات القانونية"
-            title="الإعدادات"
+            subtitle={t.profile.accountSection.settingsSubtitle}
+            title={t.profile.accountSection.settings}
           />
         </ProfileActionSection>
 
-        <ProfileActionSection subtitle="روابط الخدمات المتاحة للطالب" title="الخدمات">
+        <ProfileActionSection
+          subtitle={t.profile.servicesSection.subtitle}
+          title={t.profile.servicesSection.title}
+        >
           <ProfileActionItem
             onPress={handlePrintingPress}
-            subtitle="متابعة طلبات الطباعة الخاصة بك"
-            title="طلبات الطباعة"
+            subtitle={t.profile.servicesSection.printOrdersSubtitle}
+            title={t.profile.servicesSection.printOrders}
           />
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.Notifications)}
-            subtitle="قراءة إشعارات الحساب"
-            title="الإشعارات"
+            subtitle={t.profile.servicesSection.notificationsSubtitle}
+            title={t.profile.servicesSection.notifications}
           />
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.SupportTickets)}
-            subtitle="إنشاء ومتابعة تذاكر الدعم"
-            title="الدعم الفني"
+            subtitle={t.profile.servicesSection.supportSubtitle}
+            title={t.profile.servicesSection.support}
           />
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.FeedbackCenter)}
-            subtitle="قيّم التطبيق وشارك اقتراحاتك"
-            title="رأيك يهمنا"
+            subtitle={t.profile.servicesSection.feedbackSubtitle}
+            title={t.profile.servicesSection.feedback}
           />
         </ProfileActionSection>
 
-        <ProfileActionSection subtitle="معلومات التطبيق" title="قانوني">
+        <ProfileActionSection
+          subtitle={t.profile.legalSection.subtitle}
+          title={t.profile.legalSection.title}
+        >
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.PrivacyPolicy)}
-            title="سياسة الخصوصية"
+            title={t.legal.privacy.title}
           />
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.Terms)}
-            title="الشروط والأحكام"
+            title={t.legal.terms.title}
           />
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.About)}
-            title="عن بانوراما"
+            title={t.profile.about.title}
           />
         </ProfileActionSection>
 
         {isConfirmingLogout ? (
           <AppCard variant="muted">
             <Stack gap="md">
-              <AppText variant="title">هل تريد تسجيل الخروج؟</AppText>
+              <AppText variant="title">{t.profile.logout.confirmTitle}</AppText>
               <AppText color="secondary" variant="bodySmall">
-                سيتم مسح رموز الجلسة من التخزين الآمن والعودة إلى شاشة تسجيل الدخول.
+                {t.profile.logout.confirmDescription}
               </AppText>
               <Stack direction="horizontal" gap="sm" wrap>
                 <AppButton
                   loading={isSubmitting}
                   onPress={handleLogoutPress}
-                  title="تأكيد الخروج"
+                  title={t.profile.logout.confirm}
                   variant="danger"
                 />
                 <AppButton
                   onPress={() => setIsConfirmingLogout(false)}
-                  title="إلغاء"
+                  title={t.common.cancel}
                   variant="outline"
                 />
               </Stack>
             </Stack>
           </AppCard>
         ) : (
-          <AppButton fullWidth onPress={handleLogoutPress} title="تسجيل الخروج" variant="danger" />
+          <AppButton
+            fullWidth
+            onPress={handleLogoutPress}
+            title={t.profile.logout.action}
+            variant="danger"
+          />
         )}
       </Stack>
     </AppScreen>

@@ -24,26 +24,13 @@ import { useStudentProfileStore } from '../../student-profile/store';
 import { getVerificationStatus, isVerificationApproved } from '../../verification/services';
 import { useVerificationStore } from '../../verification/store';
 import { AcademicInfoCard } from '../components';
+import { getVerificationStatusLabel } from '../services';
+import { useTranslation } from '../../../i18n';
 
 type AcademicInfoScreenProps = NativeStackScreenProps<ProfileStackParamList, 'AcademicInfo'>;
 
-function getOptionName(option: { name?: string } | null | undefined): string {
-  return option?.name ?? 'غير محدد';
-}
-
-function getVerificationStatusLabel(status?: string | null): string {
-  switch (status) {
-    case 'approved':
-      return 'موثق';
-    case 'pending':
-      return 'قيد المراجعة';
-    case 'rejected':
-      return 'مرفوض';
-    case 'needs_update':
-      return 'بحاجة إلى تحديث';
-    default:
-      return 'غير مقدم';
-  }
+function getOptionName(option: { name?: string } | null | undefined, fallback: string): string {
+  return option?.name ?? fallback;
 }
 
 function getVerificationStatusVariant(status?: string | null) {
@@ -61,6 +48,7 @@ function getVerificationStatusVariant(status?: string | null) {
 }
 
 export function AcademicInfoScreen({ navigation }: AcademicInfoScreenProps) {
+  const { t } = useTranslation();
   const profile = useStudentProfileStore((state) => state.profile);
   const isBootstrapping = useStudentProfileStore((state) => state.isBootstrapping);
   const profileError = useStudentProfileStore((state) => state.errorMessage);
@@ -88,11 +76,11 @@ export function AcademicInfoScreen({ navigation }: AcademicInfoScreenProps) {
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <Stack gap="md">
-          <AppHeader subtitle="بيانات الطالب القادمة من الخادم" title="المعلومات الأكاديمية" />
-          <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+          <AppHeader subtitle={t.profile.academic.subtitle} title={t.profile.academic.title} />
+          <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
         </Stack>
 
-        {showLoading ? <LoadingState message="جاري تحميل المعلومات الأكاديمية..." /> : null}
+        {showLoading ? <LoadingState message={t.profile.academic.loading} /> : null}
 
         {profileError || verificationError ? (
           <ErrorState
@@ -105,38 +93,53 @@ export function AcademicInfoScreen({ navigation }: AcademicInfoScreenProps) {
           <Stack gap="lg">
             <AcademicInfoCard
               fields={[
-                { label: 'الجامعة', value: getOptionName(profile?.university) },
-                { label: 'الكلية', value: getOptionName(profile?.faculty) },
-                { label: 'الاختصاص', value: getOptionName(profile?.major) },
                 {
-                  label: 'السنة',
-                  value: getOptionName(getStudentProfileAcademicYear(profile)),
+                  label: t.profile.academic.university,
+                  value: getOptionName(profile?.university, t.common.notSpecified),
                 },
-                { label: 'الفصل', value: getOptionName(profile?.semester) },
                 {
-                  label: 'الرقم الجامعي',
-                  value: getStudentProfileStudentNumber(profile) ?? 'غير محدد',
+                  label: t.profile.academic.faculty,
+                  value: getOptionName(profile?.faculty, t.common.notSpecified),
+                },
+                {
+                  label: t.profile.academic.major,
+                  value: getOptionName(profile?.major, t.common.notSpecified),
+                },
+                {
+                  label: t.profile.academic.year,
+                  value: getOptionName(
+                    getStudentProfileAcademicYear(profile),
+                    t.common.notSpecified,
+                  ),
+                },
+                {
+                  label: t.profile.academic.semester,
+                  value: getOptionName(profile?.semester, t.common.notSpecified),
+                },
+                {
+                  label: t.profile.academic.studentNumber,
+                  value: getStudentProfileStudentNumber(profile) ?? t.common.notSpecified,
                 },
               ]}
               note={
                 isVerificationApproved(verification)
-                  ? 'تم توثيق الحساب. الحقول الأكاديمية الحساسة مقفلة ولا يتم تعديلها من هذه الشاشة.'
-                  : 'هذه الشاشة للعرض فقط. تعديل البيانات الأكاديمية يتم ضمن تدفق إعداد الطالب حسب قواعد الخادم.'
+                  ? t.profile.academic.verifiedNote
+                  : t.profile.academic.readOnlyNote
               }
-              statusLabel={getVerificationStatusLabel(status)}
+              statusLabel={getVerificationStatusLabel(status, t.verification, t.common.unknown)}
               statusVariant={getVerificationStatusVariant(status)}
             />
 
             <AppCard variant="muted">
               <AppText color="secondary" variant="bodySmall">
-                لا يتم عرض صورة بطاقة التحقق أو روابطها هنا لحماية الخصوصية.
+                {t.profile.academic.privacyNote}
               </AppText>
             </AppCard>
           </Stack>
         ) : (
           <EmptyState
-            message="لم يتم العثور على ملف أكاديمي مكتمل. أعد تسجيل الدخول أو تواصل مع الإدارة إذا استمرت المشكلة."
-            title="المعلومات الأكاديمية غير مكتملة"
+            message={t.profile.academic.incompleteMessage}
+            title={t.profile.academic.incompleteTitle}
           />
         )}
       </Stack>

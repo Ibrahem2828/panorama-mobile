@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 import { useAuthStore } from '../../auth/store';
 import { useFeedbackStore } from '../../feedback/store';
+import { useLocaleStore } from '../../../i18n';
 import {
   buildCreatePrintOrderRequest,
   calculatePrintQuote,
@@ -95,6 +96,12 @@ function initial() {
     ordersCount: 0,
   };
 }
+// Store actions run outside render, so the catalog is read when the action fires
+// rather than captured at module load, which would pin messages to the startup locale.
+function printingCatalog() {
+  return useLocaleStore.getState().t.printing;
+}
+
 function token() {
   return useAuthStore.getState().accessToken;
 }
@@ -122,7 +129,10 @@ export const usePrintingStore = create<State>((set, get) => ({
         lastLoadedAt: new Date().toISOString(),
       });
     } catch (error) {
-      set({ isLoadingOrders: false, errorMessage: toSafePrintingErrorMessage(error) });
+      set({
+        isLoadingOrders: false,
+        errorMessage: toSafePrintingErrorMessage(error, printingCatalog()),
+      });
     }
   },
   async refreshMyOrders() {
@@ -143,7 +153,10 @@ export const usePrintingStore = create<State>((set, get) => ({
         isLoadingDetail: false,
       }));
     } catch (error) {
-      set({ isLoadingDetail: false, errorMessage: toSafePrintingErrorMessage(error) });
+      set({
+        isLoadingDetail: false,
+        errorMessage: toSafePrintingErrorMessage(error, printingCatalog()),
+      });
     }
   },
   async loadPrintingConfiguration() {
@@ -162,7 +175,10 @@ export const usePrintingStore = create<State>((set, get) => ({
             : state.draft,
       }));
     } catch (error) {
-      set({ isLoadingPickupLocations: false, errorMessage: toSafePrintingErrorMessage(error) });
+      set({
+        isLoadingPickupLocations: false,
+        errorMessage: toSafePrintingErrorMessage(error, printingCatalog()),
+      });
     }
   },
   async calculateQuote() {
@@ -170,14 +186,14 @@ export const usePrintingStore = create<State>((set, get) => ({
     if (!authToken || get().isQuoting || !get().validateDraft()) return null;
     set({ isQuoting: true, errorMessage: null });
     try {
-      const quote = await calculatePrintQuote(get().draft, authToken);
+      const quote = await calculatePrintQuote(get().draft, authToken, printingCatalog());
       set({ quote, isQuoting: false });
       void useFeedbackStore
         .getState()
         .requestPrompt({ context: 'printing', actionKey: 'printing.quote.completed' });
       return quote;
     } catch (error) {
-      set({ isQuoting: false, errorMessage: toSafePrintingErrorMessage(error) });
+      set({ isQuoting: false, errorMessage: toSafePrintingErrorMessage(error, printingCatalog()) });
       return null;
     }
   },
@@ -196,7 +212,7 @@ export const usePrintingStore = create<State>((set, get) => ({
         quote: null,
         validation: {},
         isSubmitting: false,
-        successMessage: 'تم إرسال طلب الطباعة.',
+        successMessage: printingCatalog().create.submitSuccess,
       }));
       void useFeedbackStore.getState().requestPrompt({
         context: 'printing',
@@ -206,7 +222,10 @@ export const usePrintingStore = create<State>((set, get) => ({
       });
       return order;
     } catch (error) {
-      set({ isSubmitting: false, errorMessage: toSafePrintingErrorMessage(error) });
+      set({
+        isSubmitting: false,
+        errorMessage: toSafePrintingErrorMessage(error, printingCatalog()),
+      });
       return null;
     }
   },
@@ -217,9 +236,12 @@ export const usePrintingStore = create<State>((set, get) => ({
     try {
       await cancelPrintOrder(id, authToken);
       await get().loadOrderDetail(id);
-      set({ isCancelling: false, successMessage: 'تم إلغاء الطلب.' });
+      set({ isCancelling: false, successMessage: printingCatalog().details.cancelSuccess });
     } catch (error) {
-      set({ isCancelling: false, errorMessage: toSafePrintingErrorMessage(error) });
+      set({
+        isCancelling: false,
+        errorMessage: toSafePrintingErrorMessage(error, printingCatalog()),
+      });
     }
   },
   setDraftFile(id, title) {
@@ -249,7 +271,7 @@ export const usePrintingStore = create<State>((set, get) => ({
     set((state) => ({ draft: { ...state.draft, [key]: value }, quote: null }));
   },
   validateDraft() {
-    const validation = validatePrintDraft(get().draft);
+    const validation = validatePrintDraft(get().draft, printingCatalog());
     set({ validation });
     return !hasPrintDraftValidationErrors(validation);
   },

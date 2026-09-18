@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet } from 'react-native';
 
 import { AppCard, AppText, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { opacity } from '../../../theme';
 import {
   formatPrintOrderDate,
@@ -20,9 +21,14 @@ type PrintOrderCardProps = {
 };
 
 export function PrintOrderCard({ order, onPress }: PrintOrderCardProps) {
-  const date = formatPrintOrderDate(order.created_at ?? order.submitted_at);
+  const { t, locale } = useTranslation();
+  const date = formatPrintOrderDate(order.created_at ?? order.submitted_at, locale);
   const price = formatPrintOrderPrice(order);
-  const statusPresentation = getPrintOrderStatusPresentation(order.status);
+  const statusPresentation = getPrintOrderStatusPresentation(
+    order.status,
+    t.printing,
+    t.common.unknown,
+  );
 
   return (
     <Pressable
@@ -36,12 +42,15 @@ export function PrintOrderCard({ order, onPress }: PrintOrderCardProps) {
           <Stack direction="horizontal" gap="md" style={styles.header}>
             <PrintOrderStatusIcon status={order.status} />
             <Stack gap="xs" style={styles.titleBlock}>
-              <AppText variant="title">{getPrintOrderDisplayTitle(order)}</AppText>
+              <AppText variant="title">{getPrintOrderDisplayTitle(order, t.printing)}</AppText>
               <AppText color="brand" variant="bodySmall" weight="600">
                 {statusPresentation.actionMessage}
               </AppText>
               <AppText color="secondary" variant="bodySmall">
-                {getPrintOrderItemsCount(order)} ملف - {getPrintOrderCopiesCount(order)} نسخة
+                {t.printing.summaryCard.filesAndCopies(
+                  getPrintOrderItemsCount(order),
+                  getPrintOrderCopiesCount(order),
+                )}
               </AppText>
             </Stack>
             <PrintOrderStatusBadge status={order.status} />

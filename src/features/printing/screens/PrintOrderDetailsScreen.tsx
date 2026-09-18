@@ -14,6 +14,7 @@ import {
   SectionHeader,
   Stack,
 } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import type { PrintingStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import {
@@ -41,6 +42,7 @@ function isSameId(left: string | number, right: string | number): boolean {
 }
 
 export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetailsScreenProps) {
+  const { t, locale } = useTranslation();
   const { orderId } = route.params;
   const orders = usePrintingStore((state) => state.orders);
   const selectedOrder = usePrintingStore((state) => state.selectedOrder);
@@ -54,7 +56,7 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
   const activeOrder =
     selectedOrder && isSameId(selectedOrder.id, orderId) ? selectedOrder : cachedOrder;
   const statusPresentation = activeOrder
-    ? getPrintOrderStatusPresentation(activeOrder.status)
+    ? getPrintOrderStatusPresentation(activeOrder.status, t.printing, t.common.unknown)
     : null;
 
   useEffect(() => {
@@ -68,8 +70,8 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
   if (isLoadingDetail && !activeOrder) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="تفاصيل الطلب" title="الطباعة" />
-        <LoadingState message="جاري تحميل تفاصيل الطلب..." />
+        <AppHeader subtitle={t.printing.details.subtitle} title={t.printing.title} />
+        <LoadingState message={t.printing.details.loading} />
       </AppScreen>
     );
   }
@@ -78,12 +80,12 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         <Stack gap="lg">
-          <AppHeader subtitle="تفاصيل الطلب" title="الطباعة" />
-          <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+          <AppHeader subtitle={t.printing.details.subtitle} title={t.printing.title} />
+          <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
           <ErrorState
-            message={errorMessage ?? 'تعذر تحميل تفاصيل طلب الطباعة.'}
+            message={errorMessage ?? t.printing.details.unavailableMessage}
             onRetry={() => loadOrderDetail(orderId)}
-            title="الطلب غير متاح"
+            title={t.printing.details.unavailableTitle}
           />
         </Stack>
       </AppScreen>
@@ -94,27 +96,33 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <Stack gap="md">
-          <AppHeader subtitle="تفاصيل الطلب" title={getPrintOrderDisplayTitle(activeOrder)} />
-          <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+          <AppHeader
+            subtitle={t.printing.details.subtitle}
+            title={getPrintOrderDisplayTitle(activeOrder, t.printing)}
+          />
+          <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
         </Stack>
 
         <AppCard variant="elevated">
           <Stack gap="md">
             <Illustration
-              accessibilityLabel="رسم يوضح حالة طلب الطباعة"
+              accessibilityLabel={t.printing.details.statusIllustrationAlt}
               size="lg"
               source={getPrintOrderStatusImage(activeOrder.status)}
             />
             <Stack direction="horizontal" gap="md" style={styles.header}>
               <Stack gap="xs" style={styles.titleBlock}>
-                <AppText variant="title">{getPrintOrderDisplayTitle(activeOrder)}</AppText>
+                <AppText variant="title">
+                  {getPrintOrderDisplayTitle(activeOrder, t.printing)}
+                </AppText>
                 {statusPresentation ? (
                   <AppText color="brand" variant="bodySmall" weight="600">
                     {statusPresentation.actionMessage}
                   </AppText>
                 ) : null}
                 <AppText color="secondary" variant="bodySmall">
-                  {formatPrintOrderDate(activeOrder.created_at) ?? 'تاريخ الطلب غير متاح'}
+                  {formatPrintOrderDate(activeOrder.created_at, locale) ??
+                    t.printing.details.noDate}
                 </AppText>
               </Stack>
               <PrintOrderStatusBadge status={activeOrder.status} />
@@ -138,23 +146,25 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
         {activeOrder.completed_at || activeOrder.cancelled_at || activeOrder.updated_at ? (
           <AppCard variant="muted">
             <Stack gap="sm">
-              <AppText variant="title">تفاصيل إضافية</AppText>
+              <AppText variant="title">{t.printing.details.extraTitle}</AppText>
               {activeOrder.completed_at ? (
                 <AppText color="secondary" variant="bodySmall">
-                  اكتمل الطلب:{' '}
-                  {formatPrintOrderDate(activeOrder.completed_at) ?? activeOrder.completed_at}
+                  {t.printing.details.completedAt}{' '}
+                  {formatPrintOrderDate(activeOrder.completed_at, locale) ??
+                    activeOrder.completed_at}
                 </AppText>
               ) : null}
               {activeOrder.cancelled_at ? (
                 <AppText color="secondary" variant="bodySmall">
-                  أُلغي الطلب:{' '}
-                  {formatPrintOrderDate(activeOrder.cancelled_at) ?? activeOrder.cancelled_at}
+                  {t.printing.details.cancelledAt}{' '}
+                  {formatPrintOrderDate(activeOrder.cancelled_at, locale) ??
+                    activeOrder.cancelled_at}
                 </AppText>
               ) : null}
               {activeOrder.updated_at ? (
                 <AppText color="secondary" variant="bodySmall">
-                  آخر تحديث:{' '}
-                  {formatPrintOrderDate(activeOrder.updated_at) ?? activeOrder.updated_at}
+                  {t.printing.details.updatedAt}{' '}
+                  {formatPrintOrderDate(activeOrder.updated_at, locale) ?? activeOrder.updated_at}
                 </AppText>
               ) : null}
             </Stack>
@@ -162,18 +172,21 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
         ) : null}
 
         <Stack gap="md">
-          <SectionHeader subtitle="مصدر الملفات كما أعاده الباك إند" title="عناصر الطلب" />
+          <SectionHeader
+            subtitle={t.printing.details.itemsSubtitle}
+            title={t.printing.details.itemsTitle}
+          />
           {activeOrder.items.length > 0 ? (
             <Stack gap="sm">
               {activeOrder.items.map((item, index) => (
                 <AppCard key={String(item.id ?? index)} variant="default">
                   <Stack gap="xs">
                     <AppText variant="bodySmall" weight="600">
-                      {getPrintOrderItemFileLabel(item)}
+                      {getPrintOrderItemFileLabel(item, t.printing)}
                     </AppText>
                     <AppText color="secondary" variant="caption">
-                      {item.copies} نسخة
-                      {item.pages_count ? ` - ${item.pages_count} صفحة` : ''}
+                      {t.printing.order.copies(item.copies)}
+                      {item.pages_count ? t.printing.order.pages(item.pages_count) : ''}
                     </AppText>
                   </Stack>
                 </AppCard>
@@ -182,7 +195,7 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
           ) : (
             <AppCard variant="muted">
               <AppText color="secondary" variant="bodySmall">
-                لا توجد عناصر مفصلة في استجابة الباك إند.
+                {t.printing.details.noItems}
               </AppText>
             </AppCard>
           )}
@@ -191,7 +204,7 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
         {activeOrder.user_notes ? (
           <AppCard variant="muted">
             <Stack gap="xs">
-              <AppText variant="title">ملاحظاتك</AppText>
+              <AppText variant="title">{t.printing.details.notesTitle}</AppText>
               <AppText color="secondary" variant="bodySmall">
                 {activeOrder.user_notes}
               </AppText>
@@ -203,7 +216,7 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
           <AppCard variant="muted">
             <Stack gap="xs">
               <AppText color="error" variant="title">
-                سبب الرفض
+                {t.printing.details.rejectionReason}
               </AppText>
               <AppText color="secondary" variant="bodySmall">
                 {activeOrder.rejected_reason}
@@ -218,7 +231,7 @@ export function PrintOrderDetailsScreen({ navigation, route }: PrintOrderDetails
           <AppButton
             loading={isCancelling}
             onPress={handleCancel}
-            title="إلغاء الطلب"
+            title={t.printing.details.cancel}
             variant="danger"
           />
         ) : null}

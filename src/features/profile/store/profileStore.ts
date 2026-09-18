@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { useLocaleStore } from '../../../i18n';
 import { useAuthStore } from '../../auth/store';
 import {
   loadCurrentProfile,
@@ -46,9 +47,10 @@ function getInitialProfileState() {
   };
 }
 
-const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const FULL_NAME_REQUIRED_MESSAGE = 'يرجى إدخال الاسم الكامل.';
-const UPDATE_SUCCESS_MESSAGE = 'تم تحديث الملف الشخصي بنجاح.';
+// Read when the action runs, not at module load, so messages follow the current locale.
+function profileCatalog() {
+  return useLocaleStore.getState().t.profile;
+}
 
 function getAccessToken(): string | null {
   return useAuthStore.getState().accessToken;
@@ -69,7 +71,7 @@ export const useProfileStore = create<ProfileState>((set, get) => {
       set({
         isLoading: false,
         isSubmitting: false,
-        errorMessage: MISSING_SESSION_MESSAGE,
+        errorMessage: profileCatalog().errors.unauthorized,
       });
       return null;
     }
@@ -105,7 +107,7 @@ export const useProfileStore = create<ProfileState>((set, get) => {
       } catch (error) {
         set({
           isLoading: false,
-          errorMessage: toSafeProfileErrorMessage(error),
+          errorMessage: toSafeProfileErrorMessage(error, profileCatalog()),
         });
       }
     },
@@ -118,7 +120,7 @@ export const useProfileStore = create<ProfileState>((set, get) => {
       const draft = get().editDraft;
 
       if (!draft.full_name.trim()) {
-        set({ errorMessage: FULL_NAME_REQUIRED_MESSAGE });
+        set({ errorMessage: profileCatalog().edit.fullNameRequired });
         return null;
       }
 
@@ -145,7 +147,7 @@ export const useProfileStore = create<ProfileState>((set, get) => {
           user,
           editDraft: buildDraft(user),
           isSubmitting: false,
-          successMessage: UPDATE_SUCCESS_MESSAGE,
+          successMessage: profileCatalog().edit.updateSuccess,
           lastLoadedAt: new Date().toISOString(),
         });
 
@@ -153,7 +155,7 @@ export const useProfileStore = create<ProfileState>((set, get) => {
       } catch (error) {
         set({
           isSubmitting: false,
-          errorMessage: toSafeProfileErrorMessage(error),
+          errorMessage: toSafeProfileErrorMessage(error, profileCatalog()),
         });
         return null;
       }

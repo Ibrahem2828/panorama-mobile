@@ -11,6 +11,18 @@ export const en: TranslationCatalog = {
     back: 'Back',
     cancel: 'Cancel',
     save: 'Save',
+    refresh: 'Refresh',
+    notSpecified: 'Not set',
+    notAvailable: 'Not available',
+    unknown: 'Unknown',
+  },
+
+  verification: {
+    verified: 'Verified',
+    pending: 'Under review',
+    rejected: 'Rejected',
+    needsUpdate: 'Needs an update',
+    notSubmitted: 'Not submitted',
   },
 
   environment: {
@@ -173,6 +185,356 @@ export const en: TranslationCatalog = {
       gb: 'United Kingdom',
       de: 'Germany',
       fr: 'France',
+    },
+  },
+
+  profile: {
+    title: 'My account',
+    subtitle: 'Account and personal services',
+    loadingAccount: 'Loading your account...',
+    defaultName: 'Panorama user',
+    noContactDetails: 'No confirmed contact details yet',
+
+    roles: {
+      student: 'Student',
+      normalUser: 'User',
+      admin: 'Administrator',
+      itSupport: 'IT support',
+      printStaff: 'Print staff',
+      fallback: 'User account',
+    },
+
+    summary: {
+      title: 'Student summary',
+      university: 'University',
+      faculty: 'Faculty',
+      verification: 'Verification',
+      note: 'Open the academic information screen for full details.',
+      emailVerified: 'Email confirmed',
+      emailUnverified: 'Email not confirmed',
+      phoneVerified: 'Phone confirmed',
+      phoneUnverified: 'Phone not confirmed',
+    },
+
+    accountSection: {
+      title: 'Account',
+      subtitle: 'Manage your details and account services',
+      editProfile: 'Edit profile',
+      editProfileSubtitle: 'Name and username only',
+      academicInfo: 'Academic information',
+      academicInfoSubtitle: 'View university and verification details',
+      settings: 'Settings',
+      settingsSubtitle: 'Security and legal information',
+    },
+
+    servicesSection: {
+      title: 'Services',
+      subtitle: 'Services available to students',
+      printOrders: 'Print orders',
+      printOrdersSubtitle: 'Track your print orders',
+      notifications: 'Notifications',
+      notificationsSubtitle: 'Read your account notifications',
+      support: 'Support',
+      supportSubtitle: 'Create and follow support tickets',
+      feedback: 'Your feedback',
+      feedbackSubtitle: 'Rate the app and share suggestions',
+    },
+
+    legalSection: {
+      title: 'Legal',
+      subtitle: 'App information',
+    },
+
+    logout: {
+      action: 'Log out',
+      confirmTitle: 'Log out of Panorama?',
+      confirmDescription:
+        'Your session tokens will be cleared from secure storage and you will return to the sign-in screen.',
+      confirm: 'Confirm log out',
+    },
+
+    security: {
+      title: 'Account and security',
+      description: 'Your password is managed by the server and is never stored in the app.',
+      changePassword: 'Change password',
+    },
+
+    edit: {
+      title: 'Edit profile',
+      subtitle: 'Edit the fields the server allows',
+      notice:
+        'Only your full name and username can be edited. Email, phone and role are shown for reference and are not sent with the update.',
+      fullName: 'Full name',
+      fullNamePlaceholder: 'Enter your full name',
+      username: 'Username',
+      usernamePlaceholder: 'Enter your username',
+      readOnlyTitle: 'Read-only fields',
+      email: (value: string) => `Email: ${value}`,
+      phone: (value: string) => `Phone: ${value}`,
+      role: (value: string) => `Role: ${value}`,
+      save: 'Save changes',
+      fullNameRequired: 'Enter your full name.',
+      updateSuccess: 'Your profile has been updated.',
+    },
+
+    academic: {
+      title: 'Academic information',
+      subtitle: 'Student details returned by the server',
+      loading: 'Loading academic information...',
+      university: 'University',
+      faculty: 'Faculty',
+      major: 'Major',
+      year: 'Year',
+      semester: 'Semester',
+      studentNumber: 'Student number',
+      verifiedNote:
+        'Your account is verified. Sensitive academic fields are locked and cannot be edited here.',
+      readOnlyNote:
+        'This screen is read-only. Academic details are edited in the student setup flow, following the server rules.',
+      privacyNote: 'The verification card image and its links are not shown here, for privacy.',
+      incompleteTitle: 'Academic information is incomplete',
+      incompleteMessage:
+        'No complete academic profile was found. Sign in again, or contact the administration if this persists.',
+      cardVerified: 'Your university card has been verified.',
+      cardStatusFromServer: 'University card verification status as returned by the server.',
+      contactConfirmed: 'Contact details confirmed',
+      contactConfirmedDescription: 'A confirmed email or phone number is on the account.',
+      contactUnconfirmed: 'Contact details not confirmed',
+      contactUnconfirmedDescription: 'The app shows the account status as the server returns it.',
+      accountNotLoaded: 'Account details not loaded',
+      accountNotLoadedDescription: 'Reload your profile to see the account status.',
+      confirmed: 'Confirmed',
+      unconfirmed: 'Not confirmed',
+    },
+
+    about: {
+      title: 'About Panorama',
+      subtitle: 'App information',
+      version: (value: string) => `Version ${value}`,
+      purposeTitle: 'What this app is for',
+      purpose: [
+        'Panorama brings subjects, groups, files, printing, notifications and support together in one organised student experience.',
+        'It focuses on day-to-day academic services, while permissions and operational data stay under the server’s control.',
+        'This is an MVP aimed at practical, clear access to the core services, without overstating what it does.',
+      ],
+    },
+
+    errors: {
+      network: 'Could not load your account. Check your connection and try again.',
+      unauthorized: 'Your session has expired. Please sign in again.',
+      validation: 'Please check the profile details you entered.',
+      update: 'Could not update your profile. Please try again.',
+    },
+  },
+
+  legal: {
+    privacy: {
+      title: 'Privacy policy',
+      subtitle: 'A short privacy statement for the MVP',
+      sections: [
+        {
+          title: 'The data we use',
+          paragraphs: [
+            'Panorama uses account details such as your name, username and contact methods to provide a clear and secure account experience.',
+            'Academic details, verification status and the student card image are used to confirm eligibility for academic services.',
+          ],
+        },
+        {
+          title: 'Services that use your data',
+          paragraphs: [
+            'The app may use file access, print orders, support tickets and notifications to deliver Panorama services and track their status.',
+            'User data is never sold. It is used only to run and operate the services and to make the experience clearer.',
+          ],
+        },
+        {
+          title: 'Privacy inside the app',
+          paragraphs: [
+            'The academic information screen does not display verification image links or sensitive files that are not needed.',
+            'Permissions and available data are decided by the server; the app shows only what the current user is allowed to see.',
+          ],
+        },
+      ],
+    },
+
+    terms: {
+      title: 'Terms and conditions',
+      subtitle: 'Short terms of use for the MVP',
+      sections: [
+        {
+          title: 'Acceptable use',
+          paragraphs: [
+            'Panorama is for responsible access to academic services, files, groups, printing and support.',
+            'Misusing files, groups or support tickets, or attempting to reach data belonging to another account, is not allowed.',
+          ],
+        },
+        {
+          title: 'Permissions and the server',
+          paragraphs: [
+            'The server is the source of truth for permissions, verification status and the availability of files and services.',
+            'Available services may differ depending on account status, verification and academic details.',
+          ],
+        },
+        {
+          title: 'Responsibility',
+          paragraphs: [
+            'You are responsible for keeping your password confidential and for reviewing print orders before submitting them.',
+            'Please give support accurate information so the team can resolve the issue.',
+          ],
+        },
+      ],
+    },
+  },
+
+  printing: {
+    title: 'Printing',
+    home: {
+      subtitle: 'Print orders',
+      illustrationAlt: 'Illustration of the printing service',
+      heading: 'Print from your files',
+      description: 'Create an order from a file you have access to, then track it in My orders.',
+      newOrder: 'New order',
+      myOrders: 'My orders',
+      latestOrder: 'Latest print order',
+      registeredOrders: (count: number) => `${count} orders recorded on the server`,
+      loadingOrders: 'Loading print orders...',
+      noOrders: 'No print orders yet.',
+    },
+
+    myOrders: {
+      title: 'My orders',
+      subtitle: 'Track order status',
+      createOrder: 'Create an order',
+      emptyTitle: 'No print orders',
+      emptyMessage: 'Create your first print order from a file you have access to.',
+      emptyIllustrationAlt: 'Illustration showing no print orders',
+    },
+
+    create: {
+      title: 'New print order',
+      subtitle: 'Priced securely by the server',
+      loadingFiles: 'Loading files...',
+      notesLabel: 'Order notes',
+      notesHelper: 'Notes shown to the print staff. Do not include sensitive information.',
+      notesPlaceholder: 'For example: a specific page order',
+      pricingNotice:
+        'The price is not calculated on your phone. The app sends only your options and the server returns a recorded price.',
+      calculatePrice: 'Calculate price',
+      submit: 'Confirm and submit',
+      submitSuccess: 'Your print order has been submitted.',
+    },
+
+    priceSummary: {
+      title: 'Price summary',
+      subtitle: 'Priced by the server',
+      recalculate: 'Recalculate price',
+    },
+
+    details: {
+      subtitle: 'Order details',
+      loading: 'Loading order details...',
+      unavailableTitle: 'Order unavailable',
+      unavailableMessage: 'Could not load this print order.',
+      statusIllustrationAlt: 'Illustration of the print order status',
+      noDate: 'Order date unavailable',
+      extraTitle: 'Additional details',
+      completedAt: 'Completed:',
+      cancelledAt: 'Cancelled:',
+      updatedAt: 'Last updated:',
+      itemsTitle: 'Order items',
+      itemsSubtitle: 'File sources as returned by the server',
+      noItems: 'The server returned no itemised details.',
+      notesTitle: 'Your notes',
+      rejectionReason: 'Reason for rejection',
+      cancel: 'Cancel order',
+      cancelSuccess: 'The order has been cancelled.',
+      statusIconAlt: 'Print order status icon',
+    },
+
+    fileSelector: {
+      title: 'File to print',
+      description: 'Choose one of the files the server lets you access.',
+      searchLabel: 'Search',
+      searchPlaceholder: 'Search by file name or type',
+      selectedLabel: 'Selected file',
+      unnamedFile: (id: string) => `File #${id}`,
+      loading: 'Loading files...',
+      noMatches: 'No files match your search.',
+      noFiles: 'No files are available to print right now.',
+      refresh: 'Refresh files',
+    },
+
+    copies: {
+      title: 'Number of copies',
+      decrease: 'Decrease copies',
+      increase: 'Increase copies',
+      limit: 'Between 1 and 99 copies is allowed.',
+    },
+
+    options: {
+      title: 'Print options',
+      color: 'Colour',
+      sides: 'Sides',
+      paperSize: 'Paper size',
+      binding: 'Binding',
+      pickupPoint: 'Pickup point',
+      colorBlackWhite: 'Black and white',
+      colorColored: 'Colour',
+      sidesSingle: 'Single-sided',
+      sidesDouble: 'Double-sided',
+      bindingNone: 'None',
+      bindingStaple: 'Staple',
+      bindingSpiral: 'Spiral',
+      bindingThermal: 'Thermal',
+    },
+
+    futureOptions: {
+      title: 'Secure, flexible pricing',
+      description:
+        'Only your options are sent to the server. The Panorama backend calculates the final price and stores a snapshot of the pricing rules it used. The app never relies on a price calculated on the device.',
+      items: [
+        'Black and white or colour',
+        'Single- or double-sided',
+        'Paper size',
+        'Binding and spiral',
+        'Pickup point',
+      ],
+    },
+
+    summaryCard: {
+      title: 'Order summary',
+      filesAndCopies: (files: number, copies: number) => `${files} files - ${copies} copies`,
+      noFileSelected: 'No file selected.',
+      draftLine: (copies: number, paperSize: string, sides: string) =>
+        `${copies} copies · ${paperSize} · ${sides}`,
+      pricePlaceholder: 'Calculate the price on the server before submitting',
+    },
+
+    order: {
+      fallbackTitle: (id: string) => `Print order #${id}`,
+      fallbackFileTitle: 'Printed file',
+      copies: (count: number) => `${count} copies`,
+      pages: (count: number) => ` - ${count} pages`,
+    },
+
+    status: {
+      submitted: { label: 'Submitted', action: 'We have received your order' },
+      underReview: { label: 'Under review', action: 'Your order is being reviewed' },
+      accepted: { label: 'Accepted', action: 'Your order has been accepted' },
+      printing: { label: 'Printing', action: 'Your order is being prepared' },
+      ready: { label: 'Ready for pickup', action: 'You can collect your order' },
+      delivered: { label: 'Delivered', action: 'Your order is complete' },
+      cancelled: { label: 'Cancelled', action: 'The order was cancelled' },
+      rejected: { label: 'Rejected', action: 'The order could not be processed' },
+      unknownAction: 'Track your order status',
+    },
+
+    errors: {
+      missingFile: 'Choose a printable file.',
+      invalidCopies: 'Copies must be between 1 and 99.',
+      network: 'Could not reach the printing service.',
+      unauthorized: 'Your session has expired. Please sign in.',
+      forbidden: 'You do not have permission to use this service.',
+      generic: 'Could not complete the printing action.',
     },
   },
 

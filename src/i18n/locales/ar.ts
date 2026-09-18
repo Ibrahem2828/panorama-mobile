@@ -15,6 +15,22 @@ export const ar = {
     back: 'رجوع',
     cancel: 'إلغاء',
     save: 'حفظ',
+    refresh: 'تحديث',
+    notSpecified: 'غير محدد',
+    notAvailable: 'غير متاح',
+    unknown: 'غير معروف',
+  },
+
+  /**
+   * Verification wording lived in three places with two different spellings of
+   * "needs update". Keeping one entry is what removed that drift.
+   */
+  verification: {
+    verified: 'موثق',
+    pending: 'قيد المراجعة',
+    rejected: 'مرفوض',
+    needsUpdate: 'بحاجة إلى تحديث',
+    notSubmitted: 'غير مقدم',
   },
 
   environment: {
@@ -173,6 +189,355 @@ export const ar = {
       gb: 'بريطانيا',
       de: 'ألمانيا',
       fr: 'فرنسا',
+    },
+  },
+
+  profile: {
+    title: 'حسابي',
+    subtitle: 'الحساب والخدمات الشخصية',
+    loadingAccount: 'جاري تحميل بيانات الحساب...',
+    defaultName: 'مستخدم Panorama',
+    noContactDetails: 'لا توجد بيانات تواصل مؤكدة حاليا',
+
+    roles: {
+      student: 'طالب',
+      normalUser: 'مستخدم',
+      admin: 'مسؤول',
+      itSupport: 'دعم فني',
+      printStaff: 'موظف طباعة',
+      fallback: 'حساب مستخدم',
+    },
+
+    summary: {
+      title: 'ملخص الطالب',
+      university: 'الجامعة',
+      faculty: 'الكلية',
+      verification: 'التحقق',
+      note: 'للتفاصيل الكاملة افتح شاشة المعلومات الأكاديمية.',
+      emailVerified: 'البريد مؤكد',
+      emailUnverified: 'البريد غير مؤكد',
+      phoneVerified: 'الهاتف مؤكد',
+      phoneUnverified: 'الهاتف غير مؤكد',
+    },
+
+    accountSection: {
+      title: 'الحساب',
+      subtitle: 'إدارة البيانات وخدمات الحساب',
+      editProfile: 'تعديل الملف الشخصي',
+      editProfileSubtitle: 'تعديل الاسم واسم المستخدم فقط',
+      academicInfo: 'المعلومات الأكاديمية',
+      academicInfoSubtitle: 'عرض بيانات الجامعة والتوثيق',
+      settings: 'الإعدادات',
+      settingsSubtitle: 'الأمان والمعلومات القانونية',
+    },
+
+    servicesSection: {
+      title: 'الخدمات',
+      subtitle: 'روابط الخدمات المتاحة للطالب',
+      printOrders: 'طلبات الطباعة',
+      printOrdersSubtitle: 'متابعة طلبات الطباعة الخاصة بك',
+      notifications: 'الإشعارات',
+      notificationsSubtitle: 'قراءة إشعارات الحساب',
+      support: 'الدعم الفني',
+      supportSubtitle: 'إنشاء ومتابعة تذاكر الدعم',
+      feedback: 'رأيك يهمنا',
+      feedbackSubtitle: 'قيّم التطبيق وشارك اقتراحاتك',
+    },
+
+    legalSection: {
+      title: 'قانوني',
+      subtitle: 'معلومات التطبيق',
+    },
+
+    logout: {
+      action: 'تسجيل الخروج',
+      confirmTitle: 'هل تريد تسجيل الخروج؟',
+      confirmDescription: 'سيتم مسح رموز الجلسة من التخزين الآمن والعودة إلى شاشة تسجيل الدخول.',
+      confirm: 'تأكيد الخروج',
+    },
+
+    security: {
+      title: 'الحساب والأمان',
+      description: 'كلمة المرور تدار من الخادم، ولا يتم حفظها داخل التطبيق.',
+      changePassword: 'تغيير كلمة المرور',
+    },
+
+    edit: {
+      title: 'تعديل الملف الشخصي',
+      subtitle: 'تعديل البيانات المسموحة من الخادم',
+      notice:
+        'يمكن تعديل الاسم الكامل واسم المستخدم فقط. البريد والهاتف والدور حقول للعرض ولا يتم إرسالها في طلب التحديث.',
+      fullName: 'الاسم الكامل',
+      fullNamePlaceholder: 'اكتب الاسم الكامل',
+      username: 'اسم المستخدم',
+      usernamePlaceholder: 'اكتب اسم المستخدم',
+      readOnlyTitle: 'حقول غير قابلة للتعديل',
+      email: (value: string) => `البريد: ${value}`,
+      phone: (value: string) => `الهاتف: ${value}`,
+      role: (value: string) => `الدور: ${value}`,
+      save: 'حفظ التغييرات',
+      fullNameRequired: 'يرجى إدخال الاسم الكامل.',
+      updateSuccess: 'تم تحديث الملف الشخصي بنجاح.',
+    },
+
+    academic: {
+      title: 'المعلومات الأكاديمية',
+      subtitle: 'بيانات الطالب القادمة من الخادم',
+      loading: 'جاري تحميل المعلومات الأكاديمية...',
+      university: 'الجامعة',
+      faculty: 'الكلية',
+      major: 'الاختصاص',
+      year: 'السنة',
+      semester: 'الفصل',
+      studentNumber: 'الرقم الجامعي',
+      verifiedNote:
+        'تم توثيق الحساب. الحقول الأكاديمية الحساسة مقفلة ولا يتم تعديلها من هذه الشاشة.',
+      readOnlyNote:
+        'هذه الشاشة للعرض فقط. تعديل البيانات الأكاديمية يتم ضمن تدفق إعداد الطالب حسب قواعد الخادم.',
+      privacyNote: 'لا يتم عرض صورة بطاقة التحقق أو روابطها هنا لحماية الخصوصية.',
+      incompleteTitle: 'المعلومات الأكاديمية غير مكتملة',
+      incompleteMessage:
+        'لم يتم العثور على ملف أكاديمي مكتمل. أعد تسجيل الدخول أو تواصل مع الإدارة إذا استمرت المشكلة.',
+      cardVerified: 'تم التحقق من بطاقتك الجامعية.',
+      cardStatusFromServer: 'حالة توثيق البطاقة الجامعية كما يعيدها الخادم.',
+      contactConfirmed: 'بيانات التواصل مؤكدة',
+      contactConfirmedDescription: 'يوجد بريد أو رقم هاتف مؤكد على الحساب.',
+      contactUnconfirmed: 'بيانات التواصل غير مؤكدة',
+      contactUnconfirmedDescription: 'يعرض التطبيق حالة الحساب كما يعيدها الخادم.',
+      accountNotLoaded: 'بيانات الحساب غير محملة',
+      accountNotLoadedDescription: 'أعد تحميل الملف الشخصي لعرض حالة الحساب.',
+      confirmed: 'مؤكد',
+      unconfirmed: 'غير مؤكد',
+    },
+
+    about: {
+      title: 'عن بانوراما',
+      subtitle: 'معلومات التطبيق',
+      version: (value: string) => `الإصدار ${value}`,
+      purposeTitle: 'الغرض من التطبيق',
+      purpose: [
+        'Panorama تطبيق طلابي عربي وRTL يجمع المواد والمجموعات والملفات والطباعة والإشعارات والدعم في تجربة واحدة منظمة.',
+        'يركز التطبيق على خدمات الطالب الأكاديمية اليومية، مع إبقاء الصلاحيات والبيانات التشغيلية خاضعة للخادم.',
+        'هذه نسخة MVP مخصصة للوصول العملي والواضح إلى الخدمات الأساسية دون وعود تشغيلية مبالغ فيها.',
+      ],
+    },
+
+    errors: {
+      network: 'تعذر تحميل بيانات الحساب. تحقق من اتصال الإنترنت وحاول مرة أخرى.',
+      unauthorized: 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.',
+      validation: 'يرجى التأكد من بيانات الملف الشخصي المدخلة.',
+      update: 'تعذر تحديث الملف الشخصي. حاول مرة أخرى.',
+    },
+  },
+
+  legal: {
+    privacy: {
+      title: 'سياسة الخصوصية',
+      subtitle: 'بيان خصوصية مختصر لنسخة MVP',
+      sections: [
+        {
+          title: 'البيانات التي نستخدمها',
+          paragraphs: [
+            'يستخدم Panorama بيانات الحساب مثل الاسم واسم المستخدم ووسائل التواصل لتقديم تجربة حساب واضحة وآمنة.',
+            'تستخدم البيانات الأكاديمية وحالة التوثيق وصورة بطاقة الطالب للتحقق من أهلية الوصول إلى الخدمات الأكاديمية.',
+          ],
+        },
+        {
+          title: 'الخدمات المرتبطة بالبيانات',
+          paragraphs: [
+            'قد يستخدم التطبيق بيانات الوصول إلى الملفات وطلبات الطباعة وتذاكر الدعم والإشعارات لتقديم خدمات Panorama ومتابعة حالاتها.',
+            'لا يتم بيع بيانات المستخدمين. يستخدم التطبيق البيانات لتقديم الخدمات وتشغيلها وتحسين وضوح التجربة فقط.',
+          ],
+        },
+        {
+          title: 'الخصوصية داخل التطبيق',
+          paragraphs: [
+            'لا تعرض شاشة المعلومات الأكاديمية روابط صور التوثيق أو ملفات حساسة غير مطلوبة.',
+            'الصلاحيات والبيانات المتاحة يحددها الخادم، والتطبيق يعرض ما يسمح به فقط للمستخدم الحالي.',
+          ],
+        },
+      ],
+    },
+
+    terms: {
+      title: 'الشروط والأحكام',
+      subtitle: 'شروط استخدام مختصرة لنسخة MVP',
+      sections: [
+        {
+          title: 'الاستخدام المقبول',
+          paragraphs: [
+            'يستخدم Panorama للوصول إلى الخدمات الأكاديمية والملفات والمجموعات والطباعة والدعم بطريقة مسؤولة.',
+            'يمنع إساءة استخدام الملفات أو المجموعات أو تذاكر الدعم أو محاولة الوصول إلى بيانات لا تخص الحساب الحالي.',
+          ],
+        },
+        {
+          title: 'الصلاحيات والخادم',
+          paragraphs: [
+            'الخادم هو مصدر الحقيقة للصلاحيات وحالة التوثيق وإتاحة الملفات والخدمات.',
+            'قد تختلف الخدمات المتاحة حسب حالة الحساب والتوثيق والبيانات الأكاديمية.',
+          ],
+        },
+        {
+          title: 'المسؤولية',
+          paragraphs: [
+            'المستخدم مسؤول عن الحفاظ على سرية كلمة المرور ومراجعة طلبات الطباعة قبل إرسالها.',
+            'يجب استخدام الدعم الفني لتقديم معلومات صحيحة تساعد الفريق على معالجة المشكلة.',
+          ],
+        },
+      ],
+    },
+  },
+
+  printing: {
+    title: 'الطباعة',
+    home: {
+      subtitle: 'طلبات الطباعة',
+      illustrationAlt: 'رسم يوضح خدمة الطباعة',
+      heading: 'طلب طباعة من ملفاتك',
+      description: 'أنشئ طلبا من ملف متاح لك، ثم تابع حالته من طلباتي.',
+      newOrder: 'طلب جديد',
+      myOrders: 'طلباتي',
+      latestOrder: 'آخر طلب طباعة',
+      registeredOrders: (count: number) => `${count} طلب مسجل من الباك إند`,
+      loadingOrders: 'جاري تحميل طلبات الطباعة...',
+      noOrders: 'لا توجد طلبات طباعة حتى الآن.',
+    },
+
+    myOrders: {
+      title: 'طلباتي',
+      subtitle: 'متابعة الحالات',
+      createOrder: 'إنشاء طلب',
+      emptyTitle: 'لا توجد طلبات طباعة',
+      emptyMessage: 'أنشئ أول طلب طباعة من ملف متاح لك.',
+      emptyIllustrationAlt: 'رسم يوضح عدم وجود طلبات طباعة',
+    },
+
+    create: {
+      title: 'طلب طباعة جديد',
+      subtitle: 'تسعير آمن من الخادم',
+      loadingFiles: 'جاري تحميل الملفات...',
+      notesLabel: 'ملاحظات الطلب',
+      notesHelper: 'ملاحظات تظهر لموظف الطباعة. لا تضع معلومات حساسة.',
+      notesPlaceholder: 'مثال: ترتيب محدد للصفحات',
+      pricingNotice:
+        'السعر لا يُحسب في الهاتف. يرسل التطبيق الخيارات فقط ويعيد الخادم سعرًا موثقًا.',
+      calculatePrice: 'احسب السعر',
+      submit: 'تأكيد وإرسال الطلب',
+      submitSuccess: 'تم إرسال طلب الطباعة.',
+    },
+
+    priceSummary: {
+      title: 'ملخص السعر',
+      subtitle: 'تسعير صادر من الباك إند',
+      recalculate: 'إعادة حساب السعر',
+    },
+
+    details: {
+      subtitle: 'تفاصيل الطلب',
+      loading: 'جاري تحميل تفاصيل الطلب...',
+      unavailableTitle: 'الطلب غير متاح',
+      unavailableMessage: 'تعذر تحميل تفاصيل طلب الطباعة.',
+      statusIllustrationAlt: 'رسم يوضح حالة طلب الطباعة',
+      noDate: 'تاريخ الطلب غير متاح',
+      extraTitle: 'تفاصيل إضافية',
+      completedAt: 'اكتمل الطلب:',
+      cancelledAt: 'أُلغي الطلب:',
+      updatedAt: 'آخر تحديث:',
+      itemsTitle: 'عناصر الطلب',
+      itemsSubtitle: 'مصدر الملفات كما أعاده الباك إند',
+      noItems: 'لا توجد عناصر مفصلة في استجابة الباك إند.',
+      notesTitle: 'ملاحظاتك',
+      rejectionReason: 'سبب الرفض',
+      cancel: 'إلغاء الطلب',
+      cancelSuccess: 'تم إلغاء الطلب.',
+      statusIconAlt: 'أيقونة حالة طلب الطباعة',
+    },
+
+    fileSelector: {
+      title: 'الملف المطلوب طباعته',
+      description: 'اختر ملفا من الملفات التي يسمح لك الباك إند بالوصول إليها.',
+      searchLabel: 'بحث محلي',
+      searchPlaceholder: 'ابحث باسم الملف أو نوعه',
+      selectedLabel: 'الملف المحدد',
+      unnamedFile: (id: string) => `ملف #${id}`,
+      loading: 'جاري تحميل الملفات...',
+      noMatches: 'لا توجد ملفات تطابق البحث الحالي.',
+      noFiles: 'لا توجد ملفات متاحة للطباعة حاليا.',
+      refresh: 'تحديث الملفات',
+    },
+
+    copies: {
+      title: 'عدد النسخ',
+      decrease: 'إنقاص عدد النسخ',
+      increase: 'زيادة عدد النسخ',
+      limit: 'الحد المسموح حاليا من 1 إلى 99 نسخة.',
+    },
+
+    options: {
+      title: 'خيارات الطباعة',
+      color: 'اللون',
+      sides: 'الأوجه',
+      paperSize: 'حجم الورق',
+      binding: 'التجليد',
+      pickupPoint: 'نقطة الاستلام',
+      colorBlackWhite: 'أبيض وأسود',
+      colorColored: 'ملون',
+      sidesSingle: 'وجه واحد',
+      sidesDouble: 'وجهان',
+      bindingNone: 'بدون',
+      bindingStaple: 'تدبيس',
+      bindingSpiral: 'تسليك',
+      bindingThermal: 'تجليد حراري',
+    },
+
+    futureOptions: {
+      title: 'تسعير آمن ومرن',
+      description:
+        'تُرسل خياراتك فقط إلى الخادم، ثم يحسب Backend بانوراما السعر النهائي ويحفظ نسخة من قواعد التسعير المستخدمة. لا يعتمد التطبيق أي سعر محسوب على الجهاز.',
+      items: [
+        'أبيض وأسود أو ملون',
+        'وجه واحد أو وجهين',
+        'حجم الورق',
+        'التجليد والتسليك',
+        'نقطة الاستلام',
+      ],
+    },
+
+    summaryCard: {
+      title: 'ملخص الطلب',
+      filesAndCopies: (files: number, copies: number) => `${files} ملف - ${copies} نسخة`,
+      noFileSelected: 'لم يتم اختيار ملف.',
+      draftLine: (copies: number, paperSize: string, sides: string) =>
+        `${copies} نسخة · ${paperSize} · ${sides}`,
+      pricePlaceholder: 'احسب السعر من الخادم قبل الإرسال',
+    },
+
+    order: {
+      fallbackTitle: (id: string) => `طلب طباعة #${id}`,
+      fallbackFileTitle: 'ملف مطبوع',
+      copies: (count: number) => `${count} نسخة`,
+      pages: (count: number) => ` - ${count} صفحة`,
+    },
+
+    status: {
+      submitted: { label: 'تم الإرسال', action: 'تم استلام طلبك' },
+      underReview: { label: 'قيد المراجعة', action: 'تتم مراجعة الطلب' },
+      accepted: { label: 'مقبول', action: 'تم قبول الطلب' },
+      printing: { label: 'قيد الطباعة', action: 'يتم تجهيز طلبك' },
+      ready: { label: 'جاهز للاستلام', action: 'يمكنك استلام الطلب' },
+      delivered: { label: 'تم التسليم', action: 'اكتمل الطلب' },
+      cancelled: { label: 'ملغي', action: 'تم إلغاء الطلب' },
+      rejected: { label: 'مرفوض', action: 'تعذر تنفيذ الطلب' },
+      unknownAction: 'تابع حالة الطلب',
+    },
+
+    errors: {
+      missingFile: 'اختر ملفًا قابلًا للطباعة.',
+      invalidCopies: 'عدد النسخ يجب أن يكون بين 1 و99.',
+      network: 'تعذر الاتصال بخدمة الطباعة.',
+      unauthorized: 'انتهت الجلسة. يرجى تسجيل الدخول.',
+      forbidden: 'لا تملك صلاحية استخدام هذه الخدمة.',
+      generic: 'تعذر تنفيذ عملية الطباعة.',
     },
   },
 
