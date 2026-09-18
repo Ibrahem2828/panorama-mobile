@@ -6,11 +6,9 @@ import {
   type FileAccessTicket,
 } from '../../../api';
 import type { FileResource, FileViewerType, Id } from '../types';
+import type { TranslationCatalog } from '../../../i18n';
 
-const NETWORK_MESSAGE = 'تعذر تحميل الملفات. تحقق من اتصال الإنترنت وحاول مرة أخرى.';
-const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const PERMISSION_MESSAGE = 'لا تملك صلاحية الوصول إلى هذه الملفات حاليا.';
-const GENERIC_MESSAGE = 'تعذر تحميل الملفات. حاول مرة أخرى.';
+type FilesCatalog = TranslationCatalog['files'];
 
 const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']);
 const DOCUMENT_EXTENSIONS = new Set(['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'txt', 'rtf']);
@@ -86,8 +84,8 @@ function normalizeFileList(response: PaginatedResult<FileRecord>): PaginatedResu
   };
 }
 
-export function getFileDisplayTitle(file: FileResource): string {
-  return toText(file.title) ?? toText(file.name) ?? 'ملف بدون عنوان';
+export function getFileDisplayTitle(file: FileResource, t: FilesCatalog): string {
+  return toText(file.title) ?? toText(file.name) ?? t.untitled;
 }
 
 export function getFileDescription(file: FileResource): string | null {
@@ -144,24 +142,24 @@ export function getFileViewerType(file: FileResource): FileViewerType {
   return 'unknown';
 }
 
-export function formatFileSize(bytes?: number | null): string | null {
+export function formatFileSize(bytes: number | null | undefined, t: FilesCatalog): string | null {
   if (typeof bytes !== 'number' || !Number.isFinite(bytes) || bytes < 0) {
     return null;
   }
 
   if (bytes < 1024) {
-    return `${bytes} بايت`;
+    return t.size.bytes(bytes);
   }
 
   const kilobytes = bytes / 1024;
 
   if (kilobytes < 1024) {
-    return `${kilobytes.toFixed(kilobytes >= 10 ? 0 : 1)} ك.ب`;
+    return t.size.kilobytes(kilobytes.toFixed(kilobytes >= 10 ? 0 : 1));
   }
 
   const megabytes = kilobytes / 1024;
 
-  return `${megabytes.toFixed(megabytes >= 10 ? 0 : 1)} م.ب`;
+  return t.size.megabytes(megabytes.toFixed(megabytes >= 10 ? 0 : 1));
 }
 
 export function getFileSize(file: FileResource): number | null {
@@ -191,41 +189,44 @@ export function getEntityLabel(value: unknown): string | null {
   );
 }
 
-export function getVisibilityLabel(visibility: FileResource['visibility']): string | null {
+export function getVisibilityLabel(
+  visibility: FileResource['visibility'],
+  t: FilesCatalog,
+): string | null {
   switch (visibility) {
     case 'public':
-      return 'عام';
+      return t.visibility.public;
     case 'students_only':
-      return 'للطلاب';
+      return t.visibility.students;
     case 'verified_students_only':
-      return 'للطلاب الموثقين';
+      return t.visibility.verifiedStudents;
     case 'major_only':
-      return 'حسب الاختصاص';
+      return t.visibility.byMajor;
     case 'group_only':
-      return 'خاص بالمجموعة';
+      return t.visibility.group;
     case 'admin_only':
-      return 'إداري';
+      return t.visibility.staff;
     default:
-      return visibility ? 'صلاحية مخصصة' : null;
+      return visibility ? t.visibility.custom : null;
   }
 }
 
-export function toSafeFilesErrorMessage(error: unknown): string {
+export function toSafeFilesErrorMessage(error: unknown, t: FilesCatalog): string {
   const normalizedError = normalizeApiError(error);
 
   if (normalizedError.code === 'NETWORK_ERROR' || normalizedError.code === 'TIMEOUT') {
-    return NETWORK_MESSAGE;
+    return t.errors.network;
   }
 
   if (normalizedError.code === 'UNAUTHORIZED') {
-    return UNAUTHORIZED_MESSAGE;
+    return t.errors.unauthorized;
   }
 
   if (normalizedError.code === 'FORBIDDEN') {
-    return PERMISSION_MESSAGE;
+    return t.errors.permission;
   }
 
-  return normalizedError.message || GENERIC_MESSAGE;
+  return normalizedError.message || t.errors.generic;
 }
 
 export async function loadFiles(authToken: string): Promise<PaginatedResult<FileResource>> {

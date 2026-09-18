@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { useLocaleStore } from '../../../i18n';
+
 import { useAuthStore } from '../../auth/store';
 import { loadFileDetail, loadFiles, loadGroupFiles, toSafeFilesErrorMessage } from '../services';
 import type { FileResource, Id } from '../types';
@@ -28,7 +30,10 @@ type FilesState = {
   reset: () => void;
 };
 
-const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
+// Read when the action runs so the message follows the current locale.
+function filesCatalog() {
+  return useLocaleStore.getState().t.files;
+}
 
 function isSameId(left: Id, right: Id): boolean {
   return String(left) === String(right);
@@ -72,7 +77,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
 
     if (!accessToken) {
       set({
-        errorMessage: MISSING_SESSION_MESSAGE,
+        errorMessage: filesCatalog().errors.unauthorized,
         isLoadingFiles: false,
         isLoadingDetail: false,
         isLoadingGroupFiles: false,
@@ -153,7 +158,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
       } catch (error) {
         set({
           isLoadingFiles: false,
-          errorMessage: toSafeFilesErrorMessage(error),
+          errorMessage: toSafeFilesErrorMessage(error, filesCatalog()),
         });
       }
     },
@@ -177,7 +182,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
       } catch (error) {
         set({
           isRefreshing: false,
-          errorMessage: toSafeFilesErrorMessage(error),
+          errorMessage: toSafeFilesErrorMessage(error, filesCatalog()),
         });
       }
     },
@@ -201,7 +206,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
       } catch (error) {
         set({
           isLoadingDetail: false,
-          errorMessage: toSafeFilesErrorMessage(error),
+          errorMessage: toSafeFilesErrorMessage(error, filesCatalog()),
         });
       }
     },
@@ -225,7 +230,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
       } catch (error) {
         set({
           isLoadingGroupFiles: false,
-          errorMessage: toSafeFilesErrorMessage(error),
+          errorMessage: toSafeFilesErrorMessage(error, filesCatalog()),
         });
       }
     },
@@ -249,7 +254,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
       } catch (error) {
         set({
           isRefreshing: false,
-          errorMessage: toSafeFilesErrorMessage(error),
+          errorMessage: toSafeFilesErrorMessage(error, filesCatalog()),
         });
       }
     },

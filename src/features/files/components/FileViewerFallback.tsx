@@ -2,6 +2,7 @@ import { StyleSheet } from 'react-native';
 
 import { images } from '../../../assets/images';
 import { AppCard, AppText, Illustration, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { spacing } from '../../../theme';
 
 type FileViewerFallbackProps = {
@@ -9,15 +10,13 @@ type FileViewerFallbackProps = {
   message: string;
 };
 
-export function FileViewerFallback({
-  title = 'لا يمكن عرض الملف',
-  message,
-}: FileViewerFallbackProps) {
+export function FileViewerFallback({ title, message }: FileViewerFallbackProps) {
+  const { t } = useTranslation();
   return (
     <AppCard style={styles.card} variant="muted">
       <Stack align="center" gap="sm">
         <Illustration
-          accessibilityLabel="رسم يوضح تعذر معاينة الملف"
+          accessibilityLabel={t.files.viewer.unavailableAlt}
           size="lg"
           source={images.files.previewError}
         />

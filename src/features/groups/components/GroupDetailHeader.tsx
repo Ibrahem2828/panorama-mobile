@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 import { AppAvatar, AppCard, AppText, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { getGroupDescription, getGroupDisplayName, getGroupImageUri } from '../services';
 import type { Group } from '../types';
 import { GroupMembershipBadge } from './GroupMembershipBadge';
@@ -11,7 +12,8 @@ type GroupDetailHeaderProps = {
 };
 
 export function GroupDetailHeader({ group }: GroupDetailHeaderProps) {
-  const title = getGroupDisplayName(group);
+  const { t } = useTranslation();
+  const title = getGroupDisplayName(group, t.groups);
   const description = getGroupDescription(group);
   const imageUri = getGroupImageUri(group) ?? undefined;
 

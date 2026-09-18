@@ -83,7 +83,9 @@ export function CreatePrintOrderScreen({ navigation, route }: Props) {
           files={files}
           isLoading={isLoadingFiles}
           onRefresh={refreshFiles}
-          onSelectFile={(file: FileResource) => setDraftFile(file.id, getFileDisplayTitle(file))}
+          onSelectFile={(file: FileResource) =>
+            setDraftFile(file.id, getFileDisplayTitle(file, t.files))
+          }
           selectedFileId={draft.sourceFileId}
           selectedFileTitle={draft.sourceFileTitle}
         />

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
 import { AppBadge, AppCard, AppText, AppTextInput, Stack } from '../../../components';
-import { useTranslation } from '../../../i18n';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { opacity, spacing } from '../../../theme';
 import { getFileDisplayTitle, getFileExtension } from '../../files/services';
 import type { FileResource, Id } from '../../files/types';
@@ -21,12 +21,20 @@ function isSameId(left: Id, right: Id): boolean {
   return String(left) === String(right);
 }
 
-function matchesFileSearch(file: FileResource, query: string): boolean {
+function matchesFileSearch(
+  file: FileResource,
+  query: string,
+  filesCatalog: TranslationCatalog['files'],
+): boolean {
   if (!query) {
     return true;
   }
 
-  const searchableText = [getFileDisplayTitle(file), getFileExtension(file), String(file.id)]
+  const searchableText = [
+    getFileDisplayTitle(file, filesCatalog),
+    getFileExtension(file),
+    String(file.id),
+  ]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
@@ -47,8 +55,8 @@ export function PrintFileSelector({
   const [searchQuery, setSearchQuery] = useState('');
   const normalizedSearchQuery = searchQuery.trim();
   const visibleFiles = useMemo(
-    () => files.filter((file) => matchesFileSearch(file, normalizedSearchQuery)),
-    [files, normalizedSearchQuery],
+    () => files.filter((file) => matchesFileSearch(file, normalizedSearchQuery, t.files)),
+    [files, normalizedSearchQuery, t.files],
   );
 
   return (
@@ -91,7 +99,7 @@ export function PrintFileSelector({
       {visibleFiles.length > 0 ? (
         <Stack gap="sm">
           {visibleFiles.map((file) => {
-            const title = getFileDisplayTitle(file);
+            const title = getFileDisplayTitle(file, t.files);
             const extension = getFileExtension(file)?.toUpperCase();
             const isSelected = selectedFileId !== null && isSameId(selectedFileId, file.id);
 

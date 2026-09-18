@@ -1,6 +1,7 @@
 import { Image, StyleSheet, View } from 'react-native';
 
 import { images } from '../../../assets/images';
+import { useTranslation } from '../../../i18n';
 import { colors } from '../../../theme';
 import type { FileViewerType } from '../types';
 
@@ -27,11 +28,13 @@ function getFileTypeImage(type: FileViewerType, locked: boolean) {
 }
 
 export function FileTypeIcon({ type, locked = false, size = 'md' }: FileTypeIconProps) {
+  const { t } = useTranslation();
+
   return (
     <View style={[styles.container, size === 'sm' ? styles.sm : styles.md]}>
       <Image
         accessibilityIgnoresInvertColors
-        accessibilityLabel="أيقونة نوع الملف"
+        accessibilityLabel={t.files.type.iconAlt}
         resizeMode="contain"
         source={getFileTypeImage(type, locked)}
         style={styles.image}

@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { Animated, Pressable, StyleSheet } from 'react-native';
 
 import { AppAvatar, AppBadge, AppCard, AppText, Stack } from '../../../components';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { opacity } from '../../../theme';
 import { createPressScaleAnim } from '../../../utils/motion';
 import { getGroupDescription, getGroupDisplayName, getGroupImageUri } from '../services';
@@ -14,23 +15,30 @@ type GroupCardProps = {
   onPress?: () => void;
 };
 
-function getSendPermissionLabel(permission: Group['send_messages_permission']) {
+function getSendPermissionLabel(
+  permission: Group['send_messages_permission'],
+  t: TranslationCatalog['groups']['permissions'],
+) {
   if (permission === 'all_members') {
-    return 'إرسال للجميع';
+    return t.sendToAll;
   }
 
   if (permission === 'admins_only') {
-    return 'إرسال للمشرفين';
+    return t.sendToAdmins;
   }
 
-  return permission ? 'صلاحيات إرسال' : null;
+  return permission ? t.sendPermission : null;
 }
 
 export function GroupCard({ group, onPress }: GroupCardProps) {
-  const title = getGroupDisplayName(group);
+  const { t } = useTranslation();
+  const title = getGroupDisplayName(group, t.groups);
   const description = getGroupDescription(group);
   const imageUri = getGroupImageUri(group) ?? undefined;
-  const sendPermissionLabel = getSendPermissionLabel(group.send_messages_permission);
+  const sendPermissionLabel = getSendPermissionLabel(
+    group.send_messages_permission,
+    t.groups.permissions,
+  );
   const hasWhatsAppLink = group.has_whatsapp_channel === true;
 
   const { scale, onPressIn, onPressOut } = useRef(createPressScaleAnim()).current;
@@ -65,9 +73,14 @@ export function GroupCard({ group, onPress }: GroupCardProps) {
             <Stack direction="horizontal" gap="sm" wrap>
               {sendPermissionLabel ? <AppBadge label={sendPermissionLabel} variant="info" /> : null}
               {group.current_user_group_role ? (
-                <AppBadge label={`الدور ${group.current_user_group_role}`} variant="neutral" />
+                <AppBadge
+                  label={t.groups.stats.role(group.current_user_group_role)}
+                  variant="neutral"
+                />
               ) : null}
-              {hasWhatsAppLink ? <AppBadge label="واتساب" variant="success" /> : null}
+              {hasWhatsAppLink ? (
+                <AppBadge label={t.groups.stats.whatsApp} variant="success" />
+              ) : null}
             </Stack>
           </Stack>
         </AppCard>

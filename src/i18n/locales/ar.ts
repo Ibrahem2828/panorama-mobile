@@ -19,6 +19,11 @@ export const ar = {
     notSpecified: 'غير محدد',
     notAvailable: 'غير متاح',
     unknown: 'غير معروف',
+    open: 'فتح',
+    searchLocal: 'بحث محلي',
+    retryVerify: 'إعادة التحقق',
+    lastUpdatedAt: (time: string) => `آخر تحديث: ${time}`,
+    noSearchResultsAlt: 'رسم يوضح عدم وجود نتائج بحث',
   },
 
   /**
@@ -385,6 +390,217 @@ export const ar = {
           ],
         },
       ],
+    },
+  },
+
+  files: {
+    title: 'الملفات',
+    subtitle: 'الملفات المتاحة حسب صلاحيات حسابك',
+    loading: 'جاري تحميل الملفات...',
+    listTitle: 'قائمة الملفات',
+    loadedCount: (count: number) => `عدد الملفات المحملة: ${count}`,
+    searchPlaceholder: 'ابحث باسم الملف أو نوعه',
+    emptyTitle: 'لا توجد ملفات',
+    emptyMessage: 'لا توجد ملفات متاحة حاليا.',
+    emptyIllustrationAlt: 'رسم يوضح عدم وجود ملفات',
+    untitled: 'ملف بدون عنوان',
+
+    size: {
+      bytes: (value: number) => `${value} بايت`,
+      kilobytes: (value: string) => `${value} ك.ب`,
+      megabytes: (value: string) => `${value} م.ب`,
+    },
+
+    type: {
+      image: 'صورة',
+      document: 'مستند',
+      file: 'ملف',
+      iconAlt: 'أيقونة نوع الملف',
+    },
+
+    visibility: {
+      public: 'عام',
+      students: 'للطلاب',
+      verifiedStudents: 'للطلاب الموثقين',
+      byMajor: 'حسب الاختصاص',
+      group: 'خاص بالمجموعة',
+      staff: 'إداري',
+      custom: 'صلاحية مخصصة',
+    },
+
+    card: {
+      updatedAt: (value: string) => `آخر تحديث: ${value}`,
+      createdAt: (value: string) => `تاريخ الإنشاء: ${value}`,
+    },
+
+    details: {
+      subtitle: 'تفاصيل الملف',
+      loading: 'جاري تحميل تفاصيل الملف...',
+      unavailableTitle: 'الملف غير متاح',
+      unavailableMessage: 'تعذر تحميل تفاصيل الملف.',
+      openInApp: 'فتح داخل التطبيق',
+      requestPrint: 'طلب طباعة',
+      noTicket: 'لا يمكن إصدار تذكرة عرض لهذا الملف حاليًا.',
+      descriptionTitle: 'الوصف',
+      noDescription: 'لا يوجد وصف متاح لهذا الملف.',
+      infoTitle: 'معلومات الملف',
+      infoSubtitle: 'بيانات الملف كما يسمح بها الباك إند.',
+      type: 'النوع',
+      extension: 'الامتداد',
+      size: 'الحجم',
+      visibility: 'الصلاحية',
+      group: 'المجموعة',
+      subject: 'المادة',
+      createdAt: 'تاريخ الإنشاء',
+      updatedAt: 'آخر تحديث',
+      protectionNote:
+        'لا يوجد زر تنزيل أو مشاركة. إخفاء التنزيل في الواجهة لا يعني حماية مطلقة للملف؛ صلاحيات الوصول يفرضها الباك إند.',
+      inAppOnlyNote: 'يفتح هذا الملف داخل التطبيق فقط. لا يوجد زر تنزيل مباشر للطلاب.',
+    },
+
+    viewer: {
+      fallbackTitle: 'عارض الملفات',
+      subtitle: 'عرض محمي داخل التطبيق',
+      issuingTicket: 'جاري إصدار تذكرة عرض آمنة...',
+      loadError: 'تعذر عرض الملف. قد تكون التذكرة انتهت؛ أعد المحاولة.',
+      securityNote:
+        'يستخدم العرض رابطًا مؤقتًا من الخادم، ويعطّل التطبيق لقطات الشاشة أثناء فتح الملف قدر الإمكان. لا توجد أزرار تنزيل أو مشاركة.',
+      unavailableTitle: 'لا يمكن عرض الملف',
+      unavailableAlt: 'رسم يوضح تعذر معاينة الملف',
+      protectedReadyTitle: 'العرض المحمي جاهز',
+      protectedReadyMessage: (id: string) =>
+        `استخدم زر فتح داخل التطبيق لإصدار تذكرة عرض آمنة للملف ${id}.`,
+    },
+
+    groupFiles: {
+      title: 'ملفات المجموعة',
+      subtitle: 'ملفات المجموعة المتاحة للأعضاء',
+      loading: 'جاري تحميل ملفات المجموعة...',
+      backToGroup: 'رجوع إلى المجموعة',
+      listTitle: 'القائمة',
+      shownCount: (count: number) => `عدد الملفات المعروضة: ${count}`,
+      searchPlaceholder: 'ابحث بعنوان الملف أو الوصف',
+      emptyMessage: 'لا توجد ملفات لهذا المجموعة حاليا.',
+    },
+
+    errors: {
+      network: 'تعذر تحميل الملفات. تحقق من اتصال الإنترنت وحاول مرة أخرى.',
+      unauthorized: 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.',
+      permission: 'لا تملك صلاحية الوصول إلى هذه الملفات حاليا.',
+      generic: 'تعذر تحميل الملفات. حاول مرة أخرى.',
+    },
+  },
+
+  groups: {
+    title: 'المجموعات',
+    untitled: 'مجموعة بدون اسم',
+
+    overview: {
+      subtitle: 'المجموعات الأكاديمية',
+      intro: 'انضم إلى المجموعات الأكاديمية المناسبة لبياناتك الجامعية.',
+      destinationsTitle: 'الوجهات',
+      destinationsSubtitle:
+        'يمكنك متابعة مجموعاتك أو تصفح المجموعات المتاحة حسب صلاحيات الباك إند.',
+      myGroupsDescription: 'المجموعات التي تملك عضوية فيها أو طلبات مرتبطة بحسابك.',
+      availableDescription: 'المجموعات التي يمكنك طلب الانضمام إليها حسب بياناتك وحالة توثيقك.',
+    },
+
+    mine: {
+      title: 'مجموعاتي',
+      subtitle: 'المجموعات المرتبطة بحسابك',
+      loading: 'جاري تحميل مجموعاتك...',
+      emptyMessage: 'لم تنضم إلى أي مجموعة بعد.',
+    },
+
+    available: {
+      title: 'المجموعات المتاحة',
+      subtitle: 'المجموعات التي يمكنك طلب الانضمام إليها',
+      loading: 'جاري تحميل المجموعات المتاحة...',
+      emptyMessage: 'لا توجد مجموعات متاحة حاليا.',
+    },
+
+    list: {
+      title: 'القائمة',
+      loadedCount: (count: number) => `عدد المجموعات المحملة: ${count}`,
+      searchPlaceholder: 'ابحث باسم المجموعة أو وصفها',
+      emptyTitle: 'لا توجد مجموعات',
+      emptyIllustrationAlt: 'رسم يوضح عدم وجود مجموعات',
+    },
+
+    details: {
+      subtitle: 'تفاصيل المجموعة',
+      loading: 'جاري تحميل تفاصيل المجموعة...',
+      backToGroups: 'رجوع إلى المجموعات',
+      unavailableTitle: 'المجموعة غير متاحة',
+      unavailableMessage: 'تعذر تحميل تفاصيل المجموعة.',
+      join: 'طلب الانضمام',
+      leave: 'مغادرة المجموعة',
+      contentTitle: 'محتوى المجموعة',
+      contentSubtitle: 'المحادثة مؤجلة، وملفات المجموعة أصبحت متاحة حسب صلاحيات الباك إند.',
+      chatTitle: 'المحادثة',
+      chatDescription:
+        'افتح المحادثة النصية داخل التطبيق. صلاحية الإرسال تعرض داخل شاشة المحادثة حسب عضوية المجموعة وقواعد الخادم.',
+      openChat: 'فتح المحادثة داخل التطبيق',
+      filesTitle: 'ملفات المجموعة',
+      filesDescription: 'افتح الملفات المرتبطة بهذا المجموعة داخل التطبيق بدون زر تنزيل مباشر.',
+      openFiles: 'فتح ملفات المجموعة',
+      descriptionTitle: 'وصف المجموعة',
+      noDescription: 'لا يوجد وصف متاح لهذه المجموعة حاليًا.',
+      openWhatsApp: 'فتح قناة واتساب المصرح بها',
+      whatsAppNote:
+        'لا يظهر رابط واتساب داخل بيانات المجموعة. يطلب التطبيق إذنًا مؤقتًا من الخادم عند الفتح.',
+      whatsAppError: 'تعذر فتح رابط واتساب.',
+    },
+
+    stats: {
+      members: (count: number) => `الأعضاء ${count}`,
+      subject: (name: string) => `المادة ${name}`,
+      academicYear: (name: string) => `السنة ${name}`,
+      semester: (name: string) => `الفصل ${name}`,
+      whatsApp: 'واتساب',
+      role: (name: string) => `الدور ${name}`,
+    },
+
+    membership: {
+      pending: 'بانتظار الموافقة',
+      member: 'عضو',
+      rejected: 'مرفوض',
+      blocked: 'محظور',
+      left: 'غادرت',
+      notJoined: 'غير منضم',
+      fallback: 'حالة عضوية',
+    },
+
+    permissions: {
+      title: 'الصلاحيات',
+      allMembersCanSend: 'كل الأعضاء يمكنهم الإرسال',
+      adminsOnly: 'الإرسال للمشرفين فقط',
+      groupDecides: 'صلاحيات الإرسال يحددها المجموعة',
+      sendToAll: 'إرسال للجميع',
+      sendToAdmins: 'إرسال للمشرفين',
+      sendPermission: 'صلاحيات إرسال',
+      yourRole: (role: string) => `دورك: ${role}`,
+      sending: (permission: string) => `إرسال: ${permission}`,
+      roleMember: 'عضو',
+      roleModerator: 'مشرف',
+      roleGroupAdmin: 'مدير المجموعة',
+      roleAdmin: 'أدمن',
+      roleSupport: 'دعم تقني',
+      roleNone: 'لا يوجد دور محدد',
+    },
+
+    messages: {
+      joinSuccess: 'تم إرسال طلب الانضمام.',
+      leaveSuccess: 'تمت مغادرة المجموعة.',
+      joinError: 'تعذر إرسال طلب الانضمام.',
+      leaveError: 'تعذر مغادرة المجموعة.',
+    },
+
+    errors: {
+      network: 'تعذر تحميل المجموعات. تحقق من اتصال الإنترنت وحاول مرة أخرى.',
+      unauthorized: 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.',
+      permission: 'لا تملك صلاحية الوصول إلى هذه المجموعات حاليا.',
+      generic: 'تعذر تحميل المجموعات. حاول مرة أخرى.',
     },
   },
 

@@ -16,6 +16,8 @@ import {
   SectionHeader,
   Stack,
 } from '../../../components';
+import { useTranslation } from '../../../i18n';
+import { formatDate } from '../../../utils/formatDateTime';
 import { PrintingRoutes, SharedRoutes, TabRoutes } from '../../../navigation/routes';
 import type { AppTabsParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -76,21 +78,8 @@ function findFileById(
   return null;
 }
 
-function formatDate(value?: string | null): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return date.toLocaleDateString('ar-SY');
-}
-
 export function FileDetailsScreen() {
+  const { t, locale } = useTranslation();
   const navigation = useNavigation<FileDetailsNavigation>();
   const route = useRoute<FileDetailsRoute>();
   const { fileId } = route.params;
@@ -116,7 +105,7 @@ export function FileDetailsScreen() {
   function handleOpenViewer(file: FileResource) {
     navigation.navigate(SharedRoutes.PdfViewer, {
       fileId: file.id,
-      title: getFileDisplayTitle(file),
+      title: getFileDisplayTitle(file, t.files),
     });
   }
 
@@ -125,7 +114,7 @@ export function FileDetailsScreen() {
       screen: PrintingRoutes.CreatePrintOrder,
       params: {
         fileId: file.id,
-        fileTitle: getFileDisplayTitle(file),
+        fileTitle: getFileDisplayTitle(file, t.files),
       },
     });
   }
@@ -133,8 +122,8 @@ export function FileDetailsScreen() {
   if (showInitialLoading) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="تفاصيل الملف" title="الملفات" />
-        <LoadingState message="جاري تحميل تفاصيل الملف..." />
+        <AppHeader subtitle={t.files.details.subtitle} title={t.files.title} />
+        <LoadingState message={t.files.details.loading} />
       </AppScreen>
     );
   }
@@ -143,12 +132,12 @@ export function FileDetailsScreen() {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         <Stack gap="lg">
-          <AppHeader subtitle="تفاصيل الملف" title="الملفات" />
-          <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+          <AppHeader subtitle={t.files.details.subtitle} title={t.files.title} />
+          <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
           <ErrorState
-            message={errorMessage ?? 'تعذر تحميل تفاصيل الملف.'}
+            message={errorMessage ?? t.files.details.unavailableMessage}
             onRetry={handleRetry}
-            title="الملف غير متاح"
+            title={t.files.details.unavailableTitle}
           />
         </Stack>
       </AppScreen>
@@ -159,8 +148,8 @@ export function FileDetailsScreen() {
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <Stack gap="md">
-          <AppHeader subtitle="تفاصيل الملف" title="الملفات" />
-          <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+          <AppHeader subtitle={t.files.details.subtitle} title={t.files.title} />
+          <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
         </Stack>
 
         <FileDetailHeader file={activeFile} />
@@ -171,11 +160,11 @@ export function FileDetailsScreen() {
           <AppButton
             disabled={!canPreview}
             onPress={() => handleOpenViewer(activeFile)}
-            title="فتح داخل التطبيق"
+            title={t.files.details.openInApp}
           />
           <AppButton
             onPress={() => handleRequestPrint(activeFile)}
-            title="طلب طباعة"
+            title={t.files.details.requestPrint}
             variant="outline"
           />
         </Stack>
@@ -183,40 +172,60 @@ export function FileDetailsScreen() {
         {!canPreview ? (
           <AppCard variant="muted">
             <AppText color="error" variant="bodySmall">
-              لا يمكن إصدار تذكرة عرض لهذا الملف حاليًا.
+              {t.files.details.noTicket}
             </AppText>
           </AppCard>
         ) : null}
 
         <AppCard variant="muted">
           <Stack gap="sm">
-            <AppText variant="title">الوصف</AppText>
+            <AppText variant="title">{t.files.details.descriptionTitle}</AppText>
             <AppText color="secondary" variant="bodySmall">
-              {getFileDescription(activeFile) ?? 'لا يوجد وصف متاح لهذا الملف.'}
+              {getFileDescription(activeFile) ?? t.files.details.noDescription}
             </AppText>
           </Stack>
         </AppCard>
 
         <Stack gap="md">
-          <SectionHeader subtitle="بيانات الملف كما يسمح بها الباك إند." title="معلومات الملف" />
+          <SectionHeader
+            subtitle={t.files.details.infoSubtitle}
+            title={t.files.details.infoTitle}
+          />
           <AppCard>
             <Stack gap="sm">
-              <FileMetaRow label="النوع" value={getFileViewerType(activeFile)} />
-              <FileMetaRow label="الامتداد" value={getFileExtension(activeFile)?.toUpperCase()} />
-              <FileMetaRow label="الحجم" value={formatFileSize(getFileSize(activeFile))} />
-              <FileMetaRow label="الصلاحية" value={getVisibilityLabel(activeFile.visibility)} />
-              <FileMetaRow label="المجموعة" value={getEntityLabel(activeFile.group)} />
-              <FileMetaRow label="المادة" value={getEntityLabel(activeFile.subject)} />
-              <FileMetaRow label="تاريخ الإنشاء" value={formatDate(activeFile.created_at)} />
-              <FileMetaRow label="آخر تحديث" value={formatDate(activeFile.updated_at)} />
+              <FileMetaRow label={t.files.details.type} value={getFileViewerType(activeFile)} />
+              <FileMetaRow
+                label={t.files.details.extension}
+                value={getFileExtension(activeFile)?.toUpperCase()}
+              />
+              <FileMetaRow
+                label={t.files.details.size}
+                value={formatFileSize(getFileSize(activeFile), t.files)}
+              />
+              <FileMetaRow
+                label={t.files.details.visibility}
+                value={getVisibilityLabel(activeFile.visibility, t.files)}
+              />
+              <FileMetaRow label={t.files.details.group} value={getEntityLabel(activeFile.group)} />
+              <FileMetaRow
+                label={t.files.details.subject}
+                value={getEntityLabel(activeFile.subject)}
+              />
+              <FileMetaRow
+                label={t.files.details.createdAt}
+                value={formatDate(activeFile.created_at, locale)}
+              />
+              <FileMetaRow
+                label={t.files.details.updatedAt}
+                value={formatDate(activeFile.updated_at, locale)}
+              />
             </Stack>
           </AppCard>
         </Stack>
 
         <AppCard variant="muted">
           <AppText color="secondary" variant="caption">
-            لا يوجد زر تنزيل أو مشاركة. إخفاء التنزيل في الواجهة لا يعني حماية مطلقة للملف؛ صلاحيات
-            الوصول يفرضها الباك إند.
+            {t.files.details.protectionNote}
           </AppText>
         </AppCard>
       </Stack>

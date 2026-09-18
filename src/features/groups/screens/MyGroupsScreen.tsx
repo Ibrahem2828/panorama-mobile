@@ -15,6 +15,8 @@ import {
   SectionHeader,
   Stack,
 } from '../../../components';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
+import { formatTime } from '../../../utils/formatDateTime';
 import { GroupsRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -30,12 +32,16 @@ import type { Group } from '../types';
 
 type MyGroupsScreenProps = NativeStackScreenProps<GroupsStackParamList, 'MyGroups'>;
 
-function matchesGroupSearch(group: Group, query: string): boolean {
+function matchesGroupSearch(
+  group: Group,
+  query: string,
+  groupsCatalog: TranslationCatalog['groups'],
+): boolean {
   if (!query) {
     return true;
   }
 
-  const searchableText = [getGroupDisplayName(group), getGroupDescription(group)]
+  const searchableText = [getGroupDisplayName(group, groupsCatalog), getGroupDescription(group)]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
@@ -44,6 +50,7 @@ function matchesGroupSearch(group: Group, query: string): boolean {
 }
 
 export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
+  const { t, locale } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const myGroups = useGroupsStore((state) => state.myGroups);
   const isLoadingMyGroups = useGroupsStore((state) => state.isLoadingMyGroups);
@@ -55,7 +62,7 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
   const setSelectedGroup = useGroupsStore((state) => state.setSelectedGroup);
   const normalizedSearchQuery = searchQuery.trim();
   const filteredGroups = useMemo(
-    () => myGroups.filter((group) => matchesGroupSearch(group, normalizedSearchQuery)),
+    () => myGroups.filter((group) => matchesGroupSearch(group, normalizedSearchQuery, t.groups)),
     [myGroups, normalizedSearchQuery],
   );
   const showInitialLoading = isLoadingMyGroups && myGroups.length === 0;
@@ -77,8 +84,8 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
   if (showInitialLoading) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="المجموعات المرتبطة بحسابك" title="مجموعاتي" />
-        <LoadingState message="جاري تحميل مجموعاتك..." />
+        <AppHeader subtitle={t.groups.mine.subtitle} title={t.groups.mine.title} />
+        <LoadingState message={t.groups.mine.loading} />
       </AppScreen>
     );
   }
@@ -86,7 +93,7 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
   if (showInitialError) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="المجموعات المرتبطة بحسابك" title="مجموعاتي" />
+        <AppHeader subtitle={t.groups.mine.subtitle} title={t.groups.mine.title} />
         <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
       </AppScreen>
     );
@@ -95,7 +102,7 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="المجموعات المرتبطة بحسابك" title="مجموعاتي" />
+        <AppHeader subtitle={t.groups.mine.subtitle} title={t.groups.mine.title} />
 
         <SectionHeader
           action={
@@ -103,19 +110,19 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
               loading={isRefreshing}
               onPress={handleRefresh}
               size="sm"
-              title="تحديث"
+              title={t.common.refresh}
               variant="outline"
             />
           }
-          subtitle={`عدد المجموعات المحملة: ${myGroups.length}`}
-          title="القائمة"
+          subtitle={t.groups.list.loadedCount(myGroups.length)}
+          title={t.groups.list.title}
         />
 
         {myGroups.length > 0 ? (
           <AppTextInput
-            label="بحث محلي"
+            label={t.common.searchLocal}
             onChangeText={setSearchQuery}
-            placeholder="ابحث باسم المجموعة أو وصفها"
+            placeholder={t.groups.list.searchPlaceholder}
             value={searchQuery}
           />
         ) : null}
@@ -128,13 +135,13 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
               <AppButton
                 loading={isRefreshing}
                 onPress={handleRefresh}
-                title="إعادة التحقق"
+                title={t.common.retryVerify}
                 variant="outline"
               />
             }
-            message="لم تنضم إلى أي مجموعة بعد."
-            title="لا توجد مجموعات"
-            illustrationLabel="رسم يوضح عدم وجود مجموعات"
+            message={t.groups.mine.emptyMessage}
+            title={t.groups.list.emptyTitle}
+            illustrationLabel={t.groups.list.emptyIllustrationAlt}
             illustrationSource={images.emptyStates.groups}
           />
         ) : filteredGroups.length === 0 ? (
@@ -146,7 +153,7 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
                 variant="outline"
               />
             }
-            illustrationLabel="رسم يوضح عدم وجود نتائج بحث"
+            illustrationLabel={t.common.noSearchResultsAlt}
             illustrationSource={images.illustrations.search}
             message={SEARCH_NO_RESULTS_MESSAGE}
             title={SEARCH_NO_RESULTS_TITLE}
@@ -165,7 +172,7 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
 
         {lastLoadedAt ? (
           <AppText align="center" color="muted" variant="caption">
-            آخر تحديث: {new Date(lastLoadedAt).toLocaleTimeString('ar-SY')}
+            {t.common.lastUpdatedAt(formatTime(lastLoadedAt, locale) ?? '')}
           </AppText>
         ) : null}
       </Stack>

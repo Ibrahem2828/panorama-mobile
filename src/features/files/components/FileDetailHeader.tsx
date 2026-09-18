@@ -1,4 +1,5 @@
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import {
   formatFileSize,
   getFileDisplayTitle,
@@ -15,10 +16,11 @@ type FileDetailHeaderProps = {
 };
 
 export function FileDetailHeader({ file }: FileDetailHeaderProps) {
-  const title = getFileDisplayTitle(file);
+  const { t } = useTranslation();
+  const title = getFileDisplayTitle(file, t.files);
   const extension = getFileExtension(file);
-  const sizeLabel = formatFileSize(getFileSize(file));
-  const visibilityLabel = getVisibilityLabel(file.visibility);
+  const sizeLabel = formatFileSize(getFileSize(file), t.files);
+  const visibilityLabel = getVisibilityLabel(file.visibility, t.files);
 
   return (
     <AppCard variant="elevated">
@@ -32,7 +34,7 @@ export function FileDetailHeader({ file }: FileDetailHeaderProps) {
         <Stack gap="xs">
           <AppText variant="h2">{title}</AppText>
           <AppText color="secondary" variant="bodySmall">
-            يفتح هذا الملف داخل التطبيق فقط. لا يوجد زر تنزيل مباشر للطلاب.
+            {t.files.details.inAppOnlyNote}
           </AppText>
         </Stack>
       </Stack>

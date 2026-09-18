@@ -15,6 +15,11 @@ export const en: TranslationCatalog = {
     notSpecified: 'Not set',
     notAvailable: 'Not available',
     unknown: 'Unknown',
+    open: 'Open',
+    searchLocal: 'Search',
+    retryVerify: 'Check again',
+    lastUpdatedAt: (time: string) => `Last updated: ${time}`,
+    noSearchResultsAlt: 'Illustration showing no search results',
   },
 
   verification: {
@@ -382,6 +387,219 @@ export const en: TranslationCatalog = {
           ],
         },
       ],
+    },
+  },
+
+  files: {
+    title: 'Files',
+    subtitle: 'Files available to your account',
+    loading: 'Loading files...',
+    listTitle: 'File list',
+    loadedCount: (count: number) => `Files loaded: ${count}`,
+    searchPlaceholder: 'Search by file name or type',
+    emptyTitle: 'No files',
+    emptyMessage: 'No files are available right now.',
+    emptyIllustrationAlt: 'Illustration showing no files',
+    untitled: 'Untitled file',
+
+    size: {
+      bytes: (value: number) => `${value} B`,
+      kilobytes: (value: string) => `${value} KB`,
+      megabytes: (value: string) => `${value} MB`,
+    },
+
+    type: {
+      image: 'Image',
+      document: 'Document',
+      file: 'File',
+      iconAlt: 'File type icon',
+    },
+
+    visibility: {
+      public: 'Public',
+      students: 'Students',
+      verifiedStudents: 'Verified students',
+      byMajor: 'By major',
+      group: 'Group only',
+      staff: 'Staff',
+      custom: 'Custom access',
+    },
+
+    card: {
+      updatedAt: (value: string) => `Last updated: ${value}`,
+      createdAt: (value: string) => `Created: ${value}`,
+    },
+
+    details: {
+      subtitle: 'File details',
+      loading: 'Loading file details...',
+      unavailableTitle: 'File unavailable',
+      unavailableMessage: 'Could not load this file.',
+      openInApp: 'Open in the app',
+      requestPrint: 'Request a print',
+      noTicket: 'A viewing ticket cannot be issued for this file right now.',
+      descriptionTitle: 'Description',
+      noDescription: 'No description is available for this file.',
+      infoTitle: 'File information',
+      infoSubtitle: 'File details as permitted by the server.',
+      type: 'Type',
+      extension: 'Extension',
+      size: 'Size',
+      visibility: 'Access',
+      group: 'Group',
+      subject: 'Subject',
+      createdAt: 'Created',
+      updatedAt: 'Last updated',
+      protectionNote:
+        'There is no download or share button. Hiding download in the interface is not absolute protection; access is enforced by the server.',
+      inAppOnlyNote:
+        'This file opens inside the app only. There is no direct download for students.',
+    },
+
+    viewer: {
+      fallbackTitle: 'File viewer',
+      subtitle: 'Protected in-app viewing',
+      issuingTicket: 'Issuing a secure viewing ticket...',
+      loadError: 'Could not display the file. The ticket may have expired; please try again.',
+      securityNote:
+        'Viewing uses a temporary link from the server, and the app blocks screenshots while a file is open where it can. There are no download or share buttons.',
+      unavailableTitle: 'This file cannot be displayed',
+      unavailableAlt: 'Illustration showing the file cannot be previewed',
+      protectedReadyTitle: 'Protected viewing is ready',
+      protectedReadyMessage: (id: string) =>
+        `Use "Open in the app" to issue a secure viewing ticket for file ${id}.`,
+    },
+
+    groupFiles: {
+      title: 'Group files',
+      subtitle: 'Group files available to members',
+      loading: 'Loading group files...',
+      backToGroup: 'Back to the group',
+      listTitle: 'List',
+      shownCount: (count: number) => `Files shown: ${count}`,
+      searchPlaceholder: 'Search by file title or description',
+      emptyMessage: 'This group has no files right now.',
+    },
+
+    errors: {
+      network: 'Could not load files. Check your connection and try again.',
+      unauthorized: 'Your session has expired. Please sign in again.',
+      permission: 'You do not have access to these files right now.',
+      generic: 'Could not load files. Please try again.',
+    },
+  },
+
+  groups: {
+    title: 'Groups',
+    untitled: 'Unnamed group',
+
+    overview: {
+      subtitle: 'Academic groups',
+      intro: 'Join the academic groups that match your university details.',
+      destinationsTitle: 'Where to go',
+      destinationsSubtitle:
+        'Follow your own groups, or browse the groups the server makes available to you.',
+      myGroupsDescription: 'Groups you are a member of, or have a pending request for.',
+      availableDescription:
+        'Groups you can request to join, based on your details and verification status.',
+    },
+
+    mine: {
+      title: 'My groups',
+      subtitle: 'Groups linked to your account',
+      loading: 'Loading your groups...',
+      emptyMessage: 'You have not joined any group yet.',
+    },
+
+    available: {
+      title: 'Available groups',
+      subtitle: 'Groups you can request to join',
+      loading: 'Loading available groups...',
+      emptyMessage: 'No groups are available right now.',
+    },
+
+    list: {
+      title: 'List',
+      loadedCount: (count: number) => `Groups loaded: ${count}`,
+      searchPlaceholder: 'Search by group name or description',
+      emptyTitle: 'No groups',
+      emptyIllustrationAlt: 'Illustration showing no groups',
+    },
+
+    details: {
+      subtitle: 'Group details',
+      loading: 'Loading group details...',
+      backToGroups: 'Back to groups',
+      unavailableTitle: 'Group unavailable',
+      unavailableMessage: 'Could not load this group.',
+      join: 'Request to join',
+      leave: 'Leave group',
+      contentTitle: 'Group content',
+      contentSubtitle: 'Chat is deferred; group files are available according to server rules.',
+      chatTitle: 'Chat',
+      chatDescription:
+        'Open the text chat inside the app. Your permission to send is shown in the chat screen, based on your membership and the server rules.',
+      openChat: 'Open chat in the app',
+      filesTitle: 'Group files',
+      filesDescription: 'Open this group’s files inside the app, with no direct download.',
+      openFiles: 'Open group files',
+      descriptionTitle: 'About this group',
+      noDescription: 'No description is available for this group.',
+      openWhatsApp: 'Open the approved WhatsApp channel',
+      whatsAppNote:
+        'The WhatsApp link is never part of the group data. The app asks the server for temporary permission when you open it.',
+      whatsAppError: 'Could not open the WhatsApp link.',
+    },
+
+    stats: {
+      members: (count: number) => `${count} members`,
+      subject: (name: string) => `Subject: ${name}`,
+      academicYear: (name: string) => `Year: ${name}`,
+      semester: (name: string) => `Semester: ${name}`,
+      whatsApp: 'WhatsApp',
+      role: (name: string) => `Role: ${name}`,
+    },
+
+    membership: {
+      pending: 'Awaiting approval',
+      member: 'Member',
+      rejected: 'Rejected',
+      blocked: 'Blocked',
+      left: 'Left',
+      notJoined: 'Not joined',
+      fallback: 'Membership status',
+    },
+
+    permissions: {
+      title: 'Permissions',
+      allMembersCanSend: 'All members can send',
+      adminsOnly: 'Only moderators can send',
+      groupDecides: 'The group decides who can send',
+      sendToAll: 'Anyone can send',
+      sendToAdmins: 'Moderators send',
+      sendPermission: 'Send permission',
+      yourRole: (role: string) => `Your role: ${role}`,
+      sending: (permission: string) => `Sending: ${permission}`,
+      roleMember: 'Member',
+      roleModerator: 'Moderator',
+      roleGroupAdmin: 'Group admin',
+      roleAdmin: 'Admin',
+      roleSupport: 'Support',
+      roleNone: 'No role assigned',
+    },
+
+    messages: {
+      joinSuccess: 'Your join request has been sent.',
+      leaveSuccess: 'You have left the group.',
+      joinError: 'Could not send the join request.',
+      leaveError: 'Could not leave the group.',
+    },
+
+    errors: {
+      network: 'Could not load groups. Check your connection and try again.',
+      unauthorized: 'Your session has expired. Please sign in again.',
+      permission: 'You do not have access to these groups right now.',
+      generic: 'Could not load groups. Please try again.',
     },
   },
 

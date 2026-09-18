@@ -13,6 +13,7 @@ import {
   SectionHeader,
   Stack,
 } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { GroupsRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
 import { opacity, spacing } from '../../../theme';
@@ -28,6 +29,8 @@ type OverviewCardProps = {
 };
 
 function OverviewCard({ title, description, count, onPress }: OverviewCardProps) {
+  const { t } = useTranslation();
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -45,7 +48,7 @@ function OverviewCard({ title, description, count, onPress }: OverviewCardProps)
             </Stack>
             <AppBadge label={String(count)} variant="brand" />
           </Stack>
-          <AppButton onPress={onPress} title="فتح" variant="outline" />
+          <AppButton onPress={onPress} title={t.common.open} variant="outline" />
         </Stack>
       </AppCard>
     </Pressable>
@@ -53,6 +56,7 @@ function OverviewCard({ title, description, count, onPress }: OverviewCardProps)
 }
 
 export function GroupsOverviewScreen({ navigation }: GroupsOverviewScreenProps) {
+  const { t } = useTranslation();
   const availableCount = useGroupsStore((state) => state.availableCount);
   const myGroupsCount = useGroupsStore((state) => state.myGroupsCount);
   const availableGroups = useGroupsStore((state) => state.availableGroups);
@@ -77,11 +81,11 @@ export function GroupsOverviewScreen({ navigation }: GroupsOverviewScreenProps) 
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="المجموعات الأكاديمية" title="المجموعات" />
+        <AppHeader subtitle={t.groups.overview.subtitle} title={t.groups.title} />
 
         <AppCard variant="muted">
           <AppText color="secondary" variant="bodySmall">
-            انضم إلى المجموعات الأكاديمية المناسبة لبياناتك الجامعية.
+            {t.groups.overview.intro}
           </AppText>
         </AppCard>
 
@@ -91,12 +95,12 @@ export function GroupsOverviewScreen({ navigation }: GroupsOverviewScreenProps) 
               loading={isRefreshing}
               onPress={handleRefresh}
               size="sm"
-              title="تحديث"
+              title={t.common.refresh}
               variant="outline"
             />
           }
-          subtitle="يمكنك متابعة مجموعاتك أو تصفح المجموعات المتاحة حسب صلاحيات الباك إند."
-          title="الوجهات"
+          subtitle={t.groups.overview.destinationsSubtitle}
+          title={t.groups.overview.destinationsTitle}
         />
 
         {errorMessage ? <ErrorState message={errorMessage} onRetry={handleRefresh} /> : null}
@@ -104,15 +108,15 @@ export function GroupsOverviewScreen({ navigation }: GroupsOverviewScreenProps) 
         <Stack gap="md">
           <OverviewCard
             count={resolvedMyGroupsCount}
-            description="المجموعات التي تملك عضوية فيها أو طلبات مرتبطة بحسابك."
+            description={t.groups.overview.myGroupsDescription}
             onPress={() => navigation.navigate(GroupsRoutes.MyGroups)}
-            title="مجموعاتي"
+            title={t.groups.mine.title}
           />
           <OverviewCard
             count={resolvedAvailableCount}
-            description="المجموعات التي يمكنك طلب الانضمام إليها حسب بياناتك وحالة توثيقك."
+            description={t.groups.overview.availableDescription}
             onPress={() => navigation.navigate(GroupsRoutes.AvailableGroups)}
-            title="المجموعات المتاحة"
+            title={t.groups.available.title}
           />
         </Stack>
       </Stack>

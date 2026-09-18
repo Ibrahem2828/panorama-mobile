@@ -1,4 +1,5 @@
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { getGroupDisplayName } from '../../groups/services';
 import type { Group } from '../../groups/types';
 import type { ChatConnectionStatus } from '../types';
@@ -23,12 +24,14 @@ function getMembershipLabel(status?: string): string {
 }
 
 export function ChatRoomHeader({ group, connectionStatus }: ChatRoomHeaderProps) {
+  const { t } = useTranslation();
+
   return (
     <AppCard padding="lg" variant="elevated">
       <Stack gap="md">
         <Stack gap="xs">
           <AppText variant="title">
-            {group ? getGroupDisplayName(group) : 'محادثة المجموعة'}
+            {group ? getGroupDisplayName(group, t.groups) : t.groups.details.chatTitle}
           </AppText>
           {group?.members_count !== undefined ? (
             <AppText color="secondary" variant="bodySmall">
