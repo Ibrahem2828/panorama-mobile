@@ -5,6 +5,7 @@ import {
   type PaginatedResult,
 } from '../../../api';
 import type { StatusVariant } from '../../../types/common';
+import { resolveTargetFromData } from './notificationRoutingService';
 import type {
   Id,
   NotificationRecord,
@@ -150,12 +151,20 @@ export function isNotificationUnread(notification: NotificationRecord): boolean 
 }
 
 export function getNotificationTarget(notification: NotificationRecord): NotificationTarget {
+  const fromData = resolveTargetFromData(isRecord(notification.data) ? notification.data : null);
+  if (fromData.targetType && fromData.targetId !== null) {
+    return fromData;
+  }
+
   const targetType =
+    toNullableText(notification.related_object_type) ??
     toNullableText(notification.target_type) ??
     toNullableText(getDataField(notification, 'target_type')) ??
     toNullableText(getDataField(notification, 'targetType')) ??
-    toNullableText(getDataField(notification, 'type'));
+    toNullableText(getDataField(notification, 'type')) ??
+    toNullableText(notification.type);
   const targetId =
+    toId(notification.related_object_id) ??
     toId(notification.target_id) ??
     toId(getDataField(notification, 'target_id')) ??
     toId(getDataField(notification, 'targetId')) ??

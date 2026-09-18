@@ -1,8 +1,42 @@
-import type { NotificationRouteIntent, NotificationTarget } from '../types';
+import type { Id, NotificationRouteIntent, NotificationTarget } from '../types';
 
 const FUTURE_TARGET_LABELS: Record<string, string> = {
   announcement: 'إعلان',
 };
+
+/**
+ * Identifier keys the backend actually puts in a notification's `data` payload, mapped to
+ * the target type they imply. The API also exposes `related_object_type`/`related_object_id`,
+ * but no producer populates them yet, so these keys are the only reliable target today.
+ */
+const DATA_TARGET_KEYS: ReadonlyArray<readonly [string, string]> = [
+  ['print_order_id', 'printing'],
+  ['support_ticket_id', 'support'],
+  ['group_id', 'group'],
+  ['file_id', 'file'],
+  ['verification_request_id', 'verification'],
+];
+
+function toTargetId(value: unknown): Id | null {
+  return typeof value === 'string' || typeof value === 'number' ? value : null;
+}
+
+export function resolveTargetFromData(
+  data: Record<string, unknown> | null | undefined,
+): NotificationTarget {
+  if (!data) {
+    return { targetType: null, targetId: null };
+  }
+
+  for (const [key, targetType] of DATA_TARGET_KEYS) {
+    const targetId = toTargetId(data[key]);
+    if (targetId !== null) {
+      return { targetType, targetId };
+    }
+  }
+
+  return { targetType: null, targetId: null };
+}
 
 function normalizeTargetType(targetType: string | null): string | null {
   return targetType?.trim().toLowerCase() || null;

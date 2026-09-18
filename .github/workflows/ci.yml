@@ -1,0 +1,60 @@
+name: Verify mobile
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Node 22 quality gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      # npm ci, not npm install: this is the gate proving the committed lockfile still
+      # resolves, which is exactly what EAS builds from.
+      - run: npm ci
+      - run: npm run validate:static
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run test:ci
+      - run: npm run expo:config
+
+      # The two steps below report but do not fail the build, and each names the single
+      # tracked reason why. A gate that cannot pass gets ignored or switched off, which is
+      # how this platform's backend CI stayed red for six weeks. Remove continue-on-error
+      # from a step as soon as its reason is resolved.
+
+      # Blocked on the Expo SDK 57 upgrade: expo-doctor reports a Hermes V1 memory
+      # regression that is only fixed in SDK 57 / React Native 0.86.2.
+      - name: Expo doctor (advisory)
+        run: npx expo-doctor
+        continue-on-error: true
+
+      # Every current high-severity finding is @xmldom/xmldom, reached only through
+      # @expo/config-plugins. That code runs on the build machine when generating native
+      # projects; it is never imported by src/ and never ships in the JS bundle. It is
+      # fixed upstream by the same SDK 57 upgrade.
+      - name: Production dependency audit (advisory)
+        run: npm audit --omit=dev --audit-level=high
+        continue-on-error: true
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-coverage-${{ github.sha }}
+          path: coverage/
