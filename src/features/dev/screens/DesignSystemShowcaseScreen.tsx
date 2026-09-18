@@ -18,6 +18,10 @@ import {
 import { ar } from '../../../i18n';
 import { spacing } from '../../../theme';
 
+// Developer-facing copy for an unrouted showcase screen; deliberately not in the
+// translation catalog, which carries product strings only.
+const DESIGN_SYSTEM_SUBTITLE = 'تأسيس مكونات وتوكنز واجهة عربية RTL-first';
+
 export function DesignSystemShowcaseScreen() {
   const [studentName, setStudentName] = useState('');
 
@@ -36,7 +40,7 @@ export function DesignSystemShowcaseScreen() {
             variant="surface"
           />
         }
-        subtitle={ar.phase.designSystemSubtitle}
+        subtitle={DESIGN_SYSTEM_SUBTITLE}
         title={ar.appName}
       />
 
@@ -48,7 +52,7 @@ export function DesignSystemShowcaseScreen() {
               <View style={styles.identityText}>
                 <AppText variant="display">{ar.appName}</AppText>
                 <AppText color="secondary" variant="subtitle">
-                  {ar.appNameEn} - {ar.phase.designSystem}
+                  Panorama - Design System
                 </AppText>
               </View>
             </View>
