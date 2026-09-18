@@ -5,13 +5,9 @@ import type {
   LoginResponse,
   RefreshTokenResponse,
 } from '../../../api';
+import { useLocaleStore } from '../../../i18n';
 import type { AuthSession, AuthTokens, AuthUser, LoginCredentials } from '../types';
 import { clearAuthTokens, getStoredAuthTokens, saveAuthTokens } from './authTokenStorage';
-
-const INVALID_CREDENTIALS_MESSAGE = 'بيانات الدخول غير صحيحة.';
-const NETWORK_ERROR_MESSAGE = 'تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت.';
-const SESSION_EXPIRED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const GENERIC_AUTH_ERROR_MESSAGE = 'تعذر تنفيذ العملية. حاول مرة أخرى.';
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
@@ -58,26 +54,29 @@ function normalizeUser(user: CurrentUser): AuthUser {
   };
 }
 
+// These run inside async service calls rather than render, so the catalog is read when
+// the error occurs instead of being captured at module load.
 function getAuthErrorMessage(error: unknown, context: 'login' | 'session' | 'generic'): string {
+  const messages = useLocaleStore.getState().t.auth.errors;
   const normalizedError = normalizeApiError(error);
 
   if (normalizedError.code === 'NETWORK_ERROR' || normalizedError.code === 'TIMEOUT') {
-    return NETWORK_ERROR_MESSAGE;
+    return messages.network;
   }
 
   if (normalizedError.code === 'UNAUTHORIZED') {
-    return context === 'login' ? INVALID_CREDENTIALS_MESSAGE : SESSION_EXPIRED_MESSAGE;
+    return context === 'login' ? messages.invalidCredentials : messages.sessionExpired;
   }
 
   if (normalizedError.code === 'VALIDATION_ERROR') {
-    return context === 'login' ? INVALID_CREDENTIALS_MESSAGE : GENERIC_AUTH_ERROR_MESSAGE;
+    return context === 'login' ? messages.invalidCredentials : messages.generic;
   }
 
   if (normalizedError.code === 'FORBIDDEN') {
-    return 'لا تملك صلاحية تنفيذ هذا الإجراء.';
+    return messages.forbidden;
   }
 
-  return GENERIC_AUTH_ERROR_MESSAGE;
+  return messages.generic;
 }
 
 function isUnauthorizedError(error: unknown): boolean {

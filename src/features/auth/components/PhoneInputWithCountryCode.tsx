@@ -3,28 +3,30 @@ import { Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react
 
 import { AppText } from '../../../components';
 import { FormField } from '../../../components/forms/FormField';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { colors, layout, radius, spacing, typography } from '../../../theme';
 import { getFlexDirection } from '../../../utils/rtl';
 
+/** Dialling data only. The displayed name comes from the catalog, keyed by `id`. */
 type CountryCode = {
+  id: keyof TranslationCatalog['auth']['countries'];
   code: string;
   flag: string;
-  name: string;
 };
 
 const COUNTRIES: CountryCode[] = [
-  { code: '+963', flag: '🇸🇾', name: 'سوريا' },
-  { code: '+964', flag: '🇮🇶', name: 'العراق' },
-  { code: '+962', flag: '🇯🇴', name: 'الأردن' },
-  { code: '+961', flag: '🇱🇧', name: 'لبنان' },
-  { code: '+966', flag: '🇸🇦', name: 'السعودية' },
-  { code: '+971', flag: '🇦🇪', name: 'الإمارات' },
-  { code: '+20', flag: '🇪🇬', name: 'مصر' },
-  { code: '+90', flag: '🇹🇷', name: 'تركيا' },
-  { code: '+1', flag: '🇺🇸', name: 'أمريكا' },
-  { code: '+44', flag: '🇬🇧', name: 'بريطانيا' },
-  { code: '+49', flag: '🇩🇪', name: 'ألمانيا' },
-  { code: '+33', flag: '🇫🇷', name: 'فرنسا' },
+  { id: 'sy', code: '+963', flag: '🇸🇾' },
+  { id: 'iq', code: '+964', flag: '🇮🇶' },
+  { id: 'jo', code: '+962', flag: '🇯🇴' },
+  { id: 'lb', code: '+961', flag: '🇱🇧' },
+  { id: 'sa', code: '+966', flag: '🇸🇦' },
+  { id: 'ae', code: '+971', flag: '🇦🇪' },
+  { id: 'eg', code: '+20', flag: '🇪🇬' },
+  { id: 'tr', code: '+90', flag: '🇹🇷' },
+  { id: 'us', code: '+1', flag: '🇺🇸' },
+  { id: 'gb', code: '+44', flag: '🇬🇧' },
+  { id: 'de', code: '+49', flag: '🇩🇪' },
+  { id: 'fr', code: '+33', flag: '🇫🇷' },
 ];
 
 type PhoneInputWithCountryCodeProps = {
@@ -44,8 +46,9 @@ export function PhoneInputWithCountryCode({
   disabled = false,
   label,
   helperText,
-  placeholder = 'أدخل رقم الجوال بدون مفتاح الدولة',
+  placeholder,
 }: PhoneInputWithCountryCodeProps) {
+  const { t } = useTranslation();
   const [selectedCountry, setSelectedCountry] = useState<CountryCode>(COUNTRIES[0]!);
   const [showPicker, setShowPicker] = useState(false);
   const inputRef = useRef<TextInput>(null);
@@ -85,7 +88,7 @@ export function PhoneInputWithCountryCode({
           onPress={() => setShowPicker(true)}
           disabled={disabled}
           style={styles.countryButton}
-          accessibilityLabel="اختر الدولة"
+          accessibilityLabel={t.auth.countryPicker.selectCountry}
           accessibilityRole="button"
         >
           <AppText variant="body">{selectedCountry.flag}</AppText>
@@ -106,7 +109,7 @@ export function PhoneInputWithCountryCode({
           editable={!disabled}
           keyboardType="phone-pad"
           textContentType="telephoneNumber"
-          placeholder={placeholder}
+          placeholder={placeholder ?? t.auth.fields.phonePlaceholder}
           placeholderTextColor={colors.text.muted}
           style={styles.input}
           textAlign="left"
@@ -122,10 +125,10 @@ export function PhoneInputWithCountryCode({
         <Pressable style={styles.modalOverlay} onPress={() => setShowPicker(false)}>
           <Pressable style={styles.modalContent} onPress={() => {}}>
             <View style={styles.modalHeader}>
-              <AppText variant="h3">اختر الدولة</AppText>
+              <AppText variant="h3">{t.auth.countryPicker.selectCountry}</AppText>
               <Pressable onPress={() => setShowPicker(false)} hitSlop={spacing.sm}>
                 <AppText color="brand" variant="button">
-                  إغلاق
+                  {t.auth.countryPicker.close}
                 </AppText>
               </Pressable>
             </View>
@@ -143,7 +146,7 @@ export function PhoneInputWithCountryCode({
                       {country.code}
                     </AppText>
                     <AppText variant="body" style={styles.countryName}>
-                      {country.name}
+                      {t.auth.countries[country.id]}
                     </AppText>
                     {isSelected ? (
                       <AppText variant="body" color="brand">

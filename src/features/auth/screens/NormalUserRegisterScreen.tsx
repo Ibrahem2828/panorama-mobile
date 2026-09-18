@@ -3,6 +3,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet } from 'react-native';
 
 import { AppButton, AppScreen, AppText, AppTextInput, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -18,6 +19,7 @@ import {
 type Props = NativeStackScreenProps<PublicStackParamList, 'NormalUserRegister'>;
 
 export function NormalUserRegisterScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -30,10 +32,10 @@ export function NormalUserRegisterScreen({ navigation }: Props) {
     const name = fullName.trim();
     const mail = email.trim().toLowerCase();
     const phone = normalizePhoneNumber(phoneNumber);
-    const passwordError = validatePasswordPair(password, passwordConfirm);
-    if (!name) return setErrorMessage('يرجى إدخال الاسم الكامل.');
-    if (!isValidEmail(mail)) return setErrorMessage('يرجى إدخال بريد إلكتروني صالح.');
-    const phoneError = validatePhoneNumber(phone);
+    const passwordError = validatePasswordPair(password, passwordConfirm, t.auth.validation);
+    if (!name) return setErrorMessage(t.auth.validation.fullNameRequired);
+    if (!isValidEmail(mail)) return setErrorMessage(t.auth.validation.emailInvalid);
+    const phoneError = validatePhoneNumber(phone, t.auth.validation);
     if (phoneError) return setErrorMessage(phoneError);
     if (passwordError) return setErrorMessage(passwordError);
 
@@ -54,7 +56,7 @@ export function NormalUserRegisterScreen({ navigation }: Props) {
         source: 'normal_register',
       });
     } catch (error) {
-      setErrorMessage(toSafeRegistrationErrorMessage(error));
+      setErrorMessage(toSafeRegistrationErrorMessage(error, t.auth.errors));
     } finally {
       setIsSubmitting(false);
     }
@@ -68,17 +70,17 @@ export function NormalUserRegisterScreen({ navigation }: Props) {
       >
         <Stack gap="lg">
           <Stack gap="xs">
-            <AppText variant="h1">إنشاء حساب عام</AppText>
-            <AppText color="secondary">سيتم التحقق عبر البريد الإلكتروني.</AppText>
+            <AppText variant="h1">{t.auth.registerNormal.title}</AppText>
+            <AppText color="secondary">{t.auth.registerNormal.subtitle}</AppText>
           </Stack>
           <AuthFormCard
-            subtitle="يمكن استخدام الخدمات العامة وفق صلاحيات النظام."
-            title="بيانات الحساب"
+            subtitle={t.auth.registerNormal.cardSubtitle}
+            title={t.auth.registerNormal.cardTitle}
           >
             <Stack gap="md">
               <AppTextInput
                 disabled={isSubmitting}
-                label="الاسم الكامل"
+                label={t.auth.fields.fullName}
                 onChangeText={setFullName}
                 value={fullName}
               />
@@ -86,20 +88,20 @@ export function NormalUserRegisterScreen({ navigation }: Props) {
                 autoCapitalize="none"
                 disabled={isSubmitting}
                 keyboardType="email-address"
-                label="البريد الإلكتروني"
+                label={t.auth.fields.email}
                 onChangeText={setEmail}
                 value={email}
               />
               <PhoneInputWithCountryCode
                 disabled={isSubmitting}
-                label="رقم الهاتف"
+                label={t.auth.fields.phone}
                 onChangeText={setPhoneNumber}
                 value={phoneNumber}
               />
               <PasswordInput disabled={isSubmitting} onChangeText={setPassword} value={password} />
               <AppTextInput
                 disabled={isSubmitting}
-                label="تأكيد كلمة المرور"
+                label={t.auth.fields.passwordConfirm}
                 onChangeText={setPasswordConfirm}
                 secureTextEntry
                 value={passwordConfirm}
@@ -114,13 +116,13 @@ export function NormalUserRegisterScreen({ navigation }: Props) {
                 fullWidth
                 loading={isSubmitting}
                 onPress={() => void handleSubmit()}
-                title="إنشاء الحساب"
+                title={t.auth.registerNormal.submit}
               />
             </Stack>
           </AuthFormCard>
           <Pressable onPress={() => navigation.goBack()}>
             <AppText align="center" color="brand">
-              العودة
+              {t.auth.back}
             </AppText>
           </Pressable>
         </Stack>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
 import { AppText, AppTextInput } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { spacing } from '../../../theme';
 
 type PasswordInputProps = {
@@ -17,6 +18,7 @@ export function PasswordInput({
   error,
   disabled = false,
 }: PasswordInputProps) {
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
 
   return (
@@ -25,12 +27,12 @@ export function PasswordInput({
       autoCorrect={false}
       disabled={disabled}
       error={error}
-      label="كلمة المرور"
+      label={t.auth.fields.password}
       onChangeText={onChangeText}
-      placeholder="أدخل كلمة المرور"
+      placeholder={t.auth.fields.passwordPlaceholder}
       rightIcon={
         <Pressable
-          accessibilityLabel={isVisible ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+          accessibilityLabel={isVisible ? t.auth.fields.hidePassword : t.auth.fields.showPassword}
           accessibilityRole="button"
           disabled={disabled}
           hitSlop={spacing.sm}
@@ -38,7 +40,7 @@ export function PasswordInput({
           style={styles.toggle}
         >
           <AppText color="brand" variant="caption">
-            {isVisible ? 'إخفاء' : 'إظهار'}
+            {isVisible ? t.auth.fields.hide : t.auth.fields.show}
           </AppText>
         </Pressable>
       }

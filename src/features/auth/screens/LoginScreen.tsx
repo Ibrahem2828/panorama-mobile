@@ -13,6 +13,7 @@ import {
 
 import { images } from '../../../assets/images';
 import { AppButton, AppScreen, AppText, AppTextInput, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -22,6 +23,7 @@ import { useAuthStore } from '../store';
 type PublicNavigation = NativeStackNavigationProp<PublicStackParamList>;
 
 export function LoginScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<PublicNavigation>();
   const login = useAuthStore((state) => state.login);
   const clearError = useAuthStore((state) => state.clearError);
@@ -59,7 +61,7 @@ export function LoginScreen() {
 
   async function handleSubmit() {
     if (!identifier.trim() || !password) {
-      setValidationMessage('يرجى إدخال البريد أو رقم الهاتف وكلمة المرور.');
+      setValidationMessage(t.auth.login.missingCredentials);
       return;
     }
     try {
@@ -79,24 +81,21 @@ export function LoginScreen() {
           <Stack align="center" gap="sm">
             <Image
               accessibilityIgnoresInvertColors
-              accessibilityLabel="شعار بانوراما"
+              accessibilityLabel={t.auth.logoAlt}
               resizeMode="contain"
               source={images.brand.logoFullAr}
               style={styles.logo}
             />
-            <AppText variant="h1">بانوراما</AppText>
+            <AppText variant="h1">{t.appName}</AppText>
             <AppText align="center" color="secondary" variant="body">
-              موادك، مجموعاتك، ملفاتك وخدماتك الجامعية في مكان واحد.
+              {t.auth.login.tagline}
             </AppText>
           </Stack>
 
           <Animated.View
             style={{ opacity: cardOpacity, transform: [{ translateY: cardTranslate }] }}
           >
-            <AuthFormCard
-              subtitle="يمكنك استخدام البريد الإلكتروني أو رقم الهاتف."
-              title="تسجيل الدخول"
-            >
+            <AuthFormCard subtitle={t.auth.login.cardSubtitle} title={t.auth.login.title}>
               <Stack gap="md">
                 <AppTextInput
                   autoCapitalize="none"
@@ -104,9 +103,9 @@ export function LoginScreen() {
                   disabled={isSubmitting}
                   error={validationMessage ?? errorMessage ?? undefined}
                   keyboardType="email-address"
-                  label="البريد أو رقم الهاتف"
+                  label={t.auth.fields.identifier}
                   onChangeText={(value) => updateField(value, 'identifier')}
-                  placeholder="student@example.com"
+                  placeholder={t.auth.fields.identifierPlaceholder}
                   textContentType="username"
                   value={identifier}
                 />
@@ -120,7 +119,7 @@ export function LoginScreen() {
                   fullWidth
                   loading={isSubmitting}
                   onPress={() => void handleSubmit()}
-                  title="تسجيل الدخول"
+                  title={t.auth.login.submit}
                 />
               </Stack>
             </AuthFormCard>
@@ -134,7 +133,7 @@ export function LoginScreen() {
               style={styles.link}
             >
               <AppText color="brand" variant="button">
-                إنشاء حساب جديد
+                {t.auth.login.createAccount}
               </AppText>
             </Pressable>
             <Pressable
@@ -144,7 +143,7 @@ export function LoginScreen() {
               style={styles.link}
             >
               <AppText color="brand" variant="button">
-                نسيت كلمة المرور؟
+                {t.auth.login.forgotPassword}
               </AppText>
             </Pressable>
           </Stack>

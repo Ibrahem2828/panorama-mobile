@@ -3,6 +3,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet } from 'react-native';
 
 import { AppButton, AppScreen, AppText, AppTextInput, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -18,6 +19,7 @@ type Props = NativeStackScreenProps<PublicStackParamList, 'ResetPassword'>;
 const RESEND_SECONDS = 60;
 
 export function ResetPasswordScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const { identifier, channel } = route.params;
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
@@ -34,8 +36,8 @@ export function ResetPasswordScreen({ navigation, route }: Props) {
   }, [remainingSeconds]);
 
   async function handleSubmit() {
-    const otpError = validateOtpCode(code);
-    const passwordError = validatePasswordPair(password, passwordConfirm);
+    const otpError = validateOtpCode(code, t.auth.validation);
+    const passwordError = validatePasswordPair(password, passwordConfirm, t.auth.validation);
     if (otpError || passwordError) return setErrorMessage(otpError ?? passwordError);
     setIsSubmitting(true);
     setErrorMessage(null);
@@ -49,7 +51,7 @@ export function ResetPasswordScreen({ navigation, route }: Props) {
       });
       navigation.reset({ index: 0, routes: [{ name: PublicRoutes.Login }] });
     } catch (error) {
-      setErrorMessage(toSafePasswordResetErrorMessage(error));
+      setErrorMessage(toSafePasswordResetErrorMessage(error, t.auth.errors));
     } finally {
       setIsSubmitting(false);
     }
@@ -62,7 +64,7 @@ export function ResetPasswordScreen({ navigation, route }: Props) {
       await requestPasswordResetCode(identifier, channel);
       setRemainingSeconds(RESEND_SECONDS);
     } catch (error) {
-      setErrorMessage(toSafePasswordResetErrorMessage(error));
+      setErrorMessage(toSafePasswordResetErrorMessage(error, t.auth.errors));
     } finally {
       setIsResending(false);
     }
@@ -76,17 +78,18 @@ export function ResetPasswordScreen({ navigation, route }: Props) {
       >
         <Stack gap="lg">
           <Stack gap="xs">
-            <AppText variant="h1">كلمة مرور جديدة</AppText>
-            <AppText color="secondary">
-              اختر كلمة مرور قوية ولا تعِد استخدامها في خدمات أخرى.
-            </AppText>
+            <AppText variant="h1">{t.auth.resetPassword.title}</AppText>
+            <AppText color="secondary">{t.auth.resetPassword.subtitle}</AppText>
           </Stack>
-          <AuthFormCard subtitle={`أدخل الرمز المرسل إلى ${identifier}.`} title="إعادة التعيين">
+          <AuthFormCard
+            subtitle={t.auth.resetPassword.cardSubtitle(identifier)}
+            title={t.auth.resetPassword.cardTitle}
+          >
             <Stack gap="md">
               <AppTextInput
                 disabled={isSubmitting}
                 keyboardType="number-pad"
-                label="رمز التحقق"
+                label={t.auth.fields.otpCode}
                 maxLength={6}
                 onChangeText={(value) => {
                   setCode(value);
@@ -102,7 +105,7 @@ export function ResetPasswordScreen({ navigation, route }: Props) {
               />
               <AppTextInput
                 disabled={isSubmitting}
-                label="تأكيد كلمة المرور"
+                label={t.auth.fields.passwordConfirm}
                 onChangeText={setPasswordConfirm}
                 secureTextEntry
                 value={passwordConfirm}
@@ -112,7 +115,7 @@ export function ResetPasswordScreen({ navigation, route }: Props) {
                 fullWidth
                 loading={isSubmitting}
                 onPress={() => void handleSubmit()}
-                title="حفظ كلمة المرور"
+                title={t.auth.resetPassword.submit}
               />
               <AppButton
                 disabled={isSubmitting || isResending || remainingSeconds > 0}
@@ -120,9 +123,7 @@ export function ResetPasswordScreen({ navigation, route }: Props) {
                 loading={isResending}
                 onPress={() => void handleResend()}
                 title={
-                  remainingSeconds > 0
-                    ? `إعادة الإرسال بعد ${remainingSeconds}ث`
-                    : 'إعادة إرسال الرمز'
+                  remainingSeconds > 0 ? t.auth.otp.resendIn(remainingSeconds) : t.auth.otp.resend
                 }
                 variant="outline"
               />
@@ -130,7 +131,7 @@ export function ResetPasswordScreen({ navigation, route }: Props) {
           </AuthFormCard>
           <Pressable onPress={() => navigation.navigate(PublicRoutes.Login)}>
             <AppText align="center" color="brand">
-              العودة لتسجيل الدخول
+              {t.auth.backToLogin}
             </AppText>
           </Pressable>
         </Stack>

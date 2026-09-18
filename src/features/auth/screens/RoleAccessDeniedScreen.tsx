@@ -1,11 +1,13 @@
 import { StyleSheet } from 'react-native';
 
 import { AppButton, AppScreen, AppText, ErrorState, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { colors, spacing } from '../../../theme';
 import { env } from '../../../config/env';
 import { useAuthStore } from '../store';
 
 export function RoleAccessDeniedScreen() {
+  const { t } = useTranslation();
   const logout = useAuthStore((state) => state.logout);
   const isSubmitting = useAuthStore((state) => state.isSubmitting);
 
@@ -18,11 +20,11 @@ export function RoleAccessDeniedScreen() {
       <Stack gap="lg" style={styles.content}>
         <ErrorState
           kind="permission"
-          message="تطبيق بانوراما للجوال مخصص للطلاب. يرجى استخدام لوحة التحكم للمهام الإدارية."
-          title="لا يمكن الوصول إلى التطبيق"
+          message={t.auth.roleDenied.message}
+          title={t.auth.roleDenied.title}
         />
         <AppText align="center" color="secondary" variant="bodySmall">
-          لوحة التحكم:
+          {t.auth.roleDenied.dashboardLabel}
         </AppText>
         <AppText align="center" color="primary" variant="bodySmall">
           {env.dashboardUrl}
@@ -31,7 +33,7 @@ export function RoleAccessDeniedScreen() {
           disabled={isSubmitting}
           loading={isSubmitting}
           onPress={handleLogout}
-          title="تسجيل الخروج"
+          title={t.auth.roleDenied.logout}
           variant="outline"
         />
       </Stack>

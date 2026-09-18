@@ -1,4 +1,5 @@
 import { authService, normalizeApiError } from '../../../api';
+import type { AuthErrorMessages } from '../types';
 import type {
   OtpChannel,
   OtpPurpose,
@@ -9,21 +10,21 @@ import type {
   VerifyOtpRequest,
 } from '../../../api';
 
-const NETWORK_MESSAGE = 'تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت.';
-const GENERIC_MESSAGE = 'تعذر إكمال التسجيل. حاول مرة أخرى.';
-
-export function toSafeRegistrationErrorMessage(error: unknown): string {
+export function toSafeRegistrationErrorMessage(
+  error: unknown,
+  messages: AuthErrorMessages,
+): string {
   const normalized = normalizeApiError(error);
-  if (normalized.code === 'NETWORK_ERROR' || normalized.code === 'TIMEOUT') return NETWORK_MESSAGE;
+  if (normalized.code === 'NETWORK_ERROR' || normalized.code === 'TIMEOUT') return messages.network;
   if (normalized.code === 'RATE_LIMITED') {
     const seconds = normalized.retryAfterSeconds;
-    return seconds ? `انتظر ${seconds} ثانية ثم حاول مجددًا.` : 'تم تجاوز عدد المحاولات المسموح.';
+    return seconds ? messages.rateLimitedRetryAfter(seconds) : messages.rateLimited;
   }
   if (normalized.fieldErrors) {
     const first = Object.values(normalized.fieldErrors).flat()[0];
     if (first) return first;
   }
-  return normalized.message || GENERIC_MESSAGE;
+  return normalized.message || messages.registrationGeneric;
 }
 
 export function registerStudentAccount(input: RegisterStudentRequest): Promise<RegisterResponse> {

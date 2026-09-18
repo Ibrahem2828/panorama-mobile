@@ -4,6 +4,7 @@ import { KeyboardAvoidingView, Platform, Pressable, StyleSheet } from 'react-nat
 
 import { AppButton, AppScreen, AppText, Stack } from '../../../components';
 import { OtpCodeInput } from '../../../components/forms/OtpCodeInput';
+import { useTranslation } from '../../../i18n';
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -19,6 +20,7 @@ type Props = NativeStackScreenProps<PublicStackParamList, 'OtpVerification'>;
 const RESEND_SECONDS = 60;
 
 export function OtpVerificationScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const { identifier, channel } = route.params;
   const [code, setCode] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -33,7 +35,7 @@ export function OtpVerificationScreen({ navigation, route }: Props) {
   }, [remainingSeconds]);
 
   async function handleVerify() {
-    const validationError = validateOtpCode(code);
+    const validationError = validateOtpCode(code, t.auth.validation);
     if (validationError) return setErrorMessage(validationError);
     setIsSubmitting(true);
     setErrorMessage(null);
@@ -41,7 +43,7 @@ export function OtpVerificationScreen({ navigation, route }: Props) {
       await verifyRegistrationOtp({ identifier, channel, code: code.trim() });
       navigation.reset({ index: 0, routes: [{ name: PublicRoutes.Login }] });
     } catch (error) {
-      setErrorMessage(toSafeRegistrationErrorMessage(error));
+      setErrorMessage(toSafeRegistrationErrorMessage(error, t.auth.errors));
     } finally {
       setIsSubmitting(false);
     }
@@ -55,13 +57,14 @@ export function OtpVerificationScreen({ navigation, route }: Props) {
       await sendRegistrationOtp({ identifier, channel });
       setRemainingSeconds(RESEND_SECONDS);
     } catch (error) {
-      setErrorMessage(toSafeRegistrationErrorMessage(error));
+      setErrorMessage(toSafeRegistrationErrorMessage(error, t.auth.errors));
     } finally {
       setIsResending(false);
     }
   }
 
-  const destinationLabel = channel === 'email' ? 'البريد الإلكتروني' : 'رقم الهاتف';
+  const destinationLabel =
+    channel === 'email' ? t.auth.otp.destinationEmail : t.auth.otp.destinationPhone;
 
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
@@ -71,15 +74,12 @@ export function OtpVerificationScreen({ navigation, route }: Props) {
       >
         <Stack gap="lg">
           <Stack gap="xs">
-            <AppText variant="h1">تأكيد الحساب</AppText>
+            <AppText variant="h1">{t.auth.otp.title}</AppText>
             <AppText color="secondary" variant="body">
-              أدخل الرمز المرسل إلى {destinationLabel}: {identifier}
+              {t.auth.otp.sentTo(destinationLabel, identifier)}
             </AppText>
           </Stack>
-          <AuthFormCard
-            subtitle="الرمز صالح لمدة محدودة ولا يجب مشاركته مع أي شخص."
-            title="رمز التحقق"
-          >
+          <AuthFormCard subtitle={t.auth.otp.cardSubtitle} title={t.auth.otp.cardTitle}>
             <Stack gap="md">
               <OtpCodeInput
                 disabled={isSubmitting}
@@ -95,7 +95,7 @@ export function OtpVerificationScreen({ navigation, route }: Props) {
                 fullWidth
                 loading={isSubmitting}
                 onPress={() => void handleVerify()}
-                title="تأكيد الرمز"
+                title={t.auth.otp.submit}
               />
               <AppButton
                 disabled={isSubmitting || isResending || remainingSeconds > 0}
@@ -103,9 +103,7 @@ export function OtpVerificationScreen({ navigation, route }: Props) {
                 loading={isResending}
                 onPress={() => void handleResend()}
                 title={
-                  remainingSeconds > 0
-                    ? `إعادة الإرسال بعد ${remainingSeconds}ث`
-                    : 'إعادة إرسال الرمز'
+                  remainingSeconds > 0 ? t.auth.otp.resendIn(remainingSeconds) : t.auth.otp.resend
                 }
                 variant="outline"
               />
@@ -113,7 +111,7 @@ export function OtpVerificationScreen({ navigation, route }: Props) {
           </AuthFormCard>
           <Pressable onPress={() => navigation.navigate(PublicRoutes.Login)}>
             <AppText align="center" color="brand">
-              العودة لتسجيل الدخول
+              {t.auth.backToLogin}
             </AppText>
           </Pressable>
         </Stack>

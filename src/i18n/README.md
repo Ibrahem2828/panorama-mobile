@@ -65,6 +65,16 @@ English catalog, which both type-check but ship untranslated UI.
 About 1,180 strings across ~150 files still hold literals. They can be migrated a screen
 at a time; nothing breaks while both styles coexist.
 
+## Known gaps
+
+Only an Arabic wordmark exists (`assets/images/brand-logo-full-ar.png`), so the login
+screen still shows Arabic branding in English. Switching it needs an English or neutral
+logo asset, not a code change.
+
+Messages returned by the backend (`normalized.message`, and notification titles and
+bodies) are passed straight through. The API carries `title_ar`/`title_en` fields, so
+server-side copy should be selected by locale once the client sends it.
+
 ## Direction
 
 `useTranslation()` returns `isRTL` from `I18nManager.isRTL`, which is the direction the

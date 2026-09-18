@@ -1,3 +1,5 @@
+import type { TranslationCatalog } from '../../i18n';
+
 export type UserRole = 'it_support' | 'admin' | 'print_staff' | 'student' | 'normal_user' | string;
 
 export type AuthUser = {
@@ -29,3 +31,6 @@ export type AuthSession = {
   user: AuthUser;
   tokens: AuthTokens;
 };
+
+/** Passed into the error mappers so they stay pure and locale-agnostic. */
+export type AuthErrorMessages = TranslationCatalog['auth']['errors'];
