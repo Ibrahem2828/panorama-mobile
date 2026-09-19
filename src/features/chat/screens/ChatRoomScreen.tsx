@@ -24,6 +24,7 @@ import {
   ChatPermissionNotice,
   ChatRoomHeader,
 } from '../components';
+import { useTranslation } from '../../../i18n';
 
 type ChatRoomScreenProps = NativeStackScreenProps<GroupsStackParamList, 'ChatRoom'>;
 
@@ -32,6 +33,7 @@ function isSameId(left: string | number, right: string | number): boolean {
 }
 
 export function ChatRoomScreen({ route }: ChatRoomScreenProps) {
+  const { t } = useTranslation();
   const { groupId } = route.params;
   const currentUserId = useAuthStore((state) => state.user?.id ?? null);
   const selectedGroup = useGroupsStore((state) => state.selectedGroup);
@@ -70,10 +72,10 @@ export function ChatRoomScreen({ route }: ChatRoomScreenProps) {
   const messages = messagesByGroupId[groupKey] ?? [];
   const draft = draftByGroupId[groupKey] ?? '';
   const permission = group
-    ? canSendMessageToGroup(group, currentUserId)
+    ? canSendMessageToGroup(group, currentUserId, t.chat)
     : {
         allowed: false,
-        reason: 'جاري تحميل صلاحيات المجموعة.',
+        reason: t.chat.permission.loading,
         permission: 'unknown' as const,
       };
   const showInitialLoading = (isLoadingMessages || isLoadingDetail) && messages.length === 0;
@@ -115,12 +117,12 @@ export function ChatRoomScreen({ route }: ChatRoomScreenProps) {
             <AppButton
               loading={isRefreshing}
               onPress={handleRefresh}
-              title="تحديث"
+              title={t.common.refresh}
               variant="outline"
             />
           }
-          subtitle="محادثة نصية داخل المجموعة"
-          title="المحادثة"
+          subtitle={t.chat.subtitle}
+          title={t.chat.title}
         />
 
         <ChatRoomHeader connectionStatus={connectionStatus} group={group} />
@@ -129,7 +131,7 @@ export function ChatRoomScreen({ route }: ChatRoomScreenProps) {
         {errorMessage ? <ErrorState message={errorMessage} onRetry={handleRefresh} /> : null}
 
         {showInitialLoading ? (
-          <LoadingState message="جاري تحميل الرسائل..." />
+          <LoadingState message={t.chat.loadingMessages} />
         ) : messages.length > 0 ? (
           <Stack gap="md">
             {messages.map((message) => (

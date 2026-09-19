@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '../../../components';
 import { colors, spacing } from '../../../theme';
 import { getNotificationTargetTypeLabel } from '../services';
+import { useTranslation } from '../../../i18n';
 
 type NotificationMetaRowProps = {
   label: string;
@@ -10,13 +11,15 @@ type NotificationMetaRowProps = {
 };
 
 export function NotificationMetaRow({ label, value }: NotificationMetaRowProps) {
+  const { t } = useTranslation();
+  const targetLabel = t.notifications.targetLabel;
   if (value === null || value === undefined || value === '') {
     return null;
   }
 
   const displayValue =
-    label === 'الوجهة' && typeof value === 'string'
-      ? (getNotificationTargetTypeLabel(value) ?? value)
+    label === targetLabel && typeof value === 'string'
+      ? (getNotificationTargetTypeLabel(value, t.notifications) ?? value)
       : String(value);
 
   return (

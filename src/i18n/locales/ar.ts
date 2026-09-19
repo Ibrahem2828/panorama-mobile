@@ -24,6 +24,520 @@ export const ar = {
     retryVerify: 'إعادة التحقق',
     lastUpdatedAt: (time: string) => `آخر تحديث: ${time}`,
     noSearchResultsAlt: 'رسم يوضح عدم وجود نتائج بحث',
+    searchNoResultsTitle: 'لا توجد نتائج مطابقة',
+    searchNoResultsMessage: 'جرّب استخدام كلمات مختلفة أو تعديل الفلاتر.',
+    searchClear: 'مسح البحث',
+    errorTitle: 'حدث خطأ',
+  },
+
+  /** Fallback copy for API error codes, used when the server sends no message. */
+  apiErrors: {
+    network: 'تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت.',
+    timeout: 'استغرق الطلب وقتا أطول من المتوقع. حاول مرة أخرى.',
+    unauthorized: 'انتهت الجلسة أو تحتاج إلى تسجيل الدخول.',
+    forbidden: 'لا تملك صلاحية تنفيذ هذا الإجراء.',
+    notFound: 'العنصر المطلوب غير موجود.',
+    validation: 'تعذر التحقق من البيانات المدخلة.',
+    server: 'حدث خطأ في الخادم. حاول لاحقا.',
+    rateLimited: 'تم تجاوز عدد المحاولات المسموح. حاول مرة أخرى بعد قليل.',
+    unknown: 'حدث خطأ غير متوقع. حاول مرة أخرى.',
+  },
+
+  relativeTime: {
+    now: 'الآن',
+    minutesAgo: (value: number) => `منذ ${value} دقيقة`,
+    hoursAgo: (value: number) => `منذ ${value} ساعة`,
+    daysAgo: (value: number) => `منذ ${value} يوم`,
+  },
+
+  connectivity: {
+    offline:
+      'لا يوجد اتصال بالإنترنت. ستبقى البيانات المحملة ظاهرة وستُعاد المحاولة عند عودة الاتصال.',
+  },
+
+  navigation: {
+    home: 'الرئيسية',
+    subjects: 'موادي',
+    groups: 'المجموعات',
+    printing: 'الطباعة',
+    profile: 'حسابي',
+    preparingStart: 'جاري تجهيز البداية...',
+    loadingSetup: 'جاري تحميل بيانات الإعداد...',
+    studentSetup: 'إعداد الطالب',
+  },
+
+  otpInput: {
+    digitLabel: (index: number, total: number) => `الرقم ${index} من ${total}`,
+    verified: 'تم التحقق بنجاح',
+  },
+
+  placeholder: {
+    subtitle: 'بنية التنقل',
+    description: 'هذه شاشة مبدئية ضمن بنية التنقل. سيتم تنفيذ التفاصيل الوظيفية في مرحلة لاحقة.',
+    note: 'لا يوجد Auth أو API أو منطق منتج فعلي في هذه الشاشة.',
+  },
+
+  onboarding: {
+    appTagline: 'كل جامعتك في مكان واحد',
+    skip: 'تخطي',
+    skipLabel: 'تخطي التعريف بالتطبيق',
+    paginationLabel: 'مؤشر صفحات التعريف',
+    previous: 'السابق',
+    next: 'التالي',
+    start: 'ابدأ الآن',
+    slides: [
+      {
+        imageLabel: 'رسم يوضح الحياة الجامعية داخل تطبيق بانوراما',
+        title: 'كل حياتك الجامعية في مكان واحد',
+        description:
+          'بانوراما يجمع ملفاتك، موادك، المجموعات، وإعلاناتك الجامعية في تجربة واحدة سهلة.',
+      },
+      {
+        imageLabel: 'رسم يوضح توثيق الحساب الجامعي',
+        title: 'وثّق حسابك الجامعي بأمان',
+        description:
+          'ارفع بطاقتك الجامعية ليتم التحقق من بياناتك ومنحك الوصول إلى المواد والخدمات المناسبة لك.',
+      },
+      {
+        imageLabel: 'رسم يوضح مجموعات المواد الجامعية',
+        title: 'انضم إلى مجموعات موادك',
+        description: 'تابع النقاشات، الإعلانات، والملفات المرتبطة بموادك وجامعتك بسهولة.',
+      },
+      {
+        imageLabel: 'رسم يوضح الملفات وطلبات الطباعة',
+        title: 'ملفاتك وطباعتك بخطوات بسيطة',
+        description: 'افتح الملفات الجامعية، اطلب طباعتها، وتابع حالة الطلب من التطبيق.',
+      },
+    ],
+  },
+
+  chat: {
+    title: 'المحادثة',
+    subtitle: 'محادثة نصية داخل المجموعة',
+    loadingMessages: 'جاري تحميل الرسائل...',
+    membersCount: (count: number) => `عدد الأعضاء: ${count}`,
+    inputPlaceholder: 'اكتب رسالة...',
+    send: 'إرسال',
+    resend: 'إعادة الإرسال',
+    emptyTitle: 'لا توجد رسائل بعد',
+    emptyMessage: 'لا توجد رسائل بعد. كن أول من يبدأ النقاش إذا كانت صلاحية الإرسال متاحة.',
+    emptyIllustrationAlt: 'رسم يوضح عدم وجود رسائل',
+    unnamedSender: 'مستخدم',
+    emptyMessageBody: 'رسالة بدون نص',
+
+    membership: {
+      member: 'عضو',
+      pending: 'بانتظار الموافقة',
+      blocked: 'محظور',
+      unknown: 'غير محدد',
+    },
+
+    connection: {
+      connecting: 'جاري الاتصال',
+      connected: 'متصل',
+      reconnecting: 'إعادة اتصال',
+      restAvailable: 'REST متاح',
+      offline: 'غير متصل',
+      note: 'تعمل المحادثة عبر REST، ويستخدم WebSocket كتحديث اختياري فقط.',
+    },
+
+    permission: {
+      title: 'إرسال الرسائل غير متاح',
+      membersOnly: 'يجب أن تكون عضوا في المجموعة لإرسال الرسائل.',
+      adminsOnly: 'الإرسال متاح للمشرفين فقط في هذه المجموعة.',
+      blocked: 'لا يمكنك إرسال رسائل في هذه المجموعة حاليا.',
+      readOnly: 'يمكنك قراءة الرسائل فقط حاليا.',
+      loading: 'جاري تحميل صلاحيات المجموعة.',
+      undetermined: 'لا يمكن تحديد صلاحية الإرسال لهذا المجموعة حاليا.',
+    },
+
+    errors: {
+      network: 'تعذر تحميل الرسائل. تحقق من اتصال الإنترنت وحاول مرة أخرى.',
+      unauthorized: 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.',
+      permission: 'لا يمكنك إرسال رسائل في هذا المجموعة حاليا.',
+      send: 'تعذر إرسال الرسالة. حاول مرة أخرى.',
+      generic: 'تعذر تحميل الرسائل. حاول مرة أخرى.',
+      websocket: 'تم فقد الاتصال بالمحادثة. يمكنك تحديث الرسائل يدويا.',
+      emptyMessage: 'يرجى كتابة رسالة قبل الإرسال.',
+      longMessage: 'يجب ألا تتجاوز الرسالة 1000 حرف.',
+    },
+  },
+
+  notifications: {
+    title: 'الإشعارات',
+    subtitle: 'مركز الإشعارات داخل التطبيق',
+    loading: 'جاري تحميل الإشعارات...',
+    emptyTitle: 'لا توجد إشعارات حاليا',
+    emptyMessage: 'ستظهر هنا تحديثات التوثيق والمجموعات والملفات وطلبات الطباعة عند توفرها.',
+    emptyIllustrationAlt: 'رسم يوضح عدم وجود إشعارات',
+    screenNote:
+      'هذه شاشة إشعارات داخل التطبيق فقط. لا يتم طلب صلاحيات Push ولا تسجيل device tokens في هذه المرحلة.',
+    centerTitle: 'مركز الإشعارات',
+    hasUnread: 'لديك إشعارات غير مقروءة تحتاج متابعة.',
+    allRead: 'كل الإشعارات الحالية مقروءة.',
+    unreadBadge: (count: number) => `${count} غير مقروء`,
+    noNew: 'لا جديد',
+    markAllRead: 'تعليم الكل كمقروء',
+    unread: 'غير مقروء',
+    read: 'مقروء',
+    noDetails: 'لا توجد تفاصيل إضافية لهذا الإشعار.',
+    targetLabel: 'الوجهة',
+    typeIconAlt: 'أيقونة نوع الإشعار',
+    androidChannelName: 'إشعارات بانوراما',
+    fallbackTitle: 'إشعار جديد',
+
+    routeMessages: {
+      futureTarget: (label: string) => `تم فتح الإشعار. توجيه ${label} سيكتمل في مرحلة لاحقة.`,
+      verification: 'تم فتح الإشعار. توجيه التوثيق محفوظ كأساس وسيكتمل حسب قواعد الوصول.',
+      none: 'تم فتح الإشعار بدون وجهة مرتبطة.',
+    },
+
+    types: {
+      announcement: 'إعلان',
+      verification: 'توثيق',
+      printing: 'طباعة',
+      group: 'مجموعة',
+      file: 'ملف',
+      support: 'دعم',
+      system: 'نظام',
+      fallback: 'إشعار',
+    },
+
+    targets: {
+      printOrder: 'طلب طباعة',
+      group: 'مجموعة',
+      file: 'ملف',
+      support: 'دعم فني',
+      verification: 'توثيق',
+      announcement: 'إعلان',
+    },
+
+    messages: {
+      markReadSuccess: 'تم تعليم الإشعار كمقروء.',
+      markAllReadSuccess: 'تم تعليم كل الإشعارات كمقروءة.',
+    },
+
+    errors: {
+      network: 'تعذر تحميل الإشعارات. تحقق من اتصال الإنترنت وحاول مرة أخرى.',
+      unauthorized: 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.',
+      permission: 'لا تملك صلاحية الوصول إلى هذه الإشعارات حاليا.',
+      generic: 'تعذر تحميل الإشعارات. حاول مرة أخرى.',
+    },
+  },
+
+  subjects: {
+    title: 'موادي',
+    subtitle: 'موادك حسب بياناتك الأكاديمية',
+    loading: 'جاري تحميل المواد...',
+    listTitle: 'قائمة المواد',
+    listSubtitle: 'الفلاتر الأكاديمية تأتي من ملف الطالب: الاختصاص، السنة، والفصل عند توفرها.',
+    searchPlaceholder: 'ابحث باسم المادة أو رمزها',
+    searchNote: (shown: number, total: number) =>
+      `يتم البحث داخل المواد المحملة فقط. النتائج: ${shown} من ${total}.`,
+    emptyTitle: 'لا توجد مواد',
+    emptyMessage: 'لا توجد مواد متاحة حاليا.',
+    emptyIllustrationAlt: 'رسم يوضح عدم وجود مواد',
+    untitled: 'مادة بدون اسم',
+    badge: 'مادة',
+    codeLabel: (code: string) => `رمز المادة: ${code}`,
+    codeBadge: (code: string) => `رمز ${code}`,
+    filesCount: (count: number) => `ملفات ${count}`,
+    groupsCount: (count: number) => `مجموعات ${count}`,
+    lecturesCount: (count: number) => `محاضرات ${count}`,
+    academicYear: (name: string) => `السنة ${name}`,
+    semester: (name: string) => `الفصل ${name}`,
+
+    details: {
+      subtitle: 'تفاصيل المادة',
+      listSubtitle: 'تفاصيل المادة من بيانات القائمة',
+      loading: 'جاري تحميل بيانات المادة...',
+      unavailableTitle: 'المادة غير متاحة',
+      unavailableMessage: 'تعذر العثور على المادة.',
+      academicYearLabel: 'السنة الأكاديمية',
+      semesterLabel: 'الفصل',
+      majorLabel: 'الاختصاص',
+      orderLabel: 'ترتيب العرض',
+      linkedTitle: 'المحتوى المرتبط',
+      filesTitle: 'الملفات',
+      filesDescription:
+        'افتح قائمة الملفات المتاحة داخل التطبيق. لا يوجد فلتر موثق حسب المادة في هذه المرحلة.',
+      groupsTitle: 'المجموعات',
+      groupsDescription:
+        'افتح المجموعات العامة المتاحة. لا يوجد ربط موثق حسب المادة في هذه المرحلة.',
+      announcementsTitle: 'الإعلانات',
+      announcementsDescription: 'لا يوجد endpoint موثق لإعلانات المادة في هذه المرحلة.',
+    },
+
+    errors: {
+      network: 'تعذر تحميل المواد. تحقق من اتصال الإنترنت وحاول مرة أخرى.',
+      unauthorized: 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.',
+      generic: 'تعذر تحميل المواد. حاول مرة أخرى.',
+      missingMajor: 'لا يمكن تحميل المواد قبل إكمال البيانات الأكاديمية.',
+    },
+  },
+
+  search: {
+    title: 'البحث',
+    subtitle: 'ابحث في المحتوى المسموح لحسابك',
+    label: 'عبارة البحث',
+    placeholder: 'اسم مادة أو مجموعة أو ملف',
+    loading: 'جاري البحث...',
+    partialResults: 'ظهرت نتائج جزئية لأن أحد مصادر البحث لم يستجب. يمكنك المحاولة مجددًا.',
+    startTitle: 'ابدأ البحث',
+    startMessage: 'اكتب حرفين على الأقل. تظهر فقط النتائج التي يسمح بها Backend لحسابك.',
+    noResultsMessage: 'جرّب كلمات أقل أو اسمًا مختلفًا.',
+    resultsCount: (count: number) => `${count} نتيجة`,
+    subjectsSection: 'المواد',
+    groupsSection: 'المجموعات',
+    filesSection: 'الملفات',
+    kindSubject: 'مادة',
+    kindGroup: 'مجموعة',
+    kindFile: 'ملف',
+    untitledSubject: 'مادة بدون اسم',
+    subjectSubtitle: 'مادة دراسية',
+    untitledGroup: 'مجموعة بدون اسم',
+    groupSubtitle: 'مجموعة أكاديمية',
+    untitledFile: 'ملف بدون عنوان',
+    fileSubtitle: 'ملف متاح داخل التطبيق',
+
+    errors: {
+      network: 'تعذر البحث بسبب الاتصال. حاول مرة أخرى.',
+      unauthorized: 'انتهت الجلسة. يرجى تسجيل الدخول مجددًا.',
+      generic: 'تعذر إتمام البحث حاليًا.',
+    },
+  },
+
+  studentProfile: {
+    setupTitle: 'إكمال الملف الأكاديمي',
+    setupSubtitle: 'إعداد الطالب',
+    loading: 'جاري تحميل بيانات الملف الأكاديمي...',
+    cardSubtitle: 'اختر بياناتك الدراسية واربطها بالرقم الجامعي قبل إرسال بطاقة الطالب.',
+    noAcademicDataTitle: 'لا توجد بيانات أكاديمية',
+    noAcademicDataMessage: 'تعذر تحميل الجامعات حاليا. حاول مرة أخرى أو تواصل مع إدارة الجامعة.',
+    studentNumberTitle: 'الرقم الجامعي',
+    studentNumberHelper: 'أدخل رقمك الجامعي كما يظهر في بطاقة الطالب.',
+    parseNumber: 'تحليل الرقم',
+    universityLabel: 'الجامعة',
+    universityEmpty: 'لا توجد جامعات متاحة حاليا.',
+    facultyLabel: 'الكلية',
+    facultyEmpty: 'اختر الجامعة أولا لعرض الكليات.',
+    majorLabel: 'الاختصاص',
+    majorEmpty: 'اختر الكلية أولا لعرض الاختصاصات.',
+    academicYearLabel: 'السنة الأكاديمية',
+    academicYearEmpty: 'لا توجد سنوات أكاديمية متاحة حاليا.',
+    semesterLabel: 'الفصل الدراسي',
+    semesterEmpty: 'لا توجد فصول دراسية متاحة حاليا.',
+    majorSubjectsTitle: 'مواد الاختصاص',
+    majorSubjectsLoading: 'جاري تحميل المواد المرتبطة بالاختصاص...',
+    majorSubjectsLoaded: (count: number) => `تم تحميل ${count} مادة مرتبطة باختصاصك.`,
+    majorSubjectsEmpty: 'لا توجد مواد متاحة لهذا الاختصاص حاليا.',
+    saveAndContinue: 'حفظ ومتابعة التوثيق',
+
+    selectField: {
+      emptyText: 'لا توجد خيارات متاحة حاليا.',
+      loading: 'جاري تحميل الخيارات...',
+      selected: 'محدد',
+    },
+
+    intro: {
+      title: 'إكمال ملف الطالب',
+      description:
+        'يجب إكمال الملف الأكاديمي وتوثيق بطاقة الطالب قبل استخدام خدمات بانوراما للطلاب.',
+    },
+
+    stepper: {
+      academicProfile: 'الملف الأكاديمي',
+      studentCard: 'بطاقة الطالب',
+      verificationStatus: 'حالة التوثيق',
+    },
+
+    numberPreview: {
+      title: 'معاينة الرقم الجامعي',
+      hint: 'أدخل الرقم الجامعي ثم اضغط تحليل الرقم لعرض القراءة المتوقعة قبل الحفظ.',
+      noDetails: 'تم تحليل الرقم، لكن لم يرجع الخادم تفاصيل إضافية.',
+      studentNumber: 'الرقم الجامعي',
+      universityCode: 'رمز الجامعة',
+      facultyCode: 'رمز الكلية',
+      yearCode: 'رمز السنة',
+      serial: 'الرقم التسلسلي',
+      university: 'الجامعة',
+      faculty: 'الكلية',
+      academicYear: 'السنة الأكاديمية',
+      semester: 'الفصل',
+      major: 'الاختصاص',
+    },
+
+    errors: {
+      network: 'تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت ثم حاول مرة أخرى.',
+      validation: 'يرجى التأكد من البيانات الأكاديمية المدخلة.',
+      unauthorized: 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.',
+      generic: 'تعذر تنفيذ العملية. حاول مرة أخرى.',
+      missingFields: 'يرجى إكمال كل حقول الملف الأكاديمي قبل المتابعة.',
+      missingStudentNumber: 'يرجى إدخال الرقم الجامعي أولا.',
+    },
+  },
+
+  verificationFlow: {
+    submitTitle: 'إرسال بطاقة الطالب',
+    resubmitTitle: 'إعادة إرسال التوثيق',
+    subtitle: 'إعداد الطالب',
+    loading: 'جاري تحميل حالة التوثيق...',
+    cardSubtitle:
+      'ارفع صورة واضحة لبطاقة الطالب من المعرض. التوثيق مطلوب للوصول إلى خدمات بانوراما.',
+    whyTitle: 'لماذا التوثيق؟',
+    whyDescription:
+      'يؤكد التوثيق هويتك كطالب جامعي ويفتح الوصول إلى المجموعات والملفات والطباعة والدعم. بعد الإرسال، ستراجع الإدارة طلبك وتصلك الحالة في هذه الشاشة.',
+    lockedNote: 'لا يمكن إرسال طلب جديد أثناء هذه الحالة. تابع صفحة الحالة للتحديثات.',
+    trackStatus: 'متابعة حالة التوثيق',
+    submitRequest: 'إرسال طلب التوثيق',
+    resubmitRequest: 'إعادة إرسال الطلب',
+    sentTitle: 'تم إرسال الطلب',
+    sentHeading: 'تم إرسال طلب التوثيق',
+    sentMessage: 'تم استلام طلب التوثيق وسيتم مراجعته من الإدارة.',
+    sentIllustrationAlt: 'رسم يوضح نجاح إرسال طلب التوثيق',
+
+    status: {
+      title: 'حالة التوثيق',
+      cardSubtitle: 'تابع نتيجة مراجعة بطاقة الطالب، وأعد الإرسال عند الحاجة فقط.',
+      sendCard: 'إرسال بطاقة الطالب',
+      resendUpdated: 'إعادة إرسال صورة محدثة',
+      pendingNote:
+        'سيتم إشعارك عند اكتمال المراجعة. يمكنك تحديث الحالة لاحقا دون إعادة إرسال الطلب.',
+      refreshStatus: 'تحديث الحالة',
+      approvedTitle: 'تم قبول التوثيق بنجاح',
+      approvedDescription: 'يمكنك الآن الدخول إلى التطبيق واستخدام جميع الخدمات الطلابية.',
+      enterApp: 'الدخول إلى التطبيق',
+    },
+
+    errors: {
+      network: 'تعذر الاتصال بالخادم أثناء التحقق من حالة التوثيق. حاول مرة أخرى.',
+      unauthorized: 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.',
+      validation: 'يرجى اختيار صورة واضحة لبطاقة الطالب.',
+      generic: 'تعذر تنفيذ طلب التوثيق. حاول مرة أخرى.',
+      missingImage: 'يرجى اختيار صورة واضحة لبطاقة الطالب قبل الإرسال.',
+    },
+
+    statusCard: {
+      title: 'حالة التوثيق',
+      illustrationAlt: 'رسم يوضح حالة التوثيق',
+      rejectionTitle: 'سبب الرفض أو الملاحظة',
+      approvedLabel: 'موثق',
+      approvedDescription: 'تم قبول طلب التوثيق. يمكنك الآن استخدام خدمات التطبيق للطلاب.',
+      pendingLabel: 'قيد المراجعة',
+      pendingDescription:
+        'طلبك قيد المراجعة من الإدارة. لا حاجة لإعادة الإرسال إلا إذا طُلب منك ذلك صراحة.',
+      rejectedLabel: 'مرفوض',
+      rejectedDescription: 'تم رفض طلب التوثيق. راجع السبب أدناه ثم أرسل صورة محدثة وواضحة.',
+      needsUpdateLabel: 'بحاجة إلى تحديث',
+      needsUpdateDescription: 'يحتاج طلبك إلى صورة أو بيانات أوضح. أرسل بطاقة طالب محدثة.',
+      notSubmittedLabel: 'غير مرسل',
+      notSubmittedDescription:
+        'لم يتم إرسال طلب توثيق بعد. التوثيق مطلوب للوصول إلى المجموعات والملفات والخدمات الطلابية.',
+    },
+
+    imagePicker: {
+      title: 'صورة بطاقة الطالب',
+      description:
+        'اختر صورة واضحة من المعرض تظهر فيها بطاقة الطالب كاملة بدون انعكاس أو قص. تأكد من وضوح الاسم والرقم الجامعي.',
+      guideAlt: 'دليل تصوير بطاقة الطالب',
+      exampleAlt: (label: string) => `مثال بطاقة ${label}`,
+      noImage: 'لم يتم اختيار صورة بعد.',
+      pick: 'اختيار صورة',
+      replace: 'استبدال الصورة',
+      remove: 'إزالة الصورة',
+      permissionDenied: 'يرجى السماح للتطبيق بالوصول إلى الصور لاختيار بطاقة الطالب.',
+      invalidImage: 'لم يتم اختيار صورة صالحة. حاول مرة أخرى.',
+      exampleClear: 'واضحة',
+      exampleBlurry: 'غير واضحة',
+      exampleCropped: 'مقصوصة',
+      exampleDark: 'مظلمة',
+    },
+  },
+
+  feedback: {
+    centerTitle: 'رأيك يصنع النسخة القادمة',
+    centerSubtitle: 'تقييم واقتراحات',
+    thanksTitle: 'شكرًا لمساهمتك',
+    thanksMessage: 'تم تسجيل رأيك بأمان وسيظهر ضمن لوحة متابعة فريق بانوراما.',
+    thanksHeaderTitle: 'ساعدنا على التطوير',
+    thanksHeaderSubtitle: 'مشاركة الرأي',
+    trackMine: 'متابعة مشاركاتي',
+    sendAnother: 'إرسال مشاركة أخرى',
+    privacyTitle: 'مشاركة منظمة وقابلة للمتابعة',
+    privacyNote:
+      'لا ترسل كلمات مرور أو رموز تحقق أو بيانات حساسة. نستخدم هذه الملاحظات لتحسين الأداء والواجهات والميزات.',
+    kindLabel: 'نوع المشاركة',
+    ratingLabel: 'التقييم',
+    ratingOf: (value: number) => `${value} من 5`,
+    suggestionTitleLabel: 'عنوان الاقتراح',
+    suggestionTitlePlaceholder: 'مثال: تحسين البحث داخل المحاضرات',
+    suggestionDetailsLabel: 'تفاصيل الاقتراح',
+    shareDetailsLabel: 'تفاصيل المشاركة',
+    submit: 'إرسال إلى فريق بانوراما',
+    myFeedback: 'مشاركاتي',
+    publicSuggestions: 'اقتراحات المجتمع',
+    missingSuggestion: 'أدخل عنوانًا واضحًا وتفاصيل الاقتراح.',
+    missingDetails: 'اكتب تفاصيل تساعد فريق بانوراما على المراجعة.',
+    promptSuccess: 'شكرًا لمساعدتنا في تطوير بانوراما.',
+
+    kinds: {
+      rating: 'تقييم عام',
+      ratingHint: 'قيّم تجربتك مع بانوراما',
+      suggestion: 'اقتراح',
+      suggestionHint: 'شارك فكرة تطوير قابلة للتنفيذ',
+      issue: 'مشكلة',
+      issueHint: 'أبلغ عن خلل وظيفي أو بصري',
+      complaint: 'شكوى',
+      complaintHint: 'صف تجربة لم تكن بالمستوى المتوقع',
+      praise: 'إشادة',
+      praiseHint: 'أخبرنا بما أعجبك',
+    },
+
+    prompt: {
+      title: 'رأيك يهمنا',
+      question: 'كيف كانت تجربتك؟',
+      noteLabel: 'ملاحظة اختيارية',
+      notePlaceholder: 'ما الذي أعجبك؟ وما الذي يحتاج تحسينًا؟',
+      submit: 'إرسال التقييم',
+      later: 'لاحقًا',
+    },
+
+    mine: {
+      title: 'مشاركاتي',
+      subtitle: 'تقييمات واقتراحات',
+      loading: 'جاري تحميل المشاركات...',
+      addEntry: 'إضافة مشاركة',
+      emptyTitle: 'لا توجد مشاركات بعد',
+      emptyMessage: 'أرسل تقييمًا أو اقتراحًا لتطوير النسخة القادمة.',
+      sent: 'تم إرسال المشاركة.',
+      teamReply: (message: string) => `رد الفريق: ${message}`,
+      refresh: 'تحديث القائمة',
+      statusNew: 'جديد',
+      statusReviewed: 'تمت المراجعة',
+      statusPlanned: 'ضمن الخطة',
+      statusInProgress: 'قيد التنفيذ',
+      statusResolved: 'مكتمل',
+      statusRejected: 'غير معتمد',
+      statusDuplicate: 'مكرر',
+    },
+
+    publicList: {
+      title: 'اقتراحات المجتمع',
+      subtitle: 'أفكار تم اعتمادها أو العمل عليها',
+      loading: 'جاري تحميل الاقتراحات...',
+      shareIdea: 'شارك اقتراحك',
+      emptyTitle: 'لا توجد اقتراحات منشورة',
+      emptyMessage: 'ستظهر هنا الاقتراحات التي اعتمدها فريق بانوراما للنقاش أو التنفيذ.',
+      votes: (count: number) => `${count} مؤيد`,
+      vote: 'تأييد الاقتراح',
+      unvote: 'إلغاء التأييد',
+    },
+
+    errors: {
+      network: 'تعذر إرسال التقييم. تحقق من الاتصال وحاول مرة أخرى.',
+      rateLimited: 'تم إرسال عدة تقييمات مؤخرًا. حاول لاحقًا.',
+      generic: 'تعذر إرسال التقييم حاليًا.',
+    },
   },
 
   /**
@@ -986,6 +1500,28 @@ export const ar = {
       privacy: 'سياسة الخصوصية',
       terms: 'الشروط والأحكام',
       about: 'عن بانوراما',
+    },
+
+    changePassword: {
+      title: 'تغيير كلمة المرور',
+      subtitle: 'تغيير كلمة المرور للحساب الحالي',
+      note: 'لا يتم حفظ كلمات المرور خارج مسودة الإدخال الحالية، ولا يتم تسجيلها في السجلات.',
+      current: 'كلمة المرور الحالية',
+      new: 'كلمة المرور الجديدة',
+      confirm: 'تأكيد كلمة المرور الجديدة',
+      success: 'تم تغيير كلمة المرور بنجاح.',
+      currentRequired: 'يرجى إدخال كلمة المرور الحالية.',
+      newRequired: 'يرجى إدخال كلمة المرور الجديدة.',
+      confirmRequired: 'يرجى تأكيد كلمة المرور الجديدة.',
+      tooShort: 'يجب أن تكون كلمة المرور الجديدة 8 أحرف على الأقل.',
+      mismatch: 'كلمتا المرور غير متطابقتين.',
+    },
+
+    errors: {
+      network: 'تعذر تغيير كلمة المرور. تحقق من اتصال الإنترنت وحاول مرة أخرى.',
+      unauthorized: 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.',
+      validation: 'يرجى التأكد من بيانات كلمة المرور المدخلة.',
+      generic: 'تعذر تغيير كلمة المرور. حاول مرة أخرى.',
     },
   },
 } as const;

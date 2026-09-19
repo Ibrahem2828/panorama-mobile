@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
 import { colors, layout, spacing } from '../../../theme';
 import type { AcademicOption } from '../types';
+import { useTranslation } from '../../../i18n';
 
 type AcademicSelectFieldProps = {
   label: string;
@@ -25,8 +26,9 @@ export function AcademicSelectField({
   onSelect,
   disabled = false,
   isLoading = false,
-  emptyText = 'لا توجد خيارات متاحة حاليا.',
+  emptyText,
 }: AcademicSelectFieldProps) {
+  const { t } = useTranslation();
   return (
     <Stack gap="sm">
       <View style={styles.labelRow}>
@@ -38,7 +40,9 @@ export function AcademicSelectField({
         {options.length === 0 ? (
           <View style={styles.emptyState}>
             <AppText align="center" color="secondary" variant="bodySmall">
-              {isLoading ? 'جاري تحميل الخيارات...' : emptyText}
+              {isLoading
+                ? t.studentProfile.selectField.loading
+                : (emptyText ?? t.studentProfile.selectField.emptyText)}
             </AppText>
           </View>
         ) : (
@@ -71,7 +75,9 @@ export function AcademicSelectField({
                       </AppText>
                     ) : null}
                   </View>
-                  {selected ? <AppBadge label="محدد" variant="brand" /> : null}
+                  {selected ? (
+                    <AppBadge label={t.studentProfile.selectField.selected} variant="brand" />
+                  ) : null}
                 </Pressable>
               );
             })}

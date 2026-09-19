@@ -1,9 +1,5 @@
 import type { Id, NotificationRouteIntent, NotificationTarget } from '../types';
 
-const FUTURE_TARGET_LABELS: Record<string, string> = {
-  announcement: 'إعلان',
-};
-
 /**
  * Identifier keys the backend actually puts in a notification's `data` payload, mapped to
  * the target type they imply. The API also exposes `related_object_type`/`related_object_id`,
@@ -44,6 +40,10 @@ function normalizeTargetType(targetType: string | null): string | null {
 
 export function resolveNotificationRouteIntent(
   target: NotificationTarget,
+  labels: { support: string; announcement: string } = {
+    support: 'support',
+    announcement: 'announcement',
+  },
 ): NotificationRouteIntent {
   const targetType = normalizeTargetType(target.targetType);
 
@@ -71,14 +71,14 @@ export function resolveNotificationRouteIntent(
   }
 
   if (targetType === 'support' || targetType === 'support_ticket' || targetType === 'ticket') {
-    return { kind: 'future', label: 'دعم' };
+    return { kind: 'future', label: labels.support };
   }
 
   if (targetType === 'verification') {
     return { kind: 'verification' };
   }
 
-  const futureLabel = FUTURE_TARGET_LABELS[targetType];
+  const futureLabel = targetType === 'announcement' ? labels.announcement : undefined;
 
   if (futureLabel) {
     return { kind: 'future', label: futureLabel };

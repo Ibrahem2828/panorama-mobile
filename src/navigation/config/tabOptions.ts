@@ -4,11 +4,11 @@ import { colors, layout, spacing, typography } from '../../theme';
 import { TabRoutes } from '../routes';
 
 export const tabLabels = {
-  [TabRoutes.Home]: 'الرئيسية',
-  [TabRoutes.Subjects]: 'موادي',
-  [TabRoutes.Groups]: 'المجموعات',
-  [TabRoutes.Printing]: 'الطباعة',
-  [TabRoutes.Profile]: 'حسابي',
+  [TabRoutes.Home]: 'home',
+  [TabRoutes.Subjects]: 'subjects',
+  [TabRoutes.Groups]: 'groups',
+  [TabRoutes.Printing]: 'printing',
+  [TabRoutes.Profile]: 'profile',
 } as const;
 
 export const bottomTabScreenOptions: BottomTabNavigationOptions = {

@@ -5,11 +5,9 @@ import {
   type VerificationRecord as ApiVerificationRecord,
 } from '../../../api';
 import type { VerificationCardImage, VerificationRecord, VerificationStatus } from '../types';
+import type { TranslationCatalog } from '../../../i18n';
 
-const NETWORK_MESSAGE = 'تعذر الاتصال بالخادم أثناء التحقق من حالة التوثيق. حاول مرة أخرى.';
-const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const VALIDATION_MESSAGE = 'يرجى اختيار صورة واضحة لبطاقة الطالب.';
-const GENERIC_MESSAGE = 'تعذر تنفيذ طلب التوثيق. حاول مرة أخرى.';
+type VerificationCatalog = TranslationCatalog['verificationFlow'];
 
 type ReactNativeFormDataFile = {
   uri: string;
@@ -31,22 +29,22 @@ function isApiVerificationRecord(
   return typeof (response as { status?: unknown }).status === 'string';
 }
 
-export function toSafeVerificationErrorMessage(error: unknown): string {
+export function toSafeVerificationErrorMessage(error: unknown, t: VerificationCatalog): string {
   const normalizedError = normalizeApiError(error);
 
   if (normalizedError.code === 'NETWORK_ERROR' || normalizedError.code === 'TIMEOUT') {
-    return NETWORK_MESSAGE;
+    return t.errors.network;
   }
 
   if (normalizedError.code === 'UNAUTHORIZED') {
-    return UNAUTHORIZED_MESSAGE;
+    return t.errors.unauthorized;
   }
 
   if (normalizedError.code === 'VALIDATION_ERROR') {
-    return VALIDATION_MESSAGE;
+    return t.errors.validation;
   }
 
-  return normalizedError.message || GENERIC_MESSAGE;
+  return normalizedError.message || t.errors.generic;
 }
 
 export async function getMyVerification(authToken?: string | null) {

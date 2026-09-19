@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { useLocaleStore } from '../../../i18n';
+
 import { useAuthStore } from '../../auth/store';
 import { getStudentProfileAcademicYear, useStudentProfileStore } from '../../student-profile';
 import { loadSubjectsForMajor, toSafeSubjectsErrorMessage } from '../services';
@@ -26,7 +28,10 @@ type SubjectsState = {
   reset: () => void;
 };
 
-const MISSING_MAJOR_MESSAGE = 'لا يمكن تحميل المواد قبل إكمال البيانات الأكاديمية.';
+// Read when the action runs so the message follows the current locale.
+function subjectsCatalog() {
+  return useLocaleStore.getState().t.subjects;
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -112,7 +117,7 @@ export const useSubjectsStore = create<SubjectsState>((set, get) => {
         selectedSubject: null,
         isLoading: false,
         isRefreshing: false,
-        errorMessage: MISSING_MAJOR_MESSAGE,
+        errorMessage: subjectsCatalog().errors.missingMajor,
         lastLoadedAt: null,
         lastLoadKey: null,
         totalCount: 0,
@@ -165,7 +170,7 @@ export const useSubjectsStore = create<SubjectsState>((set, get) => {
       set({
         isLoading: false,
         isRefreshing: false,
-        errorMessage: toSafeSubjectsErrorMessage(error),
+        errorMessage: toSafeSubjectsErrorMessage(error, subjectsCatalog()),
       });
     }
   }

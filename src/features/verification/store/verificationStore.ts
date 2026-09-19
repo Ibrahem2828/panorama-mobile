@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { useLocaleStore } from '../../../i18n';
+
 import { useAuthStore } from '../../auth/store';
 import { useFeedbackStore } from '../../feedback/store';
 import {
@@ -33,8 +35,10 @@ type AuthContext = {
   userId: string | number | null;
 };
 
-const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const MISSING_IMAGE_MESSAGE = 'يرجى اختيار صورة واضحة لبطاقة الطالب قبل الإرسال.';
+// Read when the action runs so the message follows the current locale.
+function verificationCatalog() {
+  return useLocaleStore.getState().t.verificationFlow;
+}
 
 function getInitialVerificationState() {
   return {
@@ -52,7 +56,7 @@ function requireAuthContext(): AuthContext {
   const { accessToken, user } = useAuthStore.getState();
 
   if (!accessToken) {
-    throw new Error(MISSING_SESSION_MESSAGE);
+    throw new Error(verificationCatalog().errors.unauthorized);
   }
 
   return {
@@ -63,7 +67,7 @@ function requireAuthContext(): AuthContext {
 
 function requireSelectedCardImage(image: VerificationCardImage | null): VerificationCardImage {
   if (!image) {
-    throw new Error(MISSING_IMAGE_MESSAGE);
+    throw new Error(verificationCatalog().errors.missingImage);
   }
 
   return image;
@@ -102,7 +106,7 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
       set({
         hasLoadedVerification: true,
         isLoadingVerification: false,
-        errorMessage: toSafeVerificationErrorMessage(error),
+        errorMessage: toSafeVerificationErrorMessage(error, verificationCatalog()),
       });
     }
   },
@@ -146,9 +150,9 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
       set({
         isSubmitting: false,
         errorMessage:
-          error instanceof Error && error.message === MISSING_IMAGE_MESSAGE
-            ? MISSING_IMAGE_MESSAGE
-            : toSafeVerificationErrorMessage(error),
+          error instanceof Error && error.message === verificationCatalog().errors.missingImage
+            ? verificationCatalog().errors.missingImage
+            : toSafeVerificationErrorMessage(error, verificationCatalog()),
       });
 
       throw error;
@@ -187,9 +191,9 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
       set({
         isSubmitting: false,
         errorMessage:
-          error instanceof Error && error.message === MISSING_IMAGE_MESSAGE
-            ? MISSING_IMAGE_MESSAGE
-            : toSafeVerificationErrorMessage(error),
+          error instanceof Error && error.message === verificationCatalog().errors.missingImage
+            ? verificationCatalog().errors.missingImage
+            : toSafeVerificationErrorMessage(error, verificationCatalog()),
       });
 
       throw error;

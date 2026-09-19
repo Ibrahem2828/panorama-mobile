@@ -11,10 +11,18 @@ function isLocale(value: string | null): value is Locale {
   return value !== null && (LOCALES as readonly string[]).includes(value);
 }
 
-/** The device language, used only until the user makes an explicit choice. */
+/**
+ * The device language, used only until the user makes an explicit choice. Guarded because
+ * the native module is unavailable in some contexts and a missing locale must not stop
+ * the app from starting in Arabic.
+ */
 export function getDeviceLocale(): Locale {
-  const languageCode = getLocales()[0]?.languageCode ?? null;
-  return isLocale(languageCode) ? languageCode : DEFAULT_LOCALE;
+  try {
+    const languageCode = getLocales()[0]?.languageCode ?? null;
+    return isLocale(languageCode) ? languageCode : DEFAULT_LOCALE;
+  } catch {
+    return DEFAULT_LOCALE;
+  }
 }
 
 export async function readStoredLocale(): Promise<Locale | null> {

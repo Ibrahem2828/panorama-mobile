@@ -62,8 +62,26 @@ English catalog, which both type-check but ship untranslated UI.
 4. For helpers that build strings, pass the catalog in rather than importing it, so the
    function stays pure — see `getEnvironmentLabel(t)` in that screen.
 
-About 1,180 strings across ~150 files still hold literals. They can be migrated a screen
-at a time; nothing breaks while both styles coexist.
+This is how the whole app was migrated, a feature at a time. Nothing breaks while both
+styles coexist, so new screens can follow the same route.
+
+## Migration status
+
+Every product screen is migrated: no Arabic literal remains in UI code. The files that
+still contain Arabic do so deliberately:
+
+| File                                                  | Why                                                                             |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `locales/ar.ts`                                       | the Arabic catalog itself                                                       |
+| `locales/en.ts`                                       | one entry: the language name "العربية", shown in its own script in both locales |
+| `providers/RootErrorBoundary.tsx`                     | bilingual copy inlined on purpose — see the comment there                       |
+| `config/env.ts`                                       | build-time assertions that only ever reach a developer                          |
+| `constants/app.ts`                                    | `displayNameAr`, explicitly the Arabic brand name                               |
+| `features/dev/screens/DesignSystemShowcaseScreen.tsx` | unrouted developer showcase, not product UI                                     |
+| `__tests__` fixtures                                  | test data, not shown to anyone                                                  |
+
+Running `npm run test` fails if an English entry is missing, empty, or still holds Arabic
+text, so the catalogs cannot drift apart.
 
 ## Known gaps
 

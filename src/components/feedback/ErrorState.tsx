@@ -7,6 +7,7 @@ import { images } from '../../assets/images';
 import { colors, spacing } from '../../theme';
 import { AppButton, AppText } from '../common';
 import { StateIllustration } from '../media';
+import { useTranslation } from '../../i18n';
 
 type ErrorStateKind = 'network' | 'server' | 'permission' | 'sessionExpired' | 'maintenance';
 
@@ -23,9 +24,9 @@ type ErrorStateProps = {
 };
 
 export function ErrorState({
-  title = 'حدث خطأ',
+  title,
   message,
-  retryLabel = 'إعادة المحاولة',
+  retryLabel,
   onRetry,
   icon,
   illustrationSource,
@@ -33,6 +34,9 @@ export function ErrorState({
   kind = 'server',
   style,
 }: ErrorStateProps) {
+  const { t } = useTranslation();
+  const resolvedTitle = title ?? t.common.errorTitle;
+  const resolvedRetryLabel = retryLabel ?? t.common.retry;
   const resolvedIllustration =
     illustrationSource ??
     (kind === 'network' ? images.illustrations.search : images.illustrations.warning);
@@ -41,7 +45,7 @@ export function ErrorState({
     <View style={[styles.container, style]}>
       {resolvedIllustration ? (
         <StateIllustration
-          accessibilityLabel={illustrationLabel ?? title}
+          accessibilityLabel={illustrationLabel ?? resolvedTitle}
           compact
           source={resolvedIllustration}
         />
@@ -50,7 +54,7 @@ export function ErrorState({
       )}
       <View style={styles.textBlock}>
         <AppText align="center" color="error" variant="title">
-          {title}
+          {resolvedTitle}
         </AppText>
         {message ? (
           <AppText align="center" color="secondary" variant="bodySmall">
@@ -58,7 +62,9 @@ export function ErrorState({
           </AppText>
         ) : null}
       </View>
-      {onRetry ? <AppButton onPress={onRetry} title={retryLabel} variant="outline" /> : null}
+      {onRetry ? (
+        <AppButton onPress={onRetry} title={resolvedRetryLabel} variant="outline" />
+      ) : null}
     </View>
   );
 }

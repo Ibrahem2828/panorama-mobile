@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppCard, AppText, Stack } from '../../../components';
 import { colors, spacing } from '../../../theme';
 import type { AcademicOption, ParsedStudentNumber } from '../types';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
 
 type StudentNumberPreviewCardProps = {
   parsedStudentNumber: ParsedStudentNumber | null;
@@ -36,47 +37,63 @@ function toRow(label: string, value: string | number | null | undefined): Previe
   };
 }
 
-function getPreviewRows(parsedStudentNumber: ParsedStudentNumber): PreviewRow[] {
+function getPreviewRows(
+  parsedStudentNumber: ParsedStudentNumber,
+  t: TranslationCatalog,
+): PreviewRow[] {
   return [
-    toRow('الرقم الجامعي', parsedStudentNumber.student_number ?? parsedStudentNumber.studentNumber),
-    toRow('رمز الجامعة', parsedStudentNumber.university_code ?? parsedStudentNumber.universityCode),
-    toRow('رمز الكلية', parsedStudentNumber.faculty_code ?? parsedStudentNumber.facultyCode),
-    toRow('رمز السنة', parsedStudentNumber.year_code ?? parsedStudentNumber.yearCode),
     toRow(
-      'الرقم التسلسلي',
+      t.studentProfile.numberPreview.studentNumber,
+      parsedStudentNumber.student_number ?? parsedStudentNumber.studentNumber,
+    ),
+    toRow(
+      t.studentProfile.numberPreview.universityCode,
+      parsedStudentNumber.university_code ?? parsedStudentNumber.universityCode,
+    ),
+    toRow(
+      t.studentProfile.numberPreview.facultyCode,
+      parsedStudentNumber.faculty_code ?? parsedStudentNumber.facultyCode,
+    ),
+    toRow(
+      t.studentProfile.numberPreview.yearCode,
+      parsedStudentNumber.year_code ?? parsedStudentNumber.yearCode,
+    ),
+    toRow(
+      t.studentProfile.numberPreview.serial,
       parsedStudentNumber.sequence_number ?? parsedStudentNumber.sequenceNumber,
     ),
-    toRow('الجامعة', valueToText(parsedStudentNumber.university)),
-    toRow('الكلية', valueToText(parsedStudentNumber.faculty)),
+    toRow(t.studentProfile.numberPreview.university, valueToText(parsedStudentNumber.university)),
+    toRow(t.studentProfile.numberPreview.faculty, valueToText(parsedStudentNumber.faculty)),
     toRow(
-      'السنة الأكاديمية',
+      t.studentProfile.numberPreview.academicYear,
       valueToText(parsedStudentNumber.academic_year ?? parsedStudentNumber.academicYear),
     ),
-    toRow('الفصل', valueToText(parsedStudentNumber.semester)),
-    toRow('الاختصاص', valueToText(parsedStudentNumber.major)),
+    toRow(t.studentProfile.numberPreview.semester, valueToText(parsedStudentNumber.semester)),
+    toRow(t.studentProfile.numberPreview.major, valueToText(parsedStudentNumber.major)),
   ].filter((row): row is PreviewRow => row !== null);
 }
 
 export function StudentNumberPreviewCard({ parsedStudentNumber }: StudentNumberPreviewCardProps) {
+  const { t } = useTranslation();
   if (!parsedStudentNumber) {
     return (
       <AppCard padding="md" variant="muted">
         <AppText align="center" color="secondary" variant="bodySmall">
-          أدخل الرقم الجامعي ثم اضغط تحليل الرقم لعرض القراءة المتوقعة قبل الحفظ.
+          {t.studentProfile.numberPreview.hint}
         </AppText>
       </AppCard>
     );
   }
 
-  const rows = getPreviewRows(parsedStudentNumber);
+  const rows = getPreviewRows(parsedStudentNumber, t);
 
   return (
     <AppCard padding="md" variant="outlined">
       <Stack gap="md">
-        <AppText variant="title">معاينة الرقم الجامعي</AppText>
+        <AppText variant="title">{t.studentProfile.numberPreview.title}</AppText>
         {rows.length === 0 ? (
           <AppText color="secondary" variant="bodySmall">
-            تم تحليل الرقم، لكن لم يرجع الخادم تفاصيل إضافية.
+            {t.studentProfile.numberPreview.noDetails}
           </AppText>
         ) : (
           <Stack gap="sm">

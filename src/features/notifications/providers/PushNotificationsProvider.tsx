@@ -13,6 +13,7 @@ import {
   SharedRoutes,
   TabRoutes,
 } from '../../../navigation/routes';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { logger } from '../../../utils/logger';
 import { useAuthStore } from '../../auth/store';
 import {
@@ -37,7 +38,10 @@ function getProjectId(): string | undefined {
   );
 }
 
-async function registerCurrentDevice(authToken: string): Promise<void> {
+async function registerCurrentDevice(
+  authToken: string,
+  catalog: TranslationCatalog['notifications'],
+): Promise<void> {
   if (!Device.isDevice) return;
 
   const currentPermissions = await Notifications.getPermissionsAsync();
@@ -48,7 +52,7 @@ async function registerCurrentDevice(authToken: string): Promise<void> {
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
-      name: 'إشعارات بانوراما',
+      name: catalog.androidChannelName,
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#3510A3',
@@ -114,17 +118,18 @@ function openNotificationTarget(data: Record<string, unknown> | null | undefined
 }
 
 export function PushNotificationsProvider() {
+  const { t } = useTranslation();
   const status = useAuthStore((state) => state.status);
   const accessToken = useAuthStore((state) => state.accessToken);
 
   useEffect(() => {
     if (status !== 'authenticated' || !accessToken) return;
-    void registerCurrentDevice(accessToken).catch((error: unknown) => {
+    void registerCurrentDevice(accessToken, t.notifications).catch((error: unknown) => {
       logger.warn('Push token registration failed', {
         message: error instanceof Error ? error.message : 'unknown',
       });
     });
-  }, [accessToken, status]);
+  }, [accessToken, status, t.notifications]);
 
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {

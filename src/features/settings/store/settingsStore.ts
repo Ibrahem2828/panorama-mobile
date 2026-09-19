@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { useLocaleStore } from '../../../i18n';
+
 import { useAuthStore } from '../../auth/store';
 import {
   changeCurrentPassword,
@@ -42,8 +44,10 @@ function getInitialSettingsState() {
   };
 }
 
-const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const PASSWORD_SUCCESS_MESSAGE = 'تم تغيير كلمة المرور بنجاح.';
+// Read when the action runs so the message follows the current locale.
+function settingsCatalog() {
+  return useLocaleStore.getState().t.settings;
+}
 
 function getAccessToken(): string | null {
   return useAuthStore.getState().accessToken;
@@ -85,7 +89,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     }
 
     const passwordDraft = get().passwordDraft;
-    const validation = validateChangePasswordInput(passwordDraft);
+    const validation = validateChangePasswordInput(passwordDraft, settingsCatalog());
 
     set({ passwordValidation: validation });
 
@@ -96,7 +100,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     const accessToken = getAccessToken();
 
     if (!accessToken) {
-      set({ errorMessage: MISSING_SESSION_MESSAGE });
+      set({ errorMessage: settingsCatalog().errors.unauthorized });
       return false;
     }
 
@@ -108,13 +112,13 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         passwordDraft: EMPTY_PASSWORD_DRAFT,
         passwordValidation: {},
         isChangingPassword: false,
-        successMessage: PASSWORD_SUCCESS_MESSAGE,
+        successMessage: settingsCatalog().changePassword.success,
       });
       return true;
     } catch (error) {
       set({
         isChangingPassword: false,
-        errorMessage: toSafeSettingsErrorMessage(error),
+        errorMessage: toSafeSettingsErrorMessage(error, settingsCatalog()),
       });
       return false;
     }

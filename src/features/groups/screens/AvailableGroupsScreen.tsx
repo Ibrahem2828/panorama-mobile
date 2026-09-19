@@ -20,11 +20,6 @@ import { formatTime } from '../../../utils/formatDateTime';
 import { GroupsRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
-import {
-  SEARCH_CLEAR_LABEL,
-  SEARCH_NO_RESULTS_MESSAGE,
-  SEARCH_NO_RESULTS_TITLE,
-} from '../../../utils/searchEmptyState';
 import { GroupCard } from '../components';
 import { getGroupDescription, getGroupDisplayName } from '../services';
 import { useGroupsStore } from '../store';
@@ -150,14 +145,14 @@ export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps
             action={
               <AppButton
                 onPress={() => setSearchQuery('')}
-                title={SEARCH_CLEAR_LABEL}
+                title={t.common.searchClear}
                 variant="outline"
               />
             }
             illustrationLabel={t.common.noSearchResultsAlt}
             illustrationSource={images.illustrations.search}
-            message={SEARCH_NO_RESULTS_MESSAGE}
-            title={SEARCH_NO_RESULTS_TITLE}
+            message={t.common.searchNoResultsMessage}
+            title={t.common.searchNoResultsTitle}
           />
         ) : (
           <Stack gap="md">

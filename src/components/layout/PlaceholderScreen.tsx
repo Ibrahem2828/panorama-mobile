@@ -6,6 +6,7 @@ import { AppCard } from './AppCard';
 import { AppHeader } from './AppHeader';
 import { AppScreen } from './AppScreen';
 import { Stack } from './Stack';
+import { useTranslation } from '../../i18n';
 
 type PlaceholderScreenProps = {
   title: string;
@@ -16,22 +17,23 @@ type PlaceholderScreenProps = {
 
 export function PlaceholderScreen({
   title,
-  subtitle = 'بنية التنقل',
+  subtitle,
   badge = 'Phase 3',
-  description = 'هذه شاشة مبدئية ضمن بنية التنقل. سيتم تنفيذ التفاصيل الوظيفية في مرحلة لاحقة.',
+  description,
 }: PlaceholderScreenProps) {
+  const { t } = useTranslation();
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
-      <AppHeader subtitle={subtitle} title={title} />
+      <AppHeader subtitle={subtitle ?? t.placeholder.subtitle} title={title} />
       <AppCard padding="lg" variant="default">
         <Stack gap="md">
           <AppBadge label={badge} variant="brand" />
           <AppText variant="title">{title}</AppText>
           <AppText color="secondary" variant="body">
-            {description}
+            {description ?? t.placeholder.description}
           </AppText>
           <AppText color="muted" variant="caption">
-            لا يوجد Auth أو API أو منطق منتج فعلي في هذه الشاشة.
+            {t.placeholder.note}
           </AppText>
         </Stack>
       </AppCard>

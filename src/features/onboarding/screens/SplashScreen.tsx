@@ -3,22 +3,24 @@ import { StyleSheet } from 'react-native';
 import { images } from '../../../assets/images';
 import { AppScreen, AppText, Illustration, Stack } from '../../../components';
 import { spacing } from '../../../theme';
+import { useTranslation } from '../../../i18n';
 
 export function SplashScreen() {
+  const { t } = useTranslation();
   return (
     <AppScreen contentContainerStyle={styles.content} safeArea>
       <Stack gap="xl" style={styles.center}>
         <Illustration
-          accessibilityLabel="شعار بانوراما"
+          accessibilityLabel={t.auth.logoAlt}
           size="xl"
           source={images.brand.logoFullAr}
         />
         <Stack gap="sm">
           <AppText align="center" variant="h1">
-            بانوراما
+            {t.appName}
           </AppText>
           <AppText align="center" color="secondary" variant="body">
-            كل جامعتك في مكان واحد
+            {t.onboarding.appTagline}
           </AppText>
         </Stack>
       </Stack>

@@ -20,6 +20,536 @@ export const en: TranslationCatalog = {
     retryVerify: 'Check again',
     lastUpdatedAt: (time: string) => `Last updated: ${time}`,
     noSearchResultsAlt: 'Illustration showing no search results',
+    searchNoResultsTitle: 'No matching results',
+    searchNoResultsMessage: 'Try different words, or adjust the filters.',
+    searchClear: 'Clear search',
+    errorTitle: 'Something went wrong',
+  },
+
+  apiErrors: {
+    network: 'Could not reach the server. Check your internet connection.',
+    timeout: 'The request took longer than expected. Please try again.',
+    unauthorized: 'Your session has expired, or you need to sign in.',
+    forbidden: 'You do not have permission to do this.',
+    notFound: 'The item you asked for does not exist.',
+    validation: 'The details you entered could not be validated.',
+    server: 'The server hit an error. Please try again later.',
+    rateLimited: 'Too many attempts. Please try again shortly.',
+    unknown: 'Something went wrong. Please try again.',
+  },
+
+  relativeTime: {
+    now: 'Just now',
+    minutesAgo: (value: number) => (value === 1 ? '1 minute ago' : `${value} minutes ago`),
+    hoursAgo: (value: number) => (value === 1 ? '1 hour ago' : `${value} hours ago`),
+    daysAgo: (value: number) => (value === 1 ? '1 day ago' : `${value} days ago`),
+  },
+
+  connectivity: {
+    offline:
+      'You are offline. Loaded data stays visible and the app retries when the connection returns.',
+  },
+
+  navigation: {
+    home: 'Home',
+    subjects: 'Subjects',
+    groups: 'Groups',
+    printing: 'Printing',
+    profile: 'Account',
+    preparingStart: 'Getting things ready...',
+    loadingSetup: 'Loading your setup details...',
+    studentSetup: 'Student setup',
+  },
+
+  otpInput: {
+    digitLabel: (index: number, total: number) => `Digit ${index} of ${total}`,
+    verified: 'Verified',
+  },
+
+  placeholder: {
+    subtitle: 'Navigation scaffold',
+    description:
+      'This is a placeholder screen in the navigation scaffold. The real functionality comes later.',
+    note: 'There is no auth, API or real product logic on this screen.',
+  },
+
+  onboarding: {
+    appTagline: 'Your whole university in one place',
+    skip: 'Skip',
+    skipLabel: 'Skip the introduction',
+    paginationLabel: 'Introduction page indicator',
+    previous: 'Back',
+    next: 'Next',
+    start: 'Get started',
+    slides: [
+      {
+        imageLabel: 'Illustration of university life inside the Panorama app',
+        title: 'Your whole university life in one place',
+        description:
+          'Panorama brings your files, subjects, groups and university announcements into one easy experience.',
+      },
+      {
+        imageLabel: 'Illustration of verifying a university account',
+        title: 'Verify your university account securely',
+        description:
+          'Upload your university card so your details can be confirmed and you get access to the right subjects and services.',
+      },
+      {
+        imageLabel: 'Illustration of subject groups',
+        title: 'Join your subject groups',
+        description:
+          'Follow the discussions, announcements and files tied to your subjects and your university.',
+      },
+      {
+        imageLabel: 'Illustration of files and print orders',
+        title: 'Files and printing in a few steps',
+        description:
+          'Open your university files, request printing, and track the order from the app.',
+      },
+    ],
+  },
+
+  chat: {
+    title: 'Chat',
+    subtitle: 'Text chat inside the group',
+    loadingMessages: 'Loading messages...',
+    membersCount: (count: number) => `Members: ${count}`,
+    inputPlaceholder: 'Write a message...',
+    send: 'Send',
+    resend: 'Send again',
+    emptyTitle: 'No messages yet',
+    emptyMessage: 'No messages yet. Start the discussion if you are allowed to send.',
+    emptyIllustrationAlt: 'Illustration showing no messages',
+    unnamedSender: 'User',
+    emptyMessageBody: 'Message with no text',
+
+    membership: {
+      member: 'Member',
+      pending: 'Awaiting approval',
+      blocked: 'Blocked',
+      unknown: 'Not set',
+    },
+
+    connection: {
+      connecting: 'Connecting',
+      connected: 'Connected',
+      reconnecting: 'Reconnecting',
+      restAvailable: 'REST available',
+      offline: 'Offline',
+      note: 'Chat runs over REST; WebSocket is only an optional live update.',
+    },
+
+    permission: {
+      title: 'Sending is not available',
+      membersOnly: 'You must be a group member to send messages.',
+      adminsOnly: 'Only moderators can send in this group.',
+      blocked: 'You cannot send messages in this group right now.',
+      readOnly: 'You can only read messages right now.',
+      loading: 'Loading the group permissions.',
+      undetermined: 'Your send permission for this group cannot be determined right now.',
+    },
+
+    errors: {
+      network: 'Could not load messages. Check your connection and try again.',
+      unauthorized: 'Your session has expired. Please sign in again.',
+      permission: 'You cannot send messages in this group right now.',
+      send: 'Could not send the message. Please try again.',
+      generic: 'Could not load messages. Please try again.',
+      websocket: 'The chat connection was lost. You can refresh the messages manually.',
+      emptyMessage: 'Write a message before sending.',
+      longMessage: 'A message must not exceed 1000 characters.',
+    },
+  },
+
+  notifications: {
+    title: 'Notifications',
+    subtitle: 'In-app notification centre',
+    loading: 'Loading notifications...',
+    emptyTitle: 'No notifications',
+    emptyMessage:
+      'Updates about verification, groups, files and print orders will appear here when there are any.',
+    emptyIllustrationAlt: 'Illustration showing no notifications',
+    screenNote:
+      'This is an in-app notification screen only. Push permissions and device tokens are not part of this stage.',
+    centerTitle: 'Notification centre',
+    hasUnread: 'You have unread notifications to follow up.',
+    allRead: 'All current notifications have been read.',
+    unreadBadge: (count: number) => `${count} unread`,
+    noNew: 'Nothing new',
+    markAllRead: 'Mark all as read',
+    unread: 'Unread',
+    read: 'Read',
+    noDetails: 'There are no further details for this notification.',
+    targetLabel: 'Target',
+    typeIconAlt: 'Notification type icon',
+    androidChannelName: 'Panorama notifications',
+    fallbackTitle: 'New notification',
+
+    routeMessages: {
+      futureTarget: (label: string) =>
+        `The notification was opened. Routing to ${label} is completed in a later stage.`,
+      verification:
+        'The notification was opened. Verification routing is in place and completes as the access rules allow.',
+      none: 'The notification was opened; it has no linked target.',
+    },
+
+    types: {
+      announcement: 'Announcement',
+      verification: 'Verification',
+      printing: 'Printing',
+      group: 'Group',
+      file: 'File',
+      support: 'Support',
+      system: 'System',
+      fallback: 'Notification',
+    },
+
+    targets: {
+      printOrder: 'Print order',
+      group: 'Group',
+      file: 'File',
+      support: 'Support',
+      verification: 'Verification',
+      announcement: 'Announcement',
+    },
+
+    messages: {
+      markReadSuccess: 'Notification marked as read.',
+      markAllReadSuccess: 'All notifications marked as read.',
+    },
+
+    errors: {
+      network: 'Could not load notifications. Check your connection and try again.',
+      unauthorized: 'Your session has expired. Please sign in again.',
+      permission: 'You do not have access to these notifications right now.',
+      generic: 'Could not load notifications. Please try again.',
+    },
+  },
+
+  subjects: {
+    title: 'Subjects',
+    subtitle: 'Your subjects, based on your academic details',
+    loading: 'Loading subjects...',
+    listTitle: 'Subject list',
+    listSubtitle:
+      'Academic filters come from your student profile: major, year and semester where available.',
+    searchPlaceholder: 'Search by subject name or code',
+    searchNote: (shown: number, total: number) =>
+      `Only loaded subjects are searched. Results: ${shown} of ${total}.`,
+    emptyTitle: 'No subjects',
+    emptyMessage: 'No subjects are available right now.',
+    emptyIllustrationAlt: 'Illustration showing no subjects',
+    untitled: 'Unnamed subject',
+    badge: 'Subject',
+    codeLabel: (code: string) => `Subject code: ${code}`,
+    codeBadge: (code: string) => `Code ${code}`,
+    filesCount: (count: number) => `${count} files`,
+    groupsCount: (count: number) => `${count} groups`,
+    lecturesCount: (count: number) => `${count} lectures`,
+    academicYear: (name: string) => `Year: ${name}`,
+    semester: (name: string) => `Semester: ${name}`,
+
+    details: {
+      subtitle: 'Subject details',
+      listSubtitle: 'Subject details from the list data',
+      loading: 'Loading subject details...',
+      unavailableTitle: 'Subject unavailable',
+      unavailableMessage: 'This subject could not be found.',
+      academicYearLabel: 'Academic year',
+      semesterLabel: 'Semester',
+      majorLabel: 'Major',
+      orderLabel: 'Display order',
+      linkedTitle: 'Related content',
+      filesTitle: 'Files',
+      filesDescription:
+        'Open the files available in the app. There is no documented per-subject filter at this stage.',
+      groupsTitle: 'Groups',
+      groupsDescription:
+        'Open the available public groups. There is no documented per-subject link at this stage.',
+      announcementsTitle: 'Announcements',
+      announcementsDescription:
+        'There is no documented endpoint for subject announcements at this stage.',
+    },
+
+    errors: {
+      network: 'Could not load subjects. Check your connection and try again.',
+      unauthorized: 'Your session has expired. Please sign in again.',
+      generic: 'Could not load subjects. Please try again.',
+      missingMajor: 'Subjects cannot be loaded until your academic details are complete.',
+    },
+  },
+
+  search: {
+    title: 'Search',
+    subtitle: 'Search the content your account can reach',
+    label: 'Search term',
+    placeholder: 'A subject, group or file name',
+    loading: 'Searching...',
+    partialResults: 'Results are partial because one search source did not respond. Try again.',
+    startTitle: 'Start searching',
+    startMessage:
+      'Type at least two characters. Only results the backend allows for your account are shown.',
+    noResultsMessage: 'Try fewer words, or a different name.',
+    resultsCount: (count: number) => (count === 1 ? '1 result' : `${count} results`),
+    subjectsSection: 'Subjects',
+    groupsSection: 'Groups',
+    filesSection: 'Files',
+    kindSubject: 'Subject',
+    kindGroup: 'Group',
+    kindFile: 'File',
+    untitledSubject: 'Unnamed subject',
+    subjectSubtitle: 'Academic subject',
+    untitledGroup: 'Unnamed group',
+    groupSubtitle: 'Academic group',
+    untitledFile: 'Untitled file',
+    fileSubtitle: 'File available in the app',
+
+    errors: {
+      network: 'Search failed because of the connection. Please try again.',
+      unauthorized: 'Your session has expired. Please sign in again.',
+      generic: 'The search could not be completed right now.',
+    },
+  },
+
+  studentProfile: {
+    setupTitle: 'Complete your academic profile',
+    setupSubtitle: 'Student setup',
+    loading: 'Loading your academic profile...',
+    cardSubtitle:
+      'Choose your academic details and link them to your student number before sending your card.',
+    noAcademicDataTitle: 'No academic data',
+    noAcademicDataMessage:
+      'Universities could not be loaded right now. Try again, or contact the university administration.',
+    studentNumberTitle: 'Student number',
+    studentNumberHelper: 'Enter your student number exactly as it appears on your card.',
+    parseNumber: 'Parse number',
+    universityLabel: 'University',
+    universityEmpty: 'No universities are available right now.',
+    facultyLabel: 'Faculty',
+    facultyEmpty: 'Choose a university first to see its faculties.',
+    majorLabel: 'Major',
+    majorEmpty: 'Choose a faculty first to see its majors.',
+    academicYearLabel: 'Academic year',
+    academicYearEmpty: 'No academic years are available right now.',
+    semesterLabel: 'Semester',
+    semesterEmpty: 'No semesters are available right now.',
+    majorSubjectsTitle: 'Subjects in your major',
+    majorSubjectsLoading: 'Loading the subjects for this major...',
+    majorSubjectsLoaded: (count: number) => `Loaded ${count} subjects for your major.`,
+    majorSubjectsEmpty: 'No subjects are available for this major right now.',
+    saveAndContinue: 'Save and continue to verification',
+
+    selectField: {
+      emptyText: 'No options are available right now.',
+      loading: 'Loading options...',
+      selected: 'Selected',
+    },
+
+    intro: {
+      title: 'Complete your student profile',
+      description:
+        'Your academic profile and student card verification must be complete before you can use the student services.',
+    },
+
+    stepper: {
+      academicProfile: 'Academic profile',
+      studentCard: 'Student card',
+      verificationStatus: 'Verification status',
+    },
+
+    numberPreview: {
+      title: 'Student number preview',
+      hint: 'Enter your student number then press Parse number to see how it reads before saving.',
+      noDetails: 'The number was parsed, but the server returned no further details.',
+      studentNumber: 'Student number',
+      universityCode: 'University code',
+      facultyCode: 'Faculty code',
+      yearCode: 'Year code',
+      serial: 'Serial number',
+      university: 'University',
+      faculty: 'Faculty',
+      academicYear: 'Academic year',
+      semester: 'Semester',
+      major: 'Major',
+    },
+
+    errors: {
+      network: 'Could not reach the server. Check your connection and try again.',
+      validation: 'Please check the academic details you entered.',
+      unauthorized: 'Your session has expired. Please sign in again.',
+      generic: 'Could not complete the action. Please try again.',
+      missingFields: 'Complete every field in your academic profile before continuing.',
+      missingStudentNumber: 'Enter your student number first.',
+    },
+  },
+
+  verificationFlow: {
+    submitTitle: 'Send your student card',
+    resubmitTitle: 'Resend verification',
+    subtitle: 'Student setup',
+    loading: 'Loading your verification status...',
+    cardSubtitle:
+      'Upload a clear photo of your student card from your gallery. Verification is required to use the Panorama services.',
+    whyTitle: 'Why verify?',
+    whyDescription:
+      'Verification confirms you are a university student and opens access to groups, files, printing and support. After you send it, the administration reviews your request and the status appears on this screen.',
+    lockedNote:
+      'A new request cannot be sent while in this state. Follow the status page for updates.',
+    trackStatus: 'Track verification status',
+    submitRequest: 'Send verification request',
+    resubmitRequest: 'Resend request',
+    sentTitle: 'Request sent',
+    sentHeading: 'Your verification request was sent',
+    sentMessage: 'Your verification request has been received and will be reviewed.',
+    sentIllustrationAlt: 'Illustration showing the verification request was sent',
+
+    status: {
+      title: 'Verification status',
+      cardSubtitle: 'Follow the review of your student card, and only resend when asked.',
+      sendCard: 'Send your student card',
+      resendUpdated: 'Send an updated photo',
+      pendingNote:
+        'You will be notified when the review finishes. You can refresh the status later without resending.',
+      refreshStatus: 'Refresh status',
+      approvedTitle: 'Verification approved',
+      approvedDescription: 'You can now enter the app and use all the student services.',
+      enterApp: 'Enter the app',
+    },
+
+    errors: {
+      network:
+        'Could not reach the server while checking your verification status. Please try again.',
+      unauthorized: 'Your session has expired. Please sign in again.',
+      validation: 'Choose a clear photo of your student card.',
+      generic: 'Could not complete the verification request. Please try again.',
+      missingImage: 'Choose a clear photo of your student card before sending.',
+    },
+
+    statusCard: {
+      title: 'Verification status',
+      illustrationAlt: 'Illustration of the verification status',
+      rejectionTitle: 'Reason or note',
+      approvedLabel: 'Verified',
+      approvedDescription:
+        'Your verification request was accepted. You can now use the student services.',
+      pendingLabel: 'Under review',
+      pendingDescription:
+        'Your request is being reviewed. There is no need to resend it unless you are explicitly asked to.',
+      rejectedLabel: 'Rejected',
+      rejectedDescription:
+        'Your verification request was rejected. Check the reason below, then send an updated, clear photo.',
+      needsUpdateLabel: 'Needs an update',
+      needsUpdateDescription:
+        'Your request needs a clearer photo or clearer details. Send an updated student card.',
+      notSubmittedLabel: 'Not sent',
+      notSubmittedDescription:
+        'No verification request has been sent yet. Verification is required to reach groups, files and the student services.',
+    },
+
+    imagePicker: {
+      title: 'Student card photo',
+      description:
+        'Choose a clear photo from your gallery showing the whole student card, with no glare or cropping. Make sure the name and student number are legible.',
+      guideAlt: 'Guide for photographing a student card',
+      exampleAlt: (label: string) => `Example of a ${label} card`,
+      noImage: 'No photo chosen yet.',
+      pick: 'Choose a photo',
+      replace: 'Replace photo',
+      remove: 'Remove photo',
+      permissionDenied: 'Allow the app to access your photos so you can choose your student card.',
+      invalidImage: 'No valid photo was chosen. Please try again.',
+      exampleClear: 'clear',
+      exampleBlurry: 'blurry',
+      exampleCropped: 'cropped',
+      exampleDark: 'dark',
+    },
+  },
+
+  feedback: {
+    centerTitle: 'Your feedback shapes the next release',
+    centerSubtitle: 'Ratings and suggestions',
+    thanksTitle: 'Thank you for contributing',
+    thanksMessage: "Your feedback was recorded safely and will reach the Panorama team's board.",
+    thanksHeaderTitle: 'Help us improve',
+    thanksHeaderSubtitle: 'Share your feedback',
+    trackMine: 'Track my feedback',
+    sendAnother: 'Send another',
+    privacyTitle: 'Structured, trackable feedback',
+    privacyNote:
+      'Never send passwords, verification codes or sensitive data. We use these notes to improve performance, interfaces and features.',
+    kindLabel: 'Type of feedback',
+    ratingLabel: 'Rating',
+    ratingOf: (value: number) => `${value} out of 5`,
+    suggestionTitleLabel: 'Suggestion title',
+    suggestionTitlePlaceholder: 'For example: improve search inside lectures',
+    suggestionDetailsLabel: 'Suggestion details',
+    shareDetailsLabel: 'Details',
+    submit: 'Send to the Panorama team',
+    myFeedback: 'My feedback',
+    publicSuggestions: 'Community suggestions',
+    missingSuggestion: 'Enter a clear title and the details of your suggestion.',
+    missingDetails: 'Write details that help the Panorama team review this.',
+    promptSuccess: 'Thank you for helping us improve Panorama.',
+
+    kinds: {
+      rating: 'General rating',
+      ratingHint: 'Rate your experience with Panorama',
+      suggestion: 'Suggestion',
+      suggestionHint: 'Share a practical improvement idea',
+      issue: 'Problem',
+      issueHint: 'Report a functional or visual defect',
+      complaint: 'Complaint',
+      complaintHint: 'Describe an experience that fell short',
+      praise: 'Praise',
+      praiseHint: 'Tell us what you liked',
+    },
+
+    prompt: {
+      title: 'Your feedback matters',
+      question: 'How was your experience?',
+      noteLabel: 'Optional note',
+      notePlaceholder: 'What did you like? What needs improving?',
+      submit: 'Send rating',
+      later: 'Later',
+    },
+
+    mine: {
+      title: 'My feedback',
+      subtitle: 'Ratings and suggestions',
+      loading: 'Loading your feedback...',
+      addEntry: 'Add feedback',
+      emptyTitle: 'Nothing yet',
+      emptyMessage: 'Send a rating or a suggestion to shape the next release.',
+      sent: 'Your feedback was sent.',
+      teamReply: (message: string) => `Team reply: ${message}`,
+      refresh: 'Refresh list',
+      statusNew: 'New',
+      statusReviewed: 'Reviewed',
+      statusPlanned: 'Planned',
+      statusInProgress: 'In progress',
+      statusResolved: 'Done',
+      statusRejected: 'Not accepted',
+      statusDuplicate: 'Duplicate',
+    },
+
+    publicList: {
+      title: 'Community suggestions',
+      subtitle: 'Ideas that were accepted or are being worked on',
+      loading: 'Loading suggestions...',
+      shareIdea: 'Share your idea',
+      emptyTitle: 'No published suggestions',
+      emptyMessage:
+        'Suggestions the Panorama team accepts for discussion or delivery will appear here.',
+      votes: (count: number) => (count === 1 ? '1 supporter' : `${count} supporters`),
+      vote: 'Support this',
+      unvote: 'Remove support',
+    },
+
+    errors: {
+      network: 'Could not send your feedback. Check your connection and try again.',
+      rateLimited: 'Several ratings were sent recently. Please try again later.',
+      generic: 'Could not send your feedback right now.',
+    },
   },
 
   verification: {
@@ -985,6 +1515,28 @@ export const en: TranslationCatalog = {
       privacy: 'Privacy policy',
       terms: 'Terms and conditions',
       about: 'About Panorama',
+    },
+
+    changePassword: {
+      title: 'Change password',
+      subtitle: 'Change the password for this account',
+      note: 'Passwords are never stored beyond the current form draft, and are never written to logs.',
+      current: 'Current password',
+      new: 'New password',
+      confirm: 'Confirm new password',
+      success: 'Your password has been changed.',
+      currentRequired: 'Enter your current password.',
+      newRequired: 'Enter a new password.',
+      confirmRequired: 'Confirm your new password.',
+      tooShort: 'The new password must be at least 8 characters.',
+      mismatch: 'The two passwords do not match.',
+    },
+
+    errors: {
+      network: 'Could not change your password. Check your connection and try again.',
+      unauthorized: 'Your session has expired. Please sign in again.',
+      validation: 'Please check the password details you entered.',
+      generic: 'Could not change your password. Please try again.',
     },
   },
 };

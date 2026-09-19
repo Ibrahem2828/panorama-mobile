@@ -76,6 +76,12 @@
         }
       ]
     },
+    "setupFiles": [
+      "<rootDir>/jest.setup.js"
+    ],
+    "transformIgnorePatterns": [
+      "node_modules/(?!(?:jest-)?react-native|@react-native|@react-navigation|expo|expo-.*|@expo|@expo/.*|react-native-.*)"
+    ],
     "testMatch": [
       "**/__tests__/**/*.test.ts",
       "**/__tests__/**/*.test.tsx"

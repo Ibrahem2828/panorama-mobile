@@ -14,10 +14,12 @@ import {
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { useSettingsStore } from '../store';
+import { useTranslation } from '../../../i18n';
 
 type ChangePasswordScreenProps = NativeStackScreenProps<ProfileStackParamList, 'ChangePassword'>;
 
 export function ChangePasswordScreen({ navigation }: ChangePasswordScreenProps) {
+  const { t } = useTranslation();
   const passwordDraft = useSettingsStore((state) => state.passwordDraft);
   const passwordValidation = useSettingsStore((state) => state.passwordValidation);
   const isChangingPassword = useSettingsStore((state) => state.isChangingPassword);
@@ -43,19 +45,22 @@ export function ChangePasswordScreen({ navigation }: ChangePasswordScreenProps) 
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <Stack gap="md">
-          <AppHeader subtitle="تغيير كلمة المرور للحساب الحالي" title="تغيير كلمة المرور" />
-          <AppButton onPress={handleBack} title="رجوع" variant="ghost" />
+          <AppHeader
+            subtitle={t.settings.changePassword.subtitle}
+            title={t.settings.changePassword.title}
+          />
+          <AppButton onPress={handleBack} title={t.common.back} variant="ghost" />
         </Stack>
 
         <AppCard variant="muted">
           <AppText color="secondary" variant="bodySmall">
-            لا يتم حفظ كلمات المرور خارج مسودة الإدخال الحالية، ولا يتم تسجيلها في السجلات.
+            {t.settings.changePassword.note}
           </AppText>
         </AppCard>
 
         <AppTextInput
           error={passwordValidation.old_password}
-          label="كلمة المرور الحالية"
+          label={t.settings.changePassword.current}
           onChangeText={setOldPassword}
           secureTextEntry
           value={passwordDraft.old_password}
@@ -63,7 +68,7 @@ export function ChangePasswordScreen({ navigation }: ChangePasswordScreenProps) 
 
         <AppTextInput
           error={passwordValidation.new_password}
-          label="كلمة المرور الجديدة"
+          label={t.settings.changePassword.new}
           onChangeText={setNewPassword}
           secureTextEntry
           value={passwordDraft.new_password}
@@ -71,7 +76,7 @@ export function ChangePasswordScreen({ navigation }: ChangePasswordScreenProps) 
 
         <AppTextInput
           error={passwordValidation.new_password_confirm}
-          label="تأكيد كلمة المرور الجديدة"
+          label={t.settings.changePassword.confirm}
           onChangeText={setNewPasswordConfirm}
           secureTextEntry
           value={passwordDraft.new_password_confirm}
@@ -99,7 +104,7 @@ export function ChangePasswordScreen({ navigation }: ChangePasswordScreenProps) 
           onPress={() => {
             void changePassword();
           }}
-          title="تغيير كلمة المرور"
+          title={t.settings.changePassword.title}
         />
       </Stack>
     </AppScreen>

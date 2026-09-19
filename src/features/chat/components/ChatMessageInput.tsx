@@ -1,4 +1,5 @@
 import { AppButton, AppTextInput, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 
 type ChatMessageInputProps = {
   value: string;
@@ -19,6 +20,7 @@ export function ChatMessageInput({
   onSubmit,
   onResend,
 }: ChatMessageInputProps) {
+  const { t } = useTranslation();
   return (
     <Stack gap="md">
       <AppTextInput
@@ -27,7 +29,7 @@ export function ChatMessageInput({
         maxLength={1000}
         multiline
         onChangeText={onChangeText}
-        placeholder="اكتب رسالة..."
+        placeholder={t.chat.inputPlaceholder}
         value={value}
       />
       <Stack direction="horizontal" gap="sm" wrap>
@@ -35,10 +37,10 @@ export function ChatMessageInput({
           disabled={disabled || value.trim().length === 0}
           loading={loading}
           onPress={onSubmit}
-          title="إرسال"
+          title={t.chat.send}
         />
         {error && onResend ? (
-          <AppButton loading={loading} onPress={onResend} title="إعادة الإرسال" variant="outline" />
+          <AppButton loading={loading} onPress={onResend} title={t.chat.resend} variant="outline" />
         ) : null}
       </Stack>
     </Stack>

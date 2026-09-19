@@ -1,12 +1,14 @@
 import { images } from '../../../assets/images';
 import { EmptyState } from '../../../components';
+import { useTranslation } from '../../../i18n';
 
 export function ChatEmptyState() {
+  const { t } = useTranslation();
   return (
     <EmptyState
-      message="لا توجد رسائل بعد. كن أول من يبدأ النقاش إذا كانت صلاحية الإرسال متاحة."
-      title="لا توجد رسائل بعد"
-      illustrationLabel="رسم يوضح عدم وجود رسائل"
+      message={t.chat.emptyMessage}
+      title={t.chat.emptyTitle}
+      illustrationLabel={t.chat.emptyIllustrationAlt}
       illustrationSource={images.emptyStates.chat}
     />
   );

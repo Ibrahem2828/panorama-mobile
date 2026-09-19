@@ -8,6 +8,25 @@ type RootErrorBoundaryProps = { children: ReactNode };
 type RootErrorBoundaryState = { error: Error | null };
 
 /**
+ * Inline rather than from the i18n catalog, and keyed off the running layout direction
+ * rather than the locale store: the store is one of the modules that could have thrown,
+ * and a fallback that depends on it would fail exactly when it is needed.
+ */
+const COPY = {
+  ar: {
+    title: 'حدث خطأ غير متوقع',
+    message: 'تعذّر عرض هذه الشاشة. يمكنك المحاولة مرة أخرى، وإن تكرر الخطأ أعد تشغيل التطبيق.',
+    retry: 'إعادة المحاولة',
+  },
+  en: {
+    title: 'Something went wrong',
+    message:
+      'This screen could not be displayed. Try again, and restart the app if it keeps happening.',
+    retry: 'Try again',
+  },
+} as const;
+
+/**
  * Last-resort boundary around the entire tree.
  *
  * It renders with React Native primitives and literal styles only, never the app's
@@ -40,20 +59,20 @@ export class RootErrorBoundary extends Component<RootErrorBoundaryProps, RootErr
     }
 
     const isDevelopment = __DEV__;
-    const writingDirection = I18nManager.isRTL ? 'rtl' : 'ltr';
+    const isRTL = I18nManager.isRTL;
+    const writingDirection = isRTL ? 'rtl' : 'ltr';
+    const copy = isRTL ? COPY.ar : COPY.en;
 
     return (
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={[styles.title, { writingDirection }]}>حدث خطأ غير متوقع</Text>
-          <Text style={[styles.message, { writingDirection }]}>
-            تعذّر عرض هذه الشاشة. يمكنك المحاولة مرة أخرى، وإن تكرر الخطأ أعد تشغيل التطبيق.
-          </Text>
+          <Text style={[styles.title, { writingDirection }]}>{copy.title}</Text>
+          <Text style={[styles.message, { writingDirection }]}>{copy.message}</Text>
           {isDevelopment ? (
             <Text style={styles.diagnostic}>{`${error.name}: ${error.message}`}</Text>
           ) : null}
           <Pressable accessibilityRole="button" onPress={this.handleRetry} style={styles.button}>
-            <Text style={styles.buttonLabel}>إعادة المحاولة</Text>
+            <Text style={styles.buttonLabel}>{copy.retry}</Text>
           </Pressable>
         </ScrollView>
       </View>

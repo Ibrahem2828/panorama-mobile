@@ -26,6 +26,7 @@ import {
   isVerificationApproved,
 } from '../services';
 import { useVerificationStore } from '../store';
+import { useTranslation } from '../../../i18n';
 
 type SubmitVerificationNavigation = NativeStackNavigationProp<
   StudentSetupStackParamList,
@@ -33,6 +34,7 @@ type SubmitVerificationNavigation = NativeStackNavigationProp<
 >;
 
 export function SubmitVerificationScreen() {
+  const { t } = useTranslation();
   const [submitSucceeded, setSubmitSucceeded] = useState(false);
   const navigation = useNavigation<SubmitVerificationNavigation>();
   const verification = useVerificationStore((state) => state.verification);
@@ -70,9 +72,9 @@ export function SubmitVerificationScreen() {
   if (isLoadingVerification && !hasLoadedVerification) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="إعداد الطالب" title="إرسال بطاقة الطالب" />
+        <AppHeader subtitle={t.verificationFlow.subtitle} title={t.verificationFlow.submitTitle} />
         <StudentSetupStepper currentStep={2} />
-        <LoadingState message="جاري تحميل حالة التوثيق..." />
+        <LoadingState message={t.verificationFlow.loading} />
       </AppScreen>
     );
   }
@@ -80,20 +82,20 @@ export function SubmitVerificationScreen() {
   if (submitSucceeded) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="إعداد الطالب" title="تم إرسال الطلب" />
+        <AppHeader subtitle={t.verificationFlow.subtitle} title={t.verificationFlow.sentTitle} />
         <StudentSetupStepper currentStep={2} />
         <SuccessState
           action={
             <AppButton
               fullWidth
               onPress={() => navigation.replace(StudentSetupRoutes.VerificationStatus)}
-              title="متابعة حالة التوثيق"
+              title={t.verificationFlow.trackStatus}
             />
           }
-          illustrationLabel="رسم يوضح نجاح إرسال طلب التوثيق"
+          illustrationLabel={t.verificationFlow.sentIllustrationAlt}
           illustrationSource={images.illustrations.success}
-          message="تم استلام طلب التوثيق وسيتم مراجعته من الإدارة."
-          title="تم إرسال طلب التوثيق"
+          message={t.verificationFlow.sentMessage}
+          title={t.verificationFlow.sentHeading}
         />
       </AppScreen>
     );
@@ -102,7 +104,7 @@ export function SubmitVerificationScreen() {
   if (errorMessage && !hasLoadedVerification) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="إعداد الطالب" title="إرسال بطاقة الطالب" />
+        <AppHeader subtitle={t.verificationFlow.subtitle} title={t.verificationFlow.submitTitle} />
         <StudentSetupStepper currentStep={2} />
         <ErrorState
           message={errorMessage}
@@ -124,20 +126,25 @@ export function SubmitVerificationScreen() {
           <Stack gap="md">
             <AppHeader
               leftAction={
-                <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+                <AppButton
+                  onPress={() => navigation.goBack()}
+                  title={t.common.back}
+                  variant="ghost"
+                />
               }
-              subtitle="ارفع صورة واضحة لبطاقة الطالب من المعرض. التوثيق مطلوب للوصول إلى خدمات بانوراما."
-              title={shouldResubmit ? 'إعادة إرسال التوثيق' : 'إرسال بطاقة الطالب'}
+              subtitle={t.verificationFlow.cardSubtitle}
+              title={
+                shouldResubmit ? t.verificationFlow.resubmitTitle : t.verificationFlow.submitTitle
+              }
             />
             <StudentSetupStepper currentStep={2} />
           </Stack>
 
           <AppCard padding="md" variant="muted">
             <Stack gap="xs">
-              <AppText variant="title">لماذا التوثيق؟</AppText>
+              <AppText variant="title">{t.verificationFlow.whyTitle}</AppText>
               <AppText color="secondary" variant="bodySmall">
-                يؤكد التوثيق هويتك كطالب جامعي ويفتح الوصول إلى المجموعات والملفات والطباعة والدعم.
-                بعد الإرسال، ستراجع الإدارة طلبك وتصلك الحالة في هذه الشاشة.
+                {t.verificationFlow.whyDescription}
               </AppText>
             </Stack>
           </AppCard>
@@ -147,12 +154,12 @@ export function SubmitVerificationScreen() {
           {isReadOnlyStatus ? (
             <Stack gap="md">
               <AppText color="secondary" variant="bodySmall">
-                لا يمكن إرسال طلب جديد أثناء هذه الحالة. تابع صفحة الحالة للتحديثات.
+                {t.verificationFlow.lockedNote}
               </AppText>
               <AppButton
                 fullWidth
                 onPress={() => navigation.replace(StudentSetupRoutes.VerificationStatus)}
-                title="متابعة حالة التوثيق"
+                title={t.verificationFlow.trackStatus}
                 variant="outline"
               />
             </Stack>
@@ -175,7 +182,11 @@ export function SubmitVerificationScreen() {
                 fullWidth
                 loading={isSubmitting}
                 onPress={handleSubmit}
-                title={shouldResubmit ? 'إعادة إرسال الطلب' : 'إرسال طلب التوثيق'}
+                title={
+                  shouldResubmit
+                    ? t.verificationFlow.resubmitRequest
+                    : t.verificationFlow.submitRequest
+                }
               />
             </Stack>
           )}

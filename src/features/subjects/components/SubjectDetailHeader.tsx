@@ -7,13 +7,15 @@ import {
 } from '../services';
 import type { Subject } from '../types';
 import { SubjectMetaRow } from './SubjectMetaRow';
+import { useTranslation } from '../../../i18n';
 
 type SubjectDetailHeaderProps = {
   subject: Subject;
 };
 
 export function SubjectDetailHeader({ subject }: SubjectDetailHeaderProps) {
-  const title = getSubjectDisplayName(subject);
+  const { t } = useTranslation();
+  const title = getSubjectDisplayName(subject, t.subjects);
   const code = getSubjectCode(subject);
   const description = getSubjectDescription(subject);
 
@@ -29,15 +31,24 @@ export function SubjectDetailHeader({ subject }: SubjectDetailHeaderProps) {
               </AppText>
             ) : null}
           </Stack>
-          <AppBadge label={code ? `رمز ${code}` : 'مادة'} variant="brand" />
+          <AppBadge label={code ? t.subjects.codeBadge(code) : t.subjects.badge} variant="brand" />
         </Stack>
 
         <Stack gap="xs">
-          <SubjectMetaRow label="السنة الأكاديمية" value={getEntityLabel(subject.academic_year)} />
-          <SubjectMetaRow label="الفصل" value={getEntityLabel(subject.semester)} />
-          <SubjectMetaRow label="الاختصاص" value={getEntityLabel(subject.major)} />
           <SubjectMetaRow
-            label="ترتيب العرض"
+            label={t.subjects.details.academicYearLabel}
+            value={getEntityLabel(subject.academic_year)}
+          />
+          <SubjectMetaRow
+            label={t.subjects.details.semesterLabel}
+            value={getEntityLabel(subject.semester)}
+          />
+          <SubjectMetaRow
+            label={t.subjects.details.majorLabel}
+            value={getEntityLabel(subject.major)}
+          />
+          <SubjectMetaRow
+            label={t.subjects.details.orderLabel}
             value={typeof subject.order === 'number' ? String(subject.order) : null}
           />
         </Stack>

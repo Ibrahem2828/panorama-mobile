@@ -6,6 +6,7 @@ import { colors, spacing } from '../../../theme';
 import type { StatusVariant } from '../../../types/common';
 import { getVerificationRejectionReason, getVerificationStatus } from '../services';
 import type { VerificationRecord } from '../types';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
 
 type VerificationStatusCardProps = {
   verification: VerificationRecord | null;
@@ -17,48 +18,50 @@ type VerificationStatusView = {
   variant: StatusVariant;
 };
 
-function getStatusView(verification: VerificationRecord | null): VerificationStatusView {
+function getStatusView(
+  verification: VerificationRecord | null,
+  t: TranslationCatalog['verificationFlow']['statusCard'],
+): VerificationStatusView {
   const status = getVerificationStatus(verification);
 
   switch (status) {
     case 'approved':
       return {
-        label: 'موثق',
-        description: 'تم قبول طلب التوثيق. يمكنك الآن استخدام خدمات التطبيق للطلاب.',
+        label: t.approvedLabel,
+        description: t.approvedDescription,
         variant: 'success',
       };
     case 'pending':
       return {
-        label: 'قيد المراجعة',
-        description:
-          'طلبك قيد المراجعة من الإدارة. لا حاجة لإعادة الإرسال إلا إذا طُلب منك ذلك صراحة.',
+        label: t.pendingLabel,
+        description: t.pendingDescription,
         variant: 'warning',
       };
     case 'rejected':
       return {
-        label: 'مرفوض',
-        description: 'تم رفض طلب التوثيق. راجع السبب أدناه ثم أرسل صورة محدثة وواضحة.',
+        label: t.rejectedLabel,
+        description: t.rejectedDescription,
         variant: 'error',
       };
     case 'needs_update':
       return {
-        label: 'بحاجة إلى تحديث',
-        description: 'يحتاج طلبك إلى صورة أو بيانات أوضح. أرسل بطاقة طالب محدثة.',
+        label: t.needsUpdateLabel,
+        description: t.needsUpdateDescription,
         variant: 'warning',
       };
     case 'none':
     default:
       return {
-        label: 'غير مرسل',
-        description:
-          'لم يتم إرسال طلب توثيق بعد. التوثيق مطلوب للوصول إلى المجموعات والملفات والخدمات الطلابية.',
+        label: t.notSubmittedLabel,
+        description: t.notSubmittedDescription,
         variant: 'neutral',
       };
   }
 }
 
 export function VerificationStatusCard({ verification }: VerificationStatusCardProps) {
-  const statusView = getStatusView(verification);
+  const { t } = useTranslation();
+  const statusView = getStatusView(verification, t.verificationFlow.statusCard);
   const rejectionReason = getVerificationRejectionReason(verification);
   const status = getVerificationStatus(verification);
   const illustration =
@@ -73,10 +76,14 @@ export function VerificationStatusCard({ verification }: VerificationStatusCardP
   return (
     <AppCard padding="lg" variant="default">
       <Stack gap="md">
-        <Illustration accessibilityLabel="رسم يوضح حالة التوثيق" size="lg" source={illustration} />
+        <Illustration
+          accessibilityLabel={t.verificationFlow.statusCard.illustrationAlt}
+          size="lg"
+          source={illustration}
+        />
 
         <View style={styles.header}>
-          <AppText variant="title">حالة التوثيق</AppText>
+          <AppText variant="title">{t.verificationFlow.statusCard.title}</AppText>
           <AppBadge label={statusView.label} size="md" variant={statusView.variant} />
         </View>
 
@@ -88,7 +95,7 @@ export function VerificationStatusCard({ verification }: VerificationStatusCardP
           <View style={styles.reasonBox}>
             <Stack gap="xs">
               <AppText color="error" variant="bodySmall" weight="600">
-                سبب الرفض أو الملاحظة
+                {t.verificationFlow.statusCard.rejectionTitle}
               </AppText>
               <AppText color="secondary" variant="bodySmall">
                 {rejectionReason}

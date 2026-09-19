@@ -8,10 +8,12 @@ import { useStudentProfileStore } from '../features/student-profile';
 import { useVerificationStore } from '../features/verification';
 import { getStudentSetupInitialRoute, resolveStudentJourneyPhase } from './guards/studentJourney';
 import type { StudentSetupStackParamList } from './types';
+import { useTranslation } from '../i18n';
 
 type ResolverNavigation = NativeStackNavigationProp<StudentSetupStackParamList, 'SetupFlow'>;
 
 export function StudentSetupFlowResolver() {
+  const { t } = useTranslation();
   const navigation = useNavigation<ResolverNavigation>();
   const user = useAuthStore((state) => state.user);
   const profile = useStudentProfileStore((state) => state.profile);
@@ -41,5 +43,7 @@ export function StudentSetupFlowResolver() {
     navigation.replace(initialRoute);
   }, [initialRoute, navigation, phase]);
 
-  return <LoadingState centered message="جاري تحميل بيانات الإعداد..." title="إعداد الطالب" />;
+  return (
+    <LoadingState centered message={t.navigation.loadingSetup} title={t.navigation.studentSetup} />
+  );
 }

@@ -16,52 +16,27 @@ import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { colors, radius, spacing } from '../../../theme';
 import { markOnboardingSeen } from '../services';
+import { useTranslation } from '../../../i18n';
 
 type OnboardingScreenProps = NativeStackScreenProps<PublicStackParamList, 'Onboarding'>;
 
-type OnboardingSlide = {
-  image: typeof images.onboarding.university;
-  imageLabel: string;
-  title: string;
-  description: string;
-};
-
-const SLIDES = [
-  {
-    image: images.onboarding.university,
-    imageLabel: 'رسم يوضح الحياة الجامعية داخل تطبيق بانوراما',
-    title: 'كل حياتك الجامعية في مكان واحد',
-    description: 'بانوراما يجمع ملفاتك، موادك، المجموعات، وإعلاناتك الجامعية في تجربة واحدة سهلة.',
-  },
-  {
-    image: images.onboarding.verification,
-    imageLabel: 'رسم يوضح توثيق الحساب الجامعي',
-    title: 'وثّق حسابك الجامعي بأمان',
-    description:
-      'ارفع بطاقتك الجامعية ليتم التحقق من بياناتك ومنحك الوصول إلى المواد والخدمات المناسبة لك.',
-  },
-  {
-    image: images.onboarding.groups,
-    imageLabel: 'رسم يوضح مجموعات المواد الجامعية',
-    title: 'انضم إلى مجموعات موادك',
-    description: 'تابع النقاشات، الإعلانات، والملفات المرتبطة بموادك وجامعتك بسهولة.',
-  },
-  {
-    image: images.onboarding.filesPrinting,
-    imageLabel: 'رسم يوضح الملفات وطلبات الطباعة',
-    title: 'ملفاتك وطباعتك بخطوات بسيطة',
-    description: 'افتح الملفات الجامعية، اطلب طباعتها، وتابع حالة الطلب من التطبيق.',
-  },
-] as const satisfies readonly OnboardingSlide[];
-
-const FIRST_SLIDE = SLIDES[0];
+// Images only; the copy for each slide comes from the catalog at the same index.
+const SLIDE_IMAGES = [
+  images.onboarding.university,
+  images.onboarding.verification,
+  images.onboarding.groups,
+  images.onboarding.filesPrinting,
+] as const;
 
 export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
+  const { t } = useTranslation();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isCompleting, setIsCompleting] = useState(false);
   const { width } = useWindowDimensions();
-  const activeSlide = SLIDES[activeIndex] ?? FIRST_SLIDE;
-  const isFinalSlide = activeIndex === SLIDES.length - 1;
+  const slides = t.onboarding.slides;
+  const activeSlide = slides[activeIndex] ?? slides[0]!;
+  const activeImage = SLIDE_IMAGES[activeIndex] ?? SLIDE_IMAGES[0];
+  const isFinalSlide = activeIndex === slides.length - 1;
   const imageWidth = useMemo(() => Math.min(Math.max(width - spacing.xxl * 2, 220), 320), [width]);
 
   // Subtle slide entrance + cross-fade animation (React Native Animated only)
@@ -106,7 +81,7 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
       return;
     }
 
-    setActiveIndex((currentIndex) => Math.min(currentIndex + 1, SLIDES.length - 1));
+    setActiveIndex((currentIndex) => Math.min(currentIndex + 1, slides.length - 1));
   }
 
   return (
@@ -114,7 +89,7 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
       <Stack gap="xl" style={styles.root}>
         <View style={styles.skipRow}>
           <Pressable
-            accessibilityLabel="تخطي التعريف بالتطبيق"
+            accessibilityLabel={t.onboarding.skipLabel}
             accessibilityRole="button"
             disabled={isCompleting}
             onPress={() => {
@@ -123,7 +98,7 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
             style={({ pressed }) => [styles.skipButton, pressed ? styles.pressed : null]}
           >
             <AppText color="brand" variant="button">
-              تخطي
+              {t.onboarding.skip}
             </AppText>
           </Pressable>
         </View>
@@ -141,7 +116,7 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
             accessibilityIgnoresInvertColors
             accessibilityLabel={activeSlide.imageLabel}
             resizeMode="contain"
-            source={activeSlide.image}
+            source={activeImage}
             style={[styles.illustration, { width: imageWidth }]}
           />
         </Animated.View>
@@ -163,8 +138,8 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
           </AppText>
         </Animated.View>
 
-        <View accessibilityLabel="مؤشر صفحات التعريف" style={styles.pagination}>
-          {SLIDES.map((slide, index) => (
+        <View accessibilityLabel={t.onboarding.paginationLabel} style={styles.pagination}>
+          {slides.map((slide, index) => (
             <View
               key={slide.title}
               style={[styles.dot, index === activeIndex ? styles.dotActive : null]}
@@ -176,7 +151,7 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
           <AppButton
             disabled={activeIndex === 0 || isCompleting}
             onPress={() => setActiveIndex((currentIndex) => Math.max(currentIndex - 1, 0))}
-            title="السابق"
+            title={t.onboarding.previous}
             variant="ghost"
           />
           <AppButton
@@ -184,7 +159,7 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
             loading={isCompleting}
             onPress={handleNext}
             style={styles.primaryAction}
-            title={isFinalSlide ? 'ابدأ الآن' : 'التالي'}
+            title={isFinalSlide ? t.onboarding.start : t.onboarding.next}
           />
         </Stack>
       </Stack>

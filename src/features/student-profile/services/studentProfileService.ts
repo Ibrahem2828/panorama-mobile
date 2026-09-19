@@ -16,13 +16,11 @@ import type {
   StudentProfile,
   StudentProfileUpdateInput,
 } from '../types';
+import type { TranslationCatalog } from '../../../i18n';
 
 const ACADEMIC_PAGE_SIZE = 500;
 
-const NETWORK_MESSAGE = 'تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت ثم حاول مرة أخرى.';
-const VALIDATION_MESSAGE = 'يرجى التأكد من البيانات الأكاديمية المدخلة.';
-const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const GENERIC_MESSAGE = 'تعذر تنفيذ العملية. حاول مرة أخرى.';
+type StudentProfileCatalog = TranslationCatalog['studentProfile'];
 
 type AcademicListItem = ApiAcademicOption | SubjectRecord;
 type FlexibleAcademicListResponse = PaginatedResult<AcademicListItem> | AcademicListItem[];
@@ -70,22 +68,22 @@ function isNotFound(error: unknown): boolean {
   return normalizeApiError(error).code === 'NOT_FOUND';
 }
 
-export function toSafeStudentProfileErrorMessage(error: unknown): string {
+export function toSafeStudentProfileErrorMessage(error: unknown, t: StudentProfileCatalog): string {
   const normalizedError = normalizeApiError(error);
 
   if (normalizedError.code === 'NETWORK_ERROR' || normalizedError.code === 'TIMEOUT') {
-    return NETWORK_MESSAGE;
+    return t.errors.network;
   }
 
   if (normalizedError.code === 'UNAUTHORIZED') {
-    return UNAUTHORIZED_MESSAGE;
+    return t.errors.unauthorized;
   }
 
   if (normalizedError.code === 'VALIDATION_ERROR') {
-    return VALIDATION_MESSAGE;
+    return t.errors.validation;
   }
 
-  return normalizedError.message || GENERIC_MESSAGE;
+  return normalizedError.message || t.errors.generic;
 }
 
 export async function getAcademicSetupOptions(

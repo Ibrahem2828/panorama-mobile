@@ -5,11 +5,10 @@ import {
   type SubjectRecord,
 } from '../../../api';
 import type { Id, Subject } from '../types';
+import type { TranslationCatalog } from '../../../i18n';
 
 const SUBJECTS_PAGE_SIZE = 500;
-const NETWORK_MESSAGE = 'تعذر تحميل المواد. تحقق من اتصال الإنترنت وحاول مرة أخرى.';
-const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const GENERIC_MESSAGE = 'تعذر تحميل المواد. حاول مرة أخرى.';
+type SubjectsCatalog = TranslationCatalog['subjects'];
 
 export type LoadSubjectsInput = {
   majorId: Id;
@@ -67,22 +66,22 @@ function normalizeSubject(record: SubjectRecord): Subject {
   };
 }
 
-export function toSafeSubjectsErrorMessage(error: unknown): string {
+export function toSafeSubjectsErrorMessage(error: unknown, t: SubjectsCatalog): string {
   const normalizedError = normalizeApiError(error);
 
   if (normalizedError.code === 'NETWORK_ERROR' || normalizedError.code === 'TIMEOUT') {
-    return NETWORK_MESSAGE;
+    return t.errors.network;
   }
 
   if (normalizedError.code === 'UNAUTHORIZED') {
-    return UNAUTHORIZED_MESSAGE;
+    return t.errors.unauthorized;
   }
 
-  return normalizedError.message || GENERIC_MESSAGE;
+  return normalizedError.message || t.errors.generic;
 }
 
-export function getSubjectDisplayName(subject: Subject): string {
-  return toText(subject.name) ?? toText(subject.title) ?? 'مادة بدون اسم';
+export function getSubjectDisplayName(subject: Subject, t: SubjectsCatalog): string {
+  return toText(subject.name) ?? toText(subject.title) ?? t.untitled;
 }
 
 export function getSubjectCode(subject: Subject): string | null {
@@ -112,7 +111,11 @@ export function getEntityLabel(value: unknown): string | null {
   );
 }
 
-export function filterSubjectsBySearch(subjects: Subject[], search: string): Subject[] {
+export function filterSubjectsBySearch(
+  subjects: Subject[],
+  search: string,
+  t: SubjectsCatalog,
+): Subject[] {
   const query = search.trim().toLocaleLowerCase();
 
   if (!query) {
@@ -121,7 +124,7 @@ export function filterSubjectsBySearch(subjects: Subject[], search: string): Sub
 
   return subjects.filter((subject) => {
     const searchableText = [
-      getSubjectDisplayName(subject),
+      getSubjectDisplayName(subject, t),
       getSubjectCode(subject),
       getSubjectDescription(subject),
     ]

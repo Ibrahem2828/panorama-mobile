@@ -28,6 +28,7 @@ import {
   StudentSetupStepper,
 } from '../components';
 import { useStudentProfileStore } from '../store';
+import { useTranslation } from '../../../i18n';
 
 type AcademicProfileSetupNavigation = NativeStackNavigationProp<
   StudentSetupStackParamList,
@@ -53,6 +54,7 @@ function canSubmitProfile(input: {
 }
 
 export function AcademicProfileSetupScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<AcademicProfileSetupNavigation>();
   const user = useAuthStore((state) => state.user);
   const bootstrap = useStudentProfileStore((state) => state.bootstrap);
@@ -129,9 +131,9 @@ export function AcademicProfileSetupScreen() {
   if (initialLoading) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="إعداد الطالب" title="إكمال الملف الأكاديمي" />
+        <AppHeader subtitle={t.studentProfile.setupSubtitle} title={t.studentProfile.setupTitle} />
         <StudentSetupStepper currentStep={1} />
-        <LoadingState message="جاري تحميل بيانات الملف الأكاديمي..." />
+        <LoadingState message={t.studentProfile.loading} />
       </AppScreen>
     );
   }
@@ -139,7 +141,7 @@ export function AcademicProfileSetupScreen() {
   if (hasProfileLoadError) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="إعداد الطالب" title="إكمال الملف الأكاديمي" />
+        <AppHeader subtitle={t.studentProfile.setupSubtitle} title={t.studentProfile.setupTitle} />
         <StudentSetupStepper currentStep={1} />
         <ErrorState message={errorMessage ?? undefined} onRetry={handleRetry} />
       </AppScreen>
@@ -155,8 +157,8 @@ export function AcademicProfileSetupScreen() {
         <Stack gap="xl">
           <Stack gap="md">
             <AppHeader
-              subtitle="اختر بياناتك الدراسية واربطها بالرقم الجامعي قبل إرسال بطاقة الطالب."
-              title="إكمال الملف الأكاديمي"
+              subtitle={t.studentProfile.cardSubtitle}
+              title={t.studentProfile.setupTitle}
             />
             <StudentSetupStepper currentStep={1} />
           </Stack>
@@ -165,23 +167,23 @@ export function AcademicProfileSetupScreen() {
 
           {showEmptyUniversities ? (
             <EmptyState
-              message="تعذر تحميل الجامعات حاليا. حاول مرة أخرى أو تواصل مع إدارة الجامعة."
-              title="لا توجد بيانات أكاديمية"
-              action={<AppButton onPress={handleRetry} title="إعادة المحاولة" variant="outline" />}
+              message={t.studentProfile.noAcademicDataMessage}
+              title={t.studentProfile.noAcademicDataTitle}
+              action={<AppButton onPress={handleRetry} title={t.common.retry} variant="outline" />}
             />
           ) : (
             <>
               <Stack gap="md">
-                <AppText variant="title">الرقم الجامعي</AppText>
+                <AppText variant="title">{t.studentProfile.studentNumberTitle}</AppText>
                 <AppTextInput
-                  accessibilityLabel="الرقم الجامعي"
+                  accessibilityLabel={t.studentProfile.studentNumberTitle}
                   autoCapitalize="none"
                   autoCorrect={false}
                   disabled={isSubmitting}
                   error={parseErrorMessage ?? undefined}
-                  helperText="أدخل رقمك الجامعي كما يظهر في بطاقة الطالب."
+                  helperText={t.studentProfile.studentNumberHelper}
                   keyboardType="number-pad"
-                  label="الرقم الجامعي"
+                  label={t.studentProfile.studentNumberTitle}
                   onChangeText={setStudentNumber}
                   placeholder="2150094"
                   value={studentNumber}
@@ -191,16 +193,16 @@ export function AcademicProfileSetupScreen() {
                   onPress={() => {
                     void parseCurrentStudentNumber();
                   }}
-                  title="تحليل الرقم"
+                  title={t.studentProfile.parseNumber}
                   variant="outline"
                 />
                 <StudentNumberPreviewCard parsedStudentNumber={parsedStudentNumber} />
               </Stack>
 
               <AcademicSelectField
-                emptyText="لا توجد جامعات متاحة حاليا."
+                emptyText={t.studentProfile.universityEmpty}
                 isLoading={isLoadingOptions}
-                label="الجامعة"
+                label={t.studentProfile.universityLabel}
                 onSelect={selectUniversity}
                 options={universities}
                 selectedId={selectedUniversityId}
@@ -208,9 +210,9 @@ export function AcademicProfileSetupScreen() {
 
               <AcademicSelectField
                 disabled={!selectedUniversityId}
-                emptyText="اختر الجامعة أولا لعرض الكليات."
+                emptyText={t.studentProfile.facultyEmpty}
                 isLoading={isLoadingFaculties}
-                label="الكلية"
+                label={t.studentProfile.facultyLabel}
                 onSelect={selectFaculty}
                 options={faculties}
                 selectedId={selectedFacultyId}
@@ -218,27 +220,27 @@ export function AcademicProfileSetupScreen() {
 
               <AcademicSelectField
                 disabled={!selectedFacultyId}
-                emptyText="اختر الكلية أولا لعرض الاختصاصات."
+                emptyText={t.studentProfile.majorEmpty}
                 isLoading={isLoadingMajors}
-                label="الاختصاص"
+                label={t.studentProfile.majorLabel}
                 onSelect={selectMajor}
                 options={majors}
                 selectedId={selectedMajorId}
               />
 
               <AcademicSelectField
-                emptyText="لا توجد سنوات أكاديمية متاحة حاليا."
+                emptyText={t.studentProfile.academicYearEmpty}
                 isLoading={isLoadingOptions}
-                label="السنة الأكاديمية"
+                label={t.studentProfile.academicYearLabel}
                 onSelect={selectAcademicYear}
                 options={academicYears}
                 selectedId={selectedAcademicYearId}
               />
 
               <AcademicSelectField
-                emptyText="لا توجد فصول دراسية متاحة حاليا."
+                emptyText={t.studentProfile.semesterEmpty}
                 isLoading={isLoadingOptions}
-                label="الفصل الدراسي"
+                label={t.studentProfile.semesterLabel}
                 onSelect={selectSemester}
                 options={semesters}
                 selectedId={selectedSemesterId}
@@ -247,13 +249,13 @@ export function AcademicProfileSetupScreen() {
               {selectedMajorId ? (
                 <AppCard padding="md" variant="muted">
                   <Stack gap="xs">
-                    <AppText variant="title">مواد الاختصاص</AppText>
+                    <AppText variant="title">{t.studentProfile.majorSubjectsTitle}</AppText>
                     <AppText color="secondary" variant="bodySmall">
                       {isLoadingSubjects
-                        ? 'جاري تحميل المواد المرتبطة بالاختصاص...'
+                        ? t.studentProfile.majorSubjectsLoading
                         : subjects.length > 0
-                          ? `تم تحميل ${subjects.length} مادة مرتبطة باختصاصك.`
-                          : 'لا توجد مواد متاحة لهذا الاختصاص حاليا.'}
+                          ? t.studentProfile.majorSubjectsLoaded(subjects.length)
+                          : t.studentProfile.majorSubjectsEmpty}
                     </AppText>
                   </Stack>
                 </AppCard>
@@ -270,7 +272,7 @@ export function AcademicProfileSetupScreen() {
                 fullWidth
                 loading={isSubmitting}
                 onPress={handleSubmit}
-                title="حفظ ومتابعة التوثيق"
+                title={t.studentProfile.saveAndContinue}
               />
             </>
           )}

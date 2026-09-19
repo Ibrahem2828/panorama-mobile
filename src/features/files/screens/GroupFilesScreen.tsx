@@ -17,11 +17,6 @@ import {
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { formatTime } from '../../../utils/formatDateTime';
-import {
-  SEARCH_CLEAR_LABEL,
-  SEARCH_NO_RESULTS_MESSAGE,
-  SEARCH_NO_RESULTS_TITLE,
-} from '../../../utils/searchEmptyState';
 import { getFileDisplayTitle, getFileDescription } from '../services';
 import { SharedRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
@@ -151,14 +146,14 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
             action={
               <AppButton
                 onPress={() => setSearch('')}
-                title={SEARCH_CLEAR_LABEL}
+                title={t.common.searchClear}
                 variant="outline"
               />
             }
             illustrationLabel={t.common.noSearchResultsAlt}
             illustrationSource={images.illustrations.search}
-            message={SEARCH_NO_RESULTS_MESSAGE}
-            title={SEARCH_NO_RESULTS_TITLE}
+            message={t.common.searchNoResultsMessage}
+            title={t.common.searchNoResultsTitle}
           />
         ) : (
           <Stack gap="md">

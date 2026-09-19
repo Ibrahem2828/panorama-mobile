@@ -6,6 +6,7 @@ import { images } from '../../../assets/images';
 import { AppButton, AppCard, AppText, Stack } from '../../../components';
 import { colors, radius, spacing } from '../../../theme';
 import type { VerificationCardImage } from '../types';
+import { useTranslation } from '../../../i18n';
 
 type VerificationCardImagePickerProps = {
   selectedImage: VerificationCardImage | null;
@@ -16,19 +17,19 @@ type VerificationCardImagePickerProps = {
 const CARD_EXAMPLES = [
   {
     image: images.verification.cardExampleGood,
-    label: 'واضحة',
+    labelKey: 'exampleClear' as const,
   },
   {
     image: images.verification.cardExampleBlurry,
-    label: 'غير واضحة',
+    labelKey: 'exampleBlurry' as const,
   },
   {
     image: images.verification.cardExampleCropped,
-    label: 'مقصوصة',
+    labelKey: 'exampleCropped' as const,
   },
   {
     image: images.verification.cardExampleDark,
-    label: 'مظلمة',
+    labelKey: 'exampleDark' as const,
   },
 ] as const;
 
@@ -45,6 +46,7 @@ export function VerificationCardImagePicker({
   onChange,
   disabled = false,
 }: VerificationCardImagePickerProps) {
+  const { t } = useTranslation();
   const [localError, setLocalError] = useState<string | null>(null);
 
   async function handlePickImage() {
@@ -53,7 +55,7 @@ export function VerificationCardImagePicker({
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permission.granted) {
-      setLocalError('يرجى السماح للتطبيق بالوصول إلى الصور لاختيار بطاقة الطالب.');
+      setLocalError(t.verificationFlow.imagePicker.permissionDenied);
       return;
     }
 
@@ -72,7 +74,7 @@ export function VerificationCardImagePicker({
     const asset = result.assets[0];
 
     if (!asset) {
-      setLocalError('لم يتم اختيار صورة صالحة. حاول مرة أخرى.');
+      setLocalError(t.verificationFlow.imagePicker.invalidImage);
       return;
     }
 
@@ -91,32 +93,33 @@ export function VerificationCardImagePicker({
       <Stack gap="md">
         <Image
           accessibilityIgnoresInvertColors
-          accessibilityLabel="دليل تصوير بطاقة الطالب"
+          accessibilityLabel={t.verificationFlow.imagePicker.guideAlt}
           resizeMode="contain"
           source={images.verification.studentCardGuide}
           style={styles.guideImage}
         />
 
         <Stack gap="xs">
-          <AppText variant="title">صورة بطاقة الطالب</AppText>
+          <AppText variant="title">{t.verificationFlow.imagePicker.title}</AppText>
           <AppText color="secondary" variant="bodySmall">
-            اختر صورة واضحة من المعرض تظهر فيها بطاقة الطالب كاملة بدون انعكاس أو قص. تأكد من وضوح
-            الاسم والرقم الجامعي.
+            {t.verificationFlow.imagePicker.description}
           </AppText>
         </Stack>
 
         <Stack direction="horizontal" gap="sm" wrap>
           {CARD_EXAMPLES.map((example) => (
-            <View key={example.label} style={styles.exampleItem}>
+            <View key={example.labelKey} style={styles.exampleItem}>
               <Image
                 accessibilityIgnoresInvertColors
-                accessibilityLabel={`مثال بطاقة ${example.label}`}
+                accessibilityLabel={t.verificationFlow.imagePicker.exampleAlt(
+                  t.verificationFlow.imagePicker[example.labelKey],
+                )}
                 resizeMode="contain"
                 source={example.image}
                 style={styles.exampleImage}
               />
               <AppText align="center" color="secondary" variant="caption">
-                {example.label}
+                {t.verificationFlow.imagePicker[example.labelKey]}
               </AppText>
             </View>
           ))}
@@ -132,7 +135,7 @@ export function VerificationCardImagePicker({
             />
           ) : (
             <AppText align="center" color="secondary" variant="bodySmall">
-              لم يتم اختيار صورة بعد.
+              {t.verificationFlow.imagePicker.noImage}
             </AppText>
           )}
         </View>
@@ -155,14 +158,18 @@ export function VerificationCardImagePicker({
             onPress={() => {
               void handlePickImage();
             }}
-            title={selectedImage ? 'استبدال الصورة' : 'اختيار صورة'}
+            title={
+              selectedImage
+                ? t.verificationFlow.imagePicker.replace
+                : t.verificationFlow.imagePicker.pick
+            }
             variant="outline"
           />
           {selectedImage ? (
             <AppButton
               disabled={disabled}
               onPress={() => onChange(null)}
-              title="إزالة الصورة"
+              title={t.verificationFlow.imagePicker.remove}
               variant="ghost"
             />
           ) : null}

@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { colors, spacing } from '../../theme';
 import { AppText } from '../common';
+import { useTranslation } from '../../i18n';
 
 type LoadingStateProps = {
   message?: string;
@@ -11,12 +12,9 @@ type LoadingStateProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function LoadingState({
-  message = 'جاري التحميل...',
-  title,
-  centered = false,
-  style,
-}: LoadingStateProps) {
+export function LoadingState({ message, title, centered = false, style }: LoadingStateProps) {
+  const { t } = useTranslation();
+
   return (
     <View style={[styles.container, centered ? styles.centered : null, style]}>
       {title ? (
@@ -26,7 +24,7 @@ export function LoadingState({
       ) : null}
       <ActivityIndicator color={colors.brand.primary} size="large" />
       <AppText align="center" color="secondary" variant="bodySmall">
-        {message}
+        {message ?? t.common.loading}
       </AppText>
     </View>
   );

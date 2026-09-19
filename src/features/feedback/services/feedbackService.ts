@@ -11,6 +11,7 @@ import type {
   FeedbackSubmitPayload,
   PublicSuggestion,
 } from '../types';
+import type { TranslationCatalog } from '../../../i18n';
 
 function appMetadata() {
   const locale = getLocales()[0]?.languageTag ?? 'ar';
@@ -23,13 +24,16 @@ function appMetadata() {
   };
 }
 
-export function toSafeFeedbackErrorMessage(error: unknown): string {
+export function toSafeFeedbackErrorMessage(
+  error: unknown,
+  t: TranslationCatalog['feedback'],
+): string {
   const normalized = normalizeApiError(error);
   if (normalized.code === 'NETWORK_ERROR' || normalized.code === 'TIMEOUT') {
-    return 'تعذر إرسال التقييم. تحقق من الاتصال وحاول مرة أخرى.';
+    return t.errors.network;
   }
-  if (normalized.code === 'RATE_LIMITED') return 'تم إرسال عدة تقييمات مؤخرًا. حاول لاحقًا.';
-  return normalized.message || 'تعذر إرسال التقييم حاليًا.';
+  if (normalized.code === 'RATE_LIMITED') return t.errors.rateLimited;
+  return normalized.message || t.errors.generic;
 }
 
 export async function checkPromptEligibility(

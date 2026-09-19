@@ -4,6 +4,7 @@ import type { NativeSyntheticEvent, TextInputKeyPressEventData } from 'react-nat
 
 import { AppText } from '../common';
 import { colors, radius, spacing, typography } from '../../theme';
+import { useTranslation } from '../../i18n';
 
 interface OtpCodeInputProps {
   value: string;
@@ -30,6 +31,7 @@ export function OtpCodeInput({
   length = OTP_LENGTH,
   autoFocus = true,
 }: OtpCodeInputProps) {
+  const { t } = useTranslation();
   const inputsRef = useRef<Array<TextInput | null>>([]);
   const [focusedIndex, setFocusedIndex] = useState(0);
 
@@ -123,7 +125,7 @@ export function OtpCodeInput({
               ref={(ref) => {
                 inputsRef.current[index] = ref;
               }}
-              accessibilityLabel={`الرقم ${index + 1} من ${length}`}
+              accessibilityLabel={t.otpInput.digitLabel(index + 1, length)}
               style={[
                 styles.box,
                 isFocused && styles.boxFocused,
@@ -161,7 +163,7 @@ export function OtpCodeInput({
 
       {success ? (
         <AppText color="success" variant="caption" style={styles.feedback}>
-          تم التحقق بنجاح
+          {t.otpInput.verified}
         </AppText>
       ) : null}
     </View>

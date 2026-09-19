@@ -14,10 +14,12 @@ import { hasSeenOnboarding } from '../features/onboarding/services';
 import { hiddenStackScreenOptions } from './config/screenOptions';
 import { PublicRoutes } from './routes';
 import type { PublicStackParamList } from './types';
+import { useTranslation } from '../i18n';
 
 const Stack = createNativeStackNavigator<PublicStackParamList>();
 
 export function PublicNavigator() {
+  const { t } = useTranslation();
   const [initialRouteName, setInitialRouteName] = useState<keyof PublicStackParamList | null>(null);
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export function PublicNavigator() {
   if (!initialRouteName) {
     return (
       <AppScreen horizontalPadding={false}>
-        <LoadingState centered message="جاري تجهيز البداية..." />
+        <LoadingState centered message={t.navigation.preparingStart} />
       </AppScreen>
     );
   }

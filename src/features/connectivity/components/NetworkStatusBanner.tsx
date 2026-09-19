@@ -4,8 +4,10 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '../../../components';
 import { colors, spacing } from '../../../theme';
+import { useTranslation } from '../../../i18n';
 
 export function NetworkStatusBanner() {
+  const { t } = useTranslation();
   const [isOffline, setIsOffline] = useState(false);
 
   useEffect(
@@ -21,7 +23,7 @@ export function NetworkStatusBanner() {
   return (
     <View accessibilityLiveRegion="polite" style={styles.banner}>
       <AppText align="center" color="inverse" variant="caption">
-        لا يوجد اتصال بالإنترنت. ستبقى البيانات المحملة ظاهرة وستُعاد المحاولة عند عودة الاتصال.
+        {t.connectivity.offline}
       </AppText>
     </View>
   );
