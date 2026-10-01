@@ -4,6 +4,11 @@ import {
   type EmptyResponse,
   type VerificationRecord as ApiVerificationRecord,
 } from '../../../api';
+import {
+  getStudentProfileAcademicYear,
+  getStudentProfileStudentNumber,
+  type StudentProfile,
+} from '../../student-profile';
 import type { VerificationCardImage, VerificationRecord, VerificationStatus } from '../types';
 import type { TranslationCatalog } from '../../../i18n';
 
@@ -59,7 +64,16 @@ export async function getMyVerification(authToken?: string | null) {
   }
 }
 
-export function createVerificationFormData(image: VerificationCardImage): FormData {
+/**
+ * The backend's verification submit/resubmit contract requires the academic profile fields
+ * alongside the card image (university, faculty, major, academic_year, semester, student_number),
+ * not the image alone. The student completes this profile before verification is reachable, so
+ * every field below is expected to already be set.
+ */
+export function createVerificationFormData(
+  image: VerificationCardImage,
+  profile: StudentProfile | null,
+): FormData {
   const formData = new FormData() as ReactNativeFormData;
 
   formData.append('card_image', {
@@ -68,20 +82,34 @@ export function createVerificationFormData(image: VerificationCardImage): FormDa
     type: image.type,
   });
 
+  if (profile?.university?.id != null) formData.append('university', String(profile.university.id));
+  if (profile?.faculty?.id != null) formData.append('faculty', String(profile.faculty.id));
+  if (profile?.major?.id != null) formData.append('major', String(profile.major.id));
+  const academicYear = getStudentProfileAcademicYear(profile);
+  if (academicYear?.id != null) formData.append('academic_year', String(academicYear.id));
+  if (profile?.semester?.id != null) formData.append('semester', String(profile.semester.id));
+  const studentNumber = getStudentProfileStudentNumber(profile);
+  if (studentNumber) formData.append('student_number', studentNumber);
+
   return formData;
 }
 
-export function submitStudentVerification(image: VerificationCardImage, authToken?: string | null) {
-  const formData = createVerificationFormData(image);
+export function submitStudentVerification(
+  image: VerificationCardImage,
+  profile: StudentProfile | null,
+  authToken?: string | null,
+) {
+  const formData = createVerificationFormData(image, profile);
 
   return verificationService.submitVerification(formData, authToken);
 }
 
 export async function resubmitStudentVerification(
   image: VerificationCardImage,
+  profile: StudentProfile | null,
   authToken?: string | null,
 ) {
-  const formData = createVerificationFormData(image);
+  const formData = createVerificationFormData(image, profile);
   const response = await verificationService.resubmitVerification(formData, authToken);
 
   if (isApiVerificationRecord(response)) {

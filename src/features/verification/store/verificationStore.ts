@@ -4,6 +4,7 @@ import { useLocaleStore } from '../../../i18n';
 
 import { useAuthStore } from '../../auth/store';
 import { useFeedbackStore } from '../../feedback/store';
+import { useStudentProfileStore } from '../../student-profile';
 import {
   getMyVerification,
   resubmitStudentVerification,
@@ -128,7 +129,8 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
         errorMessage: null,
       });
 
-      const verification = await submitStudentVerification(image, accessToken);
+      const profile = useStudentProfileStore.getState().profile;
+      const verification = await submitStudentVerification(image, profile, accessToken);
 
       set({
         verification,
@@ -169,7 +171,8 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
         errorMessage: null,
       });
 
-      const verification = await resubmitStudentVerification(image, accessToken);
+      const profile = useStudentProfileStore.getState().profile;
+      const verification = await resubmitStudentVerification(image, profile, accessToken);
 
       set({
         verification,

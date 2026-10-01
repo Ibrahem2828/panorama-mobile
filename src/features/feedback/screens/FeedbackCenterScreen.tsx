@@ -29,9 +29,11 @@ type KindOption = { value: FeedbackKind; labelKey: keyof KindCatalog; hintKey: k
 const KIND_OPTIONS: KindOption[] = [
   { value: 'rating', labelKey: 'rating' as const, hintKey: 'ratingHint' as const },
   { value: 'suggestion', labelKey: 'suggestion' as const, hintKey: 'suggestionHint' as const },
-  { value: 'issue', labelKey: 'issue' as const, hintKey: 'issueHint' as const },
+  // Wire value is the backend's `bug`; the i18n key stays `issue` (display label only).
+  { value: 'bug', labelKey: 'issue' as const, hintKey: 'issueHint' as const },
   { value: 'complaint', labelKey: 'complaint' as const, hintKey: 'complaintHint' as const },
-  { value: 'praise', labelKey: 'praise' as const, hintKey: 'praiseHint' as const },
+  // Wire value is the backend's `compliment`; the i18n key stays `praise` (display label only).
+  { value: 'compliment', labelKey: 'praise' as const, hintKey: 'praiseHint' as const },
 ];
 
 export function FeedbackCenterScreen({ navigation }: Props) {

@@ -15,8 +15,8 @@ type Props = {
 // paper sizes are already language-neutral and are rendered as-is.
 const OPTIONS = {
   colorMode: ['black_white', 'color'],
-  sides: ['single', 'double'],
-  paperSize: ['a4', 'a3', 'a5'],
+  sides: ['one_sided', 'double_sided'],
+  paperSize: ['A4', 'A3', 'A5'],
   binding: ['none', 'staple', 'spiral', 'thermal'],
 } as const;
 
@@ -46,11 +46,11 @@ export function PrintOptionsCard({ draft, locations, onChange }: Props) {
   const labels: Record<string, string> = {
     black_white: t.printing.options.colorBlackWhite,
     color: t.printing.options.colorColored,
-    single: t.printing.options.sidesSingle,
-    double: t.printing.options.sidesDouble,
-    a4: 'A4',
-    a3: 'A3',
-    a5: 'A5',
+    one_sided: t.printing.options.sidesSingle,
+    double_sided: t.printing.options.sidesDouble,
+    A4: 'A4',
+    A3: 'A3',
+    A5: 'A5',
     none: t.printing.options.bindingNone,
     staple: t.printing.options.bindingStaple,
     spiral: t.printing.options.bindingSpiral,

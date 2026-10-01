@@ -42,7 +42,7 @@ export function PrintOrderSummaryCard({ draft, order, quote }: Props) {
               {t.printing.summaryCard.draftLine(
                 draft?.copies ?? 1,
                 draft?.paperSize.toUpperCase() ?? '',
-                draft?.sides === 'double'
+                draft?.sides === 'double_sided'
                   ? t.printing.options.sidesDouble
                   : t.printing.options.sidesSingle,
               )}

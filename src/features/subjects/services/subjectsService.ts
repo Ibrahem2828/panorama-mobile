@@ -146,7 +146,8 @@ export async function loadSubjectsForMajor(
       academic_year: input.academicYearId ?? undefined,
       semester: input.semesterId ?? undefined,
       search: input.search,
-      ordering: 'order,name',
+      // Subjects have no `order` column; the backend's OrderingFilter 500s if it is requested.
+      ordering: 'name',
     },
     input.authToken,
   );
