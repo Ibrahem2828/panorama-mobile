@@ -17,6 +17,7 @@ export {
 export { buildQueryString, toPaginationQuery } from './pagination';
 export { buildApiUrl, buildDefaultApiUrl, buildRequestHeaders } from './request';
 export { isApiError, isApiResponseEnvelope, isApiSuccess } from './response';
+export * as accountService from './services/account.service';
 export * as academicService from './services/academic.service';
 export * as announcementsService from './services/announcements.service';
 export * as authService from './services/auth.service';

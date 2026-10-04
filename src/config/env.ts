@@ -14,6 +14,8 @@ type PublicExtra = {
   supportEmail?: string;
   sentryDsn?: string;
   dashboardUrl?: string;
+  privacyUrl?: string;
+  termsUrl?: string;
 };
 
 const extra = (Constants.expoConfig?.extra ?? {}) as PublicExtra;
@@ -44,6 +46,8 @@ export const env = {
   supportEmail: extra.supportEmail || 'panoramacompany31@gmail.com',
   sentryDsn: extra.sentryDsn || '',
   dashboardUrl: extra.dashboardUrl || '',
+  privacyUrl: extra.privacyUrl || '',
+  termsUrl: extra.termsUrl || '',
   isDevelopment: appEnv === 'development',
   isPreview: appEnv === 'preview',
   isProduction: appEnv === 'production',

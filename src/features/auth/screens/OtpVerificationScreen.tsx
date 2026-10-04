@@ -109,6 +109,16 @@ export function OtpVerificationScreen({ navigation, route }: Props) {
               />
             </Stack>
           </AuthFormCard>
+          {channel === 'email' ? (
+            <AppText align="center" color="muted" variant="caption">
+              {t.auth.otp.spamHint}
+            </AppText>
+          ) : null}
+          <Pressable onPress={() => navigation.goBack()}>
+            <AppText align="center" color="brand">
+              {t.auth.otp.wrongEmail}
+            </AppText>
+          </Pressable>
           <Pressable onPress={() => navigation.navigate(PublicRoutes.Login)}>
             <AppText align="center" color="brand">
               {t.auth.backToLogin}

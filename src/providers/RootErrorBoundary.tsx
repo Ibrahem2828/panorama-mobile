@@ -2,6 +2,7 @@ import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { reportError } from '../services/monitoring';
 import { logger } from '../utils/logger';
 
 type RootErrorBoundaryProps = { children: ReactNode };
@@ -46,6 +47,7 @@ export class RootErrorBoundary extends Component<RootErrorBoundaryProps, RootErr
       message: error.message,
       componentStack: info.componentStack,
     });
+    reportError(error, { componentStack: info.componentStack });
   }
 
   handleRetry = (): void => {

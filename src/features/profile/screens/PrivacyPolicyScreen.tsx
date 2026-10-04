@@ -1,7 +1,9 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import * as WebBrowser from 'expo-web-browser';
 import { StyleSheet } from 'react-native';
 
 import { AppButton, AppHeader, AppScreen, Stack } from '../../../components';
+import { env } from '../../../config/env';
 import { useTranslation } from '../../../i18n';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -23,6 +25,13 @@ export function PrivacyPolicyScreen({ navigation }: PrivacyPolicyScreenProps) {
         {t.legal.privacy.sections.map((block) => (
           <LegalContentBlock key={block.title} paragraphs={block.paragraphs} title={block.title} />
         ))}
+        {env.privacyUrl ? (
+          <AppButton
+            onPress={() => void WebBrowser.openBrowserAsync(env.privacyUrl)}
+            title={t.legal.privacy.openOnline}
+            variant="outline"
+          />
+        ) : null}
       </Stack>
     </AppScreen>
   );

@@ -1,12 +1,15 @@
 import { authService, normalizeApiError } from '../../../api';
 import type { ConfirmPasswordResetRequest, OtpChannel } from '../../../api';
 import type { AuthErrorMessages } from '../types';
+import { localizeOtpError } from './otpErrors';
 
 export function toSafePasswordResetErrorMessage(
   error: unknown,
   messages: AuthErrorMessages,
 ): string {
   const normalized = normalizeApiError(error);
+  const otpMessage = localizeOtpError(normalized, messages);
+  if (otpMessage) return otpMessage;
   if (normalized.code === 'NETWORK_ERROR' || normalized.code === 'TIMEOUT') return messages.network;
   if (normalized.code === 'RATE_LIMITED') return messages.passwordResetRateLimited;
   return normalized.message || messages.passwordResetGeneric;

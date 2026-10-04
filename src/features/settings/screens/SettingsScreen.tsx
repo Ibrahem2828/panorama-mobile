@@ -40,6 +40,11 @@ export function SettingsScreen({ navigation }: SettingsScreenProps) {
             onPress={() => navigation.navigate(ProfileRoutes.ChangePassword)}
             title={t.settings.account.changePassword}
           />
+          <SettingsOptionRow
+            description={t.settings.account.deleteAccountDescription}
+            onPress={() => navigation.navigate(ProfileRoutes.DeleteAccount)}
+            title={t.settings.account.deleteAccount}
+          />
         </SettingsSection>
 
         <SettingsSection

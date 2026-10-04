@@ -5,8 +5,10 @@ import { configureApiAuthBridge } from './src/features/auth/services/apiAuthBrid
 import { RootNavigator } from './src/navigation';
 import { AppProviders } from './src/providers/AppProviders';
 import { RootErrorBoundary } from './src/providers/RootErrorBoundary';
+import { initMonitoring } from './src/services/monitoring';
 import { configureRtl } from './src/utils/rtl';
 
+initMonitoring();
 configureRtl();
 configureApiAuthBridge();
 

@@ -1,5 +1,6 @@
 import { authService, normalizeApiError } from '../../../api';
 import type { AuthErrorMessages } from '../types';
+import { localizeOtpError } from './otpErrors';
 import type {
   OtpChannel,
   OtpPurpose,
@@ -15,6 +16,8 @@ export function toSafeRegistrationErrorMessage(
   messages: AuthErrorMessages,
 ): string {
   const normalized = normalizeApiError(error);
+  const otpMessage = localizeOtpError(normalized, messages);
+  if (otpMessage) return otpMessage;
   if (normalized.code === 'NETWORK_ERROR' || normalized.code === 'TIMEOUT') return messages.network;
   if (normalized.code === 'RATE_LIMITED') {
     const seconds = normalized.retryAfterSeconds;

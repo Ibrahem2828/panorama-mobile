@@ -642,6 +642,9 @@ export const en: TranslationCatalog = {
       submit: 'Confirm code',
       resend: 'Resend code',
       resendIn: (seconds: number) => `Resend in ${seconds}s`,
+      spamHint:
+        'Did not receive it? Check your spam or junk folder, then resend after the timer ends.',
+      wrongEmail: 'Wrong email? Go back',
     },
 
     forgotPassword: {
@@ -695,6 +698,10 @@ export const en: TranslationCatalog = {
       passwordResetGeneric: 'Could not reset your password. Please try again.',
       rateLimited: 'Too many attempts.',
       rateLimitedRetryAfter: (seconds: number) => `Wait ${seconds} seconds and try again.`,
+      otpInvalid: 'The verification code is incorrect or has expired.',
+      otpLocked: 'Too many wrong attempts. Request a new code.',
+      otpUnavailable:
+        'We could not send the verification code right now. Try again shortly, and contact support if it keeps failing.',
       passwordResetRateLimited: 'Too many attempts. Try again later.',
       invalidCredentials: 'Incorrect sign-in details.',
       sessionExpired: 'Your session has expired. Please sign in again.',
@@ -850,7 +857,7 @@ export const en: TranslationCatalog = {
       purpose: [
         'Panorama brings subjects, groups, files, printing, notifications and support together in one organised student experience.',
         'It focuses on day-to-day academic services, while permissions and operational data stay under the server’s control.',
-        'This is an MVP aimed at practical, clear access to the core services, without overstating what it does.',
+        'We keep improving the app and adding new services for students.',
       ],
     },
 
@@ -865,7 +872,8 @@ export const en: TranslationCatalog = {
   legal: {
     privacy: {
       title: 'Privacy policy',
-      subtitle: 'A short privacy statement for the MVP',
+      subtitle: 'How we collect, use and protect your data',
+      openOnline: 'Read the full policy on our website',
       sections: [
         {
           title: 'The data we use',
@@ -893,7 +901,7 @@ export const en: TranslationCatalog = {
 
     terms: {
       title: 'Terms and conditions',
-      subtitle: 'Short terms of use for the MVP',
+      subtitle: 'Terms of use for the Panorama app',
       sections: [
         {
           title: 'Acceptable use',
@@ -1035,7 +1043,7 @@ export const en: TranslationCatalog = {
       messagePlaceholder: 'Describe what will help the support team understand the problem',
       submit: 'Send ticket',
       categoryTitle: 'Ticket category',
-      categoryNote: 'Categories are fixed in the app for the MVP and are not fetched from the API.',
+      categoryNote: 'Pick the category closest to your issue so it reaches the right team.',
     },
 
     details: {
@@ -1485,6 +1493,8 @@ export const en: TranslationCatalog = {
       title: 'Account and security',
       subtitle: 'Security actions for the current account',
       changePassword: 'Change password',
+      deleteAccount: 'Delete account',
+      deleteAccountDescription: 'Request permanent deletion of your account and data',
       changePasswordDescription: 'Update your password through the server',
     },
 
@@ -1515,6 +1525,27 @@ export const en: TranslationCatalog = {
       privacy: 'Privacy policy',
       terms: 'Terms and conditions',
       about: 'About Panorama',
+    },
+
+    deleteAccountFlow: {
+      title: 'Delete account',
+      subtitle: 'Request deletion of your Panorama account and data',
+      warning:
+        'Your account and data will be deleted after a grace period during which you can cancel the request. After that the account cannot be recovered.',
+      reasonLabel: 'Reason (optional)',
+      reasonPlaceholder: 'Tell us why you are leaving',
+      request: 'Request account deletion',
+      confirmTitle: 'Confirm account deletion',
+      confirmMessage:
+        'Are you sure you want to request deletion? You can cancel during the grace period.',
+      confirmAction: 'Yes, delete my account',
+      cancelAction: 'Go back',
+      pendingTitle: 'Deletion request pending',
+      pendingScheduled: (date: string) => `Final deletion date: ${date}`,
+      cancelRequest: 'Cancel deletion request',
+      cancelledNotice: 'The deletion request was cancelled. Your account is safe.',
+      requestedNotice: 'Your deletion request was received.',
+      loadError: 'Could not load the request status. Please try again.',
     },
 
     changePassword: {
