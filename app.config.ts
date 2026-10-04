@@ -19,6 +19,10 @@ function requiredReleaseValue(name: string, value: string | undefined, appEnv: s
   return normalized ?? '';
 }
 
+const EAS_PROJECT_ID = '3804d959-0d36-4747-aeb0-d3339ad57f90';
+const DEFAULT_PRIVACY_URL = 'https://xn--mgbaab0cxheq.tech/ar/privacy';
+const DEFAULT_TERMS_URL = 'https://xn--mgbaab0cxheq.tech/ar/terms';
+
 export default ({ config }: ConfigContext): ExpoConfig => {
   const appEnv = (process.env.EXPO_PUBLIC_APP_ENV ?? 'development').trim();
   const configuredApi = requiredReleaseValue(
@@ -53,9 +57,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     scheme: 'panorama',
     icon: './src/assets/app/icon.png',
     userInterfaceStyle: 'automatic',
+    runtimeVersion: { policy: 'appVersion' },
+    updates: {
+      url: `https://u.expo.dev/${EAS_PROJECT_ID}`,
+      enabled: appEnv !== 'development',
+      checkAutomatically: 'ON_LOAD',
+      fallbackToCacheTimeout: 0,
+    },
     plugins: [
       'expo-secure-store',
       'expo-notifications',
+      'expo-updates',
       [
         'expo-splash-screen',
         {
@@ -79,9 +91,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ios: {
       ...config.ios,
       bundleIdentifier: 'com.panorama.student',
+      buildNumber: '1',
       supportsTablet: true,
+      config: { usesNonExemptEncryption: false },
       infoPlist: {
         ...config.ios?.infoPlist,
+        ITSAppUsesNonExemptEncryption: false,
         NSAppTransportSecurity: { NSAllowsArbitraryLoads: false },
       },
     },
@@ -104,7 +119,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       supportEmail: process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? 'panoramacompany31@gmail.com',
       sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN ?? '',
       dashboardUrl: process.env.EXPO_PUBLIC_DASHBOARD_URL ?? '',
-      eas: { projectId: '3804d959-0d36-4747-aeb0-d3339ad57f90' },
+      privacyUrl: process.env.EXPO_PUBLIC_PRIVACY_URL ?? DEFAULT_PRIVACY_URL,
+      termsUrl: process.env.EXPO_PUBLIC_TERMS_URL ?? DEFAULT_TERMS_URL,
+      eas: { projectId: EAS_PROJECT_ID },
     },
   };
 

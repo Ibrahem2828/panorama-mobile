@@ -1,14 +1,18 @@
 import { authService, normalizeApiError } from '../../../api';
 import type { ConfirmPasswordResetRequest, OtpChannel } from '../../../api';
+import type { AuthErrorMessages } from '../types';
+import { localizeOtpError } from './otpErrors';
 
-const NETWORK_MESSAGE = 'تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت.';
-const GENERIC_MESSAGE = 'تعذر استعادة كلمة المرور. حاول مرة أخرى.';
-
-export function toSafePasswordResetErrorMessage(error: unknown): string {
+export function toSafePasswordResetErrorMessage(
+  error: unknown,
+  messages: AuthErrorMessages,
+): string {
   const normalized = normalizeApiError(error);
-  if (normalized.code === 'NETWORK_ERROR' || normalized.code === 'TIMEOUT') return NETWORK_MESSAGE;
-  if (normalized.code === 'RATE_LIMITED') return 'تم تجاوز عدد المحاولات. حاول لاحقًا.';
-  return normalized.message || GENERIC_MESSAGE;
+  const otpMessage = localizeOtpError(normalized, messages);
+  if (otpMessage) return otpMessage;
+  if (normalized.code === 'NETWORK_ERROR' || normalized.code === 'TIMEOUT') return messages.network;
+  if (normalized.code === 'RATE_LIMITED') return messages.passwordResetRateLimited;
+  return normalized.message || messages.passwordResetGeneric;
 }
 
 export async function requestPasswordResetCode(identifier: string, channel: OtpChannel = 'email') {

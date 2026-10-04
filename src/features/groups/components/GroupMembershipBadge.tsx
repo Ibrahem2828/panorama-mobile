@@ -1,28 +1,32 @@
 import { AppBadge } from '../../../components';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import type { GroupMembershipStatus } from '../types';
 
 type GroupMembershipBadgeProps = {
   status?: GroupMembershipStatus | null;
 };
 
-function getMembershipLabel(status?: GroupMembershipStatus | null): string {
+function getMembershipLabel(
+  status: GroupMembershipStatus | null | undefined,
+  t: TranslationCatalog['groups']['membership'],
+): string {
   switch (status) {
     case 'pending':
-      return 'بانتظار الموافقة';
+      return t.pending;
     case 'approved':
-      return 'عضو';
+      return t.member;
     case 'rejected':
-      return 'مرفوض';
+      return t.rejected;
     case 'blocked':
-      return 'محظور';
+      return t.blocked;
     case 'left':
-      return 'غادرت';
+      return t.left;
     case 'none':
     case undefined:
     case null:
-      return 'غير منضم';
+      return t.notJoined;
     default:
-      return 'حالة عضوية';
+      return t.fallback;
   }
 }
 
@@ -43,7 +47,13 @@ function getMembershipVariant(status?: GroupMembershipStatus | null) {
 }
 
 export function GroupMembershipBadge({ status }: GroupMembershipBadgeProps) {
+  const { t } = useTranslation();
+
   return (
-    <AppBadge label={getMembershipLabel(status)} size="sm" variant={getMembershipVariant(status)} />
+    <AppBadge
+      label={getMembershipLabel(status, t.groups.membership)}
+      size="sm"
+      variant={getMembershipVariant(status)}
+    />
   );
 }

@@ -267,8 +267,9 @@ export type PrintOrder = ApiEntity & {
 };
 
 export type PrintColorMode = 'black_white' | 'color';
-export type PrintPaperSize = 'a4' | 'a3' | 'a5';
-export type PrintSides = 'single' | 'double';
+// Wire values match the backend's PaperSizeEnum / SidesEnum exactly (see docs/api/openapi.json).
+export type PrintPaperSize = 'A4' | 'A3' | 'A5';
+export type PrintSides = 'one_sided' | 'double_sided';
 export type PrintBinding = 'none' | 'staple' | 'spiral' | 'thermal';
 
 export type CreatePrintOrderItemInput = {

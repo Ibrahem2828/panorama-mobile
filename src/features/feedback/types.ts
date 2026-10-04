@@ -1,4 +1,5 @@
-export type FeedbackKind = 'rating' | 'suggestion' | 'issue' | 'complaint' | 'praise';
+// Wire values match the backend's FeedbackKindEnum exactly (see docs/api/openapi.json).
+export type FeedbackKind = 'rating' | 'suggestion' | 'bug' | 'complaint' | 'compliment';
 export type FeedbackContext =
   | 'registration'
   | 'verification'

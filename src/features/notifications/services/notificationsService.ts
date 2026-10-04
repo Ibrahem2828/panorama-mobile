@@ -5,6 +5,7 @@ import {
   type PaginatedResult,
 } from '../../../api';
 import type { StatusVariant } from '../../../types/common';
+import { resolveTargetFromData } from './notificationRoutingService';
 import type {
   Id,
   NotificationRecord,
@@ -13,11 +14,9 @@ import type {
   RegisterDeviceTokenInput,
   UnreadCountResponse,
 } from '../types';
+import type { TranslationCatalog } from '../../../i18n';
 
-const NETWORK_MESSAGE = 'تعذر تحميل الإشعارات. تحقق من اتصال الإنترنت وحاول مرة أخرى.';
-const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const PERMISSION_MESSAGE = 'لا تملك صلاحية الوصول إلى هذه الإشعارات حاليا.';
-const GENERIC_MESSAGE = 'تعذر تحميل الإشعارات. حاول مرة أخرى.';
+type NotificationsCatalog = TranslationCatalog['notifications'];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -80,12 +79,15 @@ function normalizeList(
   };
 }
 
-export function getNotificationTitle(notification: NotificationRecord): string {
+export function getNotificationTitle(
+  notification: NotificationRecord,
+  t: NotificationsCatalog,
+): string {
   return (
     toText(notification.title) ??
     toText(notification.subject) ??
     toText(getDataField(notification, 'title')) ??
-    'إشعار جديد'
+    t.fallbackTitle
   );
 }
 
@@ -99,24 +101,27 @@ export function getNotificationBody(notification: NotificationRecord): string | 
   );
 }
 
-export function getNotificationTypeLabel(type?: NotificationType): string {
+export function getNotificationTypeLabel(
+  type: NotificationType | undefined,
+  t: NotificationsCatalog,
+): string {
   switch (type) {
     case 'announcement':
-      return 'إعلان';
+      return t.types.announcement;
     case 'verification':
-      return 'توثيق';
+      return t.types.verification;
     case 'printing':
-      return 'طباعة';
+      return t.types.printing;
     case 'group':
-      return 'مجموعة';
+      return t.types.group;
     case 'file':
-      return 'ملف';
+      return t.types.file;
     case 'support':
-      return 'دعم';
+      return t.types.support;
     case 'system':
-      return 'نظام';
+      return t.types.system;
     default:
-      return 'إشعار';
+      return t.types.fallback;
   }
 }
 
@@ -150,12 +155,20 @@ export function isNotificationUnread(notification: NotificationRecord): boolean 
 }
 
 export function getNotificationTarget(notification: NotificationRecord): NotificationTarget {
+  const fromData = resolveTargetFromData(isRecord(notification.data) ? notification.data : null);
+  if (fromData.targetType && fromData.targetId !== null) {
+    return fromData;
+  }
+
   const targetType =
+    toNullableText(notification.related_object_type) ??
     toNullableText(notification.target_type) ??
     toNullableText(getDataField(notification, 'target_type')) ??
     toNullableText(getDataField(notification, 'targetType')) ??
-    toNullableText(getDataField(notification, 'type'));
+    toNullableText(getDataField(notification, 'type')) ??
+    toNullableText(notification.type);
   const targetId =
+    toId(notification.related_object_id) ??
     toId(notification.target_id) ??
     toId(getDataField(notification, 'target_id')) ??
     toId(getDataField(notification, 'targetId')) ??
@@ -167,7 +180,10 @@ export function getNotificationTarget(notification: NotificationRecord): Notific
   };
 }
 
-export function getNotificationTargetTypeLabel(targetType?: string | null): string | null {
+export function getNotificationTargetTypeLabel(
+  targetType: string | null | undefined,
+  t: NotificationsCatalog,
+): string | null {
   if (!targetType) {
     return null;
   }
@@ -175,54 +191,40 @@ export function getNotificationTargetTypeLabel(targetType?: string | null): stri
   switch (targetType.trim().toLowerCase()) {
     case 'printing':
     case 'print_order':
-      return 'طلب طباعة';
+      return t.targets.printOrder;
     case 'group':
-      return 'مجموعة';
+      return t.targets.group;
     case 'file':
-      return 'ملف';
+      return t.targets.file;
     case 'support':
     case 'support_ticket':
     case 'ticket':
-      return 'دعم فني';
+      return t.targets.support;
     case 'verification':
-      return 'توثيق';
+      return t.targets.verification;
     case 'announcement':
-      return 'إعلان';
+      return t.targets.announcement;
     default:
       return targetType;
   }
 }
 
-export function formatNotificationDate(value?: string | null): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return date.toLocaleString('ar-SY');
-}
-
-export function toSafeNotificationsErrorMessage(error: unknown): string {
+export function toSafeNotificationsErrorMessage(error: unknown, t: NotificationsCatalog): string {
   const normalizedError = normalizeApiError(error);
 
   if (normalizedError.code === 'NETWORK_ERROR' || normalizedError.code === 'TIMEOUT') {
-    return NETWORK_MESSAGE;
+    return t.errors.network;
   }
 
   if (normalizedError.code === 'UNAUTHORIZED') {
-    return UNAUTHORIZED_MESSAGE;
+    return t.errors.unauthorized;
   }
 
   if (normalizedError.code === 'FORBIDDEN') {
-    return PERMISSION_MESSAGE;
+    return t.errors.permission;
   }
 
-  return normalizedError.message || GENERIC_MESSAGE;
+  return normalizedError.message || t.errors.generic;
 }
 
 export async function loadNotifications(

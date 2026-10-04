@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { useLocaleStore } from '../../../i18n';
+
 import { useAuthStore } from '../../auth/store';
 import { useFeedbackStore } from '../../feedback/store';
 import {
@@ -39,11 +41,10 @@ type GroupsState = {
   reset: () => void;
 };
 
-const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const JOIN_SUCCESS_MESSAGE = 'تم إرسال طلب الانضمام.';
-const LEAVE_SUCCESS_MESSAGE = 'تمت مغادرة المجموعة.';
-const JOIN_ERROR_MESSAGE = 'تعذر إرسال طلب الانضمام.';
-const LEAVE_ERROR_MESSAGE = 'تعذر مغادرة المجموعة.';
+// Read when the action runs so the message follows the current locale.
+function groupsCatalog() {
+  return useLocaleStore.getState().t.groups;
+}
 
 function isSameId(left: Id, right: Id): boolean {
   return String(left) === String(right);
@@ -85,7 +86,7 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
 
     if (!accessToken) {
       set({
-        errorMessage: MISSING_SESSION_MESSAGE,
+        errorMessage: groupsCatalog().errors.unauthorized,
         isLoadingAvailable: false,
         isLoadingMyGroups: false,
         isLoadingDetail: false,
@@ -151,7 +152,7 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
       } catch (error) {
         set({
           isLoadingAvailable: false,
-          errorMessage: toSafeGroupsErrorMessage(error),
+          errorMessage: toSafeGroupsErrorMessage(error, groupsCatalog()),
         });
       }
     },
@@ -181,7 +182,7 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
       } catch (error) {
         set({
           isLoadingMyGroups: false,
-          errorMessage: toSafeGroupsErrorMessage(error),
+          errorMessage: toSafeGroupsErrorMessage(error, groupsCatalog()),
         });
       }
     },
@@ -209,7 +210,7 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
       } catch (error) {
         set({
           isLoadingDetail: false,
-          errorMessage: toSafeGroupsErrorMessage(error),
+          errorMessage: toSafeGroupsErrorMessage(error, groupsCatalog()),
         });
       }
     },
@@ -240,7 +241,7 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
       } catch (error) {
         set({
           isRefreshing: false,
-          errorMessage: toSafeGroupsErrorMessage(error),
+          errorMessage: toSafeGroupsErrorMessage(error, groupsCatalog()),
         });
       }
     },
@@ -264,7 +265,7 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
 
         set({
           isSubmittingMembership: false,
-          successMessage: JOIN_SUCCESS_MESSAGE,
+          successMessage: groupsCatalog().messages.joinSuccess,
         });
         void useFeedbackStore.getState().requestPrompt({
           context: 'group',
@@ -275,7 +276,8 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
       } catch (error) {
         set({
           isSubmittingMembership: false,
-          errorMessage: toSafeGroupsErrorMessage(error) || JOIN_ERROR_MESSAGE,
+          errorMessage:
+            toSafeGroupsErrorMessage(error, groupsCatalog()) || groupsCatalog().messages.joinError,
         });
       }
     },
@@ -299,12 +301,13 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
 
         set({
           isSubmittingMembership: false,
-          successMessage: LEAVE_SUCCESS_MESSAGE,
+          successMessage: groupsCatalog().messages.leaveSuccess,
         });
       } catch (error) {
         set({
           isSubmittingMembership: false,
-          errorMessage: toSafeGroupsErrorMessage(error) || LEAVE_ERROR_MESSAGE,
+          errorMessage:
+            toSafeGroupsErrorMessage(error, groupsCatalog()) || groupsCatalog().messages.leaveError,
         });
       }
     },

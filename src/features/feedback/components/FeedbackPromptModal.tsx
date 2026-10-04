@@ -4,8 +4,10 @@ import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { AppButton, AppCard, AppText, AppTextInput, Stack } from '../../../components';
 import { colors, spacing } from '../../../theme';
 import { useFeedbackStore } from '../store';
+import { useTranslation } from '../../../i18n';
 
 export function FeedbackPromptModal() {
+  const { t } = useTranslation();
   const prompt = useFeedbackStore((state) => state.activePrompt);
   const isSubmitting = useFeedbackStore((state) => state.isSubmitting);
   const errorMessage = useFeedbackStore((state) => state.errorMessage);
@@ -28,16 +30,16 @@ export function FeedbackPromptModal() {
           <Stack gap="lg">
             <Stack gap="xs">
               <AppText align="center" variant="title">
-                {prompt.policy.title || 'رأيك يهمنا'}
+                {prompt.policy.title || t.feedback.prompt.title}
               </AppText>
               <AppText align="center" color="secondary" variant="body">
-                {prompt.policy.question || 'كيف كانت تجربتك؟'}
+                {prompt.policy.question || t.feedback.prompt.question}
               </AppText>
             </Stack>
             <View accessibilityRole="radiogroup" style={styles.stars}>
               {[1, 2, 3, 4, 5].map((value) => (
                 <Pressable
-                  accessibilityLabel={`${value} من 5`}
+                  accessibilityLabel={t.feedback.ratingOf(value)}
                   accessibilityRole="radio"
                   accessibilityState={{ selected: rating === value }}
                   key={value}
@@ -50,11 +52,11 @@ export function FeedbackPromptModal() {
             </View>
             {prompt.policy.allow_comment ? (
               <AppTextInput
-                label="ملاحظة اختيارية"
+                label={t.feedback.prompt.noteLabel}
                 maxLength={1000}
                 multiline
                 onChangeText={setComment}
-                placeholder="ما الذي أعجبك؟ وما الذي يحتاج تحسينًا؟"
+                placeholder={t.feedback.prompt.notePlaceholder}
                 value={comment}
               />
             ) : null}
@@ -68,12 +70,12 @@ export function FeedbackPromptModal() {
                 disabled={!rating || isSubmitting}
                 loading={isSubmitting}
                 onPress={() => rating && void submitRating(rating, comment)}
-                title="إرسال التقييم"
+                title={t.feedback.prompt.submit}
               />
               <AppButton
                 disabled={isSubmitting}
                 onPress={() => void dismissPrompt()}
-                title="لاحقًا"
+                title={t.feedback.prompt.later}
                 variant="ghost"
               />
             </Stack>

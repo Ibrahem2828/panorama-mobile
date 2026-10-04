@@ -2,7 +2,7 @@ import { AppCard, AppText, Stack } from '../../../components';
 
 type LegalContentBlockProps = {
   title: string;
-  paragraphs: string[];
+  paragraphs: readonly string[];
 };
 
 export function LegalContentBlock({ title, paragraphs }: LegalContentBlockProps) {

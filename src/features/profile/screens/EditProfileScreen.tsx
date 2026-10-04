@@ -12,6 +12,7 @@ import {
   LoadingState,
   Stack,
 } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { getProfileRoleLabel } from '../services';
@@ -20,6 +21,7 @@ import { useProfileStore } from '../store';
 type EditProfileScreenProps = NativeStackScreenProps<ProfileStackParamList, 'EditProfile'>;
 
 export function EditProfileScreen({ navigation }: EditProfileScreenProps) {
+  const { t } = useTranslation();
   const user = useProfileStore((state) => state.user);
   const editDraft = useProfileStore((state) => state.editDraft);
   const isLoading = useProfileStore((state) => state.isLoading);
@@ -62,44 +64,43 @@ export function EditProfileScreen({ navigation }: EditProfileScreenProps) {
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <Stack gap="md">
-          <AppHeader subtitle="تعديل البيانات المسموحة من الخادم" title="تعديل الملف الشخصي" />
-          <AppButton onPress={handleCancel} title="رجوع" variant="ghost" />
+          <AppHeader subtitle={t.profile.edit.subtitle} title={t.profile.edit.title} />
+          <AppButton onPress={handleCancel} title={t.common.back} variant="ghost" />
         </Stack>
 
-        {isLoading && !user ? <LoadingState message="جاري تحميل بيانات الحساب..." /> : null}
+        {isLoading && !user ? <LoadingState message={t.profile.loadingAccount} /> : null}
 
         <AppCard variant="muted">
           <AppText color="secondary" variant="bodySmall">
-            يمكن تعديل الاسم الكامل واسم المستخدم فقط. البريد والهاتف والدور حقول للعرض ولا يتم
-            إرسالها في طلب التحديث.
+            {t.profile.edit.notice}
           </AppText>
         </AppCard>
 
         <AppTextInput
-          label="الاسم الكامل"
+          label={t.profile.edit.fullName}
           onChangeText={setFullName}
-          placeholder="اكتب الاسم الكامل"
+          placeholder={t.profile.edit.fullNamePlaceholder}
           value={editDraft.full_name}
         />
 
         <AppTextInput
-          label="اسم المستخدم"
+          label={t.profile.edit.username}
           onChangeText={setUsername}
-          placeholder="اكتب اسم المستخدم"
+          placeholder={t.profile.edit.usernamePlaceholder}
           value={editDraft.username}
         />
 
         <AppCard variant="outlined">
           <Stack gap="sm">
-            <AppText variant="title">حقول غير قابلة للتعديل</AppText>
+            <AppText variant="title">{t.profile.edit.readOnlyTitle}</AppText>
             <AppText color="secondary" variant="bodySmall">
-              البريد: {user?.email ?? 'غير متوفر'}
+              {t.profile.edit.email(user?.email ?? t.common.notAvailable)}
             </AppText>
             <AppText color="secondary" variant="bodySmall">
-              الهاتف: {user?.phone_number ?? 'غير متوفر'}
+              {t.profile.edit.phone(user?.phone_number ?? t.common.notAvailable)}
             </AppText>
             <AppText color="secondary" variant="bodySmall">
-              الدور: {getProfileRoleLabel(user?.role)}
+              {t.profile.edit.role(getProfileRoleLabel(user?.role, t.profile))}
             </AppText>
           </Stack>
         </AppCard>
@@ -127,9 +128,9 @@ export function EditProfileScreen({ navigation }: EditProfileScreenProps) {
             onPress={() => {
               void handleSubmit();
             }}
-            title="حفظ التغييرات"
+            title={t.profile.edit.save}
           />
-          <AppButton fullWidth onPress={handleCancel} title="إلغاء" variant="outline" />
+          <AppButton fullWidth onPress={handleCancel} title={t.common.cancel} variant="outline" />
         </Stack>
       </Stack>
     </AppScreen>

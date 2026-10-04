@@ -18,6 +18,7 @@ import { spacing } from '../../../theme';
 import { SubjectDetailHeader, SubjectLinkedSectionCard } from '../components';
 import { useSubjectsStore } from '../store';
 import type { Subject } from '../types';
+import { useTranslation } from '../../../i18n';
 
 type SubjectDetailsScreenProps = NativeStackScreenProps<SubjectsStackParamList, 'SubjectDetails'>;
 type AppTabsNavigation = BottomTabNavigationProp<AppTabsParamList>;
@@ -27,6 +28,7 @@ function isSameSubjectId(subject: Subject, subjectId: string | number) {
 }
 
 export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreenProps) {
+  const { t } = useTranslation();
   const { subjectId } = route.params;
   const selectedSubject = useSubjectsStore((state) => state.selectedSubject);
   const subjects = useSubjectsStore((state) => state.subjects);
@@ -75,8 +77,8 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
   if (!subject && isBusy) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="تفاصيل المادة" title="موادي" />
-        <LoadingState message="جاري تحميل بيانات المادة..." />
+        <AppHeader subtitle={t.subjects.details.subtitle} title={t.subjects.title} />
+        <LoadingState message={t.subjects.details.loading} />
       </AppScreen>
     );
   }
@@ -87,15 +89,19 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
         <Stack gap="lg">
           <AppHeader
             leftAction={
-              <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+              <AppButton
+                onPress={() => navigation.goBack()}
+                title={t.common.back}
+                variant="ghost"
+              />
             }
-            subtitle="تفاصيل المادة"
-            title="موادي"
+            subtitle={t.subjects.details.subtitle}
+            title={t.subjects.title}
           />
           <ErrorState
-            message={errorMessage ?? 'تعذر العثور على المادة.'}
+            message={errorMessage ?? t.subjects.details.unavailableMessage}
             onRetry={handleRetry}
-            title="المادة غير متاحة"
+            title={t.subjects.details.unavailableTitle}
           />
         </Stack>
       </AppScreen>
@@ -107,30 +113,30 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
       <Stack gap="xl">
         <AppHeader
           leftAction={
-            <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+            <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
           }
-          subtitle="تفاصيل المادة من بيانات القائمة"
-          title="موادي"
+          subtitle={t.subjects.details.listSubtitle}
+          title={t.subjects.title}
         />
 
         <SubjectDetailHeader subject={subject} />
 
         <Stack gap="md">
-          <SectionHeader title="المحتوى المرتبط" />
+          <SectionHeader title={t.subjects.details.linkedTitle} />
           <SubjectLinkedSectionCard
-            description="افتح قائمة الملفات المتاحة داخل التطبيق. لا يوجد فلتر موثق حسب المادة في هذه المرحلة."
+            description={t.subjects.details.filesDescription}
             onPress={handleOpenFiles}
-            title="الملفات"
+            title={t.subjects.details.filesTitle}
           />
           <SubjectLinkedSectionCard
-            description="افتح المجموعات العامة المتاحة. لا يوجد ربط موثق حسب المادة في هذه المرحلة."
+            description={t.subjects.details.groupsDescription}
             onPress={handleOpenGroups}
-            title="المجموعات"
+            title={t.subjects.details.groupsTitle}
           />
           <SubjectLinkedSectionCard
-            description="لا يوجد endpoint موثق لإعلانات المادة في هذه المرحلة."
+            description={t.subjects.details.announcementsDescription}
             disabled
-            title="الإعلانات"
+            title={t.subjects.details.announcementsTitle}
           />
         </Stack>
       </Stack>

@@ -1,36 +1,31 @@
 import { authService, normalizeApiError } from '../../../api';
 import type { ChangePasswordInput } from '../types';
+import type { TranslationCatalog } from '../../../i18n';
+
+type SettingsCatalog = TranslationCatalog['settings'];
 
 export type ChangePasswordValidation = Partial<Record<keyof ChangePasswordInput, string>>;
 
-const NETWORK_MESSAGE = 'تعذر تغيير كلمة المرور. تحقق من اتصال الإنترنت وحاول مرة أخرى.';
-const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const VALIDATION_MESSAGE = 'يرجى التأكد من بيانات كلمة المرور المدخلة.';
-const GENERIC_MESSAGE = 'تعذر تغيير كلمة المرور. حاول مرة أخرى.';
-
-const OLD_PASSWORD_REQUIRED_MESSAGE = 'يرجى إدخال كلمة المرور الحالية.';
-const NEW_PASSWORD_REQUIRED_MESSAGE = 'يرجى إدخال كلمة المرور الجديدة.';
-const CONFIRM_PASSWORD_REQUIRED_MESSAGE = 'يرجى تأكيد كلمة المرور الجديدة.';
-const PASSWORD_LENGTH_MESSAGE = 'يجب أن تكون كلمة المرور الجديدة 8 أحرف على الأقل.';
-const PASSWORD_MISMATCH_MESSAGE = 'كلمتا المرور غير متطابقتين.';
-
-export function validateChangePasswordInput(input: ChangePasswordInput): ChangePasswordValidation {
+export function validateChangePasswordInput(
+  input: ChangePasswordInput,
+  t: SettingsCatalog,
+): ChangePasswordValidation {
   const validation: ChangePasswordValidation = {};
 
   if (!input.old_password.trim()) {
-    validation.old_password = OLD_PASSWORD_REQUIRED_MESSAGE;
+    validation.old_password = t.changePassword.currentRequired;
   }
 
   if (!input.new_password.trim()) {
-    validation.new_password = NEW_PASSWORD_REQUIRED_MESSAGE;
+    validation.new_password = t.changePassword.newRequired;
   } else if (input.new_password.length < 8) {
-    validation.new_password = PASSWORD_LENGTH_MESSAGE;
+    validation.new_password = t.changePassword.tooShort;
   }
 
   if (!input.new_password_confirm.trim()) {
-    validation.new_password_confirm = CONFIRM_PASSWORD_REQUIRED_MESSAGE;
+    validation.new_password_confirm = t.changePassword.confirmRequired;
   } else if (input.new_password !== input.new_password_confirm) {
-    validation.new_password_confirm = PASSWORD_MISMATCH_MESSAGE;
+    validation.new_password_confirm = t.changePassword.mismatch;
   }
 
   return validation;
@@ -42,22 +37,22 @@ export function hasChangePasswordValidationErrors(validation: ChangePasswordVali
   );
 }
 
-export function toSafeSettingsErrorMessage(error: unknown): string {
+export function toSafeSettingsErrorMessage(error: unknown, t: SettingsCatalog): string {
   const normalizedError = normalizeApiError(error);
 
   if (normalizedError.code === 'NETWORK_ERROR' || normalizedError.code === 'TIMEOUT') {
-    return NETWORK_MESSAGE;
+    return t.errors.network;
   }
 
   if (normalizedError.code === 'UNAUTHORIZED') {
-    return UNAUTHORIZED_MESSAGE;
+    return t.errors.unauthorized;
   }
 
   if (normalizedError.code === 'VALIDATION_ERROR') {
-    return VALIDATION_MESSAGE;
+    return t.errors.validation;
   }
 
-  return normalizedError.message || GENERIC_MESSAGE;
+  return normalizedError.message || t.errors.generic;
 }
 
 export async function changeCurrentPassword(

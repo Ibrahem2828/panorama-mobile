@@ -15,6 +15,7 @@ import {
   SectionHeader,
   Stack,
 } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { PrintingRoutes } from '../../../navigation/routes';
 import type { PrintingStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -24,6 +25,7 @@ import { usePrintingStore } from '../store';
 type PrintHomeScreenProps = NativeStackScreenProps<PrintingStackParamList, 'PrintHome'>;
 
 export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
+  const { t } = useTranslation();
   const orders = usePrintingStore((state) => state.orders);
   const ordersCount = usePrintingStore((state) => state.ordersCount);
   const isLoadingOrders = usePrintingStore((state) => state.isLoadingOrders);
@@ -39,29 +41,29 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="طلبات الطباعة" title="الطباعة" />
+        <AppHeader subtitle={t.printing.home.subtitle} title={t.printing.title} />
 
         <AppCard variant="elevated">
           <Stack gap="lg">
             <Illustration
-              accessibilityLabel="رسم يوضح خدمة الطباعة"
+              accessibilityLabel={t.printing.home.illustrationAlt}
               size="lg"
               source={images.printing.hero}
             />
             <Stack gap="xs">
-              <AppText variant="h2">طلب طباعة من ملفاتك</AppText>
+              <AppText variant="h2">{t.printing.home.heading}</AppText>
               <AppText color="secondary" variant="bodySmall">
-                أنشئ طلبا من ملف متاح لك، ثم تابع حالته من طلباتي.
+                {t.printing.home.description}
               </AppText>
             </Stack>
             <Stack direction="horizontal" gap="md" wrap>
               <AppButton
                 onPress={() => navigation.navigate(PrintingRoutes.CreatePrintOrder)}
-                title="طلب جديد"
+                title={t.printing.home.newOrder}
               />
               <AppButton
                 onPress={() => navigation.navigate(PrintingRoutes.MyPrintOrders)}
-                title="طلباتي"
+                title={t.printing.home.myOrders}
                 variant="outline"
               />
             </Stack>
@@ -73,9 +75,12 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
         {errorMessage ? <ErrorState message={errorMessage} onRetry={loadMyOrders} /> : null}
 
         <Stack gap="md">
-          <SectionHeader subtitle={`${ordersCount} طلب مسجل من الباك إند`} title="آخر طلب طباعة" />
+          <SectionHeader
+            subtitle={t.printing.home.registeredOrders(ordersCount)}
+            title={t.printing.home.latestOrder}
+          />
           {isLoadingOrders && !latestOrder ? (
-            <LoadingState message="جاري تحميل طلبات الطباعة..." />
+            <LoadingState message={t.printing.home.loadingOrders} />
           ) : latestOrder ? (
             <PrintOrderCard
               order={latestOrder}
@@ -88,7 +93,7 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
           ) : (
             <AppCard variant="muted">
               <AppText color="secondary" variant="bodySmall">
-                لا توجد طلبات طباعة حتى الآن.
+                {t.printing.home.noOrders}
               </AppText>
             </AppCard>
           )}

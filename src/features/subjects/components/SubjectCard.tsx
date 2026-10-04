@@ -11,27 +11,31 @@ import {
   getSubjectDisplayName,
 } from '../services';
 import type { Subject } from '../types';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
 
 type SubjectCardProps = {
   subject: Subject;
   onPress?: () => void;
 };
 
-function getCountBadges(subject: Subject) {
+function getCountBadges(subject: Subject, t: TranslationCatalog) {
   return [
-    typeof subject.files_count === 'number' ? `ملفات ${subject.files_count}` : null,
-    typeof subject.groups_count === 'number' ? `مجموعات ${subject.groups_count}` : null,
-    typeof subject.lectures_count === 'number' ? `محاضرات ${subject.lectures_count}` : null,
+    typeof subject.files_count === 'number' ? t.subjects.filesCount(subject.files_count) : null,
+    typeof subject.groups_count === 'number' ? t.subjects.groupsCount(subject.groups_count) : null,
+    typeof subject.lectures_count === 'number'
+      ? t.subjects.lecturesCount(subject.lectures_count)
+      : null,
   ].filter((value): value is string => Boolean(value));
 }
 
 export function SubjectCard({ subject, onPress }: SubjectCardProps) {
-  const title = getSubjectDisplayName(subject);
+  const { t } = useTranslation();
+  const title = getSubjectDisplayName(subject, t.subjects);
   const code = getSubjectCode(subject);
   const description = getSubjectDescription(subject);
   const academicYear = getEntityLabel(subject.academic_year);
   const semester = getEntityLabel(subject.semester);
-  const countBadges = getCountBadges(subject);
+  const countBadges = getCountBadges(subject, t);
 
   const { scale, onPressIn, onPressOut } = useRef(createPressScaleAnim()).current;
 
@@ -52,11 +56,11 @@ export function SubjectCard({ subject, onPress }: SubjectCardProps) {
                 <AppText variant="title">{title}</AppText>
                 {code ? (
                   <AppText color="muted" variant="caption">
-                    رمز المادة: {code}
+                    {t.subjects.codeLabel(code)}
                   </AppText>
                 ) : null}
               </Stack>
-              <AppBadge label="مادة" variant="brand" />
+              <AppBadge label={t.subjects.badge} variant="brand" />
             </Stack>
 
             {description ? (
@@ -66,8 +70,12 @@ export function SubjectCard({ subject, onPress }: SubjectCardProps) {
             ) : null}
 
             <Stack direction="horizontal" gap="sm" wrap>
-              {academicYear ? <AppBadge label={`السنة ${academicYear}`} variant="info" /> : null}
-              {semester ? <AppBadge label={`الفصل ${semester}`} variant="neutral" /> : null}
+              {academicYear ? (
+                <AppBadge label={t.subjects.academicYear(academicYear)} variant="info" />
+              ) : null}
+              {semester ? (
+                <AppBadge label={t.subjects.semester(semester)} variant="neutral" />
+              ) : null}
               {countBadges.map((label) => (
                 <AppBadge key={label} label={label} variant="neutral" />
               ))}

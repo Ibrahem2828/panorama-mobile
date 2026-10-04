@@ -1,4 +1,5 @@
 import { AppBadge, AppButton, AppCard, AppText, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 
 type NotificationsHeaderActionsProps = {
   unreadCount: number;
@@ -15,20 +16,21 @@ export function NotificationsHeaderActions({
   onRefresh,
   onMarkAllRead,
 }: NotificationsHeaderActionsProps) {
+  const { t } = useTranslation();
   return (
     <AppCard variant="muted">
       <Stack gap="md">
         <Stack direction="horizontal" gap="md" wrap>
           <Stack gap="xs" style={{ flex: 1, minWidth: 0 }}>
-            <AppText variant="title">مركز الإشعارات</AppText>
+            <AppText variant="title">{t.notifications.centerTitle}</AppText>
             <AppText color="secondary" variant="bodySmall">
-              {unreadCount > 0
-                ? 'لديك إشعارات غير مقروءة تحتاج متابعة.'
-                : 'كل الإشعارات الحالية مقروءة.'}
+              {unreadCount > 0 ? t.notifications.hasUnread : t.notifications.allRead}
             </AppText>
           </Stack>
           <AppBadge
-            label={unreadCount > 0 ? `${unreadCount} غير مقروء` : 'لا جديد'}
+            label={
+              unreadCount > 0 ? t.notifications.unreadBadge(unreadCount) : t.notifications.noNew
+            }
             size="md"
             variant={unreadCount > 0 ? 'warning' : 'success'}
           />
@@ -39,7 +41,7 @@ export function NotificationsHeaderActions({
             loading={isRefreshing}
             onPress={onRefresh}
             size="sm"
-            title="تحديث"
+            title={t.common.refresh}
             variant="outline"
           />
           {unreadCount > 0 ? (
@@ -47,7 +49,7 @@ export function NotificationsHeaderActions({
               loading={isMarkingAllRead}
               onPress={onMarkAllRead}
               size="sm"
-              title="تعليم الكل كمقروء"
+              title={t.notifications.markAllRead}
               variant="primary"
             />
           ) : null}

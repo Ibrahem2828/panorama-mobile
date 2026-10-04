@@ -60,6 +60,7 @@ export type ProfileStackParamList = {
   AcademicInfo: undefined;
   Settings: undefined;
   ChangePassword: undefined;
+  DeleteAccount: undefined;
   Notifications: undefined;
   SupportTickets: undefined;
   CreateSupportTicket: undefined;

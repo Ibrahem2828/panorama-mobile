@@ -24,6 +24,7 @@ import { useFeedbackStore } from '../../feedback/store';
 import { useStudentProfileStore } from '../../student-profile';
 import { runGlobalSearch, toSafeSearchErrorMessage } from '../services';
 import type { GlobalSearchResult, SearchResultItem } from '../types';
+import { useTranslation } from '../../../i18n';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Search'>;
 
@@ -36,7 +37,13 @@ const EMPTY_RESULT: GlobalSearchResult = {
 };
 
 function SearchResultCard({ item, onPress }: { item: SearchResultItem; onPress: () => void }) {
-  const label = item.kind === 'subject' ? 'مادة' : item.kind === 'group' ? 'مجموعة' : 'ملف';
+  const { t } = useTranslation();
+  const label =
+    item.kind === 'subject'
+      ? t.search.kindSubject
+      : item.kind === 'group'
+        ? t.search.kindGroup
+        : t.search.kindFile;
   return (
     <AppCard variant="default">
       <Stack gap="sm">
@@ -47,13 +54,14 @@ function SearchResultCard({ item, onPress }: { item: SearchResultItem; onPress: 
         <AppText color="secondary" variant="bodySmall">
           {item.subtitle}
         </AppText>
-        <AppButton onPress={onPress} size="sm" title="فتح" variant="outline" />
+        <AppButton onPress={onPress} size="sm" title={t.common.open} variant="outline" />
       </Stack>
     </AppCard>
   );
 }
 
 export function SearchScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const accessToken = useAuthStore((state) => state.accessToken);
   const role = useAuthStore((state) => state.user?.role?.toLowerCase());
   const majorId = useStudentProfileStore((state) => state.selectedMajorId);
@@ -77,7 +85,10 @@ export function SearchScreen({ navigation, route }: Props) {
     const timer = setTimeout(() => {
       setIsLoading(true);
       setErrorMessage(null);
-      void runGlobalSearch({ query: normalized, authToken: accessToken, isStudent, majorId })
+      void runGlobalSearch(
+        { query: normalized, authToken: accessToken, isStudent, majorId },
+        t.search,
+      )
         .then((nextResult) => {
           if (sequence !== requestSequence.current) return;
           setResult(nextResult);
@@ -89,7 +100,7 @@ export function SearchScreen({ navigation, route }: Props) {
         })
         .catch((error: unknown) => {
           if (sequence !== requestSequence.current) return;
-          setErrorMessage(toSafeSearchErrorMessage(error));
+          setErrorMessage(toSafeSearchErrorMessage(error, t.search));
           setResult(EMPTY_RESULT);
         })
         .finally(() => {
@@ -121,47 +132,47 @@ export function SearchScreen({ navigation, route }: Props) {
 
   const hasQuery = query.trim().length >= 2;
   const sections = [
-    { title: 'المواد', items: result.subjects },
-    { title: 'المجموعات', items: result.groups },
-    { title: 'الملفات', items: result.files },
+    { title: t.search.subjectsSection, items: result.subjects },
+    { title: t.search.groupsSection, items: result.groups },
+    { title: t.search.filesSection, items: result.files },
   ].filter((section) => section.items.length > 0);
 
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="ابحث في المحتوى المسموح لحسابك" title="البحث" />
-        <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+        <AppHeader subtitle={t.search.subtitle} title={t.search.title} />
+        <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
         <AppTextInput
           autoCapitalize="none"
           autoCorrect={false}
-          label="عبارة البحث"
+          label={t.search.label}
           onChangeText={setQuery}
-          placeholder="اسم مادة أو مجموعة أو ملف"
+          placeholder={t.search.placeholder}
           returnKeyType="search"
           value={query}
         />
 
-        {isLoading ? <LoadingState message="جاري البحث..." /> : null}
+        {isLoading ? <LoadingState message={t.search.loading} /> : null}
         {errorMessage ? <ErrorState message={errorMessage} /> : null}
         {result.partialFailure ? (
           <AppCard variant="muted">
             <AppText color="secondary" variant="bodySmall">
-              ظهرت نتائج جزئية لأن أحد مصادر البحث لم يستجب. يمكنك المحاولة مجددًا.
+              {t.search.partialResults}
             </AppText>
           </AppCard>
         ) : null}
 
         {!hasQuery ? (
-          <EmptyState
-            message="اكتب حرفين على الأقل. تظهر فقط النتائج التي يسمح بها Backend لحسابك."
-            title="ابدأ البحث"
-          />
+          <EmptyState message={t.search.startMessage} title={t.search.startTitle} />
         ) : !isLoading && !errorMessage && result.total === 0 ? (
-          <EmptyState message="جرّب كلمات أقل أو اسمًا مختلفًا." title="لا توجد نتائج مطابقة" />
+          <EmptyState message={t.search.noResultsMessage} title={t.common.searchNoResultsTitle} />
         ) : (
           sections.map((section) => (
             <Stack gap="md" key={section.title}>
-              <SectionHeader subtitle={`${section.items.length} نتيجة`} title={section.title} />
+              <SectionHeader
+                subtitle={t.search.resultsCount(section.items.length)}
+                title={section.title}
+              />
               {section.items.map((item) => (
                 <SearchResultCard
                   item={item}

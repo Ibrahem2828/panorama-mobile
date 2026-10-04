@@ -13,6 +13,7 @@ import {
   SectionHeader,
   Stack,
 } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { GroupsRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -26,13 +27,12 @@ import type { Id } from '../types';
 
 type GroupDetailsScreenProps = NativeStackScreenProps<GroupsStackParamList, 'GroupDetails'>;
 
-const WHATSAPP_OPEN_ERROR = 'تعذر فتح رابط واتساب.';
-
 function isSameId(left: Id, right: Id): boolean {
   return String(left) === String(right);
 }
 
 export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProps) {
+  const { t } = useTranslation();
   const { groupId } = route.params;
   const accessToken = useAuthStore((state) => state.accessToken);
   const requestFeedbackPrompt = useFeedbackStore((state) => state.requestPrompt);
@@ -75,7 +75,7 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
 
   async function handleOpenWhatsApp() {
     if (!accessToken || !activeGroup?.has_whatsapp_channel) {
-      setWhatsAppErrorMessage(WHATSAPP_OPEN_ERROR);
+      setWhatsAppErrorMessage(t.groups.details.whatsAppError);
       return;
     }
 
@@ -99,7 +99,7 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
         objectId: groupId,
       });
     } catch {
-      setWhatsAppErrorMessage(WHATSAPP_OPEN_ERROR);
+      setWhatsAppErrorMessage(t.groups.details.whatsAppError);
     } finally {
       setIsOpeningWhatsApp(false);
     }
@@ -108,8 +108,8 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
   if (showInitialLoading) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="تفاصيل المجموعة" title="المجموعات" />
-        <LoadingState message="جاري تحميل تفاصيل المجموعة..." />
+        <AppHeader subtitle={t.groups.details.subtitle} title={t.groups.title} />
+        <LoadingState message={t.groups.details.loading} />
       </AppScreen>
     );
   }
@@ -118,16 +118,16 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         <Stack gap="lg">
-          <AppHeader subtitle="تفاصيل المجموعة" title="المجموعات" />
+          <AppHeader subtitle={t.groups.details.subtitle} title={t.groups.title} />
           <AppButton
             onPress={() => navigation.goBack()}
-            title="رجوع إلى المجموعات"
+            title={t.groups.details.backToGroups}
             variant="ghost"
           />
           <ErrorState
-            message={errorMessage ?? 'تعذر تحميل تفاصيل المجموعة.'}
+            message={errorMessage ?? t.groups.details.unavailableMessage}
             onRetry={handleRetry}
-            title="المجموعة غير متاح"
+            title={t.groups.details.unavailableTitle}
           />
         </Stack>
       </AppScreen>
@@ -139,10 +139,10 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
       <Stack gap="xl">
         <AppHeader
           leftAction={
-            <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+            <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
           }
-          subtitle="تفاصيل المجموعة"
-          title="المجموعات"
+          subtitle={t.groups.details.subtitle}
+          title={t.groups.title}
         />
 
         <GroupDetailHeader group={activeGroup} />
@@ -159,13 +159,17 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
 
         <Stack direction="horizontal" gap="md" wrap>
           {canRequestJoin(activeGroup) ? (
-            <AppButton loading={isSubmittingMembership} onPress={handleJoin} title="طلب الانضمام" />
+            <AppButton
+              loading={isSubmittingMembership}
+              onPress={handleJoin}
+              title={t.groups.details.join}
+            />
           ) : null}
           {canLeaveGroup(activeGroup) ? (
             <AppButton
               loading={isSubmittingMembership}
               onPress={handleLeave}
-              title="مغادرة المجموعة"
+              title={t.groups.details.leave}
               variant="danger"
             />
           ) : null}
@@ -186,32 +190,31 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
 
         <Stack gap="md">
           <SectionHeader
-            subtitle="المحادثة مؤجلة، وملفات المجموعة أصبحت متاحة حسب صلاحيات الباك إند."
-            title="محتوى المجموعة"
+            subtitle={t.groups.details.contentSubtitle}
+            title={t.groups.details.contentTitle}
           />
           <AppCard variant="muted">
             <Stack gap="sm">
-              <AppText variant="title">المحادثة</AppText>
+              <AppText variant="title">{t.groups.details.chatTitle}</AppText>
               <AppText color="secondary" variant="bodySmall">
-                افتح المحادثة النصية داخل التطبيق. صلاحية الإرسال تعرض داخل شاشة المحادثة حسب عضوية
-                المجموعة وقواعد الخادم.
+                {t.groups.details.chatDescription}
               </AppText>
               <AppButton
                 onPress={handleOpenChatRoom}
-                title="فتح المحادثة داخل التطبيق"
+                title={t.groups.details.openChat}
                 variant="outline"
               />
             </Stack>
           </AppCard>
           <AppCard variant="muted">
             <Stack gap="sm">
-              <AppText variant="title">ملفات المجموعة</AppText>
+              <AppText variant="title">{t.groups.details.filesTitle}</AppText>
               <AppText color="secondary" variant="bodySmall">
-                افتح الملفات المرتبطة بهذا المجموعة داخل التطبيق بدون زر تنزيل مباشر.
+                {t.groups.details.filesDescription}
               </AppText>
               <AppButton
                 onPress={handleOpenGroupFiles}
-                title="فتح ملفات المجموعة"
+                title={t.groups.details.openFiles}
                 variant="outline"
               />
             </Stack>

@@ -1,4 +1,5 @@
 import { AppButton, AppTextInput, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 
 type SupportMessageInputProps = {
   value: string;
@@ -17,22 +18,23 @@ export function SupportMessageInput({
   onChangeText,
   onSubmit,
 }: SupportMessageInputProps) {
+  const { t } = useTranslation();
   return (
     <Stack gap="md">
       <AppTextInput
         disabled={disabled}
         error={error}
-        label="إضافة رسالة"
+        label={t.support.details.replyLabel}
         multiline
         onChangeText={onChangeText}
-        placeholder="اكتب تفاصيل إضافية لفريق الدعم"
+        placeholder={t.support.details.replyPlaceholder}
         value={value}
       />
       <AppButton
         disabled={disabled || value.trim().length === 0}
         loading={loading}
         onPress={onSubmit}
-        title="إرسال الرسالة"
+        title={t.support.details.sendReply}
       />
     </Stack>
   );

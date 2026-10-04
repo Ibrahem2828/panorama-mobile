@@ -1,4 +1,5 @@
 import { AppText, AppTextInput, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 
 type SubjectSearchBarProps = {
   value: string;
@@ -13,17 +14,18 @@ export function SubjectSearchBar({
   totalCount,
   onChangeText,
 }: SubjectSearchBarProps) {
+  const { t } = useTranslation();
   return (
     <Stack gap="sm">
       <AppTextInput
-        label="بحث محلي"
+        label={t.common.searchLocal}
         onChangeText={onChangeText}
-        placeholder="ابحث باسم المادة أو رمزها"
+        placeholder={t.subjects.searchPlaceholder}
         returnKeyType="search"
         value={value}
       />
       <AppText color="muted" variant="caption">
-        يتم البحث داخل المواد المحملة فقط. النتائج: {resultCount} من {totalCount}.
+        {t.subjects.searchNote(resultCount, totalCount)}
       </AppText>
     </Stack>
   );

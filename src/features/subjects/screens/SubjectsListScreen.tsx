@@ -17,19 +17,17 @@ import {
 import { SubjectsRoutes } from '../../../navigation/routes';
 import type { SubjectsStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
-import {
-  SEARCH_CLEAR_LABEL,
-  SEARCH_NO_RESULTS_MESSAGE,
-  SEARCH_NO_RESULTS_TITLE,
-} from '../../../utils/searchEmptyState';
 import { SubjectCard, SubjectSearchBar } from '../components';
 import { filterSubjectsBySearch } from '../services';
 import { useSubjectsStore } from '../store';
 import type { Subject } from '../types';
+import { useTranslation } from '../../../i18n';
+import { formatTime } from '../../../utils/formatDateTime';
 
 type SubjectsListScreenProps = NativeStackScreenProps<SubjectsStackParamList, 'SubjectsList'>;
 
 export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
+  const { t, locale } = useTranslation();
   const subjects = useSubjectsStore((state) => state.subjects);
   const search = useSubjectsStore((state) => state.search);
   const isLoading = useSubjectsStore((state) => state.isLoading);
@@ -42,8 +40,8 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
   const setSearch = useSubjectsStore((state) => state.setSearch);
   const setSelectedSubject = useSubjectsStore((state) => state.setSelectedSubject);
   const filteredSubjects = useMemo(
-    () => filterSubjectsBySearch(subjects, search),
-    [subjects, search],
+    () => filterSubjectsBySearch(subjects, search, t.subjects),
+    [subjects, search, t.subjects],
   );
   const showInitialLoading = isLoading && !lastLoadedAt;
   const showInitialError = Boolean(errorMessage && !lastLoadedAt);
@@ -64,7 +62,7 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
   function renderHeader() {
     return (
       <Stack gap="lg">
-        <AppHeader subtitle="موادك حسب بياناتك الأكاديمية" title="موادي" />
+        <AppHeader subtitle={t.subjects.subtitle} title={t.subjects.title} />
         <SubjectSearchBar
           onChangeText={setSearch}
           resultCount={filteredSubjects.length}
@@ -78,8 +76,8 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
   if (showInitialLoading) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="موادك حسب بياناتك الأكاديمية" title="موادي" />
-        <LoadingState message="جاري تحميل المواد..." />
+        <AppHeader subtitle={t.subjects.subtitle} title={t.subjects.title} />
+        <LoadingState message={t.subjects.loading} />
       </AppScreen>
     );
   }
@@ -87,7 +85,7 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
   if (showInitialError) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="موادك حسب بياناتك الأكاديمية" title="موادي" />
+        <AppHeader subtitle={t.subjects.subtitle} title={t.subjects.title} />
         <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
       </AppScreen>
     );
@@ -104,12 +102,12 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
               loading={isRefreshing}
               onPress={handleRefresh}
               size="sm"
-              title="تحديث"
+              title={t.common.refresh}
               variant="outline"
             />
           }
-          subtitle="الفلاتر الأكاديمية تأتي من ملف الطالب: الاختصاص، السنة، والفصل عند توفرها."
-          title="قائمة المواد"
+          subtitle={t.subjects.listSubtitle}
+          title={t.subjects.listTitle}
         />
 
         {errorMessage ? (
@@ -120,21 +118,23 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
               search ? (
                 <AppButton
                   onPress={() => setSearch('')}
-                  title={SEARCH_CLEAR_LABEL}
+                  title={t.common.searchClear}
                   variant="outline"
                 />
               ) : (
                 <AppButton
                   loading={isRefreshing}
                   onPress={handleRefresh}
-                  title="إعادة التحقق"
+                  title={t.common.retryVerify}
                   variant="outline"
                 />
               )
             }
-            message={search ? SEARCH_NO_RESULTS_MESSAGE : 'لا توجد مواد متاحة حاليا.'}
-            title={search ? SEARCH_NO_RESULTS_TITLE : 'لا توجد مواد'}
-            illustrationLabel={search ? 'رسم يوضح عدم وجود نتائج بحث' : 'رسم يوضح عدم وجود مواد'}
+            message={search ? t.common.searchNoResultsMessage : t.subjects.emptyMessage}
+            title={search ? t.common.searchNoResultsTitle : t.subjects.emptyTitle}
+            illustrationLabel={
+              search ? t.common.noSearchResultsAlt : t.subjects.emptyIllustrationAlt
+            }
             illustrationSource={search ? images.illustrations.search : images.emptyStates.subjects}
           />
         ) : (
@@ -151,7 +151,7 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
 
         {lastLoadedAt ? (
           <AppText align="center" color="muted" variant="caption">
-            آخر تحديث: {new Date(lastLoadedAt).toLocaleTimeString('ar-SY')}
+            {t.common.lastUpdatedAt(formatTime(lastLoadedAt, locale) ?? '')}
           </AppText>
         ) : null}
       </Stack>

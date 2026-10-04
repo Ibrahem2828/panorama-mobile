@@ -1,4 +1,5 @@
 import { logger } from '../utils/logger';
+import { useLocaleStore } from '../i18n';
 
 export type ApiErrorCode =
   | 'NETWORK_ERROR'
@@ -27,17 +28,26 @@ export type NormalizedApiError = {
 
 type UnknownRecord = Record<string, unknown>;
 
-const defaultMessages: Record<ApiErrorCode, string> = {
-  NETWORK_ERROR: 'تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت.',
-  TIMEOUT: 'استغرق الطلب وقتا أطول من المتوقع. حاول مرة أخرى.',
-  UNAUTHORIZED: 'انتهت الجلسة أو تحتاج إلى تسجيل الدخول.',
-  FORBIDDEN: 'لا تملك صلاحية تنفيذ هذا الإجراء.',
-  NOT_FOUND: 'العنصر المطلوب غير موجود.',
-  VALIDATION_ERROR: 'تعذر التحقق من البيانات المدخلة.',
-  SERVER_ERROR: 'حدث خطأ في الخادم. حاول لاحقا.',
-  RATE_LIMITED: 'تم تجاوز عدد المحاولات المسموح. حاول مرة أخرى بعد قليل.',
-  UNKNOWN_ERROR: 'حدث خطأ غير متوقع. حاول مرة أخرى.',
-};
+/**
+ * Resolved per call rather than at module load: this module is imported before the
+ * locale store hydrates, so a captured map would pin every fallback to the startup
+ * locale for the life of the process.
+ */
+function defaultMessageFor(code: ApiErrorCode): string {
+  const t = useLocaleStore.getState().t.apiErrors;
+  const messages: Record<ApiErrorCode, string> = {
+    NETWORK_ERROR: t.network,
+    TIMEOUT: t.timeout,
+    UNAUTHORIZED: t.unauthorized,
+    FORBIDDEN: t.forbidden,
+    NOT_FOUND: t.notFound,
+    VALIDATION_ERROR: t.validation,
+    SERVER_ERROR: t.server,
+    RATE_LIMITED: t.rateLimited,
+    UNKNOWN_ERROR: t.unknown,
+  };
+  return messages[code];
+}
 
 export class ApiClientError extends Error implements NormalizedApiError {
   code: ApiErrorCode;
@@ -134,7 +144,7 @@ function extractBackendMessage(responseBody: unknown): string | undefined {
 
 function resolveUserMessage(code: ApiErrorCode, backendMessage?: string): string {
   if (!backendMessage) {
-    return defaultMessages[code];
+    return defaultMessageFor(code);
   }
 
   return backendMessage;
@@ -184,7 +194,7 @@ export function createApiError(input: {
   return new ApiClientError({
     code,
     status: input.status,
-    message: input.message || defaultMessages[code],
+    message: input.message || defaultMessageFor(code),
     technicalMessage: input.technicalMessage,
     requestId: input.requestId,
     fieldErrors: input.fieldErrors,
@@ -240,7 +250,7 @@ export function normalizeApiError(error: unknown): NormalizedApiError {
   if (isAbortError(error)) {
     return {
       code: 'TIMEOUT',
-      message: defaultMessages.TIMEOUT,
+      message: defaultMessageFor('TIMEOUT'),
       raw: error,
     };
   }
@@ -248,7 +258,7 @@ export function normalizeApiError(error: unknown): NormalizedApiError {
   if (error instanceof TypeError) {
     return {
       code: 'NETWORK_ERROR',
-      message: defaultMessages.NETWORK_ERROR,
+      message: defaultMessageFor('NETWORK_ERROR'),
       raw: error,
     };
   }
@@ -261,7 +271,7 @@ export function normalizeApiError(error: unknown): NormalizedApiError {
 
   return {
     code: 'UNKNOWN_ERROR',
-    message: defaultMessages.UNKNOWN_ERROR,
+    message: defaultMessageFor('UNKNOWN_ERROR'),
     raw: error,
   };
 }

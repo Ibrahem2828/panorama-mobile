@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { useLocaleStore } from '../../../i18n';
+
 import { useAuthStore } from '../../auth/store';
 import { useGroupsStore } from '../../groups/store';
 import type { Group } from '../../groups/types';
@@ -39,10 +41,10 @@ type ChatState = {
   reset: () => void;
 };
 
-const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const EMPTY_MESSAGE = 'يرجى كتابة رسالة قبل الإرسال.';
-const LONG_MESSAGE = 'يجب ألا تتجاوز الرسالة 1000 حرف.';
-const PERMISSION_MESSAGE = 'لا يمكنك إرسال رسائل في هذا المجموعة حاليا.';
+// Read when the action runs so the message follows the current locale.
+function chatCatalog() {
+  return useLocaleStore.getState().t.chat;
+}
 
 let chatWebSocketClient: ChatWebSocketClient | null = null;
 
@@ -93,7 +95,7 @@ export const useChatStore = create<ChatState>((set, get) => {
 
     if (!accessToken) {
       set({
-        [field]: MISSING_SESSION_MESSAGE,
+        [field]: chatCatalog().errors.unauthorized,
         isLoadingMessages: false,
         isRefreshing: false,
         isSending: false,
@@ -142,7 +144,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       } catch (error) {
         set({
           isLoadingMessages: false,
-          errorMessage: toSafeChatErrorMessage(error),
+          errorMessage: toSafeChatErrorMessage(error, chatCatalog()),
         });
       }
     },
@@ -166,7 +168,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       } catch (error) {
         set({
           isRefreshing: false,
-          errorMessage: toSafeChatErrorMessage(error),
+          errorMessage: toSafeChatErrorMessage(error, chatCatalog()),
         });
       }
     },
@@ -180,22 +182,22 @@ export const useChatStore = create<ChatState>((set, get) => {
       const message = (get().draftByGroupId[groupKey] ?? '').trim();
 
       if (!message) {
-        set({ sendErrorMessage: EMPTY_MESSAGE });
+        set({ sendErrorMessage: chatCatalog().errors.emptyMessage });
         return;
       }
 
       if (message.length > 1000) {
-        set({ sendErrorMessage: LONG_MESSAGE });
+        set({ sendErrorMessage: chatCatalog().errors.longMessage });
         return;
       }
 
       const group = getKnownGroup(groupId);
       const permission = group
-        ? canSendMessageToGroup(group, getCurrentUserId())
+        ? canSendMessageToGroup(group, getCurrentUserId(), chatCatalog())
         : { allowed: true, permission: 'unknown' as const };
 
       if (!permission.allowed) {
-        set({ sendErrorMessage: permission.reason ?? PERMISSION_MESSAGE });
+        set({ sendErrorMessage: permission.reason ?? chatCatalog().errors.permission });
         return;
       }
 
@@ -224,7 +226,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       } catch (error) {
         set({
           isSending: false,
-          sendErrorMessage: toSafeSendChatErrorMessage(error),
+          sendErrorMessage: toSafeSendChatErrorMessage(error, chatCatalog()),
         });
       }
     },

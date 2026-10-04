@@ -3,6 +3,7 @@ import { Image, StyleSheet, View } from 'react-native';
 import { images } from '../../../assets/images';
 import { colors } from '../../../theme';
 import type { NotificationType } from '../types';
+import { useTranslation } from '../../../i18n';
 
 type NotificationTypeIconProps = {
   type?: NotificationType;
@@ -27,11 +28,12 @@ function getNotificationImage(type?: NotificationType) {
 }
 
 export function NotificationTypeIcon({ type }: NotificationTypeIconProps) {
+  const { t } = useTranslation();
   return (
     <View style={styles.container}>
       <Image
         accessibilityIgnoresInvertColors
-        accessibilityLabel="أيقونة نوع الإشعار"
+        accessibilityLabel={t.notifications.typeIconAlt}
         resizeMode="contain"
         source={getNotificationImage(type)}
         style={styles.image}

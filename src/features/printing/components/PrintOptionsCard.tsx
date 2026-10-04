@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppCard, AppText, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { colors, radius, spacing } from '../../../theme';
 import type { PrintDraft, PrintPickupLocation } from '../types';
 
@@ -10,26 +11,13 @@ type Props = {
   onChange: <K extends keyof PrintDraft>(key: K, value: PrintDraft[K]) => void;
 };
 
+// Values only. Labels come from the catalog so the option set stays locale-free;
+// paper sizes are already language-neutral and are rendered as-is.
 const OPTIONS = {
-  colorMode: [
-    ['black_white', 'أبيض وأسود'],
-    ['color', 'ملون'],
-  ],
-  sides: [
-    ['single', 'وجه واحد'],
-    ['double', 'وجهان'],
-  ],
-  paperSize: [
-    ['a4', 'A4'],
-    ['a3', 'A3'],
-    ['a5', 'A5'],
-  ],
-  binding: [
-    ['none', 'بدون'],
-    ['staple', 'تدبيس'],
-    ['spiral', 'تسليك'],
-    ['thermal', 'تجليد حراري'],
-  ],
+  colorMode: ['black_white', 'color'],
+  sides: ['one_sided', 'double_sided'],
+  paperSize: ['A4', 'A3', 'A5'],
+  binding: ['none', 'staple', 'spiral', 'thermal'],
 } as const;
 
 function Choice<T extends string>({
@@ -54,18 +42,33 @@ function Choice<T extends string>({
 }
 
 export function PrintOptionsCard({ draft, locations, onChange }: Props) {
+  const { t } = useTranslation();
+  const labels: Record<string, string> = {
+    black_white: t.printing.options.colorBlackWhite,
+    color: t.printing.options.colorColored,
+    one_sided: t.printing.options.sidesSingle,
+    double_sided: t.printing.options.sidesDouble,
+    A4: 'A4',
+    A3: 'A3',
+    A5: 'A5',
+    none: t.printing.options.bindingNone,
+    staple: t.printing.options.bindingStaple,
+    spiral: t.printing.options.bindingSpiral,
+    thermal: t.printing.options.bindingThermal,
+  };
+
   return (
     <AppCard variant="outlined">
       <Stack gap="lg">
-        <AppText variant="title">خيارات الطباعة</AppText>
+        <AppText variant="title">{t.printing.options.title}</AppText>
         <Stack gap="sm">
-          <AppText variant="label">اللون</AppText>
+          <AppText variant="label">{t.printing.options.color}</AppText>
           <View style={styles.row}>
-            {OPTIONS.colorMode.map(([value, label]) => (
+            {OPTIONS.colorMode.map((value) => (
               <Choice
                 key={value}
                 current={draft.colorMode}
-                label={label}
+                label={labels[value] ?? value}
                 onPress={() => onChange('colorMode', value)}
                 value={value}
               />
@@ -73,13 +76,13 @@ export function PrintOptionsCard({ draft, locations, onChange }: Props) {
           </View>
         </Stack>
         <Stack gap="sm">
-          <AppText variant="label">الأوجه</AppText>
+          <AppText variant="label">{t.printing.options.sides}</AppText>
           <View style={styles.row}>
-            {OPTIONS.sides.map(([value, label]) => (
+            {OPTIONS.sides.map((value) => (
               <Choice
                 key={value}
                 current={draft.sides}
-                label={label}
+                label={labels[value] ?? value}
                 onPress={() => onChange('sides', value)}
                 value={value}
               />
@@ -87,13 +90,13 @@ export function PrintOptionsCard({ draft, locations, onChange }: Props) {
           </View>
         </Stack>
         <Stack gap="sm">
-          <AppText variant="label">حجم الورق</AppText>
+          <AppText variant="label">{t.printing.options.paperSize}</AppText>
           <View style={styles.row}>
-            {OPTIONS.paperSize.map(([value, label]) => (
+            {OPTIONS.paperSize.map((value) => (
               <Choice
                 key={value}
                 current={draft.paperSize}
-                label={label}
+                label={labels[value] ?? value}
                 onPress={() => onChange('paperSize', value)}
                 value={value}
               />
@@ -101,13 +104,13 @@ export function PrintOptionsCard({ draft, locations, onChange }: Props) {
           </View>
         </Stack>
         <Stack gap="sm">
-          <AppText variant="label">التجليد</AppText>
+          <AppText variant="label">{t.printing.options.binding}</AppText>
           <View style={styles.row}>
-            {OPTIONS.binding.map(([value, label]) => (
+            {OPTIONS.binding.map((value) => (
               <Choice
                 key={value}
                 current={draft.binding}
-                label={label}
+                label={labels[value] ?? value}
                 onPress={() => onChange('binding', value)}
                 value={value}
               />
@@ -116,7 +119,7 @@ export function PrintOptionsCard({ draft, locations, onChange }: Props) {
         </Stack>
         {locations.length > 0 ? (
           <Stack gap="sm">
-            <AppText variant="label">نقطة الاستلام</AppText>
+            <AppText variant="label">{t.printing.options.pickupPoint}</AppText>
             <View style={styles.row}>
               {locations.map((location) => (
                 <Choice

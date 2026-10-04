@@ -8,6 +8,9 @@ import {
   type SubjectRecord,
 } from '../../../api';
 import type { GlobalSearchResult, SearchResultItem } from '../types';
+import type { TranslationCatalog } from '../../../i18n';
+
+type SearchCatalog = TranslationCatalog['search'];
 
 type SearchInput = {
   query: string;
@@ -24,34 +27,37 @@ function text(...values: unknown[]): string {
   return '';
 }
 
-function normalizeSubject(record: SubjectRecord): SearchResultItem {
+function normalizeSubject(record: SubjectRecord, t: SearchCatalog): SearchResultItem {
   return {
     id: record.id,
     kind: 'subject',
-    title: text(record.name, record.title) || 'مادة بدون اسم',
-    subtitle: text(record.code, record.description) || 'مادة دراسية',
+    title: text(record.name, record.title) || t.untitledSubject,
+    subtitle: text(record.code, record.description) || t.subjectSubtitle,
   };
 }
 
-function normalizeGroup(record: GroupRecord): SearchResultItem {
+function normalizeGroup(record: GroupRecord, t: SearchCatalog): SearchResultItem {
   return {
     id: record.id,
     kind: 'group',
-    title: text(record.name, record.title) || 'مجموعة بدون اسم',
-    subtitle: text(record.description) || 'مجموعة أكاديمية',
+    title: text(record.name, record.title) || t.untitledGroup,
+    subtitle: text(record.description) || t.groupSubtitle,
   };
 }
 
-function normalizeFile(record: FileRecord): SearchResultItem {
+function normalizeFile(record: FileRecord, t: SearchCatalog): SearchResultItem {
   return {
     id: record.id,
     kind: 'file',
-    title: text(record.title, record.name) || 'ملف بدون عنوان',
-    subtitle: text(record.file_type, record.description) || 'ملف متاح داخل التطبيق',
+    title: text(record.title, record.name) || t.untitledFile,
+    subtitle: text(record.file_type, record.description) || t.fileSubtitle,
   };
 }
 
-export async function runGlobalSearch(input: SearchInput): Promise<GlobalSearchResult> {
+export async function runGlobalSearch(
+  input: SearchInput,
+  t: SearchCatalog,
+): Promise<GlobalSearchResult> {
   const query = input.query.trim();
   if (query.length < 2) {
     return { subjects: [], groups: [], files: [], total: 0, partialFailure: false };
@@ -60,9 +66,10 @@ export async function runGlobalSearch(input: SearchInput): Promise<GlobalSearchR
   const requests: Array<
     Promise<{ kind: 'subjects' | 'groups' | 'files'; items: SearchResultItem[] }>
   > = [
-    filesService
-      .listFiles(input.authToken, { search: query, pageSize: 10 })
-      .then((response) => ({ kind: 'files' as const, items: response.results.map(normalizeFile) })),
+    filesService.listFiles(input.authToken, { search: query, pageSize: 10 }).then((response) => ({
+      kind: 'files' as const,
+      items: response.results.map((record) => normalizeFile(record, t)),
+    })),
   ];
 
   if (input.isStudent) {
@@ -71,7 +78,7 @@ export async function runGlobalSearch(input: SearchInput): Promise<GlobalSearchR
         .listAvailableGroups(input.authToken, { search: query, pageSize: 10 })
         .then((response) => ({
           kind: 'groups' as const,
-          items: response.results.map(normalizeGroup),
+          items: response.results.map((record) => normalizeGroup(record, t)),
         })),
     );
     if (input.majorId != null) {
@@ -80,7 +87,7 @@ export async function runGlobalSearch(input: SearchInput): Promise<GlobalSearchR
           .listSubjectsForMajor(input.majorId, { search: query, pageSize: 10 }, input.authToken)
           .then((response) => ({
             kind: 'subjects' as const,
-            items: response.results.map(normalizeSubject),
+            items: response.results.map((record) => normalizeSubject(record, t)),
           })),
       );
     }
@@ -112,11 +119,11 @@ export async function runGlobalSearch(input: SearchInput): Promise<GlobalSearchR
   return result;
 }
 
-export function toSafeSearchErrorMessage(error: unknown): string {
+export function toSafeSearchErrorMessage(error: unknown, t: SearchCatalog): string {
   const normalized = normalizeApiError(error);
   if (normalized.code === 'NETWORK_ERROR' || normalized.code === 'TIMEOUT') {
-    return 'تعذر البحث بسبب الاتصال. حاول مرة أخرى.';
+    return t.errors.network;
   }
-  if (normalized.code === 'UNAUTHORIZED') return 'انتهت الجلسة. يرجى تسجيل الدخول مجددًا.';
-  return normalized.message || 'تعذر إتمام البحث حاليًا.';
+  if (normalized.code === 'UNAUTHORIZED') return t.errors.unauthorized;
+  return normalized.message || t.errors.generic;
 }

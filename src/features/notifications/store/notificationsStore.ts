@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { useLocaleStore } from '../../../i18n';
+
 import { useAuthStore } from '../../auth/store';
 import { useHomeStore } from '../../home/store';
 import {
@@ -35,9 +37,10 @@ type NotificationsState = {
   reset: () => void;
 };
 
-const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const MARK_READ_SUCCESS_MESSAGE = 'تم تعليم الإشعار كمقروء.';
-const MARK_ALL_READ_SUCCESS_MESSAGE = 'تم تعليم كل الإشعارات كمقروءة.';
+// Read when the action runs so the message follows the current locale.
+function notificationsCatalog() {
+  return useLocaleStore.getState().t.notifications;
+}
 
 function getAccessToken(): string | null {
   return useAuthStore.getState().accessToken;
@@ -103,7 +106,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => {
 
     if (!accessToken) {
       set({
-        errorMessage: MISSING_SESSION_MESSAGE,
+        errorMessage: notificationsCatalog().errors.unauthorized,
         isLoading: false,
         isLoadingUnreadCount: false,
         isRefreshing: false,
@@ -156,7 +159,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => {
       } catch (error) {
         set({
           isLoading: false,
-          errorMessage: toSafeNotificationsErrorMessage(error),
+          errorMessage: toSafeNotificationsErrorMessage(error, notificationsCatalog()),
         });
       }
     },
@@ -180,7 +183,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => {
       } catch (error) {
         set({
           isLoadingUnreadCount: false,
-          errorMessage: toSafeNotificationsErrorMessage(error),
+          errorMessage: toSafeNotificationsErrorMessage(error, notificationsCatalog()),
         });
       }
     },
@@ -204,7 +207,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => {
       } catch (error) {
         set({
           isRefreshing: false,
-          errorMessage: toSafeNotificationsErrorMessage(error),
+          errorMessage: toSafeNotificationsErrorMessage(error, notificationsCatalog()),
         });
       }
     },
@@ -240,14 +243,14 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => {
         await markNotificationRead(notificationId, accessToken);
         set({
           isMarkingRead: false,
-          successMessage: MARK_READ_SUCCESS_MESSAGE,
+          successMessage: notificationsCatalog().messages.markReadSuccess,
         });
       } catch (error) {
         set({
           notifications: previousNotifications,
           unreadCount: previousUnreadCount,
           isMarkingRead: false,
-          errorMessage: toSafeNotificationsErrorMessage(error),
+          errorMessage: toSafeNotificationsErrorMessage(error, notificationsCatalog()),
         });
         syncHomeUnreadCount(previousUnreadCount);
       }
@@ -280,14 +283,14 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => {
         await markAllNotificationsRead(accessToken);
         set({
           isMarkingAllRead: false,
-          successMessage: MARK_ALL_READ_SUCCESS_MESSAGE,
+          successMessage: notificationsCatalog().messages.markAllReadSuccess,
         });
       } catch (error) {
         set({
           notifications: previousNotifications,
           unreadCount: previousUnreadCount,
           isMarkingAllRead: false,
-          errorMessage: toSafeNotificationsErrorMessage(error),
+          errorMessage: toSafeNotificationsErrorMessage(error, notificationsCatalog()),
         });
         syncHomeUnreadCount(previousUnreadCount);
       }

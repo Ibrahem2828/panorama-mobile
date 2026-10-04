@@ -5,6 +5,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import { images } from '../../../assets/images';
 import { AppCard, AppScreen, AppText, Stack } from '../../../components';
 import { Illustration } from '../../../components/media/Illustration';
+import { useTranslation } from '../../../i18n';
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -12,21 +13,22 @@ import { spacing } from '../../../theme';
 type Navigation = NativeStackNavigationProp<PublicStackParamList>;
 
 export function AccountTypeChoiceScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<Navigation>();
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <Stack align="center" gap="md">
           <Illustration
-            accessibilityLabel="إنشاء حساب"
+            accessibilityLabel={t.auth.accountType.illustrationAlt}
             size="lg"
             source={images.illustrations.universityBuilding}
           />
           <AppText align="center" variant="h1">
-            اختر نوع الحساب
+            {t.auth.accountType.title}
           </AppText>
           <AppText align="center" color="secondary" variant="body">
-            يمكن ترقية حساب الطالب بعد استكمال الملف الأكاديمي والتوثيق.
+            {t.auth.accountType.description}
           </AppText>
         </Stack>
 
@@ -37,16 +39,16 @@ export function AccountTypeChoiceScreen() {
           <AppCard padding="lg" variant="elevated">
             <Stack gap="sm">
               <Illustration
-                accessibilityLabel="طالب"
+                accessibilityLabel={t.auth.accountType.studentAlt}
                 size="sm"
                 source={images.illustrations.studentMale}
               />
-              <AppText variant="title">حساب طالب</AppText>
+              <AppText variant="title">{t.auth.accountType.studentTitle}</AppText>
               <AppText color="secondary" variant="bodySmall">
-                للوصول إلى المواد والمجموعات والملفات الأكاديمية بعد التوثيق.
+                {t.auth.accountType.studentDescription}
               </AppText>
               <AppText color="brand" variant="button">
-                متابعة كطالب
+                {t.auth.accountType.studentAction}
               </AppText>
             </Stack>
           </AppCard>
@@ -59,16 +61,16 @@ export function AccountTypeChoiceScreen() {
           <AppCard padding="lg" variant="elevated">
             <Stack gap="sm">
               <Illustration
-                accessibilityLabel="مستخدم عادي"
+                accessibilityLabel={t.auth.accountType.normalAlt}
                 size="sm"
                 source={images.illustrations.studyDesk}
               />
-              <AppText variant="title">حساب مستخدم عادي</AppText>
+              <AppText variant="title">{t.auth.accountType.normalTitle}</AppText>
               <AppText color="secondary" variant="bodySmall">
-                للخدمات العامة والطباعة والدعم بحسب الصلاحيات المتاحة.
+                {t.auth.accountType.normalDescription}
               </AppText>
               <AppText color="brand" variant="button">
-                متابعة كمستخدم عادي
+                {t.auth.accountType.normalAction}
               </AppText>
             </Stack>
           </AppCard>
@@ -76,7 +78,7 @@ export function AccountTypeChoiceScreen() {
 
         <Pressable onPress={() => navigation.goBack()} style={styles.backLink}>
           <AppText color="brand" variant="button">
-            العودة لتسجيل الدخول
+            {t.auth.backToLogin}
           </AppText>
         </Pressable>
       </Stack>

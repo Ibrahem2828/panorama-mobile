@@ -25,6 +25,7 @@ import {
   isVerificationApproved,
 } from '../services';
 import { useVerificationStore } from '../store';
+import { useTranslation } from '../../../i18n';
 
 type VerificationStatusNavigation = NativeStackNavigationProp<
   StudentSetupStackParamList,
@@ -32,6 +33,7 @@ type VerificationStatusNavigation = NativeStackNavigationProp<
 >;
 
 export function VerificationStatusScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<VerificationStatusNavigation>();
   const verification = useVerificationStore((state) => state.verification);
   const hasLoadedVerification = useVerificationStore((state) => state.hasLoadedVerification);
@@ -61,9 +63,9 @@ export function VerificationStatusScreen() {
   if (isLoadingVerification && !hasLoadedVerification) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="إعداد الطالب" title="حالة التوثيق" />
+        <AppHeader subtitle={t.verificationFlow.subtitle} title={t.verificationFlow.status.title} />
         <StudentSetupStepper currentStep={3} />
-        <LoadingState message="جاري تحميل حالة التوثيق..." />
+        <LoadingState message={t.verificationFlow.loading} />
       </AppScreen>
     );
   }
@@ -71,7 +73,7 @@ export function VerificationStatusScreen() {
   if (errorMessage && !verification) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="إعداد الطالب" title="حالة التوثيق" />
+        <AppHeader subtitle={t.verificationFlow.subtitle} title={t.verificationFlow.status.title} />
         <StudentSetupStepper currentStep={3} />
         <ErrorState message={errorMessage} onRetry={handleRefresh} />
       </AppScreen>
@@ -83,8 +85,8 @@ export function VerificationStatusScreen() {
       <Stack gap="xl">
         <Stack gap="md">
           <AppHeader
-            subtitle="تابع نتيجة مراجعة بطاقة الطالب، وأعد الإرسال عند الحاجة فقط."
-            title="حالة التوثيق"
+            subtitle={t.verificationFlow.status.cardSubtitle}
+            title={t.verificationFlow.status.title}
           />
           <StudentSetupStepper currentStep={3} />
         </Stack>
@@ -95,7 +97,7 @@ export function VerificationStatusScreen() {
           <AppButton
             fullWidth
             onPress={() => navigation.replace(StudentSetupRoutes.SubmitVerification)}
-            title="إرسال بطاقة الطالب"
+            title={t.verificationFlow.status.sendCard}
           />
         ) : null}
 
@@ -103,14 +105,14 @@ export function VerificationStatusScreen() {
           <AppButton
             fullWidth
             onPress={() => navigation.replace(StudentSetupRoutes.SubmitVerification)}
-            title="إعادة إرسال صورة محدثة"
+            title={t.verificationFlow.status.resendUpdated}
           />
         ) : null}
 
         {status === 'pending' ? (
           <AppCard padding="md" variant="muted">
             <AppText color="secondary" variant="bodySmall">
-              سيتم إشعارك عند اكتمال المراجعة. يمكنك تحديث الحالة لاحقا دون إعادة إرسال الطلب.
+              {t.verificationFlow.status.pendingNote}
             </AppText>
           </AppCard>
         ) : null}
@@ -120,7 +122,7 @@ export function VerificationStatusScreen() {
             fullWidth
             loading={isLoadingVerification}
             onPress={handleRefresh}
-            title="تحديث الحالة"
+            title={t.verificationFlow.status.refreshStatus}
             variant="outline"
           />
         ) : null}
@@ -129,10 +131,10 @@ export function VerificationStatusScreen() {
           <AppCard padding="md" variant="muted">
             <Stack gap="sm">
               <AppText color="success" variant="bodySmall" weight="600">
-                تم قبول التوثيق بنجاح
+                {t.verificationFlow.status.approvedTitle}
               </AppText>
               <AppText color="secondary" variant="bodySmall">
-                يمكنك الآن الدخول إلى التطبيق واستخدام جميع الخدمات الطلابية.
+                {t.verificationFlow.status.approvedDescription}
               </AppText>
             </Stack>
           </AppCard>
@@ -145,7 +147,7 @@ export function VerificationStatusScreen() {
             onPress={() => {
               void handleEnterApp();
             }}
-            title="الدخول إلى التطبيق"
+            title={t.verificationFlow.status.enterApp}
           />
         ) : null}
 

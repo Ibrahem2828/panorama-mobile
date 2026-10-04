@@ -12,6 +12,7 @@ import {
   LoadingState,
   Stack,
 } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { PrintingRoutes } from '../../../navigation/routes';
 import type { PrintingStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -21,6 +22,7 @@ import { usePrintingStore } from '../store';
 type MyPrintOrdersScreenProps = NativeStackScreenProps<PrintingStackParamList, 'MyPrintOrders'>;
 
 export function MyPrintOrdersScreen({ navigation }: MyPrintOrdersScreenProps) {
+  const { t } = useTranslation();
   const orders = usePrintingStore((state) => state.orders);
   const isLoadingOrders = usePrintingStore((state) => state.isLoadingOrders);
   const isRefreshing = usePrintingStore((state) => state.isRefreshing);
@@ -36,13 +38,13 @@ export function MyPrintOrdersScreen({ navigation }: MyPrintOrdersScreenProps) {
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <Stack gap="md">
-          <AppHeader subtitle="متابعة الحالات" title="طلباتي" />
+          <AppHeader subtitle={t.printing.myOrders.subtitle} title={t.printing.myOrders.title} />
           <Stack direction="horizontal" gap="md" wrap>
-            <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+            <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
             <AppButton
               loading={isRefreshing}
               onPress={refreshMyOrders}
-              title="تحديث"
+              title={t.common.refresh}
               variant="outline"
             />
           </Stack>
@@ -51,7 +53,7 @@ export function MyPrintOrdersScreen({ navigation }: MyPrintOrdersScreenProps) {
         {errorMessage ? <ErrorState message={errorMessage} onRetry={loadMyOrders} /> : null}
 
         {isLoadingOrders && orders.length === 0 ? (
-          <LoadingState message="جاري تحميل طلبات الطباعة..." />
+          <LoadingState message={t.printing.home.loadingOrders} />
         ) : orders.length > 0 ? (
           <Stack gap="md">
             {orders.map((order) => (
@@ -71,12 +73,12 @@ export function MyPrintOrdersScreen({ navigation }: MyPrintOrdersScreenProps) {
             action={
               <AppButton
                 onPress={() => navigation.navigate(PrintingRoutes.CreatePrintOrder)}
-                title="إنشاء طلب"
+                title={t.printing.myOrders.createOrder}
               />
             }
-            message="أنشئ أول طلب طباعة من ملف متاح لك."
-            title="لا توجد طلبات طباعة"
-            illustrationLabel="رسم يوضح عدم وجود طلبات طباعة"
+            message={t.printing.myOrders.emptyMessage}
+            title={t.printing.myOrders.emptyTitle}
+            illustrationLabel={t.printing.myOrders.emptyIllustrationAlt}
             illustrationSource={images.emptyStates.printingOrders}
           />
         )}

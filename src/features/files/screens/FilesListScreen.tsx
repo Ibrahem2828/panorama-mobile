@@ -15,28 +15,26 @@ import {
   SectionHeader,
   Stack,
 } from '../../../components';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
+import { formatTime } from '../../../utils/formatDateTime';
 import { SharedRoutes } from '../../../navigation/routes';
 import type { HomeStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
-import {
-  SEARCH_CLEAR_LABEL,
-  SEARCH_NO_RESULTS_MESSAGE,
-  SEARCH_NO_RESULTS_TITLE,
-} from '../../../utils/searchEmptyState';
 import { FileCard } from '../components';
 import { getFileDescription, getFileDisplayTitle, getFileExtension } from '../services';
 import { useFilesStore } from '../store';
 import type { FileResource } from '../types';
 
 type FilesListScreenProps = NativeStackScreenProps<HomeStackParamList, 'FilesList'>;
+type FilesCatalog = TranslationCatalog['files'];
 
-function matchesSearch(file: FileResource, query: string): boolean {
+function matchesSearch(file: FileResource, query: string, filesCatalog: FilesCatalog): boolean {
   if (!query) {
     return true;
   }
 
   const searchableText = [
-    getFileDisplayTitle(file),
+    getFileDisplayTitle(file, filesCatalog),
     getFileDescription(file),
     getFileExtension(file),
   ]
@@ -48,6 +46,7 @@ function matchesSearch(file: FileResource, query: string): boolean {
 }
 
 export function FilesListScreen({ navigation }: FilesListScreenProps) {
+  const { t, locale } = useTranslation();
   const files = useFilesStore((state) => state.files);
   const isLoadingFiles = useFilesStore((state) => state.isLoadingFiles);
   const isRefreshing = useFilesStore((state) => state.isRefreshing);
@@ -59,8 +58,8 @@ export function FilesListScreen({ navigation }: FilesListScreenProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const normalizedSearchQuery = searchQuery.trim();
   const visibleFiles = useMemo(
-    () => files.filter((file) => matchesSearch(file, normalizedSearchQuery)),
-    [files, normalizedSearchQuery],
+    () => files.filter((file) => matchesSearch(file, normalizedSearchQuery, t.files)),
+    [files, normalizedSearchQuery, t.files],
   );
   const showInitialLoading = isLoadingFiles && files.length === 0;
   const showInitialError = Boolean(errorMessage && files.length === 0);
@@ -81,8 +80,8 @@ export function FilesListScreen({ navigation }: FilesListScreenProps) {
   if (showInitialLoading) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="الملفات المتاحة حسب صلاحيات حسابك" title="الملفات" />
-        <LoadingState message="جاري تحميل الملفات..." />
+        <AppHeader subtitle={t.files.subtitle} title={t.files.title} />
+        <LoadingState message={t.files.loading} />
       </AppScreen>
     );
   }
@@ -90,7 +89,7 @@ export function FilesListScreen({ navigation }: FilesListScreenProps) {
   if (showInitialError) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="الملفات المتاحة حسب صلاحيات حسابك" title="الملفات" />
+        <AppHeader subtitle={t.files.subtitle} title={t.files.title} />
         <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
       </AppScreen>
     );
@@ -99,7 +98,7 @@ export function FilesListScreen({ navigation }: FilesListScreenProps) {
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="الملفات المتاحة حسب صلاحيات حسابك" title="الملفات" />
+        <AppHeader subtitle={t.files.subtitle} title={t.files.title} />
 
         <SectionHeader
           action={
@@ -107,18 +106,18 @@ export function FilesListScreen({ navigation }: FilesListScreenProps) {
               loading={isRefreshing}
               onPress={handleRefresh}
               size="sm"
-              title="تحديث"
+              title={t.common.refresh}
               variant="outline"
             />
           }
-          subtitle={`عدد الملفات المحملة: ${files.length}`}
-          title="قائمة الملفات"
+          subtitle={t.files.loadedCount(files.length)}
+          title={t.files.listTitle}
         />
 
         <AppTextInput
-          label="بحث محلي"
+          label={t.common.searchLocal}
           onChangeText={setSearchQuery}
-          placeholder="ابحث باسم الملف أو نوعه"
+          placeholder={t.files.searchPlaceholder}
           value={searchQuery}
         />
 
@@ -130,13 +129,13 @@ export function FilesListScreen({ navigation }: FilesListScreenProps) {
               <AppButton
                 loading={isRefreshing}
                 onPress={handleRefresh}
-                title="إعادة التحقق"
+                title={t.common.retryVerify}
                 variant="outline"
               />
             }
-            message="لا توجد ملفات متاحة حاليا."
-            title="لا توجد ملفات"
-            illustrationLabel="رسم يوضح عدم وجود ملفات"
+            message={t.files.emptyMessage}
+            title={t.files.emptyTitle}
+            illustrationLabel={t.files.emptyIllustrationAlt}
             illustrationSource={images.emptyStates.files}
           />
         ) : visibleFiles.length === 0 ? (
@@ -144,14 +143,14 @@ export function FilesListScreen({ navigation }: FilesListScreenProps) {
             action={
               <AppButton
                 onPress={() => setSearchQuery('')}
-                title={SEARCH_CLEAR_LABEL}
+                title={t.common.searchClear}
                 variant="outline"
               />
             }
-            illustrationLabel="رسم يوضح عدم وجود نتائج بحث"
+            illustrationLabel={t.common.noSearchResultsAlt}
             illustrationSource={images.illustrations.search}
-            message={SEARCH_NO_RESULTS_MESSAGE}
-            title={SEARCH_NO_RESULTS_TITLE}
+            message={t.common.searchNoResultsMessage}
+            title={t.common.searchNoResultsTitle}
           />
         ) : (
           <Stack gap="md">
@@ -163,7 +162,7 @@ export function FilesListScreen({ navigation }: FilesListScreenProps) {
 
         {lastLoadedAt ? (
           <AppText align="center" color="muted" variant="caption">
-            آخر تحديث: {new Date(lastLoadedAt).toLocaleTimeString('ar-SY')}
+            {t.common.lastUpdatedAt(formatTime(lastLoadedAt, locale) ?? '')}
           </AppText>
         ) : null}
       </Stack>

@@ -1,5 +1,13 @@
+import type { TranslationCatalog } from '../../../i18n';
+
 const PHONE_PATTERN = /^\+[0-9]{8,15}$/u;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u;
+
+/**
+ * Validators take the catalog rather than importing it, so they stay pure and testable
+ * and do not couple form rules to whichever locale happens to be active.
+ */
+type Messages = TranslationCatalog['auth']['validation'];
 
 export function isValidEmail(value: string): boolean {
   return EMAIL_PATTERN.test(value.trim());
@@ -20,35 +28,38 @@ export function normalizePhoneNumber(value: string): string {
   return cleaned;
 }
 
-export function validatePhoneNumber(value: string): string | null {
+export function validatePhoneNumber(value: string, messages: Messages): string | null {
   const cleaned = value.trim().replace(/[\s-]/gu, '');
-  if (!cleaned) return 'يرجى إدخال رقم الجوال.';
-  if (!cleaned.startsWith('+')) return 'صيغة رقم الجوال غير صحيحة. يجب أن يبدأ بمفتاح الدولة.';
+  if (!cleaned) return messages.phoneRequired;
+  if (!cleaned.startsWith('+')) return messages.phoneFormat;
   const digits = cleaned.slice(1);
-  if (!/^\d+$/u.test(digits)) return 'رقم الجوال يجب أن يحتوي على أرقام فقط.';
-  if (digits.length < 8)
-    return 'رقم الجوال قصير جداً. يجب أن يتكون من 8 أرقام على الأقل بعد مفتاح الدولة.';
-  if (digits.length > 15) return 'رقم الجوال طويل جداً.';
+  if (!/^\d+$/u.test(digits)) return messages.phoneDigitsOnly;
+  if (digits.length < 8) return messages.phoneTooShort;
+  if (digits.length > 15) return messages.phoneTooLong;
   return null;
 }
 
-export function validatePasswordPair(password: string, confirmPassword: string): string | null {
+export function validatePasswordPair(
+  password: string,
+  confirmPassword: string,
+  messages: Messages,
+): string | null {
   if (password.length < 8) {
-    return 'كلمة المرور يجب أن تكون 8 أحرف على الأقل.';
+    return messages.passwordTooShort;
   }
 
   if (password !== confirmPassword) {
-    return 'تأكيد كلمة المرور غير مطابق.';
+    return messages.passwordMismatch;
   }
 
   return null;
 }
 
-export function validateOtpCode(code: string): string | null {
+export function validateOtpCode(code: string, messages: Messages): string | null {
   const normalized = code.trim();
 
   if (!/^\d{4,8}$/u.test(normalized)) {
-    return 'أدخل رمز تحقق صالحاً.';
+    return messages.otpInvalid;
   }
 
   return null;

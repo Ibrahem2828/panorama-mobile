@@ -16,6 +16,11 @@ export const endpoints = {
     requestPasswordReset: `${API_PREFIX}/auth/request-password-reset/`,
     confirmPasswordReset: `${API_PREFIX}/auth/confirm-password-reset/`,
   },
+  account: {
+    deletionRequest: `${API_PREFIX}/account/deletion/request/`,
+    deletionCancel: `${API_PREFIX}/account/deletion/cancel/`,
+    deletionStatus: `${API_PREFIX}/account/deletion/status/`,
+  },
   students: {
     profile: `${API_PREFIX}/students/me/profile/`,
     parseStudentNumber: `${API_PREFIX}/students/student-number/parse/`,

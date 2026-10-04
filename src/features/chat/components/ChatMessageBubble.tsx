@@ -2,13 +2,10 @@ import { StyleSheet } from 'react-native';
 
 import { AppCard, AppText, Stack } from '../../../components';
 import { colors } from '../../../theme';
-import {
-  formatChatTimestamp,
-  getChatMessageSenderName,
-  getChatMessageText,
-  isOwnChatMessage,
-} from '../services';
+import { getChatMessageSenderName, getChatMessageText, isOwnChatMessage } from '../services';
 import type { ChatMessage, Id } from '../types';
+import { useTranslation } from '../../../i18n';
+import { formatDateTime } from '../../../utils/formatDateTime';
 
 type ChatMessageBubbleProps = {
   message: ChatMessage;
@@ -16,8 +13,9 @@ type ChatMessageBubbleProps = {
 };
 
 export function ChatMessageBubble({ message, currentUserId }: ChatMessageBubbleProps) {
+  const { t, locale } = useTranslation();
   const isOwn = isOwnChatMessage(message, currentUserId);
-  const timestamp = formatChatTimestamp(message.created_at ?? message.updated_at);
+  const timestamp = formatDateTime(message.created_at ?? message.updated_at, locale);
 
   return (
     <Stack align={isOwn ? 'flex-start' : 'flex-end'}>
@@ -28,11 +26,11 @@ export function ChatMessageBubble({ message, currentUserId }: ChatMessageBubbleP
         <Stack gap="xs">
           {!isOwn ? (
             <AppText color="brand" variant="caption" weight="600">
-              {getChatMessageSenderName(message)}
+              {getChatMessageSenderName(message, t.chat)}
             </AppText>
           ) : null}
           <AppText color="secondary" variant="bodySmall">
-            {getChatMessageText(message)}
+            {getChatMessageText(message, t.chat)}
           </AppText>
           {timestamp ? (
             <AppText align="left" color="muted" variant="caption">

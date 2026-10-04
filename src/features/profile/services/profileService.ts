@@ -5,14 +5,14 @@ import {
   type UpdateCurrentUserRequest,
 } from '../../../api';
 import type { AuthUser } from '../../auth/types';
+import type { TranslationCatalog } from '../../../i18n';
 import type { VerificationStatus } from '../../../api';
 import type { StatusVariant } from '../../../types/common';
 import type { EditableProfileFields, ProfileStatusSummary, ProfileUser } from '../types';
 
-const NETWORK_MESSAGE = 'تعذر تحميل بيانات الحساب. تحقق من اتصال الإنترنت وحاول مرة أخرى.';
-const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const VALIDATION_MESSAGE = 'يرجى التأكد من بيانات الملف الشخصي المدخلة.';
-const UPDATE_MESSAGE = 'تعذر تحديث الملف الشخصي. حاول مرة أخرى.';
+type ProfileCatalog = TranslationCatalog['profile'];
+type VerificationCatalog = TranslationCatalog['verification'];
+type CommonCatalog = TranslationCatalog['common'];
 
 function toText(value: unknown): string | undefined {
   if (typeof value === 'string' && value.trim().length > 0) {
@@ -61,45 +61,53 @@ export function toAuthUser(user: ProfileUser): AuthUser {
   };
 }
 
-export function getProfileDisplayName(user: ProfileUser | null): string {
-  return user?.full_name ?? user?.username ?? 'مستخدم Panorama';
+export function getProfileDisplayName(user: ProfileUser | null, t: ProfileCatalog): string {
+  return user?.full_name ?? user?.username ?? t.defaultName;
 }
 
-export function getProfileRoleLabel(role?: string): string {
+export function getProfileRoleLabel(role: string | undefined, t: ProfileCatalog): string {
   switch (role) {
     case 'student':
-      return 'طالب';
+      return t.roles.student;
     case 'normal_user':
-      return 'مستخدم';
+      return t.roles.normalUser;
     case 'admin':
-      return 'مسؤول';
+      return t.roles.admin;
     case 'it_support':
-      return 'دعم فني';
+      return t.roles.itSupport;
     case 'print_staff':
-      return 'موظف طباعة';
+      return t.roles.printStaff;
     default:
-      return 'حساب مستخدم';
+      return t.roles.fallback;
   }
 }
 
-export function getProfileContactLabel(user: ProfileUser | null): string {
-  return user?.email ?? user?.phone_number ?? 'لا توجد بيانات تواصل مؤكدة حاليا';
+export function getProfileContactLabel(user: ProfileUser | null, t: ProfileCatalog): string {
+  return user?.email ?? user?.phone_number ?? t.noContactDetails;
 }
 
-export function getVerificationStatusLabel(status?: string | VerificationStatus): string {
+/**
+ * The one definition of these labels. Three screens each carried their own copy, two of
+ * which disagreed on the wording for `needs_update`.
+ */
+export function getVerificationStatusLabel(
+  status: string | VerificationStatus | undefined,
+  t: VerificationCatalog,
+  unknownLabel: string,
+): string {
   switch (status) {
     case 'approved':
-      return 'موثق';
+      return t.verified;
     case 'pending':
-      return 'قيد المراجعة';
+      return t.pending;
     case 'rejected':
-      return 'مرفوض';
+      return t.rejected;
     case 'needs_update':
-      return 'يحتاج تحديث';
+      return t.needsUpdate;
     case 'none':
-      return 'غير مقدم';
+      return t.notSubmitted;
     default:
-      return 'غير معروف';
+      return unknownLabel;
   }
 }
 
@@ -119,70 +127,77 @@ export function getVerificationStatusVariant(status?: string | VerificationStatu
 }
 
 export function getStudentCardVerificationSummary(
-  status?: string | VerificationStatus,
+  status: string | VerificationStatus | undefined,
+  t: ProfileCatalog,
+  verification: VerificationCatalog,
+  common: CommonCatalog,
 ): ProfileStatusSummary {
   return {
-    label: getVerificationStatusLabel(status),
-    description:
-      status === 'approved'
-        ? 'تم التحقق من بطاقتك الجامعية.'
-        : 'حالة توثيق البطاقة الجامعية كما يعيدها الخادم.',
+    label: getVerificationStatusLabel(status, verification, common.unknown),
+    description: status === 'approved' ? t.academic.cardVerified : t.academic.cardStatusFromServer,
     variant: getVerificationStatusVariant(status),
   };
 }
 
-export function getBooleanStatusLabel(value?: boolean): string {
+export function getBooleanStatusLabel(
+  value: boolean | undefined,
+  t: ProfileCatalog,
+  unknownLabel: string,
+): string {
   if (value === true) {
-    return 'مؤكد';
+    return t.academic.confirmed;
   }
 
   if (value === false) {
-    return 'غير مؤكد';
+    return t.academic.unconfirmed;
   }
 
-  return 'غير معروف';
+  return unknownLabel;
 }
 
-export function getAccountVerificationSummary(user: ProfileUser | null): ProfileStatusSummary {
+export function getAccountVerificationSummary(
+  user: ProfileUser | null,
+  t: ProfileCatalog,
+): ProfileStatusSummary {
   if (user?.is_email_verified || user?.is_phone_verified) {
     return {
-      label: 'بيانات التواصل مؤكدة',
-      description: 'يوجد بريد أو رقم هاتف مؤكد على الحساب.',
+      label: t.academic.contactConfirmed,
+      description: t.academic.contactConfirmedDescription,
       variant: 'success',
     };
   }
 
   if (user) {
     return {
-      label: 'بيانات التواصل غير مؤكدة',
-      description: 'يعرض التطبيق حالة الحساب كما يعيدها الخادم.',
+      label: t.academic.contactUnconfirmed,
+      description: t.academic.contactUnconfirmedDescription,
       variant: 'warning',
     };
   }
 
   return {
-    label: 'بيانات الحساب غير محملة',
-    description: 'أعد تحميل الملف الشخصي لعرض حالة الحساب.',
+    label: t.academic.accountNotLoaded,
+    description: t.academic.accountNotLoadedDescription,
     variant: 'neutral',
   };
 }
 
-export function toSafeProfileErrorMessage(error: unknown): string {
+export function toSafeProfileErrorMessage(error: unknown, t: ProfileCatalog): string {
   const normalizedError = normalizeApiError(error);
 
   if (normalizedError.code === 'NETWORK_ERROR' || normalizedError.code === 'TIMEOUT') {
-    return NETWORK_MESSAGE;
+    return t.errors.network;
   }
 
   if (normalizedError.code === 'UNAUTHORIZED') {
-    return UNAUTHORIZED_MESSAGE;
+    return t.errors.unauthorized;
   }
 
   if (normalizedError.code === 'VALIDATION_ERROR') {
-    return VALIDATION_MESSAGE;
+    return t.errors.validation;
   }
 
-  return normalizedError.message || UPDATE_MESSAGE;
+  return normalizedError.message || t.errors.update;
 }
 
 export async function loadCurrentProfile(authToken: string): Promise<ProfileUser> {

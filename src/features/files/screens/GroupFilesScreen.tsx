@@ -15,11 +15,8 @@ import {
   SectionHeader,
   Stack,
 } from '../../../components';
-import {
-  SEARCH_CLEAR_LABEL,
-  SEARCH_NO_RESULTS_MESSAGE,
-  SEARCH_NO_RESULTS_TITLE,
-} from '../../../utils/searchEmptyState';
+import { useTranslation } from '../../../i18n';
+import { formatTime } from '../../../utils/formatDateTime';
 import { getFileDisplayTitle, getFileDescription } from '../services';
 import { SharedRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
@@ -33,6 +30,7 @@ type GroupFilesScreenProps = NativeStackScreenProps<GroupsStackParamList, 'Group
 const EMPTY_GROUP_FILES: FileResource[] = [];
 
 export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
+  const { t, locale } = useTranslation();
   const { groupId } = route.params;
   const groupKey = String(groupId);
   const groupFiles = useFilesStore(
@@ -53,7 +51,7 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
     }
 
     return groupFiles.filter((file) => {
-      const title = getFileDisplayTitle(file).toLowerCase();
+      const title = getFileDisplayTitle(file, t.files).toLowerCase();
       const description = getFileDescription(file)?.toLowerCase() ?? '';
 
       return title.includes(normalizedSearch) || description.includes(normalizedSearch);
@@ -78,8 +76,8 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
   if (showInitialLoading) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="ملفات المجموعة المتاحة للأعضاء" title="ملفات المجموعة" />
-        <LoadingState message="جاري تحميل ملفات المجموعة..." />
+        <AppHeader subtitle={t.files.groupFiles.subtitle} title={t.files.groupFiles.title} />
+        <LoadingState message={t.files.groupFiles.loading} />
       </AppScreen>
     );
   }
@@ -87,7 +85,7 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
   if (showInitialError) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="ملفات المجموعة المتاحة للأعضاء" title="ملفات المجموعة" />
+        <AppHeader subtitle={t.files.groupFiles.subtitle} title={t.files.groupFiles.title} />
         <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
       </AppScreen>
     );
@@ -97,10 +95,10 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <Stack gap="md">
-          <AppHeader subtitle="ملفات المجموعة المتاحة للأعضاء" title="ملفات المجموعة" />
+          <AppHeader subtitle={t.files.groupFiles.subtitle} title={t.files.groupFiles.title} />
           <AppButton
             onPress={() => navigation.goBack()}
-            title="رجوع إلى المجموعة"
+            title={t.files.groupFiles.backToGroup}
             variant="ghost"
           />
         </Stack>
@@ -111,18 +109,18 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
               loading={isRefreshing}
               onPress={handleRefresh}
               size="sm"
-              title="تحديث"
+              title={t.common.refresh}
               variant="outline"
             />
           }
-          subtitle={`عدد الملفات المعروضة: ${filteredGroupFiles.length}`}
-          title="القائمة"
+          subtitle={t.files.groupFiles.shownCount(filteredGroupFiles.length)}
+          title={t.files.groupFiles.listTitle}
         />
 
         <AppTextInput
-          label="بحث محلي"
+          label={t.common.searchLocal}
           onChangeText={setSearch}
-          placeholder="ابحث بعنوان الملف أو الوصف"
+          placeholder={t.files.groupFiles.searchPlaceholder}
           value={search}
         />
 
@@ -134,13 +132,13 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
               <AppButton
                 loading={isRefreshing}
                 onPress={handleRefresh}
-                title="إعادة التحقق"
+                title={t.common.retryVerify}
                 variant="outline"
               />
             }
-            message="لا توجد ملفات لهذا المجموعة حاليا."
-            title="لا توجد ملفات"
-            illustrationLabel="رسم يوضح عدم وجود ملفات"
+            message={t.files.groupFiles.emptyMessage}
+            title={t.files.emptyTitle}
+            illustrationLabel={t.files.emptyIllustrationAlt}
             illustrationSource={images.emptyStates.files}
           />
         ) : filteredGroupFiles.length === 0 ? (
@@ -148,14 +146,14 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
             action={
               <AppButton
                 onPress={() => setSearch('')}
-                title={SEARCH_CLEAR_LABEL}
+                title={t.common.searchClear}
                 variant="outline"
               />
             }
-            illustrationLabel="رسم يوضح عدم وجود نتائج بحث"
+            illustrationLabel={t.common.noSearchResultsAlt}
             illustrationSource={images.illustrations.search}
-            message={SEARCH_NO_RESULTS_MESSAGE}
-            title={SEARCH_NO_RESULTS_TITLE}
+            message={t.common.searchNoResultsMessage}
+            title={t.common.searchNoResultsTitle}
           />
         ) : (
           <Stack gap="md">
@@ -167,7 +165,7 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
 
         {lastLoadedAt ? (
           <AppText align="center" color="muted" variant="caption">
-            آخر تحديث: {new Date(lastLoadedAt).toLocaleTimeString('ar-SY')}
+            {t.common.lastUpdatedAt(formatTime(lastLoadedAt, locale) ?? '')}
           </AppText>
         ) : null}
       </Stack>

@@ -1,9 +1,12 @@
 import { AppScreen, LoadingState } from '../../../components';
+import { useTranslation } from '../../../i18n';
 
 export function StudentContextLoadingScreen() {
+  const { t } = useTranslation();
+
   return (
     <AppScreen horizontalPadding={false}>
-      <LoadingState centered message="جاري تجهيز حسابك الطلابي..." title="بانوراما" />
+      <LoadingState centered message={t.auth.bootstrap.preparingStudentAccount} title={t.appName} />
     </AppScreen>
   );
 }

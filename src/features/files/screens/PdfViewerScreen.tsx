@@ -16,6 +16,7 @@ import {
   LoadingState,
   Stack,
 } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { colors, spacing } from '../../../theme';
 import { isTrustedBackendUrl } from '../../../utils/trustedUrl';
 import { useAuthStore } from '../../auth/store';
@@ -33,6 +34,7 @@ type ViewerRoute = RouteProp<ParamList, 'PdfViewer'>;
 type ViewerNavigation = NativeStackNavigationProp<ParamList, 'PdfViewer'>;
 
 export function PdfViewerScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<ViewerNavigation>();
   const route = useRoute<ViewerRoute>();
   const { fileId, title } = route.params;
@@ -58,7 +60,7 @@ export function PdfViewerScreen() {
       if (!trusted) throw new Error('UNTRUSTED_PREVIEW_URL');
       setPreviewUrl(ticket.preview_url);
     } catch (loadError) {
-      setError(toSafeFilesErrorMessage(loadError));
+      setError(toSafeFilesErrorMessage(loadError, t.files));
     } finally {
       setIsLoading(false);
     }
@@ -72,16 +74,18 @@ export function PdfViewerScreen() {
     };
   }, [loadPreview]);
 
-  const displayTitle = file ? getFileDisplayTitle(file) : (title ?? 'عارض الملفات');
+  const displayTitle = file
+    ? getFileDisplayTitle(file, t.files)
+    : (title ?? t.files.viewer.fallbackTitle);
 
   return (
     <AppScreen horizontalPadding={false} safeArea style={styles.screen}>
       <View style={styles.header}>
-        <AppHeader subtitle="عرض محمي داخل التطبيق" title={displayTitle} />
-        <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+        <AppHeader subtitle={t.files.viewer.subtitle} title={displayTitle} />
+        <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
       </View>
 
-      {isLoading ? <LoadingState message="جاري إصدار تذكرة عرض آمنة..." /> : null}
+      {isLoading ? <LoadingState message={t.files.viewer.issuingTicket} /> : null}
       {error ? <ErrorState message={error} onRetry={() => void loadPreview()} /> : null}
 
       {previewUrl && !isLoading ? (
@@ -91,7 +95,7 @@ export function PdfViewerScreen() {
           cacheEnabled={false}
           incognito
           javaScriptEnabled
-          onError={() => setError('تعذر عرض الملف. قد تكون التذكرة انتهت؛ أعد المحاولة.')}
+          onError={() => setError(t.files.viewer.loadError)}
           onLoadEnd={() => {
             void requestFeedbackPrompt({
               context: 'file',
@@ -117,8 +121,7 @@ export function PdfViewerScreen() {
       <AppCard padding="sm" style={styles.notice} variant="muted">
         <Stack gap="xs">
           <AppText color="secondary" variant="caption">
-            يستخدم العرض رابطًا مؤقتًا من الخادم، ويعطّل التطبيق لقطات الشاشة أثناء فتح الملف قدر
-            الإمكان. لا توجد أزرار تنزيل أو مشاركة.
+            {t.files.viewer.securityNote}
           </AppText>
         </Stack>
       </AppCard>

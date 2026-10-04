@@ -15,14 +15,11 @@ import {
   SectionHeader,
   Stack,
 } from '../../../components';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
+import { formatTime } from '../../../utils/formatDateTime';
 import { GroupsRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
-import {
-  SEARCH_CLEAR_LABEL,
-  SEARCH_NO_RESULTS_MESSAGE,
-  SEARCH_NO_RESULTS_TITLE,
-} from '../../../utils/searchEmptyState';
 import { GroupCard } from '../components';
 import { getGroupDescription, getGroupDisplayName } from '../services';
 import { useGroupsStore } from '../store';
@@ -30,12 +27,16 @@ import type { Group } from '../types';
 
 type AvailableGroupsScreenProps = NativeStackScreenProps<GroupsStackParamList, 'AvailableGroups'>;
 
-function matchesGroupSearch(group: Group, query: string): boolean {
+function matchesGroupSearch(
+  group: Group,
+  query: string,
+  groupsCatalog: TranslationCatalog['groups'],
+): boolean {
   if (!query) {
     return true;
   }
 
-  const searchableText = [getGroupDisplayName(group), getGroupDescription(group)]
+  const searchableText = [getGroupDisplayName(group, groupsCatalog), getGroupDescription(group)]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
@@ -44,6 +45,7 @@ function matchesGroupSearch(group: Group, query: string): boolean {
 }
 
 export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps) {
+  const { t, locale } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const availableGroups = useGroupsStore((state) => state.availableGroups);
   const isLoadingAvailable = useGroupsStore((state) => state.isLoadingAvailable);
@@ -55,7 +57,8 @@ export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps
   const setSelectedGroup = useGroupsStore((state) => state.setSelectedGroup);
   const normalizedSearchQuery = searchQuery.trim();
   const filteredGroups = useMemo(
-    () => availableGroups.filter((group) => matchesGroupSearch(group, normalizedSearchQuery)),
+    () =>
+      availableGroups.filter((group) => matchesGroupSearch(group, normalizedSearchQuery, t.groups)),
     [availableGroups, normalizedSearchQuery],
   );
   const showInitialLoading = isLoadingAvailable && availableGroups.length === 0;
@@ -77,8 +80,8 @@ export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps
   if (showInitialLoading) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="المجموعات التي يمكنك طلب الانضمام إليها" title="المجموعات المتاحة" />
-        <LoadingState message="جاري تحميل المجموعات المتاحة..." />
+        <AppHeader subtitle={t.groups.available.subtitle} title={t.groups.available.title} />
+        <LoadingState message={t.groups.available.loading} />
       </AppScreen>
     );
   }
@@ -86,7 +89,7 @@ export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps
   if (showInitialError) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="المجموعات التي يمكنك طلب الانضمام إليها" title="المجموعات المتاحة" />
+        <AppHeader subtitle={t.groups.available.subtitle} title={t.groups.available.title} />
         <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
       </AppScreen>
     );
@@ -95,7 +98,7 @@ export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="المجموعات التي يمكنك طلب الانضمام إليها" title="المجموعات المتاحة" />
+        <AppHeader subtitle={t.groups.available.subtitle} title={t.groups.available.title} />
 
         <SectionHeader
           action={
@@ -103,19 +106,19 @@ export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps
               loading={isRefreshing}
               onPress={handleRefresh}
               size="sm"
-              title="تحديث"
+              title={t.common.refresh}
               variant="outline"
             />
           }
-          subtitle={`عدد المجموعات المحملة: ${availableGroups.length}`}
-          title="القائمة"
+          subtitle={t.groups.list.loadedCount(availableGroups.length)}
+          title={t.groups.list.title}
         />
 
         {availableGroups.length > 0 ? (
           <AppTextInput
-            label="بحث محلي"
+            label={t.common.searchLocal}
             onChangeText={setSearchQuery}
-            placeholder="ابحث باسم المجموعة أو وصفها"
+            placeholder={t.groups.list.searchPlaceholder}
             value={searchQuery}
           />
         ) : null}
@@ -128,13 +131,13 @@ export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps
               <AppButton
                 loading={isRefreshing}
                 onPress={handleRefresh}
-                title="إعادة التحقق"
+                title={t.common.retryVerify}
                 variant="outline"
               />
             }
-            message="لا توجد مجموعات متاحة حاليا."
-            title="لا توجد مجموعات"
-            illustrationLabel="رسم يوضح عدم وجود مجموعات"
+            message={t.groups.available.emptyMessage}
+            title={t.groups.list.emptyTitle}
+            illustrationLabel={t.groups.list.emptyIllustrationAlt}
             illustrationSource={images.emptyStates.groups}
           />
         ) : filteredGroups.length === 0 ? (
@@ -142,14 +145,14 @@ export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps
             action={
               <AppButton
                 onPress={() => setSearchQuery('')}
-                title={SEARCH_CLEAR_LABEL}
+                title={t.common.searchClear}
                 variant="outline"
               />
             }
-            illustrationLabel="رسم يوضح عدم وجود نتائج بحث"
+            illustrationLabel={t.common.noSearchResultsAlt}
             illustrationSource={images.illustrations.search}
-            message={SEARCH_NO_RESULTS_MESSAGE}
-            title={SEARCH_NO_RESULTS_TITLE}
+            message={t.common.searchNoResultsMessage}
+            title={t.common.searchNoResultsTitle}
           />
         ) : (
           <Stack gap="md">
@@ -165,7 +168,7 @@ export function AvailableGroupsScreen({ navigation }: AvailableGroupsScreenProps
 
         {lastLoadedAt ? (
           <AppText align="center" color="muted" variant="caption">
-            آخر تحديث: {new Date(lastLoadedAt).toLocaleTimeString('ar-SY')}
+            {t.common.lastUpdatedAt(formatTime(lastLoadedAt, locale) ?? '')}
           </AppText>
         ) : null}
       </Stack>

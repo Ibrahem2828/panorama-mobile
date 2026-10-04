@@ -2,6 +2,7 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
 import { opacity } from '../../../theme';
+import { useTranslation } from '../../../i18n';
 
 type SubjectLinkedSectionCardProps = {
   title: string;
@@ -16,6 +17,7 @@ export function SubjectLinkedSectionCard({
   disabled = false,
   onPress,
 }: SubjectLinkedSectionCardProps) {
+  const { t } = useTranslation();
   const isDisabled = disabled || !onPress;
 
   return (
@@ -38,7 +40,7 @@ export function SubjectLinkedSectionCard({
             </AppText>
           </Stack>
           <AppBadge
-            label={isDisabled ? 'لاحقا' : 'فتح'}
+            label={isDisabled ? t.common.comingSoon : t.common.open}
             variant={isDisabled ? 'neutral' : 'brand'}
           />
         </Stack>

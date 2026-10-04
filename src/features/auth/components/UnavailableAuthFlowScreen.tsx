@@ -3,6 +3,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
 import { AppButton, AppScreen, EmptyState, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -15,6 +16,7 @@ type UnavailableAuthFlowScreenProps = {
 type PublicNavigation = NativeStackNavigationProp<PublicStackParamList>;
 
 export function UnavailableAuthFlowScreen({ title, message }: UnavailableAuthFlowScreenProps) {
+  const { t } = useTranslation();
   const navigation = useNavigation<PublicNavigation>();
 
   return (
@@ -27,7 +29,7 @@ export function UnavailableAuthFlowScreen({ title, message }: UnavailableAuthFlo
             <AppButton
               fullWidth
               onPress={() => navigation.navigate(PublicRoutes.Login)}
-              title="العودة لتسجيل الدخول"
+              title={t.auth.backToLogin}
             />
           }
         />

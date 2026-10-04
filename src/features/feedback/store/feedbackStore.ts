@@ -1,5 +1,12 @@
 import { create } from 'zustand';
 
+import { useLocaleStore } from '../../../i18n';
+
+// Read when the action runs so the message follows the current locale.
+function feedbackCatalog() {
+  return useLocaleStore.getState().t.feedback;
+}
+
 import { useAuthStore } from '../../auth/store';
 import {
   checkPromptEligibility,
@@ -80,9 +87,9 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
         },
         token,
       );
-      set({ activePrompt: null, successMessage: 'شكرًا لمساعدتنا في تطوير بانوراما.' });
+      set({ activePrompt: null, successMessage: feedbackCatalog().promptSuccess });
     } catch (error) {
-      set({ errorMessage: toSafeFeedbackErrorMessage(error) });
+      set({ errorMessage: toSafeFeedbackErrorMessage(error, feedbackCatalog()) });
     } finally {
       set({ isSubmitting: false });
     }

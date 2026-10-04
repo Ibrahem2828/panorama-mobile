@@ -11,12 +11,9 @@ import type {
   Id,
   SendChatMessageInput,
 } from '../types';
+import type { TranslationCatalog } from '../../../i18n';
 
-const NETWORK_MESSAGE = 'تعذر تحميل الرسائل. تحقق من اتصال الإنترنت وحاول مرة أخرى.';
-const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const PERMISSION_MESSAGE = 'لا يمكنك إرسال رسائل في هذا المجموعة حاليا.';
-const SEND_ERROR_MESSAGE = 'تعذر إرسال الرسالة. حاول مرة أخرى.';
-const GENERIC_MESSAGE = 'تعذر تحميل الرسائل. حاول مرة أخرى.';
+type ChatCatalog = TranslationCatalog['chat'];
 
 const ADMIN_ROLES = new Set(['admin', 'group_admin', 'moderator', 'it_support']);
 const APPROVED_MEMBERSHIP_STATUSES = new Set(['approved', 'member']);
@@ -118,17 +115,17 @@ function sortMessages(messages: ChatMessage[]): ChatMessage[] {
   });
 }
 
-export function getChatMessageText(message: ChatMessage): string {
+export function getChatMessageText(message: ChatMessage, t: ChatCatalog): string {
   return (
     toText(message.content) ??
     toText(message.message) ??
     toText(message.body) ??
     toText(message.text) ??
-    'رسالة بدون نص'
+    t.emptyMessageBody
   );
 }
 
-export function getChatMessageSenderName(message: ChatMessage): string {
+export function getChatMessageSenderName(message: ChatMessage, t: ChatCatalog): string {
   if (message.sender_name) {
     return message.sender_name;
   }
@@ -138,11 +135,11 @@ export function getChatMessageSenderName(message: ChatMessage): string {
       toText(message.sender.full_name) ??
       toText(message.sender.username) ??
       toText(message.sender.email) ??
-      'مستخدم'
+      t.unnamedSender
     );
   }
 
-  return 'مستخدم';
+  return t.unnamedSender;
 }
 
 export function isOwnChatMessage(message: ChatMessage, currentUserId?: Id | null): boolean {
@@ -161,7 +158,8 @@ export function isOwnChatMessage(message: ChatMessage, currentUserId?: Id | null
 
 export function canSendMessageToGroup(
   group: unknown,
-  _currentUserId?: Id | null,
+  _currentUserId: Id | null | undefined,
+  t: ChatCatalog,
 ): {
   allowed: boolean;
   reason?: string;
@@ -170,7 +168,7 @@ export function canSendMessageToGroup(
   if (!isRecord(group)) {
     return {
       allowed: false,
-      reason: 'لا يمكن تحديد صلاحية الإرسال لهذا المجموعة حاليا.',
+      reason: t.permission.undetermined,
       permission: 'unknown',
     };
   }
@@ -184,7 +182,7 @@ export function canSendMessageToGroup(
   if (membershipStatus && BLOCKED_MEMBERSHIP_STATUSES.has(membershipStatus)) {
     return {
       allowed: false,
-      reason: 'يجب أن تكون عضوا في المجموعة لإرسال الرسائل.',
+      reason: t.permission.membersOnly,
       permission: membershipStatus === 'blocked' ? 'blocked' : 'not_member',
     };
   }
@@ -192,7 +190,7 @@ export function canSendMessageToGroup(
   if (sendPermission === 'admins_only') {
     return {
       allowed: isAdminRole(role),
-      reason: isAdminRole(role) ? undefined : 'الإرسال متاح للمشرفين فقط في هذا المجموعة.',
+      reason: isAdminRole(role) ? undefined : t.permission.adminsOnly,
       permission: 'admins_only',
     };
   }
@@ -200,7 +198,7 @@ export function canSendMessageToGroup(
   if (sendPermission === 'all_members') {
     return {
       allowed: isApprovedMember,
-      reason: isApprovedMember ? undefined : 'يجب أن تكون عضوا في المجموعة لإرسال الرسائل.',
+      reason: isApprovedMember ? undefined : t.permission.membersOnly,
       permission: 'members_only',
     };
   }
@@ -208,14 +206,14 @@ export function canSendMessageToGroup(
   if (!sendPermission) {
     return {
       allowed: isApprovedMember,
-      reason: isApprovedMember ? undefined : 'يمكنك قراءة الرسائل فقط حاليا.',
+      reason: isApprovedMember ? undefined : t.permission.readOnly,
       permission: 'unknown',
     };
   }
 
   return {
     allowed: isApprovedMember,
-    reason: isApprovedMember ? undefined : 'لا يمكنك إرسال رسائل في هذا المجموعة حاليا.',
+    reason: isApprovedMember ? undefined : t.permission.blocked,
     permission: 'unknown',
   };
 }
@@ -230,49 +228,32 @@ export function mergeChatMessages(current: ChatMessage[], incoming: ChatMessage[
   return sortMessages(Array.from(byId.values()));
 }
 
-export function formatChatTimestamp(value?: string | null): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return date.toLocaleTimeString('ar-SY', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-export function toSafeChatErrorMessage(error: unknown): string {
+export function toSafeChatErrorMessage(error: unknown, t: ChatCatalog): string {
   const normalizedError = normalizeApiError(error);
 
   if (normalizedError.code === 'NETWORK_ERROR' || normalizedError.code === 'TIMEOUT') {
-    return NETWORK_MESSAGE;
+    return t.errors.network;
   }
 
   if (normalizedError.code === 'UNAUTHORIZED') {
-    return UNAUTHORIZED_MESSAGE;
+    return t.errors.unauthorized;
   }
 
   if (normalizedError.code === 'FORBIDDEN') {
-    return PERMISSION_MESSAGE;
+    return t.errors.permission;
   }
 
-  return normalizedError.message || GENERIC_MESSAGE;
+  return normalizedError.message || t.errors.generic;
 }
 
-export function toSafeSendChatErrorMessage(error: unknown): string {
+export function toSafeSendChatErrorMessage(error: unknown, t: ChatCatalog): string {
   const normalizedError = normalizeApiError(error);
 
   if (normalizedError.code === 'FORBIDDEN') {
-    return PERMISSION_MESSAGE;
+    return t.errors.permission;
   }
 
-  return toSafeChatErrorMessage(error) || SEND_ERROR_MESSAGE;
+  return toSafeChatErrorMessage(error, t) || t.errors.send;
 }
 
 export async function loadGroupChatMessages(

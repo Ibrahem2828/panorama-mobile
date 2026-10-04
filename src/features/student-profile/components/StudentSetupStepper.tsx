@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppBadge, AppText, Stack } from '../../../components';
 import { colors, radius, spacing } from '../../../theme';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
 
 type StudentSetupStep = 1 | 2 | 3;
 
@@ -9,13 +10,17 @@ type StudentSetupStepperProps = {
   currentStep: StudentSetupStep;
 };
 
-const steps: { step: StudentSetupStep; label: string }[] = [
-  { step: 1, label: 'الملف الأكاديمي' },
-  { step: 2, label: 'بطاقة الطالب' },
-  { step: 3, label: 'حالة التوثيق' },
+const steps: {
+  step: StudentSetupStep;
+  key: keyof TranslationCatalog['studentProfile']['stepper'];
+}[] = [
+  { step: 1, key: 'academicProfile' as const },
+  { step: 2, key: 'studentCard' as const },
+  { step: 3, key: 'verificationStatus' as const },
 ];
 
 export function StudentSetupStepper({ currentStep }: StudentSetupStepperProps) {
+  const { t } = useTranslation();
   return (
     <Stack direction="horizontal" gap="sm" wrap>
       {steps.map((item) => {
@@ -36,7 +41,7 @@ export function StudentSetupStepper({ currentStep }: StudentSetupStepperProps) {
               variant={isDone ? 'success' : isCurrent ? 'brand' : 'neutral'}
             />
             <AppText color={isCurrent ? 'brand' : 'secondary'} variant="caption" weight="600">
-              {item.label}
+              {t.studentProfile.stepper[item.key]}
             </AppText>
           </View>
         );

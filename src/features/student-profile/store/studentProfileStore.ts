@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { useLocaleStore } from '../../../i18n';
+
 import { useAuthStore } from '../../auth/store';
 import {
   getAcademicSetupOptions,
@@ -68,9 +70,10 @@ type AuthContext = {
   userId: string | number | null;
 };
 
-const MISSING_SESSION_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const MISSING_FIELDS_MESSAGE = 'يرجى إكمال كل حقول الملف الأكاديمي قبل المتابعة.';
-const MISSING_STUDENT_NUMBER_MESSAGE = 'يرجى إدخال الرقم الجامعي أولا.';
+// Read when the action runs so the message follows the current locale.
+function studentProfileCatalog() {
+  return useLocaleStore.getState().t.studentProfile;
+}
 
 function getInitialDataState() {
   return {
@@ -106,7 +109,7 @@ function requireAuthContext(): AuthContext {
   const { accessToken, user } = useAuthStore.getState();
 
   if (!accessToken) {
-    throw new Error(MISSING_SESSION_MESSAGE);
+    throw new Error(studentProfileCatalog().errors.unauthorized);
   }
 
   return {
@@ -218,7 +221,7 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
         hasBootstrapped: true,
         isBootstrapping: false,
         isLoadingOptions: false,
-        errorMessage: toSafeStudentProfileErrorMessage(error),
+        errorMessage: toSafeStudentProfileErrorMessage(error, studentProfileCatalog()),
       });
     }
   },
@@ -241,7 +244,7 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
     } catch (error) {
       set({
         isLoadingOptions: false,
-        errorMessage: toSafeStudentProfileErrorMessage(error),
+        errorMessage: toSafeStudentProfileErrorMessage(error, studentProfileCatalog()),
       });
     }
   },
@@ -279,7 +282,7 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
     } catch (error) {
       set({
         isLoadingFaculties: false,
-        errorMessage: toSafeStudentProfileErrorMessage(error),
+        errorMessage: toSafeStudentProfileErrorMessage(error, studentProfileCatalog()),
       });
     }
   },
@@ -315,7 +318,7 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
     } catch (error) {
       set({
         isLoadingMajors: false,
-        errorMessage: toSafeStudentProfileErrorMessage(error),
+        errorMessage: toSafeStudentProfileErrorMessage(error, studentProfileCatalog()),
       });
     }
   },
@@ -349,7 +352,7 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
     } catch (error) {
       set({
         isLoadingSubjects: false,
-        errorMessage: toSafeStudentProfileErrorMessage(error),
+        errorMessage: toSafeStudentProfileErrorMessage(error, studentProfileCatalog()),
       });
     }
   },
@@ -381,7 +384,7 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
     const studentNumber = get().studentNumber.trim();
 
     if (!studentNumber) {
-      set({ parseErrorMessage: MISSING_STUDENT_NUMBER_MESSAGE });
+      set({ parseErrorMessage: studentProfileCatalog().errors.missingStudentNumber });
       return null;
     }
 
@@ -404,7 +407,7 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
     } catch (error) {
       set({
         isParsingStudentNumber: false,
-        parseErrorMessage: toSafeStudentProfileErrorMessage(error),
+        parseErrorMessage: toSafeStudentProfileErrorMessage(error, studentProfileCatalog()),
       });
 
       return null;
@@ -415,8 +418,8 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
     const profileInput = buildProfileInput(get());
 
     if (!profileInput) {
-      set({ errorMessage: MISSING_FIELDS_MESSAGE });
-      throw new Error(MISSING_FIELDS_MESSAGE);
+      set({ errorMessage: studentProfileCatalog().errors.missingFields });
+      throw new Error(studentProfileCatalog().errors.missingFields);
     }
 
     const { accessToken } = requireAuthContext();
@@ -451,7 +454,7 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
     } catch (error) {
       set({
         isSubmitting: false,
-        errorMessage: toSafeStudentProfileErrorMessage(error),
+        errorMessage: toSafeStudentProfileErrorMessage(error, studentProfileCatalog()),
       });
 
       throw error;

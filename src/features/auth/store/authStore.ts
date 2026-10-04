@@ -7,9 +7,12 @@ import {
   refreshAccessToken as refreshSessionAccessToken,
   toSafeAuthErrorMessage,
 } from '../services';
+import { useLocaleStore } from '../../../i18n';
 import type { AuthStatus, AuthUser, AuthTokens, LoginCredentials } from '../types';
 
-const SESSION_EXPIRED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
+function sessionExpiredMessage(): string {
+  return useLocaleStore.getState().t.auth.errors.sessionExpired;
+}
 
 type AuthState = {
   status: AuthStatus;
@@ -74,7 +77,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({
           ...unauthenticatedState,
           isBootstrapping: false,
-          errorMessage: result.sessionExpired ? SESSION_EXPIRED_MESSAGE : null,
+          errorMessage: result.sessionExpired ? sessionExpiredMessage() : null,
         });
         return;
       }
@@ -88,7 +91,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         ...unauthenticatedState,
         isBootstrapping: false,
         errorMessage:
-          error instanceof Error && error.message ? error.message : SESSION_EXPIRED_MESSAGE,
+          error instanceof Error && error.message ? error.message : sessionExpiredMessage(),
       });
     }
   },
@@ -147,7 +150,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (!tokens) {
         set({
           ...unauthenticatedState,
-          errorMessage: SESSION_EXPIRED_MESSAGE,
+          errorMessage: sessionExpiredMessage(),
         });
         return null;
       }
@@ -169,7 +172,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  async forceSessionExpired(message = SESSION_EXPIRED_MESSAGE) {
+  async forceSessionExpired(message = sessionExpiredMessage()) {
     const { status } = get();
 
     if (status === 'unauthenticated' && get().errorMessage === message) {

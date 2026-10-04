@@ -62,6 +62,7 @@ export const ProfileRoutes = {
   AcademicInfo: 'AcademicInfo',
   Settings: 'Settings',
   ChangePassword: 'ChangePassword',
+  DeleteAccount: 'DeleteAccount',
   Notifications: 'Notifications',
   SupportTickets: 'SupportTickets',
   CreateSupportTicket: 'CreateSupportTicket',

@@ -7,6 +7,7 @@ import {
   type PaginatedResult,
   type GroupWhatsAppTicket,
 } from '../../../api';
+import type { TranslationCatalog } from '../../../i18n';
 import type {
   Group,
   GroupJoinResult,
@@ -16,10 +17,7 @@ import type {
   SendMessagesPermission,
 } from '../types';
 
-const NETWORK_MESSAGE = 'تعذر تحميل المجموعات. تحقق من اتصال الإنترنت وحاول مرة أخرى.';
-const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const PERMISSION_MESSAGE = 'لا تملك صلاحية الوصول إلى هذه المجموعات حاليا.';
-const GENERIC_MESSAGE = 'تعذر تحميل المجموعات. حاول مرة أخرى.';
+type GroupsCatalog = TranslationCatalog['groups'];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -96,8 +94,8 @@ function normalizeGroupList(response: PaginatedResult<GroupRecord>): PaginatedRe
   };
 }
 
-export function getGroupDisplayName(group: Group): string {
-  return toText(group.name) ?? toText(group.title) ?? 'مجموعة بدون اسم';
+export function getGroupDisplayName(group: Group, t: GroupsCatalog): string {
+  return toText(group.name) ?? toText(group.title) ?? t.untitled;
 }
 
 export function getGroupDescription(group: Group): string | null {
@@ -148,22 +146,22 @@ export function canLeaveGroup(group: Group): boolean {
   );
 }
 
-export function toSafeGroupsErrorMessage(error: unknown): string {
+export function toSafeGroupsErrorMessage(error: unknown, t: GroupsCatalog): string {
   const normalizedError = normalizeApiError(error);
 
   if (normalizedError.code === 'NETWORK_ERROR' || normalizedError.code === 'TIMEOUT') {
-    return NETWORK_MESSAGE;
+    return t.errors.network;
   }
 
   if (normalizedError.code === 'UNAUTHORIZED') {
-    return UNAUTHORIZED_MESSAGE;
+    return t.errors.unauthorized;
   }
 
   if (normalizedError.code === 'FORBIDDEN') {
-    return PERMISSION_MESSAGE;
+    return t.errors.permission;
   }
 
-  return normalizedError.message || GENERIC_MESSAGE;
+  return normalizedError.message || t.errors.generic;
 }
 
 export async function loadAvailableGroups(authToken: string): Promise<PaginatedResult<Group>> {

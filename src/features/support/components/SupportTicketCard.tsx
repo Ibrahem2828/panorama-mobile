@@ -1,9 +1,10 @@
 import { Pressable, StyleSheet } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
+import { formatDateTime } from '../../../utils/formatDateTime';
 import { opacity } from '../../../theme';
 import {
-  formatSupportDate,
   getSupportCategoryLabel,
   getSupportPriorityLabel,
   getSupportTicketPreview,
@@ -18,8 +19,9 @@ type SupportTicketCardProps = {
 };
 
 export function SupportTicketCard({ ticket, onPress }: SupportTicketCardProps) {
+  const { t, locale } = useTranslation();
   const preview = getSupportTicketPreview(ticket);
-  const date = formatSupportDate(ticket.created_at ?? ticket.updated_at);
+  const date = formatDateTime(ticket.created_at ?? ticket.updated_at, locale);
 
   return (
     <Pressable
@@ -33,7 +35,7 @@ export function SupportTicketCard({ ticket, onPress }: SupportTicketCardProps) {
           <Stack direction="horizontal" gap="md" style={styles.header}>
             <Stack gap="xs" style={styles.titleBlock}>
               <AppText numberOfLines={2} variant="title">
-                {getSupportTicketTitle(ticket)}
+                {getSupportTicketTitle(ticket, t.support)}
               </AppText>
               {preview ? (
                 <AppText color="secondary" numberOfLines={2} variant="bodySmall">
@@ -45,9 +47,12 @@ export function SupportTicketCard({ ticket, onPress }: SupportTicketCardProps) {
           </Stack>
 
           <Stack direction="horizontal" gap="sm" wrap>
-            <AppBadge label={getSupportCategoryLabel(ticket.category)} variant="info" />
+            <AppBadge label={getSupportCategoryLabel(ticket.category, t.support)} variant="info" />
             {ticket.priority ? (
-              <AppBadge label={getSupportPriorityLabel(ticket.priority)} variant="warning" />
+              <AppBadge
+                label={getSupportPriorityLabel(ticket.priority, t.support)}
+                variant="warning"
+              />
             ) : null}
             {date ? <AppBadge label={date} variant="neutral" /> : null}
           </Stack>

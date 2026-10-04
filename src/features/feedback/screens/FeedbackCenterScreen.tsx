@@ -19,20 +19,25 @@ import { colors, radius, spacing } from '../../../theme';
 import { useAuthStore } from '../../auth/store';
 import { submitFeedback, toSafeFeedbackErrorMessage } from '../services';
 import type { FeedbackKind } from '../types';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
 
 type Props = NativeStackScreenProps<ProfileStackParamList, 'FeedbackCenter'>;
 
-type KindOption = { value: FeedbackKind; label: string; hint: string };
+type KindCatalog = TranslationCatalog['feedback']['kinds'];
+type KindOption = { value: FeedbackKind; labelKey: keyof KindCatalog; hintKey: keyof KindCatalog };
 
 const KIND_OPTIONS: KindOption[] = [
-  { value: 'rating', label: 'تقييم عام', hint: 'قيّم تجربتك مع بانوراما' },
-  { value: 'suggestion', label: 'اقتراح', hint: 'شارك فكرة تطوير قابلة للتنفيذ' },
-  { value: 'issue', label: 'مشكلة', hint: 'أبلغ عن خلل وظيفي أو بصري' },
-  { value: 'complaint', label: 'شكوى', hint: 'صف تجربة لم تكن بالمستوى المتوقع' },
-  { value: 'praise', label: 'إشادة', hint: 'أخبرنا بما أعجبك' },
+  { value: 'rating', labelKey: 'rating' as const, hintKey: 'ratingHint' as const },
+  { value: 'suggestion', labelKey: 'suggestion' as const, hintKey: 'suggestionHint' as const },
+  // Wire value is the backend's `bug`; the i18n key stays `issue` (display label only).
+  { value: 'bug', labelKey: 'issue' as const, hintKey: 'issueHint' as const },
+  { value: 'complaint', labelKey: 'complaint' as const, hintKey: 'complaintHint' as const },
+  // Wire value is the backend's `compliment`; the i18n key stays `praise` (display label only).
+  { value: 'compliment', labelKey: 'praise' as const, hintKey: 'praiseHint' as const },
 ];
 
 export function FeedbackCenterScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const accessToken = useAuthStore((state) => state.accessToken);
   const [kind, setKind] = useState<FeedbackKind>('rating');
   const [rating, setRating] = useState<number | null>(5);
@@ -50,11 +55,11 @@ export function FeedbackCenterScreen({ navigation }: Props) {
   async function handleSubmit() {
     if (!accessToken || isSubmitting) return;
     if (kind === 'suggestion' && (!title.trim() || !details.trim())) {
-      setErrorMessage('أدخل عنوانًا واضحًا وتفاصيل الاقتراح.');
+      setErrorMessage(t.feedback.missingSuggestion);
       return;
     }
     if (kind !== 'rating' && !details.trim()) {
-      setErrorMessage('اكتب تفاصيل تساعد فريق بانوراما على المراجعة.');
+      setErrorMessage(t.feedback.missingDetails);
       return;
     }
 
@@ -76,7 +81,7 @@ export function FeedbackCenterScreen({ navigation }: Props) {
       );
       setIsSuccess(true);
     } catch (error) {
-      setErrorMessage(toSafeFeedbackErrorMessage(error));
+      setErrorMessage(toSafeFeedbackErrorMessage(error, t.feedback));
     } finally {
       setIsSubmitting(false);
     }
@@ -85,16 +90,16 @@ export function FeedbackCenterScreen({ navigation }: Props) {
   if (isSuccess) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="مشاركة الرأي" title="ساعدنا على التطوير" />
-        <SuccessState
-          message="تم تسجيل رأيك بأمان وسيظهر ضمن لوحة متابعة فريق بانوراما."
-          title="شكرًا لمساهمتك"
+        <AppHeader
+          subtitle={t.feedback.thanksHeaderSubtitle}
+          title={t.feedback.thanksHeaderTitle}
         />
+        <SuccessState message={t.feedback.thanksMessage} title={t.feedback.thanksTitle} />
         <Stack gap="md">
           <AppButton
             fullWidth
             onPress={() => navigation.navigate(ProfileRoutes.MyFeedback)}
-            title="متابعة مشاركاتي"
+            title={t.feedback.trackMine}
           />
           <AppButton
             fullWidth
@@ -104,7 +109,7 @@ export function FeedbackCenterScreen({ navigation }: Props) {
               setDetails('');
               setRating(5);
             }}
-            title="إرسال مشاركة أخرى"
+            title={t.feedback.sendAnother}
             variant="outline"
           />
         </Stack>
@@ -115,21 +120,20 @@ export function FeedbackCenterScreen({ navigation }: Props) {
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="تقييم واقتراحات" title="رأيك يصنع النسخة القادمة" />
-        <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+        <AppHeader subtitle={t.feedback.centerSubtitle} title={t.feedback.centerTitle} />
+        <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
 
         <AppCard variant="muted">
           <Stack gap="xs">
-            <AppText variant="title">مشاركة منظمة وقابلة للمتابعة</AppText>
+            <AppText variant="title">{t.feedback.privacyTitle}</AppText>
             <AppText color="secondary" variant="bodySmall">
-              لا ترسل كلمات مرور أو رموز تحقق أو بيانات حساسة. نستخدم هذه الملاحظات لتحسين الأداء
-              والواجهات والميزات.
+              {t.feedback.privacyNote}
             </AppText>
           </Stack>
         </AppCard>
 
         <Stack gap="sm">
-          <AppText variant="label">نوع المشاركة</AppText>
+          <AppText variant="label">{t.feedback.kindLabel}</AppText>
           <View style={styles.kindGrid}>
             {KIND_OPTIONS.map((option) => {
               const selected = option.value === kind;
@@ -145,10 +149,10 @@ export function FeedbackCenterScreen({ navigation }: Props) {
                   style={[styles.kindCard, selected ? styles.kindCardSelected : null]}
                 >
                   <AppText color={selected ? 'brand' : 'primary'} variant="label">
-                    {option.label}
+                    {t.feedback.kinds[option.labelKey]}
                   </AppText>
                   <AppText color="muted" variant="caption">
-                    {option.hint}
+                    {t.feedback.kinds[option.hintKey]}
                   </AppText>
                 </Pressable>
               );
@@ -157,11 +161,11 @@ export function FeedbackCenterScreen({ navigation }: Props) {
         </Stack>
 
         <Stack gap="sm">
-          <AppText variant="label">التقييم</AppText>
+          <AppText variant="label">{t.feedback.ratingLabel}</AppText>
           <View accessibilityRole="radiogroup" style={styles.stars}>
             {[1, 2, 3, 4, 5].map((value) => (
               <Pressable
-                accessibilityLabel={`${value} من 5`}
+                accessibilityLabel={t.feedback.ratingOf(value)}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: rating === value }}
                 key={value}
@@ -176,21 +180,23 @@ export function FeedbackCenterScreen({ navigation }: Props) {
 
         {kind === 'suggestion' ? (
           <AppTextInput
-            label="عنوان الاقتراح"
+            label={t.feedback.suggestionTitleLabel}
             maxLength={180}
             onChangeText={setTitle}
-            placeholder="مثال: تحسين البحث داخل المحاضرات"
+            placeholder={t.feedback.suggestionTitlePlaceholder}
             value={title}
           />
         ) : null}
 
         <AppTextInput
           helperText={`${details.length}/5000`}
-          label={kind === 'suggestion' ? 'تفاصيل الاقتراح' : 'تفاصيل المشاركة'}
+          label={
+            kind === 'suggestion' ? t.feedback.suggestionDetailsLabel : t.feedback.shareDetailsLabel
+          }
           maxLength={5000}
           multiline
           onChangeText={setDetails}
-          placeholder={selectedOption?.hint ?? ''}
+          placeholder={selectedOption ? t.feedback.kinds[selectedOption.hintKey] : ''}
           value={details}
         />
 
@@ -200,18 +206,18 @@ export function FeedbackCenterScreen({ navigation }: Props) {
           fullWidth
           loading={isSubmitting}
           onPress={handleSubmit}
-          title="إرسال إلى فريق بانوراما"
+          title={t.feedback.submit}
         />
 
         <Stack direction="horizontal" gap="sm" wrap>
           <AppButton
             onPress={() => navigation.navigate(ProfileRoutes.MyFeedback)}
-            title="مشاركاتي"
+            title={t.feedback.myFeedback}
             variant="outline"
           />
           <AppButton
             onPress={() => navigation.navigate(ProfileRoutes.PublicSuggestions)}
-            title="اقتراحات المجتمع"
+            title={t.feedback.publicSuggestions}
             variant="outline"
           />
         </Stack>

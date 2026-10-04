@@ -32,24 +32,27 @@ import {
 } from '../services';
 import { useNotificationsStore } from '../store';
 import type { NotificationRecord, NotificationRouteIntent } from '../types';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
+import { formatTime } from '../../../utils/formatDateTime';
 
 type NotificationsScreenProps = NativeStackScreenProps<ProfileStackParamList, 'Notifications'>;
 type AppTabsNavigation = BottomTabNavigationProp<AppTabsParamList>;
 
-function getRouteMessage(intent: NotificationRouteIntent): string | null {
+function getRouteMessage(intent: NotificationRouteIntent, t: TranslationCatalog): string | null {
   switch (intent.kind) {
     case 'future':
-      return `تم فتح الإشعار. توجيه ${intent.label} سيكتمل في مرحلة لاحقة.`;
+      return t.notifications.routeMessages.futureTarget(intent.label);
     case 'verification':
-      return 'تم فتح الإشعار. توجيه التوثيق محفوظ كأساس وسيكتمل حسب قواعد الوصول.';
+      return t.notifications.routeMessages.verification;
     case 'none':
-      return 'تم فتح الإشعار بدون وجهة مرتبطة.';
+      return t.notifications.routeMessages.none;
     default:
       return null;
   }
 }
 
 export function NotificationsScreen({ navigation }: NotificationsScreenProps) {
+  const { t, locale } = useTranslation();
   const [routeMessage, setRouteMessage] = useState<string | null>(null);
   const tabNavigation = navigation.getParent<AppTabsNavigation>();
   const notifications = useNotificationsStore((state) => state.notifications);
@@ -99,11 +102,11 @@ export function NotificationsScreen({ navigation }: NotificationsScreenProps) {
         });
         break;
       case 'verification':
-        setRouteMessage(getRouteMessage(intent));
+        setRouteMessage(getRouteMessage(intent, t));
         break;
       case 'future':
       case 'none':
-        setRouteMessage(getRouteMessage(intent));
+        setRouteMessage(getRouteMessage(intent, t));
         break;
     }
   }
@@ -116,7 +119,10 @@ export function NotificationsScreen({ navigation }: NotificationsScreenProps) {
     }
 
     const target = getNotificationTarget(notification);
-    const intent = resolveNotificationRouteIntent(target);
+    const intent = resolveNotificationRouteIntent(target, {
+      support: t.notifications.targets.support,
+      announcement: t.notifications.targets.announcement,
+    });
 
     navigateFromIntent(intent);
   }
@@ -137,8 +143,8 @@ export function NotificationsScreen({ navigation }: NotificationsScreenProps) {
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <Stack gap="md">
-          <AppHeader subtitle="مركز الإشعارات داخل التطبيق" title="الإشعارات" />
-          <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
+          <AppHeader subtitle={t.notifications.subtitle} title={t.notifications.title} />
+          <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
         </Stack>
 
         <NotificationsHeaderActions
@@ -168,7 +174,7 @@ export function NotificationsScreen({ navigation }: NotificationsScreenProps) {
         {errorMessage ? <ErrorState message={errorMessage} onRetry={handleRefresh} /> : null}
 
         {showInitialLoading ? (
-          <LoadingState message="جاري تحميل الإشعارات..." />
+          <LoadingState message={t.notifications.loading} />
         ) : notifications.length > 0 ? (
           <Stack gap="md">
             {notifications.map((notification) => (
@@ -187,26 +193,25 @@ export function NotificationsScreen({ navigation }: NotificationsScreenProps) {
               <AppButton
                 loading={isRefreshing}
                 onPress={handleRefresh}
-                title="إعادة التحقق"
+                title={t.common.retryVerify}
                 variant="outline"
               />
             }
-            message="ستظهر هنا تحديثات التوثيق والمجموعات والملفات وطلبات الطباعة عند توفرها."
-            title="لا توجد إشعارات حاليا"
-            illustrationLabel="رسم يوضح عدم وجود إشعارات"
+            message={t.notifications.emptyMessage}
+            title={t.notifications.emptyTitle}
+            illustrationLabel={t.notifications.emptyIllustrationAlt}
             illustrationSource={images.emptyStates.notifications}
           />
         )}
 
         {lastLoadedAt ? (
           <AppText align="center" color="muted" variant="caption">
-            آخر تحديث: {new Date(lastLoadedAt).toLocaleTimeString('ar-SY')}
+            {t.common.lastUpdatedAt(formatTime(lastLoadedAt, locale) ?? '')}
           </AppText>
         ) : null}
 
         <AppText color="muted" variant="caption">
-          هذه شاشة إشعارات داخل التطبيق فقط. لا يتم طلب صلاحيات Push ولا تسجيل device tokens في هذه
-          المرحلة.
+          {t.notifications.screenNote}
         </AppText>
       </Stack>
     </AppScreen>

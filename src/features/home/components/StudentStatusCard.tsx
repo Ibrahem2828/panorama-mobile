@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { AppBadge, AppButton, AppCard, AppText, Stack } from '../../../components';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { colors, spacing } from '../../../theme';
 import type { StatusVariant } from '../../../types/common';
 
@@ -19,24 +20,27 @@ type StudentStatusView = {
   variant: StatusVariant;
 };
 
-function getStudentStatusView({
-  profileComplete,
-  verificationStatus,
-  hasProfileState,
-  hasVerificationState,
-}: StudentStatusCardProps): StudentStatusView {
+function getStudentStatusView(
+  {
+    profileComplete,
+    verificationStatus,
+    hasProfileState,
+    hasVerificationState,
+  }: StudentStatusCardProps,
+  t: TranslationCatalog['home']['studentStatus'],
+): StudentStatusView {
   if (!hasProfileState || !hasVerificationState) {
     return {
-      label: 'قيد التحديث',
-      description: 'سيتم عرض حالة الملف والتوثيق بعد اكتمال تحميل بيانات الحساب.',
+      label: t.loadingLabel,
+      description: t.loadingDescription,
       variant: 'neutral',
     };
   }
 
   if (!profileComplete) {
     return {
-      label: 'ملف غير مكتمل',
-      description: 'أكمل بياناتك الأكاديمية للاستفادة من خدمات الطالب.',
+      label: t.incompleteLabel,
+      description: t.incompleteDescription,
       variant: 'warning',
     };
   }
@@ -44,45 +48,46 @@ function getStudentStatusView({
   switch (verificationStatus) {
     case 'approved':
       return {
-        label: 'حسابك موثق',
-        description: 'يمكنك الآن استخدام الخدمات المخصصة للطلاب الموثقين.',
+        label: t.verifiedLabel,
+        description: t.verifiedDescription,
         variant: 'success',
       };
     case 'pending':
       return {
-        label: 'قيد المراجعة',
-        description: 'طلب التوثيق قيد المراجعة من الإدارة.',
+        label: t.pendingLabel,
+        description: t.pendingDescription,
         variant: 'warning',
       };
     case 'rejected':
       return {
-        label: 'مرفوض',
-        description: 'طلب التوثيق مرفوض. راجع سبب الرفض من شاشة التوثيق.',
+        label: t.rejectedLabel,
+        description: t.rejectedDescription,
         variant: 'error',
       };
     case 'needs_update':
       return {
-        label: 'يحتاج تحديث',
-        description: 'طلب التوثيق يحتاج صورة أو بيانات أوضح.',
+        label: t.needsUpdateLabel,
+        description: t.needsUpdateDescription,
         variant: 'warning',
       };
     default:
       return {
-        label: 'أكمل بياناتك الأكاديمية',
-        description: 'لم يتم تأكيد حالة التوثيق بعد.',
+        label: t.unknownLabel,
+        description: t.unknownDescription,
         variant: 'neutral',
       };
   }
 }
 
 export function StudentStatusCard(props: StudentStatusCardProps) {
-  const statusView = getStudentStatusView(props);
+  const { t } = useTranslation();
+  const statusView = getStudentStatusView(props, t.home.studentStatus);
 
   return (
     <AppCard padding="lg" variant="default">
       <Stack gap="md">
         <View style={styles.header}>
-          <AppText variant="title">حالة الطالب</AppText>
+          <AppText variant="title">{t.home.studentStatus.title}</AppText>
           <AppBadge label={statusView.label} size="md" variant={statusView.variant} />
         </View>
         <AppText color="secondary" variant="bodySmall">

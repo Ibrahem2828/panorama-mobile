@@ -5,10 +5,9 @@ import {
   type AnnouncementRecord,
 } from '../../../api';
 import type { Announcement, HomeData } from '../types';
+import type { TranslationCatalog } from '../../../i18n';
 
-const NETWORK_MESSAGE = 'تعذر تحميل الصفحة الرئيسية. تحقق من اتصال الإنترنت ثم حاول مرة أخرى.';
-const UNAUTHORIZED_MESSAGE = 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
-const GENERIC_MESSAGE = 'تعذر تحميل الصفحة الرئيسية. حاول مرة أخرى.';
+type HomeCatalog = TranslationCatalog['home'];
 
 function toText(value: unknown): string | undefined {
   if (typeof value === 'string' && value.trim().length > 0) {
@@ -34,18 +33,18 @@ function normalizeAnnouncement(announcement: AnnouncementRecord): Announcement {
   };
 }
 
-export function toSafeHomeErrorMessage(error: unknown): string {
+export function toSafeHomeErrorMessage(error: unknown, t: HomeCatalog): string {
   const normalizedError = normalizeApiError(error);
 
   if (normalizedError.code === 'NETWORK_ERROR' || normalizedError.code === 'TIMEOUT') {
-    return NETWORK_MESSAGE;
+    return t.errors.network;
   }
 
   if (normalizedError.code === 'UNAUTHORIZED') {
-    return UNAUTHORIZED_MESSAGE;
+    return t.errors.unauthorized;
   }
 
-  return normalizedError.message || GENERIC_MESSAGE;
+  return normalizedError.message || t.errors.generic;
 }
 
 export async function getHomeData(authToken: string): Promise<HomeData> {

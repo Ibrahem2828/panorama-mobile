@@ -1,5 +1,6 @@
 import { buildGroupChatWebSocketUrl } from '../../../config/env';
 import type { ChatConnectionStatus, ChatMessage, Id } from '../types';
+import { useLocaleStore } from '../../../i18n';
 
 export type ChatWebSocketHandlers = {
   onMessage?: (message: ChatMessage) => void;
@@ -19,7 +20,10 @@ export type ChatWebSocketClient = {
   send?: (message: string) => void;
 };
 
-const WEBSOCKET_ERROR_MESSAGE = 'تم فقد الاتصال بالمحادثة. يمكنك تحديث الرسائل يدويا.';
+// Read at failure time so the message follows the current locale.
+function websocketErrorMessage(): string {
+  return useLocaleStore.getState().t.chat.errors.websocket;
+}
 const MAX_RECONNECT_ATTEMPTS = 3;
 const BASE_RECONNECT_DELAY_MS = 1200;
 
@@ -129,7 +133,7 @@ export function createChatWebSocketClient({
       );
     } catch {
       setStatus('error');
-      handlers?.onError?.(WEBSOCKET_ERROR_MESSAGE);
+      handlers?.onError?.(websocketErrorMessage());
       scheduleReconnect();
       return;
     }
@@ -148,13 +152,13 @@ export function createChatWebSocketClient({
           handlers?.onMessage?.(message);
         }
       } catch {
-        handlers?.onError?.(WEBSOCKET_ERROR_MESSAGE);
+        handlers?.onError?.(websocketErrorMessage());
       }
     };
 
     socket.onerror = () => {
       setStatus('error');
-      handlers?.onError?.(WEBSOCKET_ERROR_MESSAGE);
+      handlers?.onError?.(websocketErrorMessage());
     };
 
     socket.onclose = () => {

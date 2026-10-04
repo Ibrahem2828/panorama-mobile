@@ -22,10 +22,12 @@ import {
   toggleSuggestionVote,
 } from '../services';
 import type { PublicSuggestion } from '../types';
+import { useTranslation } from '../../../i18n';
 
 type Props = NativeStackScreenProps<ProfileStackParamList, 'PublicSuggestions'>;
 
 export function PublicSuggestionsScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const accessToken = useAuthStore((state) => state.accessToken);
   const [items, setItems] = useState<PublicSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +42,7 @@ export function PublicSuggestionsScreen({ navigation }: Props) {
       const response = await loadPublicSuggestions(accessToken);
       setItems(response.results);
     } catch (loadError) {
-      setError(toSafeFeedbackErrorMessage(loadError));
+      setError(toSafeFeedbackErrorMessage(loadError, t.feedback));
     } finally {
       setIsLoading(false);
     }
@@ -64,7 +66,7 @@ export function PublicSuggestionsScreen({ navigation }: Props) {
         ),
       );
     } catch (voteError) {
-      setError(toSafeFeedbackErrorMessage(voteError));
+      setError(toSafeFeedbackErrorMessage(voteError, t.feedback));
     } finally {
       setVotingId(null);
     }
@@ -73,20 +75,20 @@ export function PublicSuggestionsScreen({ navigation }: Props) {
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="أفكار تم اعتمادها أو العمل عليها" title="اقتراحات المجتمع" />
-        <AppButton onPress={() => navigation.goBack()} title="رجوع" variant="ghost" />
-        {isLoading ? <LoadingState message="جاري تحميل الاقتراحات..." /> : null}
+        <AppHeader subtitle={t.feedback.publicList.subtitle} title={t.feedback.publicList.title} />
+        <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
+        {isLoading ? <LoadingState message={t.feedback.publicList.loading} /> : null}
         {error ? <ErrorState message={error} onRetry={() => void load()} /> : null}
         {!isLoading && !error && items.length === 0 ? (
           <EmptyState
             action={
               <AppButton
                 onPress={() => navigation.navigate('FeedbackCenter')}
-                title="شارك اقتراحك"
+                title={t.feedback.publicList.shareIdea}
               />
             }
-            message="ستظهر هنا الاقتراحات التي اعتمدها فريق بانوراما للنقاش أو التنفيذ."
-            title="لا توجد اقتراحات منشورة"
+            message={t.feedback.publicList.emptyMessage}
+            title={t.feedback.publicList.emptyTitle}
           />
         ) : null}
         {items.map((item) => (
@@ -103,12 +105,12 @@ export function PublicSuggestionsScreen({ navigation }: Props) {
               ) : null}
               <Stack direction="horizontal" gap="sm" justify="space-between" wrap>
                 <AppText color="muted" variant="caption">
-                  {item.votes_count} مؤيد
+                  {t.feedback.publicList.votes(item.votes_count)}
                 </AppText>
                 <AppButton
                   loading={votingId === item.id}
                   onPress={() => void handleVote(item)}
-                  title={item.has_voted ? 'إلغاء التأييد' : 'تأييد الاقتراح'}
+                  title={item.has_voted ? t.feedback.publicList.unvote : t.feedback.publicList.vote}
                   variant={item.has_voted ? 'secondary' : 'outline'}
                 />
               </Stack>

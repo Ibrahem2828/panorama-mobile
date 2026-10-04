@@ -16,6 +16,8 @@ import {
   LoadingState,
   Stack,
 } from '../../../components';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
+import { formatTime } from '../../../utils/formatDateTime';
 import {
   GroupsRoutes,
   PrintingRoutes,
@@ -46,60 +48,25 @@ type HomeNavigation = CompositeNavigationProp<
   BottomTabNavigationProp<AppTabsParamList>
 >;
 
-const QUICK_ACTION_MARKERS: Record<HomeQuickActionKey, string> = {
-  subjects: 'م',
-  groups: 'غ',
-  files: 'ف',
-  search: 'ب',
-  printing: 'ط',
-  support: 'د',
-  notifications: 'ن',
-  profile: 'ح',
-};
-
-function getQuickActions(unreadNotificationsCount: number, isStudent: boolean): HomeQuickAction[] {
+function getQuickActions(
+  unreadNotificationsCount: number,
+  isStudent: boolean,
+  t: TranslationCatalog['home']['services'],
+): HomeQuickAction[] {
   const actions: HomeQuickAction[] = [
-    {
-      key: 'subjects',
-      title: 'موادي',
-      description: 'انتقل إلى قائمة المواد الدراسية.',
-    },
-    {
-      key: 'groups',
-      title: 'المجموعات',
-      description: 'تصفح المجموعات والمساحات المرتبطة بالدراسة.',
-    },
-    {
-      key: 'files',
-      title: 'الملفات',
-      description: 'افتح الملفات المتاحة داخل التطبيق.',
-    },
-    {
-      key: 'search',
-      title: 'البحث',
-      description: 'ابحث في المواد والمجموعات والملفات المسموحة لحسابك.',
-    },
-    {
-      key: 'printing',
-      title: 'الطباعة',
-      description: 'اطلب طباعة الملفات ومتابعة الطلبات.',
-    },
-    {
-      key: 'support',
-      title: 'الدعم',
-      description: 'افتح تذاكر الدعم الفني ومتابعتها.',
-    },
+    { key: 'subjects', title: t.subjects, description: t.subjectsDescription },
+    { key: 'groups', title: t.groups, description: t.groupsDescription },
+    { key: 'files', title: t.files, description: t.filesDescription },
+    { key: 'search', title: t.search, description: t.searchDescription },
+    { key: 'printing', title: t.printing, description: t.printingDescription },
+    { key: 'support', title: t.support, description: t.supportDescription },
     {
       key: 'notifications',
-      title: 'الإشعارات',
-      description: 'تابع التنبيهات المهمة داخل حسابك.',
+      title: t.notifications,
+      description: t.notificationsDescription,
       badge: unreadNotificationsCount > 0 ? String(unreadNotificationsCount) : undefined,
     },
-    {
-      key: 'profile',
-      title: 'حسابي',
-      description: 'راجع بيانات الحساب والإعدادات.',
-    },
+    { key: 'profile', title: t.profile, description: t.profileDescription },
   ];
   return isStudent
     ? actions
@@ -107,6 +74,7 @@ function getQuickActions(unreadNotificationsCount: number, isStudent: boolean): 
 }
 
 export function HomeScreen() {
+  const { t, locale } = useTranslation();
   const navigation = useNavigation<HomeNavigation>();
   const user = useAuthStore((state) => state.user);
   const announcements = useHomeStore((state) => state.announcements);
@@ -129,7 +97,7 @@ export function HomeScreen() {
   const verificationStatus = getVerificationStatus(verification);
   const showInitialLoading = isLoading && !lastLoadedAt;
   const showInitialError = Boolean(errorMessage && !lastLoadedAt);
-  const quickActions = getQuickActions(unreadNotificationsCount, isStudent);
+  const quickActions = getQuickActions(unreadNotificationsCount, isStudent, t.home.services);
 
   const mainContentAnim = useRef(createEntranceAnim(8)).current;
   useEffect(() => {
@@ -182,13 +150,13 @@ export function HomeScreen() {
   if (showInitialLoading) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="لوحة الطالب" title="الرئيسية" />
+        <AppHeader subtitle={t.home.subtitle} title={t.home.title} />
         <HomeGreetingCard
           displayName={displayName}
           unreadNotificationsCount={unreadNotificationsCount}
           userRole={user?.role}
         />
-        <LoadingState message="جاري تحميل الصفحة الرئيسية..." />
+        <LoadingState message={t.home.loading} />
       </AppScreen>
     );
   }
@@ -196,7 +164,7 @@ export function HomeScreen() {
   if (showInitialError) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle="لوحة الطالب" title="الرئيسية" />
+        <AppHeader subtitle={t.home.subtitle} title={t.home.title} />
         <HomeGreetingCard
           displayName={displayName}
           unreadNotificationsCount={unreadNotificationsCount}
@@ -210,7 +178,7 @@ export function HomeScreen() {
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="لوحة الطالب" title="الرئيسية" />
+        <AppHeader subtitle={t.home.subtitle} title={t.home.title} />
 
         <HomeGreetingCard
           displayName={displayName}
@@ -243,12 +211,12 @@ export function HomeScreen() {
                   loading={isRefreshing}
                   onPress={handleRefresh}
                   size="sm"
-                  title="تحديث"
+                  title={t.common.refresh}
                   variant="outline"
                 />
               }
-              subtitle="آخر الإعلانات المرتبطة بحسابك."
-              title="الإعلانات"
+              subtitle={t.home.announcements.subtitle}
+              title={t.home.announcements.title}
             />
 
             {errorMessage ? (
@@ -259,13 +227,13 @@ export function HomeScreen() {
                   <AppButton
                     loading={isRefreshing}
                     onPress={handleRefresh}
-                    title="إعادة التحقق"
+                    title={t.common.retryVerify}
                     variant="outline"
                   />
                 }
-                message="ستظهر هنا الإعلانات المهمة عند توفرها."
-                title="لا توجد إعلانات حاليا"
-                illustrationLabel="رسم يوضح عدم وجود إعلانات"
+                message={t.home.announcements.emptyMessage}
+                title={t.home.announcements.emptyTitle}
+                illustrationLabel={t.home.announcements.emptyIllustrationAlt}
                 illustrationSource={images.emptyStates.announcements}
               />
             ) : (
@@ -278,13 +246,13 @@ export function HomeScreen() {
           </Stack>
 
           <Stack gap="md">
-            <HomeSectionHeader subtitle="اختصارات سريعة لأهم خدمات الطالب." title="الخدمات" />
+            <HomeSectionHeader subtitle={t.home.services.subtitle} title={t.home.services.title} />
             <Stack direction="horizontal" gap="md" wrap>
               {quickActions.map((action) => (
                 <HomeQuickActionCard
                   action={action}
                   key={action.key}
-                  marker={QUICK_ACTION_MARKERS[action.key]}
+                  marker={t.home.serviceInitials[action.key]}
                   onPress={action.disabled ? undefined : () => handleQuickActionPress(action.key)}
                 />
               ))}
@@ -294,7 +262,7 @@ export function HomeScreen() {
 
         {lastLoadedAt ? (
           <AppText align="center" color="muted" variant="caption">
-            آخر تحديث: {new Date(lastLoadedAt).toLocaleTimeString('ar-SY')}
+            {t.common.lastUpdatedAt(formatTime(lastLoadedAt, locale) ?? '')}
           </AppText>
         ) : null}
       </Stack>

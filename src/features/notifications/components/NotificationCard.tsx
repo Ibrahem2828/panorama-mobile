@@ -4,7 +4,8 @@ import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
 import { colors, opacity, spacing } from '../../../theme';
 import { createPressScaleAnim } from '../../../utils/motion';
-import { formatRelativeDateAr } from '../../../utils/formatRelativeDateAr';
+import { useTranslation } from '../../../i18n';
+import { formatRelativeDate } from '../../../utils/formatRelativeDate';
 import {
   getNotificationBody,
   getNotificationTarget,
@@ -22,11 +23,16 @@ type NotificationCardProps = {
 };
 
 export function NotificationCard({ notification, onPress }: NotificationCardProps) {
-  const title = getNotificationTitle(notification);
+  const { t, locale } = useTranslation();
+  const title = getNotificationTitle(notification, t.notifications);
   const body = getNotificationBody(notification);
   const unread = isNotificationUnread(notification);
   const target = getNotificationTarget(notification);
-  const date = formatRelativeDateAr(notification.created_at ?? notification.updated_at);
+  const date = formatRelativeDate(
+    notification.created_at ?? notification.updated_at,
+    t.relativeTime,
+    locale,
+  );
 
   const { scale, onPressIn, onPressOut } = useRef(createPressScaleAnim()).current;
 
@@ -58,7 +64,7 @@ export function NotificationCard({ notification, onPress }: NotificationCardProp
                   </AppText>
                 ) : (
                   <AppText color="muted" variant="bodySmall">
-                    لا توجد تفاصيل إضافية لهذا الإشعار.
+                    {t.notifications.noDetails}
                   </AppText>
                 )}
               </Stack>
@@ -67,13 +73,13 @@ export function NotificationCard({ notification, onPress }: NotificationCardProp
 
             <Stack direction="horizontal" gap="sm" wrap>
               <AppBadge
-                label={unread ? 'غير مقروء' : 'مقروء'}
+                label={unread ? t.notifications.unread : t.notifications.read}
                 variant={unread ? 'warning' : 'neutral'}
               />
               {date ? <AppBadge label={date} variant="info" /> : null}
             </Stack>
 
-            <NotificationMetaRow label="الوجهة" value={target.targetType} />
+            <NotificationMetaRow label={t.notifications.targetLabel} value={target.targetType} />
           </Stack>
         </AppCard>
       </Animated.View>

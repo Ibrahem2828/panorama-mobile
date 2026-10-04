@@ -1,46 +1,29 @@
 import { StyleSheet, View } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { colors, spacing } from '../../../theme';
+import { formatDate } from '../../../utils/formatDateTime';
 import type { Announcement } from '../types';
 
 type AnnouncementCardProps = {
   announcement: Announcement;
 };
 
-function getAnnouncementTitle(announcement: Announcement): string {
-  return announcement.title?.trim() || 'إعلان';
+function getAnnouncementTitle(announcement: Announcement, fallback: string): string {
+  return announcement.title?.trim() || fallback;
 }
 
-function getAnnouncementBody(announcement: Announcement): string {
-  return (
-    announcement.description?.trim() ||
-    announcement.body?.trim() ||
-    'لا توجد تفاصيل إضافية لهذا الإعلان.'
-  );
-}
-
-function formatAnnouncementDate(value?: string): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return date.toLocaleDateString('ar-SY', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
+function getAnnouncementBody(announcement: Announcement, noDetails: string): string {
+  return announcement.description?.trim() || announcement.body?.trim() || noDetails;
 }
 
 export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
-  const dateText = formatAnnouncementDate(
+  const { t, locale } = useTranslation();
+  const dateText = formatDate(
     announcement.start_date ?? announcement.created_at ?? announcement.updated_at,
+    locale,
+    { day: 'numeric', month: 'short', year: 'numeric' },
   );
 
   return (
@@ -48,13 +31,13 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
       <Stack gap="md">
         <View style={styles.header}>
           <AppText style={styles.title} variant="title">
-            {getAnnouncementTitle(announcement)}
+            {getAnnouncementTitle(announcement, t.home.announcements.untitled)}
           </AppText>
           {announcement.type ? <AppBadge label={announcement.type} variant="info" /> : null}
         </View>
 
         <AppText color="secondary" variant="bodySmall">
-          {getAnnouncementBody(announcement)}
+          {getAnnouncementBody(announcement, t.home.announcements.noDetails)}
         </AppText>
 
         {dateText ? (

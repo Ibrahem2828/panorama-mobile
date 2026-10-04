@@ -3,6 +3,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet } from 'react-native';
 
 import { AppButton, AppScreen, AppText, AppTextInput, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -18,6 +19,7 @@ import {
 type Props = NativeStackScreenProps<PublicStackParamList, 'RegisterStudent'>;
 
 export function RegisterStudentScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -31,12 +33,12 @@ export function RegisterStudentScreen({ navigation }: Props) {
     const name = fullName.trim();
     const mail = email.trim().toLowerCase();
     const phone = normalizePhoneNumber(phoneNumber);
-    const passwordError = validatePasswordPair(password, passwordConfirm);
-    if (!name) return setErrorMessage('يرجى إدخال الاسم الكامل.');
-    if (!isValidEmail(mail)) return setErrorMessage('يرجى إدخال بريد إلكتروني صالح.');
-    const phoneError = validatePhoneNumber(phone);
+    const passwordError = validatePasswordPair(password, passwordConfirm, t.auth.validation);
+    if (!name) return setErrorMessage(t.auth.validation.fullNameRequired);
+    if (!isValidEmail(mail)) return setErrorMessage(t.auth.validation.emailInvalid);
+    const phoneError = validatePhoneNumber(phone, t.auth.validation);
     if (phoneError) return setErrorMessage(phoneError);
-    if (!studentNumber.trim()) return setErrorMessage('يرجى إدخال الرقم الجامعي.');
+    if (!studentNumber.trim()) return setErrorMessage(t.auth.validation.studentNumberRequired);
     if (passwordError) return setErrorMessage(passwordError);
 
     setIsSubmitting(true);
@@ -57,7 +59,7 @@ export function RegisterStudentScreen({ navigation }: Props) {
         source: 'student_register',
       });
     } catch (error) {
-      setErrorMessage(toSafeRegistrationErrorMessage(error));
+      setErrorMessage(toSafeRegistrationErrorMessage(error, t.auth.errors));
     } finally {
       setIsSubmitting(false);
     }
@@ -71,19 +73,19 @@ export function RegisterStudentScreen({ navigation }: Props) {
       >
         <Stack gap="lg">
           <Stack gap="xs">
-            <AppText variant="h1">إنشاء حساب طالب</AppText>
+            <AppText variant="h1">{t.auth.registerStudent.title}</AppText>
             <AppText color="secondary" variant="body">
-              سيصل رمز التحقق إلى البريد الإلكتروني.
+              {t.auth.registerStudent.subtitle}
             </AppText>
           </Stack>
           <AuthFormCard
-            subtitle="بعد التحقق ستكمل بياناتك الأكاديمية وترفع البطاقة الجامعية."
-            title="بيانات الحساب"
+            subtitle={t.auth.registerStudent.cardSubtitle}
+            title={t.auth.registerStudent.cardTitle}
           >
             <Stack gap="md">
               <AppTextInput
                 disabled={isSubmitting}
-                label="الاسم الكامل"
+                label={t.auth.fields.fullName}
                 onChangeText={setFullName}
                 value={fullName}
               />
@@ -91,27 +93,27 @@ export function RegisterStudentScreen({ navigation }: Props) {
                 autoCapitalize="none"
                 disabled={isSubmitting}
                 keyboardType="email-address"
-                label="البريد الإلكتروني"
+                label={t.auth.fields.email}
                 onChangeText={setEmail}
                 value={email}
               />
               <PhoneInputWithCountryCode
                 disabled={isSubmitting}
-                label="رقم الهاتف"
+                label={t.auth.fields.phone}
                 onChangeText={setPhoneNumber}
                 value={phoneNumber}
               />
               <AppTextInput
                 disabled={isSubmitting}
                 keyboardType="number-pad"
-                label="الرقم الجامعي"
+                label={t.auth.fields.studentNumber}
                 onChangeText={setStudentNumber}
                 value={studentNumber}
               />
               <PasswordInput disabled={isSubmitting} onChangeText={setPassword} value={password} />
               <AppTextInput
                 disabled={isSubmitting}
-                label="تأكيد كلمة المرور"
+                label={t.auth.fields.passwordConfirm}
                 onChangeText={setPasswordConfirm}
                 secureTextEntry
                 value={passwordConfirm}
@@ -126,13 +128,13 @@ export function RegisterStudentScreen({ navigation }: Props) {
                 fullWidth
                 loading={isSubmitting}
                 onPress={() => void handleSubmit()}
-                title="إنشاء الحساب"
+                title={t.auth.registerStudent.submit}
               />
             </Stack>
           </AuthFormCard>
           <Pressable onPress={() => navigation.navigate(PublicRoutes.Login)}>
             <AppText align="center" color="brand">
-              لديك حساب؟ تسجيل الدخول
+              {t.auth.registerStudent.haveAccount}
             </AppText>
           </Pressable>
         </Stack>

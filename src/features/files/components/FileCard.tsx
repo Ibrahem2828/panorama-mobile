@@ -1,6 +1,8 @@
 import { Pressable, StyleSheet } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
+import { formatDate } from '../../../utils/formatDateTime';
 import { opacity } from '../../../theme';
 import {
   formatFileSize,
@@ -22,22 +24,9 @@ type FileCardProps = {
   onPress?: () => void;
 };
 
-function formatDate(value: string | null): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return date.toLocaleDateString('ar-SY');
-}
-
 export function FileCard({ file, onPress }: FileCardProps) {
-  const title = getFileDisplayTitle(file);
+  const { t, locale } = useTranslation();
+  const title = getFileDisplayTitle(file, t.files);
   const description = getFileDescription(file);
   const extension = getFileExtension(file);
   const viewerType = getFileViewerType(file);
@@ -45,11 +34,13 @@ export function FileCard({ file, onPress }: FileCardProps) {
   const subjectLabel = getEntityLabel(file.subject);
   const groupLabel = getEntityLabel(file.group);
   const contextLabel = subjectLabel ?? groupLabel;
-  const visibilityLabel = getVisibilityLabel(file.visibility);
-  const sizeLabel = formatFileSize(getFileSize(file));
-  const updatedAt = formatDate(getFileUpdatedAt(file));
+  const visibilityLabel = getVisibilityLabel(file.visibility, t.files);
+  const sizeLabel = formatFileSize(getFileSize(file), t.files);
+  const updatedAt = formatDate(getFileUpdatedAt(file), locale);
   const dateLabel = updatedAt
-    ? `${file.updated_at ? 'آخر تحديث' : 'تاريخ الإنشاء'}: ${updatedAt}`
+    ? file.updated_at
+      ? t.files.card.updatedAt(updatedAt)
+      : t.files.card.createdAt(updatedAt)
     : null;
 
   return (

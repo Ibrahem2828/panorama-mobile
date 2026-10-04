@@ -4,89 +4,99 @@ import { StyleSheet } from 'react-native';
 
 import { AppHeader, AppScreen, AppText, Stack } from '../../../components';
 import { env } from '../../../config/env';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { ProfileRoutes } from '../../../navigation/routes';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
-import { SettingsOptionRow, SettingsSection } from '../components';
+import { LanguageSelector, SettingsOptionRow, SettingsSection } from '../components';
 
 type SettingsScreenProps = NativeStackScreenProps<ProfileStackParamList, 'Settings'>;
 
 const APP_VERSION = Constants.expoConfig?.version ?? '0.1.0';
 
-function getEnvironmentLabel(): string {
+function getEnvironmentLabel(t: TranslationCatalog): string {
   switch (env.appEnv) {
     case 'production':
-      return 'إنتاج';
+      return t.environment.production;
     case 'preview':
-      return 'معاينة';
+      return t.environment.preview;
     default:
-      return 'تطوير';
+      return t.environment.development;
   }
 }
 
 export function SettingsScreen({ navigation }: SettingsScreenProps) {
+  const { t } = useTranslation();
+  const environmentLabel = getEnvironmentLabel(t);
+
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
-        <AppHeader subtitle="إعدادات الحساب والتطبيق" title="الإعدادات" />
+        <AppHeader subtitle={t.settings.subtitle} title={t.settings.title} />
 
-        <SettingsSection subtitle="إجراءات الأمان الخاصة بالحساب الحالي" title="الحساب والأمان">
+        <SettingsSection subtitle={t.settings.account.subtitle} title={t.settings.account.title}>
           <SettingsOptionRow
-            description="تحديث كلمة المرور من خلال الخادم"
+            description={t.settings.account.changePasswordDescription}
             onPress={() => navigation.navigate(ProfileRoutes.ChangePassword)}
-            title="تغيير كلمة المرور"
+            title={t.settings.account.changePassword}
+          />
+          <SettingsOptionRow
+            description={t.settings.account.deleteAccountDescription}
+            onPress={() => navigation.navigate(ProfileRoutes.DeleteAccount)}
+            title={t.settings.account.deleteAccount}
           />
         </SettingsSection>
 
-        <SettingsSection subtitle="إعدادات التطبيق المتاحة في MVP" title="التطبيق">
+        <SettingsSection
+          subtitle={t.settings.language.description}
+          title={t.settings.language.title}
+        >
+          <LanguageSelector />
+        </SettingsSection>
+
+        <SettingsSection subtitle={t.settings.app.subtitle} title={t.settings.app.title}>
           <SettingsOptionRow
-            description="فتح مركز الإشعارات داخل التطبيق"
+            description={t.settings.app.notificationsDescription}
             onPress={() => navigation.navigate(ProfileRoutes.Notifications)}
-            title="الإشعارات"
+            title={t.settings.app.notifications}
           />
           <SettingsOptionRow
-            description="سيتم دعم الوضع الليلي لاحقا عند توفر نطاقه"
+            description={t.settings.app.darkModeDescription}
             disabled
-            title="الوضع الليلي"
-            value="لاحقا"
+            title={t.settings.app.darkMode}
+            value={t.common.comingSoon}
           />
           <SettingsOptionRow
-            description="التطبيق عربي وRTL في هذه النسخة"
+            description={t.settings.app.versionDescription}
             disabled
-            title="اللغة"
-            value="العربية"
-          />
-          <SettingsOptionRow
-            description="رقم إصدار التطبيق الحالي"
-            disabled
-            title="إصدار التطبيق"
+            title={t.settings.app.version}
             value={APP_VERSION}
           />
           <SettingsOptionRow
-            description="بيئة التشغيل الحالية"
+            description={t.settings.app.environmentDescription}
             disabled
-            title="بيئة التشغيل"
-            value={getEnvironmentLabel()}
+            title={t.settings.app.environment}
+            value={environmentLabel}
           />
         </SettingsSection>
 
-        <SettingsSection subtitle="معلومات قانونية ثابتة لهذه النسخة" title="قانوني">
+        <SettingsSection subtitle={t.settings.legal.subtitle} title={t.settings.legal.title}>
           <SettingsOptionRow
             onPress={() => navigation.navigate(ProfileRoutes.PrivacyPolicy)}
-            title="سياسة الخصوصية"
+            title={t.settings.legal.privacy}
           />
           <SettingsOptionRow
             onPress={() => navigation.navigate(ProfileRoutes.Terms)}
-            title="الشروط والأحكام"
+            title={t.settings.legal.terms}
           />
           <SettingsOptionRow
             onPress={() => navigation.navigate(ProfileRoutes.About)}
-            title="عن بانوراما"
+            title={t.settings.legal.about}
           />
         </SettingsSection>
 
         <AppText align="center" color="muted" variant="caption">
-          Panorama Mobile · {APP_VERSION} · {getEnvironmentLabel()}
+          {t.appName} · {APP_VERSION} · {environmentLabel}
         </AppText>
       </Stack>
     </AppScreen>
