@@ -1,6 +1,7 @@
 import {
   groupsService as apiGroupsService,
   normalizeApiError,
+  runIdempotentAction,
   type EmptyResponse,
   type GroupJoinResult as ApiGroupJoinResult,
   type GroupRecord,
@@ -177,7 +178,11 @@ export async function loadGroupDetail(groupId: Id, authToken: string): Promise<G
 }
 
 export async function requestJoinGroup(groupId: Id, authToken: string): Promise<GroupJoinResult> {
-  const response: ApiGroupJoinResult = await apiGroupsService.joinGroup(groupId, authToken);
+  const response: ApiGroupJoinResult = await runIdempotentAction(
+    `group:join:${String(groupId)}`,
+    { groupId },
+    (idempotencyKey) => apiGroupsService.joinGroup(groupId, authToken, idempotencyKey),
+  );
   const maybeGroup = response.group;
 
   return {

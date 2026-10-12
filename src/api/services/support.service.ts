@@ -11,11 +11,12 @@ import type { PaginatedResult } from '../pagination';
 export function createSupportTicket(
   input: CreateSupportTicketRequest,
   authToken: string,
+  idempotencyKey?: string,
 ): Promise<SupportTicket> {
   return apiClient.post<SupportTicket, CreateSupportTicketRequest>(
     endpoints.support.createTicket,
     input,
-    { authToken },
+    { authToken, idempotencyKey },
   );
 }
 
@@ -38,10 +39,11 @@ export function addSupportTicketMessage(
   ticketId: string | number,
   input: AddSupportTicketMessageRequest,
   authToken: string,
+  idempotencyKey?: string,
 ): Promise<SupportTicketMessage | unknown> {
   return apiClient.post<SupportTicketMessage | unknown, AddSupportTicketMessageRequest>(
     endpoints.support.addMessage(ticketId),
     input,
-    { authToken },
+    { authToken, idempotencyKey },
   );
 }

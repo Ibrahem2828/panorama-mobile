@@ -1,6 +1,7 @@
 import {
   normalizeApiError,
   printingService as api,
+  runIdempotentAction,
   type CreatePrintOrderRequest,
   type PaginatedResult,
   type PrintOrder as ApiPrintOrder,
@@ -172,7 +173,11 @@ export async function loadPickupLocations(token: string): Promise<PrintPickupLoc
   return api.listPickupLocations(token) as Promise<PrintPickupLocation[]>;
 }
 export async function createPrintOrder(request: CreatePrintOrderRequest, token: string) {
-  return normalizeOrder(await api.createPrintOrder(request, token));
+  // One key per "place this order" action: a retry of the same order re-uses it, so the
+  // backend returns the original order instead of creating a duplicate.
+  return runIdempotentAction('print-order:create', request, async (idempotencyKey) =>
+    normalizeOrder(await api.createPrintOrder(request, token, idempotencyKey)),
+  );
 }
 export async function loadMyPrintOrders(token: string): Promise<PaginatedResult<PrintOrder>> {
   const response = await api.listMyPrintOrders(token);

@@ -3,7 +3,13 @@ import * as Application from 'expo-application';
 import * as Device from 'expo-device';
 import { getLocales } from 'expo-localization';
 
-import { apiClient, endpoints, normalizeApiError, type PaginatedResult } from '../../../api';
+import {
+  apiClient,
+  endpoints,
+  normalizeApiError,
+  runIdempotentAction,
+  type PaginatedResult,
+} from '../../../api';
 import type {
   FeedbackPromptEligibility,
   FeedbackPromptRequest,
@@ -75,10 +81,13 @@ export async function submitFeedback(
   >,
   authToken: string,
 ): Promise<FeedbackRecord> {
-  return apiClient.post<FeedbackRecord, FeedbackSubmitPayload>(
-    endpoints.feedback.submit,
-    { ...input, ...appMetadata() },
-    { authToken },
+  const payload = { ...input, ...appMetadata() };
+
+  return runIdempotentAction('feedback:submit', payload, (idempotencyKey) =>
+    apiClient.post<FeedbackRecord, FeedbackSubmitPayload>(endpoints.feedback.submit, payload, {
+      authToken,
+      idempotencyKey,
+    }),
   );
 }
 
