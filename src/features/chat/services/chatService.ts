@@ -1,6 +1,7 @@
 import {
   groupsService as apiGroupsService,
   normalizeApiError,
+  runIdempotentAction,
   type GroupMessage as ApiGroupMessage,
   type PaginatedResult,
 } from '../../../api';
@@ -62,13 +63,22 @@ function normalizeSender(value: unknown): Id | ChatMessageSender | null {
   };
 }
 
+/**
+ * Message identity is the SERVER id. A payload without one is not a persisted message, so
+ * it is rejected instead of being given an invented id that could never be de-duplicated.
+ */
 function normalizeMessage(
   message: ApiGroupMessage | ChatMessage | Record<string, unknown>,
-  fallbackId: Id,
-): ChatMessage {
+): ChatMessage | null {
+  const id = toId(message.id);
+
+  if (id === null) {
+    return null;
+  }
+
   return {
     ...message,
-    id: toId(message.id) ?? fallbackId,
+    id,
     group: toId(message.group) ?? (isRecord(message.group) ? message.group : null),
     sender: normalizeSender(message.sender),
     sender_name: toText(message.sender_name),
@@ -82,15 +92,12 @@ function normalizeMessage(
   };
 }
 
-function normalizeList(
-  response: PaginatedResult<ApiGroupMessage>,
-  groupId: Id,
-): PaginatedResult<ChatMessage> {
+function normalizeList(response: PaginatedResult<ApiGroupMessage>): PaginatedResult<ChatMessage> {
   return {
     ...response,
-    results: response.results.map((message, index) =>
-      normalizeMessage(message, `${String(groupId)}-${index}`),
-    ),
+    results: response.results
+      .map((message) => normalizeMessage(message))
+      .filter((message): message is ChatMessage => message !== null),
   };
 }
 
@@ -106,12 +113,29 @@ function isAdminRole(role?: string | null): boolean {
   return Boolean(role && ADMIN_ROLES.has(role));
 }
 
+function timeOf(message: ChatMessage): number {
+  const time = message.created_at ? new Date(message.created_at).getTime() : Number.NaN;
+
+  return Number.isNaN(time) ? 0 : time;
+}
+
+/** Oldest first by created_at; the server id breaks ties so the order is stable. */
 function sortMessages(messages: ChatMessage[]): ChatMessage[] {
   return [...messages].sort((left, right) => {
-    const leftTime = left.created_at ? new Date(left.created_at).getTime() : 0;
-    const rightTime = right.created_at ? new Date(right.created_at).getTime() : 0;
+    const byTime = timeOf(left) - timeOf(right);
 
-    return leftTime - rightTime;
+    if (byTime !== 0) {
+      return byTime;
+    }
+
+    const leftId = Number(left.id);
+    const rightId = Number(right.id);
+
+    if (!Number.isNaN(leftId) && !Number.isNaN(rightId)) {
+      return leftId - rightId;
+    }
+
+    return String(left.id).localeCompare(String(right.id));
   });
 }
 
@@ -260,22 +284,38 @@ export async function loadGroupChatMessages(
   groupId: Id,
   authToken: string,
 ): Promise<PaginatedResult<ChatMessage>> {
-  return normalizeList(await apiGroupsService.listGroupMessages(groupId, authToken), groupId);
+  return normalizeList(await apiGroupsService.listGroupMessages(groupId, authToken));
 }
 
+/** Requests a fresh single-use WebSocket ticket for the group chat. */
+export async function requestChatSocketTicket(groupId: Id, authToken: string): Promise<string> {
+  const response = await apiGroupsService.requestGroupChatTicket(groupId, authToken);
+
+  if (typeof response?.ticket !== 'string' || !response.ticket) {
+    throw new Error('Invalid chat ticket response');
+  }
+
+  return response.ticket;
+}
+
+/**
+ * Sends over REST. Resolves with the persisted message (carrying its server id), or `null`
+ * when the response had none; the caller then refreshes instead of inventing an id.
+ */
 export async function sendGroupChatMessage(
   groupId: Id,
   input: SendChatMessageInput,
   authToken: string,
-): Promise<ChatMessage> {
-  const response = await apiGroupsService.sendGroupMessage(
-    groupId,
-    {
-      type: 'message',
-      content: input.message,
-    },
-    authToken,
+): Promise<ChatMessage | null> {
+  const payload = { type: 'message' as const, content: input.message };
+  // One key per "send this message" action: re-sending the same text after a timeout
+  // re-uses it so a message that did reach the server is not posted twice.
+  const response = await runIdempotentAction(
+    `chat:send:${String(groupId)}`,
+    payload,
+    (idempotencyKey) =>
+      apiGroupsService.sendGroupMessage(groupId, payload, authToken, idempotencyKey),
   );
 
-  return normalizeMessage(response, `${String(groupId)}-${Date.now()}`);
+  return normalizeMessage(response);
 }

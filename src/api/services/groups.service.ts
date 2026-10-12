@@ -3,6 +3,7 @@ import { endpoints } from '../endpoints';
 import type {
   ApiListParams,
   EmptyResponse,
+  GroupChatTicket,
   GroupJoinResult,
   GroupMessage,
   GroupRecord,
@@ -38,11 +39,15 @@ export function getGroupDetail(groupId: string | number, authToken: string): Pro
   });
 }
 
-export function joinGroup(groupId: string | number, authToken: string): Promise<GroupJoinResult> {
+export function joinGroup(
+  groupId: string | number,
+  authToken: string,
+  idempotencyKey?: string,
+): Promise<GroupJoinResult> {
   return apiClient.post<GroupJoinResult, EmptyResponse>(
     endpoints.groups.join(groupId),
     {},
-    { authToken },
+    { authToken, idempotencyKey },
   );
 }
 
@@ -67,10 +72,26 @@ export function sendGroupMessage(
   groupId: string | number,
   input: SendGroupMessageRequest,
   authToken: string,
+  idempotencyKey?: string,
 ): Promise<GroupMessage> {
   return apiClient.post<GroupMessage, SendGroupMessageRequest>(
     endpoints.groups.messages(groupId),
     input,
+    { authToken, idempotencyKey },
+  );
+}
+
+/**
+ * Issues a one-time WebSocket handshake ticket. Tickets cannot be replayed, so every
+ * (re)connect must request a fresh one.
+ */
+export function requestGroupChatTicket(
+  groupId: string | number,
+  authToken: string,
+): Promise<GroupChatTicket> {
+  return apiClient.post<GroupChatTicket, EmptyResponse>(
+    endpoints.groups.chatTicket(groupId),
+    {},
     { authToken },
   );
 }

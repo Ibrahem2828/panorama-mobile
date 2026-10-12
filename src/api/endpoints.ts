@@ -50,6 +50,7 @@ export const endpoints = {
     leave: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/leave/`,
     files: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/files/`,
     messages: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/messages/`,
+    chatTicket: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/chat-ticket/`,
     whatsappTicket: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/whatsapp-ticket/`,
   },
   files: {
