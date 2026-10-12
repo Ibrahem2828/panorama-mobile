@@ -2,6 +2,8 @@ import { logger } from '../utils/logger';
 import { getApiAuthBridge, refreshAccessTokenOnce, shouldAttemptAuthRefresh } from './authBridge';
 import { ACCEPT_JSON, DEFAULT_REQUEST_TIMEOUT_MS, type HttpHeaders } from './http';
 import { ApiClientError, createApiError, normalizeApiError, normalizeHttpError } from './errors';
+import { IDEMPOTENCY_IN_PROGRESS_DELAYS_MS } from './idempotency';
+import { reportLifecycleError } from './lifecycleBridge';
 import type { ApiRequestOptions } from './request';
 import { buildDefaultApiUrl, buildRequestHeaders } from './request';
 import { isApiResponseEnvelope, isApiSuccess } from './response';
@@ -104,6 +106,7 @@ async function executeRequest<TData, TBody = unknown>(
     authToken: options.authToken,
     hasJsonBody: hasBody,
     hasFormDataBody,
+    idempotencyKey: options.idempotencyKey,
   });
   const url = buildDefaultApiUrl(options);
 
@@ -143,6 +146,7 @@ async function executeRequest<TData, TBody = unknown>(
     const normalizedError = normalizeApiError(error);
 
     logRequestFailure(normalizedError, method, options.path);
+    reportLifecycleError(normalizedError);
 
     throw new ApiClientError(normalizedError);
   } finally {
@@ -150,11 +154,42 @@ async function executeRequest<TData, TBody = unknown>(
   }
 }
 
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * A 409 IDEMPOTENCY_IN_PROGRESS means the first attempt with this key is still running on
+ * the server. Re-sending the SAME key a few times lets the server replay the stored
+ * result once that attempt finishes, instead of surfacing a spurious failure.
+ */
+async function executeWithIdempotencyWait<TData, TBody = unknown>(
+  options: InternalRequestOptions<TBody>,
+): Promise<TData> {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await executeRequest<TData, TBody>(options);
+    } catch (error) {
+      const waitMs = IDEMPOTENCY_IN_PROGRESS_DELAYS_MS[attempt];
+
+      if (
+        !options.idempotencyKey ||
+        normalizeApiError(error).code !== 'IDEMPOTENCY_IN_PROGRESS' ||
+        waitMs === undefined
+      ) {
+        throw error;
+      }
+
+      await delay(waitMs);
+    }
+  }
+}
+
 async function requestWithAuthRetry<TData, TBody = unknown>(
   options: InternalRequestOptions<TBody>,
 ): Promise<TData> {
   try {
-    return await executeRequest<TData, TBody>(options);
+    return await executeWithIdempotencyWait<TData, TBody>(options);
   } catch (error) {
     const normalizedError = normalizeApiError(error);
 
@@ -172,14 +207,24 @@ async function requestWithAuthRetry<TData, TBody = unknown>(
       throw error instanceof ApiClientError ? error : new ApiClientError(normalizedError);
     }
 
-    const refreshedToken = await refreshAccessTokenOnce();
+    let refreshedToken: string | null;
+
+    try {
+      refreshedToken = await refreshAccessTokenOnce();
+    } catch (refreshError) {
+      // Transient refresh failure (network, timeout, 5xx, 429): the session is NOT
+      // expired. Surface the failure to the caller and keep the user signed in.
+      throw refreshError instanceof ApiClientError
+        ? refreshError
+        : new ApiClientError(normalizeApiError(refreshError));
+    }
 
     if (!refreshedToken) {
       await bridge.onSessionExpired();
       throw new ApiClientError(normalizedError);
     }
 
-    return executeRequest<TData, TBody>({
+    return executeWithIdempotencyWait<TData, TBody>({
       ...options,
       authToken: refreshedToken,
       _retried: true,
@@ -192,7 +237,7 @@ async function request<TData, TBody = unknown>(options: ApiRequestOptions<TBody>
     return requestWithAuthRetry<TData, TBody>(options);
   }
 
-  return executeRequest<TData, TBody>(options);
+  return executeWithIdempotencyWait<TData, TBody>(options);
 }
 
 export const apiClient = {

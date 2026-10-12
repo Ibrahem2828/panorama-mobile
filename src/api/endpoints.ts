@@ -3,6 +3,8 @@ type EndpointId = string | number;
 
 export const endpoints = {
   health: `${API_PREFIX}/health/`,
+  // Public and exempt from the maintenance/version gate, so it can report the gate state.
+  mobileBootstrap: `${API_PREFIX}/mobile/bootstrap/`,
   auth: {
     login: `${API_PREFIX}/auth/login/`,
     registerStudent: `${API_PREFIX}/auth/register/student/`,
