@@ -1,4 +1,5 @@
-export { LifecycleGate, resolveStoreUrl } from './components/LifecycleGate';
+export { LifecycleGate } from './components/LifecycleGate';
+export { resolveStoreUrl } from './utils/storeUrl';
 export {
   connectLifecycleBridge,
   getMaintenancePollIntervalMs,

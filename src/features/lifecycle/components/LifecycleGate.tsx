@@ -1,33 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import NetInfo from '@react-native-community/netinfo';
-import { AppState, Linking, Modal, Platform, StyleSheet, View } from 'react-native';
+import { AppState, Linking, Modal, StyleSheet, View } from 'react-native';
 
 import { AppButton, AppText } from '../../../components/common';
 import { AppScreen } from '../../../components/layout';
-import { fallbackStoreUrls } from '../../../constants/app';
 import { useLocaleStore } from '../../../i18n';
 import { colors, spacing } from '../../../theme';
-import {
-  getMaintenancePollIntervalMs,
-  useLifecycleStore,
-  type UpdateRequiredInfo,
-} from '../store/lifecycleStore';
+import { getMaintenancePollIntervalMs, useLifecycleStore } from '../store/lifecycleStore';
+import { resolveStoreUrl } from '../utils/storeUrl';
 
 const noop = () => undefined;
-
-/** Only https store listings (or the Play `market:` scheme) are ever opened. */
-export function resolveStoreUrl(
-  info: UpdateRequiredInfo | null,
-  platform: string = Platform.OS,
-): string {
-  const candidate = info?.storeUrl ?? '';
-
-  if (/^https:\/\//iu.test(candidate) || /^market:\/\//iu.test(candidate)) {
-    return candidate;
-  }
-
-  return platform === 'ios' ? fallbackStoreUrls.ios : fallbackStoreUrls.android;
-}
 
 function useMaintenanceRecovery(isActive: boolean, intervalMs: number) {
   const recheck = useLifecycleStore((state) => state.recheck);
