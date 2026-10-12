@@ -10,6 +10,11 @@ export type ApiErrorCode =
   | 'VALIDATION_ERROR'
   | 'SERVER_ERROR'
   | 'RATE_LIMITED'
+  | 'CONFLICT'
+  | 'MAINTENANCE_MODE'
+  | 'APP_UPDATE_REQUIRED'
+  | 'IDEMPOTENCY_KEY_REUSED'
+  | 'IDEMPOTENCY_IN_PROGRESS'
   | 'UNKNOWN_ERROR';
 
 export type FieldErrors = Record<string, string[]>;
@@ -23,6 +28,8 @@ export type NormalizedApiError = {
   fieldErrors?: FieldErrors;
   errorCode?: string;
   retryAfterSeconds?: number;
+  /** Structured payload of lifecycle errors (maintenance window, store link, ...). */
+  details?: Record<string, unknown>;
   raw?: unknown;
 };
 
@@ -44,6 +51,11 @@ function defaultMessageFor(code: ApiErrorCode): string {
     VALIDATION_ERROR: t.validation,
     SERVER_ERROR: t.server,
     RATE_LIMITED: t.rateLimited,
+    CONFLICT: t.conflict,
+    MAINTENANCE_MODE: t.maintenance,
+    APP_UPDATE_REQUIRED: t.updateRequired,
+    IDEMPOTENCY_KEY_REUSED: t.idempotencyKeyReused,
+    IDEMPOTENCY_IN_PROGRESS: t.idempotencyInProgress,
     UNKNOWN_ERROR: t.unknown,
   };
   return messages[code];
@@ -57,6 +69,7 @@ export class ApiClientError extends Error implements NormalizedApiError {
   fieldErrors?: FieldErrors;
   errorCode?: string;
   retryAfterSeconds?: number;
+  details?: Record<string, unknown>;
   raw?: unknown;
 
   constructor(error: NormalizedApiError) {
@@ -69,6 +82,7 @@ export class ApiClientError extends Error implements NormalizedApiError {
     this.fieldErrors = error.fieldErrors;
     this.errorCode = error.errorCode;
     this.retryAfterSeconds = error.retryAfterSeconds;
+    this.details = error.details;
     this.raw = error.raw;
   }
 }
@@ -107,11 +121,42 @@ function extractErrorCode(responseBody: unknown): string | undefined {
   if (data && typeof data.error_code === 'string') {
     return data.error_code;
   }
+  // The backend envelope carries its machine-readable code at the top level.
+  if (typeof responseBody.code === 'string' && responseBody.code.trim()) {
+    return responseBody.code.trim();
+  }
   return undefined;
+}
+
+function extractDetails(responseBody: unknown): Record<string, unknown> | undefined {
+  if (!isRecord(responseBody) || !isRecord(responseBody.errors)) return undefined;
+  return responseBody.errors;
+}
+
+/**
+ * Maps the status plus the backend `code` onto a typed code. Lifecycle and idempotency
+ * errors are only recognised on their documented status, so an unrelated 503 or 409 keeps
+ * its generic classification.
+ */
+function codeFromStatusAndBackendCode(
+  status: number | undefined,
+  backendCode?: string,
+): ApiErrorCode {
+  if (status === 503 && backendCode === 'MAINTENANCE_MODE') return 'MAINTENANCE_MODE';
+  if (status === 426 && backendCode === 'APP_UPDATE_REQUIRED') return 'APP_UPDATE_REQUIRED';
+  if (status === 409) {
+    if (backendCode === 'IDEMPOTENCY_KEY_REUSED') return 'IDEMPOTENCY_KEY_REUSED';
+    if (backendCode === 'IDEMPOTENCY_IN_PROGRESS') return 'IDEMPOTENCY_IN_PROGRESS';
+    return 'CONFLICT';
+  }
+  return codeFromStatus(status);
 }
 
 function extractRetryAfter(responseBody: unknown): number | undefined {
   if (!isRecord(responseBody)) return undefined;
+  if (typeof responseBody.retry_after_seconds === 'number') {
+    return responseBody.retry_after_seconds;
+  }
   const data = isRecord(responseBody.data) ? responseBody.data : undefined;
   if (data && typeof data.retry_after_seconds === 'number') {
     return data.retry_after_seconds;
@@ -187,6 +232,7 @@ export function createApiError(input: {
   fieldErrors?: FieldErrors;
   errorCode?: string;
   retryAfterSeconds?: number;
+  details?: Record<string, unknown>;
   raw?: unknown;
 }): ApiClientError {
   const code = input.code ?? codeFromStatus(input.status);
@@ -200,6 +246,7 @@ export function createApiError(input: {
     fieldErrors: input.fieldErrors,
     errorCode: input.errorCode,
     retryAfterSeconds: input.retryAfterSeconds,
+    details: input.details,
     raw: input.raw,
   });
 }
@@ -211,11 +258,13 @@ export function normalizeHttpError({
   status: number;
   responseBody: unknown;
 }): NormalizedApiError {
-  const code = codeFromStatus(status);
+  const errorCode = extractErrorCode(responseBody);
+  const code = codeFromStatusAndBackendCode(status, errorCode);
+  const isLifecycle = code === 'MAINTENANCE_MODE' || code === 'APP_UPDATE_REQUIRED';
   const backendMessage = extractBackendMessage(responseBody);
   const requestId = extractRequestId(responseBody);
   const fieldErrors =
-    isRecord(responseBody) && 'errors' in responseBody
+    !isLifecycle && isRecord(responseBody) && 'errors' in responseBody
       ? toFieldErrors(responseBody.errors)
       : undefined;
 
@@ -226,8 +275,9 @@ export function normalizeHttpError({
     technicalMessage: backendMessage,
     requestId,
     fieldErrors,
-    errorCode: extractErrorCode(responseBody),
+    errorCode,
     retryAfterSeconds: extractRetryAfter(responseBody),
+    details: isLifecycle ? extractDetails(responseBody) : undefined,
     raw: responseBody,
   };
 }
@@ -243,6 +293,7 @@ export function normalizeApiError(error: unknown): NormalizedApiError {
       fieldErrors: error.fieldErrors,
       errorCode: error.errorCode,
       retryAfterSeconds: error.retryAfterSeconds,
+      details: error.details,
       raw: error.raw,
     };
   }

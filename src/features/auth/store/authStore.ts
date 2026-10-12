@@ -143,33 +143,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
+  /**
+   * Resolves with a fresh access token, or `null` when the session is definitively over
+   * (the refresh endpoint answered 400/401). A transient failure rejects instead and
+   * leaves the session untouched, so a flaky connection never signs the user out.
+   */
   async refreshAccessToken() {
-    try {
-      const tokens = await refreshSessionAccessToken();
+    const tokens = await refreshSessionAccessToken();
 
-      if (!tokens) {
-        set({
-          ...unauthenticatedState,
-          errorMessage: sessionExpiredMessage(),
-        });
-        return null;
-      }
-
-      set({
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-        errorMessage: null,
-      });
-
-      return tokens.accessToken;
-    } catch (error) {
+    if (!tokens) {
       set({
         ...unauthenticatedState,
-        errorMessage: toSafeAuthErrorMessage(error),
+        errorMessage: sessionExpiredMessage(),
       });
-
       return null;
     }
+
+    set({
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      errorMessage: null,
+    });
+
+    return tokens.accessToken;
   },
 
   async forceSessionExpired(message = sessionExpiredMessage()) {

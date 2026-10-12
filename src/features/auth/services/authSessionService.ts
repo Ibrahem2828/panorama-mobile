@@ -163,7 +163,12 @@ export async function bootstrapSession(): Promise<BootstrapSessionResult> {
       },
       sessionExpired: false,
     };
-  } catch {
+  } catch (error) {
+    if (!isDefinitiveRefreshRejection(error)) {
+      // Transient failure while refreshing: keep the tokens so the next launch can retry.
+      throw new Error(getAuthErrorMessage(error, 'session'));
+    }
+
     await clearAuthTokens();
     return {
       session: null,
@@ -172,6 +177,22 @@ export async function bootstrapSession(): Promise<BootstrapSessionResult> {
   }
 }
 
+/**
+ * Only a definitive answer from the refresh endpoint (400/401: the refresh token is
+ * invalid, expired or revoked) means the session is over. Network errors, timeouts, 5xx,
+ * 429 and malformed responses say nothing about the token and must not sign the user out.
+ */
+export function isDefinitiveRefreshRejection(error: unknown): boolean {
+  const { status } = normalizeApiError(error);
+
+  return status === 400 || status === 401;
+}
+
+/**
+ * Resolves with new tokens, or `null` when the session is definitively over (nothing
+ * stored, or the server rejected the refresh token). Rejects with the original API error
+ * on a transient failure; the stored tokens are kept so a later attempt can succeed.
+ */
 export async function refreshAccessToken(): Promise<AuthTokens | null> {
   const storedTokens = await getStoredAuthTokens();
 
@@ -182,8 +203,12 @@ export async function refreshAccessToken(): Promise<AuthTokens | null> {
   try {
     return await refreshStoredAccessToken(storedTokens);
   } catch (error) {
-    await clearAuthTokens();
-    throw new Error(getAuthErrorMessage(error, 'session'));
+    if (isDefinitiveRefreshRejection(error)) {
+      await clearAuthTokens();
+      return null;
+    }
+
+    throw error;
   }
 }
 
