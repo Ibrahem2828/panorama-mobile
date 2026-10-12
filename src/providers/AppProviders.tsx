@@ -3,6 +3,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { NetworkStatusBanner } from '../features/connectivity';
 import { FeedbackProvider } from '../features/feedback';
+import { LifecycleGate } from '../features/lifecycle';
 import { PushNotificationsProvider } from '../features/notifications';
 import { useLocaleStore } from '../i18n';
 
@@ -20,6 +21,7 @@ export function AppProviders({ children }: AppProvidersProps) {
       <FeedbackProvider>
         <NetworkStatusBanner />
         {children}
+        <LifecycleGate />
         <PushNotificationsProvider />
       </FeedbackProvider>
     </SafeAreaProvider>

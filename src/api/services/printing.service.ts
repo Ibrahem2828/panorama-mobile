@@ -18,11 +18,15 @@ export function quotePrintOrder(request: PrintQuoteRequest, authToken: string) {
 export function listPickupLocations(authToken: string) {
   return apiClient.get<PrintPickupLocation[]>(endpoints.printing.pickupLocations, { authToken });
 }
-export function createPrintOrder(request: CreatePrintOrderRequest, authToken: string) {
+export function createPrintOrder(
+  request: CreatePrintOrderRequest,
+  authToken: string,
+  idempotencyKey?: string,
+) {
   return apiClient.post<PrintOrder, CreatePrintOrderRequest>(
     endpoints.printing.createOrder,
     request,
-    { authToken },
+    { authToken, idempotencyKey },
   );
 }
 export function listMyPrintOrders(authToken: string) {

@@ -3,6 +3,8 @@ type EndpointId = string | number;
 
 export const endpoints = {
   health: `${API_PREFIX}/health/`,
+  // Public and exempt from the maintenance/version gate, so it can report the gate state.
+  mobileBootstrap: `${API_PREFIX}/mobile/bootstrap/`,
   auth: {
     login: `${API_PREFIX}/auth/login/`,
     registerStudent: `${API_PREFIX}/auth/register/student/`,
@@ -48,6 +50,7 @@ export const endpoints = {
     leave: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/leave/`,
     files: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/files/`,
     messages: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/messages/`,
+    chatTicket: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/chat-ticket/`,
     whatsappTicket: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/whatsapp-ticket/`,
   },
   files: {

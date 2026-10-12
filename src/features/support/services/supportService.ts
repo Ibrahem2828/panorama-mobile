@@ -1,5 +1,6 @@
 import {
   normalizeApiError,
+  runIdempotentAction,
   supportService as apiSupportService,
   type PaginatedResult,
   type SupportTicket as ApiSupportTicket,
@@ -243,7 +244,9 @@ export async function createSupportTicket(
   input: CreateSupportTicketInput,
   authToken: string,
 ): Promise<SupportTicket> {
-  return normalizeTicket(await apiSupportService.createSupportTicket(input, authToken));
+  return runIdempotentAction('support:create-ticket', input, async (idempotencyKey) =>
+    normalizeTicket(await apiSupportService.createSupportTicket(input, authToken, idempotencyKey)),
+  );
 }
 
 export async function loadMySupportTickets(
@@ -264,5 +267,7 @@ export async function addSupportTicketMessage(
   input: AddSupportTicketMessageInput,
   authToken: string,
 ): Promise<void> {
-  await apiSupportService.addSupportTicketMessage(ticketId, input, authToken);
+  await runIdempotentAction(`support:reply:${String(ticketId)}`, input, (idempotencyKey) =>
+    apiSupportService.addSupportTicketMessage(ticketId, input, authToken, idempotencyKey),
+  );
 }

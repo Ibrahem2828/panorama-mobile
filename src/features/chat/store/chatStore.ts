@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { createApiError } from '../../../api';
 import { useLocaleStore } from '../../../i18n';
 
 import { useAuthStore } from '../../auth/store';
@@ -10,6 +11,8 @@ import {
   createChatWebSocketClient,
   loadGroupChatMessages,
   mergeChatMessages,
+  nativeChatConnectionEnvironment,
+  requestChatSocketTicket,
   sendGroupChatMessage,
   toSafeChatErrorMessage,
   toSafeSendChatErrorMessage,
@@ -31,6 +34,7 @@ type ChatState = {
 
   loadMessages: (groupId: Id) => Promise<void>;
   refreshMessages: (groupId: Id) => Promise<void>;
+  catchUpMessages: (groupId: Id) => Promise<void>;
   sendMessage: (groupId: Id) => Promise<void>;
   setDraftMessage: (groupId: Id, message: string) => void;
   addIncomingMessage: (groupId: Id, message: ChatMessage) => void;
@@ -173,6 +177,21 @@ export const useChatStore = create<ChatState>((set, get) => {
       }
     },
 
+    /** Silent REST fetch of the latest messages, merged by server id (after a reconnect). */
+    async catchUpMessages(groupId) {
+      const accessToken = getAccessToken();
+
+      if (!accessToken) {
+        return;
+      }
+
+      try {
+        await reloadMessages(groupId, accessToken);
+      } catch {
+        // Best effort: the user can still pull to refresh, and the next reconnect retries.
+      }
+    },
+
     async sendMessage(groupId) {
       if (get().isSending) {
         return;
@@ -213,16 +232,25 @@ export const useChatStore = create<ChatState>((set, get) => {
         const sentMessage = await sendGroupChatMessage(groupId, { message }, accessToken);
 
         set((state) => ({
-          messagesByGroupId: {
-            ...state.messagesByGroupId,
-            [groupKey]: mergeChatMessages(state.messagesByGroupId[groupKey] ?? [], [sentMessage]),
-          },
+          messagesByGroupId: sentMessage
+            ? {
+                ...state.messagesByGroupId,
+                [groupKey]: mergeChatMessages(state.messagesByGroupId[groupKey] ?? [], [
+                  sentMessage,
+                ]),
+              }
+            : state.messagesByGroupId,
           draftByGroupId: {
             ...state.draftByGroupId,
             [groupKey]: '',
           },
           isSending: false,
         }));
+
+        if (!sentMessage) {
+          // No server id came back; fetch the authoritative copy rather than guess one.
+          void get().catchUpMessages(groupId);
+        }
       } catch (error) {
         set({
           isSending: false,
@@ -256,9 +284,7 @@ export const useChatStore = create<ChatState>((set, get) => {
     },
 
     connectGroupChat(groupId) {
-      const accessToken = getAccessToken();
-
-      if (!accessToken) {
+      if (!getAccessToken()) {
         set({ connectionStatus: 'idle' });
         return;
       }
@@ -269,11 +295,23 @@ export const useChatStore = create<ChatState>((set, get) => {
 
       chatWebSocketClient = createChatWebSocketClient({
         groupId,
-        authToken: accessToken,
+        environment: nativeChatConnectionEnvironment,
+        // The JWT only ever travels in the Authorization header of this REST call; the
+        // socket itself authenticates with the single-use ticket it returns.
+        getTicket: async () => {
+          const accessToken = getAccessToken();
+
+          if (!accessToken) {
+            throw createApiError({ code: 'UNAUTHORIZED', status: 401 });
+          }
+
+          return requestChatSocketTicket(groupId, accessToken);
+        },
         handlers: {
           onMessage: (message) => get().addIncomingMessage(groupId, message),
           onStatusChange: (status) => set({ connectionStatus: status }),
           onError: (message) => set({ errorMessage: message }),
+          onReconnected: () => void get().catchUpMessages(groupId),
         },
       });
 

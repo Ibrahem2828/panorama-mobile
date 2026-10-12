@@ -146,6 +146,13 @@ export type GroupWhatsAppTicket = {
   expires_at: string;
 };
 
+/** Single-use credential for the chat WebSocket handshake (`?ticket=`). */
+export type GroupChatTicket = {
+  ticket: string;
+  expires_at: string;
+  websocket_path?: string;
+};
+
 export type GroupSummary = GroupRecord;
 
 export type GroupJoinResult = Record<string, unknown> & {

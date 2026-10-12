@@ -1,4 +1,5 @@
 import { buildApiUrl as buildConfiguredApiUrl } from '../config/env';
+import { getAppClientHeaders } from './appInfo';
 import type { HttpHeaders, HttpMethod } from './http';
 import { CONTENT_TYPE_JSON } from './http';
 import { buildQueryString } from './pagination';
@@ -15,6 +16,11 @@ export type ApiRequestOptions<TBody = unknown> = {
   headers?: HttpHeaders;
   authToken?: string | null;
   timeoutMs?: number;
+  /**
+   * Sent as the `Idempotency-Key` header. Callers generate one key per user action and
+   * pass the same key when that action is retried (see ./idempotency).
+   */
+  idempotencyKey?: string;
 };
 
 function normalizeApiBaseUrl(baseUrl: string): string {
@@ -52,14 +58,18 @@ export function buildRequestHeaders({
   authToken,
   hasJsonBody,
   hasFormDataBody,
+  idempotencyKey,
 }: {
   headers?: HttpHeaders;
   authToken?: string | null;
   hasJsonBody: boolean;
   hasFormDataBody: boolean;
+  idempotencyKey?: string;
 }): HttpHeaders {
   return {
     Accept: CONTENT_TYPE_JSON,
+    ...getAppClientHeaders(),
+    ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
     ...(hasJsonBody && !hasFormDataBody ? { 'Content-Type': CONTENT_TYPE_JSON } : {}),
     ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
     ...headers,

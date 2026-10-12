@@ -36,6 +36,30 @@ export const en: TranslationCatalog = {
     server: 'The server hit an error. Please try again later.',
     rateLimited: 'Too many attempts. Please try again shortly.',
     unknown: 'Something went wrong. Please try again.',
+    conflict: 'The request conflicts with the current state of the data. Refresh and try again.',
+    maintenance: 'The app is under maintenance right now. We will be back soon.',
+    updateRequired: 'You need to update the app to the latest version to continue.',
+    idempotencyKeyReused:
+      'The request details changed after it was sent. Review them and submit again.',
+    idempotencyInProgress:
+      'This request is already being processed. Wait a moment and check again.',
+  },
+
+  lifecycle: {
+    maintenanceTitle: 'Under maintenance',
+    maintenanceMessage:
+      'We are improving the service. The app will resume automatically when maintenance ends.',
+    maintenanceEstimatedEnd: (time: string) => `Expected back: ${time}`,
+    retry: 'Try again',
+    checking: 'Checking service status...',
+    stillDown: 'The service is still under maintenance.',
+    checkFailed: 'Could not check the service status. Check your connection and try again.',
+    updateTitle: 'Update required',
+    updateMessage:
+      'This version of the app is no longer supported. Update it from the store to continue.',
+    updateAction: 'Update the app',
+    updateOpenFailed:
+      'Could not open the store. Search for Panorama in your app store and update it.',
   },
 
   relativeTime: {
