@@ -20,7 +20,7 @@ module.exports = tseslint.config(
   ...tseslint.configs.recommended,
   {
     // Node-run tooling: build scripts plus the Jest setup and package mocks.
-    files: ['scripts/**/*.mjs', 'jest.setup.js', '__mocks__/**/*.js'],
+    files: ['scripts/**/*.mjs', 'scripts/**/*.cjs', 'jest.setup.js', '__mocks__/**/*.js'],
     languageOptions: {
       globals: globals.node,
     },
