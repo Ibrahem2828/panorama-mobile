@@ -27,6 +27,8 @@ jobs:
       # resolves, which is exactly what EAS builds from.
       - run: npm ci
       - run: npm run validate:static
+      # Pinned backend OpenAPI contract: integrity sha + every endpoint the app calls.
+      - run: npm run contracts:check
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run format:check
