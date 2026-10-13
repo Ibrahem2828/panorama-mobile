@@ -21,7 +21,9 @@
     "test:ci": "jest --runInBand --coverage",
     "doctor": "npx expo-doctor",
     "validate:release": "npm run validate && npm run doctor && npm run audit:prod",
-    "validate:static": "node scripts/validate-project.mjs",
+    "validate:static": "node scripts/validate-project.mjs && npm run contracts:check",
+    "contracts:sync": "node scripts/contract-check.mjs --sync",
+    "contracts:check": "node scripts/contract-check.mjs",
     "start:dev-client": "expo start --dev-client",
     "prebuild:clean": "expo prebuild --clean",
     "build:production:ios": "eas build --platform ios --profile production"
