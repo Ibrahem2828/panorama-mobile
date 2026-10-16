@@ -1261,8 +1261,7 @@ export const en: TranslationCatalog = {
       subtitle: 'Academic groups',
       intro: 'Join the academic groups that match your university details.',
       destinationsTitle: 'Where to go',
-      destinationsSubtitle:
-        'Follow your own groups, or browse the groups the server makes available to you.',
+      destinationsSubtitle: 'Follow your own groups, or browse the groups of your faculty.',
       myGroupsDescription: 'Groups you are a member of, or have a pending request for.',
       availableDescription:
         'Groups you can request to join, based on your details and verification status.',
@@ -1285,7 +1284,7 @@ export const en: TranslationCatalog = {
     list: {
       title: 'List',
       loadedCount: (count: number) => `Groups loaded: ${count}`,
-      searchPlaceholder: 'Search by group name or description',
+      searchPlaceholder: 'Search by group or subject name',
       emptyTitle: 'No groups',
       emptyIllustrationAlt: 'Illustration showing no groups',
     },
@@ -1299,7 +1298,7 @@ export const en: TranslationCatalog = {
       join: 'Request to join',
       leave: 'Leave group',
       contentTitle: 'Group content',
-      contentSubtitle: 'Chat is deferred; group files are available according to server rules.',
+      contentSubtitle: 'Chat and files for the members of this group.',
       chatTitle: 'Chat',
       chatDescription:
         'Open the text chat inside the app. Your permission to send is shown in the chat screen, based on your membership and the server rules.',
@@ -1357,6 +1356,54 @@ export const en: TranslationCatalog = {
       leaveSuccess: 'You have left the group.',
       joinError: 'Could not send the join request.',
       leaveError: 'Could not leave the group.',
+    },
+
+    available2: {
+      subjectFilterActive: 'Showing the groups of one subject only.',
+      showAllGroups: 'Show all groups',
+      resultsCount: (count: number) => (count === 1 ? '1 group' : `${count} groups`),
+      searchLabel: 'Search',
+      loadMore: 'Show more',
+      loadingMore: 'Loading more...',
+    },
+
+    card: {
+      subjectCode: (code: string) => `Subject code ${code}`,
+      whatsAppAvailable: 'WhatsApp available',
+      joinShort: 'Request to join',
+      pendingShort: 'Awaiting approval',
+      openGroup: (name: string) => `Open group ${name}`,
+    },
+
+    notices: {
+      pending: 'Your request is being reviewed. You will be notified once it is approved.',
+      rejected: 'Your previous request was declined. You can send a new one.',
+      blocked: 'You cannot join this group right now.',
+      membersOnly: 'Chat, files and WhatsApp are available to group members only.',
+    },
+
+    leaveConfirm: {
+      title: 'Leave this group?',
+      message:
+        'You will lose access to the group chat and files. You can request to join again later.',
+      confirm: 'Leave',
+    },
+
+    whatsapp: {
+      title: 'WhatsApp group',
+      subtitle: 'Talk to your classmates on WhatsApp directly.',
+      open: 'Open WhatsApp',
+      opening: 'Opening...',
+      note: 'The button opens the WhatsApp app directly. No link is ever shown.',
+      opened: 'WhatsApp opened.',
+      notInstalled:
+        'Could not open WhatsApp. Make sure the app is installed on your phone and try again.',
+      error: 'Could not open WhatsApp right now. Please try again in a moment.',
+    },
+
+    emptyMine: {
+      title: 'No groups yet',
+      action: 'Browse available groups',
     },
 
     errors: {

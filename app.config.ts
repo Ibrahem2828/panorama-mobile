@@ -11,6 +11,30 @@ const withAndroidCleartextTraffic: ConfigPlugin<{ enabled: boolean }> = (config,
     return androidConfig;
   });
 
+// Android 11+ package visibility: lets the app resolve `whatsapp://` links so the group's WhatsApp button
+// opens the installed app directly (the link itself is issued by the server and never shown).
+const withWhatsAppPackageVisibility: ConfigPlugin = (config) =>
+  withAndroidManifest(config, (androidConfig) => {
+    const manifest = androidConfig.modResults.manifest;
+    const queries = (manifest.queries ??= []);
+    const alreadyDeclared = queries.some((query) =>
+      query.intent?.some((intent) =>
+        intent.data?.some((data) => data.$['android:scheme'] === 'whatsapp'),
+      ),
+    );
+    if (!alreadyDeclared) {
+      queries.push({
+        intent: [
+          {
+            action: [{ $: { 'android:name': 'android.intent.action.VIEW' } }],
+            data: [{ $: { 'android:scheme': 'whatsapp' } }],
+          },
+        ],
+      });
+    }
+    return androidConfig;
+  });
+
 function requiredReleaseValue(name: string, value: string | undefined, appEnv: string): string {
   const normalized = value?.trim();
   if (appEnv !== 'development' && !normalized) {
@@ -135,5 +159,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
   };
 
-  return withAndroidCleartextTraffic(expoConfig, { enabled: allowDevelopmentCleartext });
+  return withWhatsAppPackageVisibility(
+    withAndroidCleartextTraffic(expoConfig, { enabled: allowDevelopmentCleartext }),
+  );
 };
