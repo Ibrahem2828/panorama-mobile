@@ -2,11 +2,12 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText, Stack } from '../../../components';
 import { LOCALES, useTranslation, type Locale } from '../../../i18n';
-import { colors, radius, spacing } from '../../../theme';
+import { colors, radius, spacing, useBrand } from '../../../theme';
 import { SettingsOptionRow } from './SettingsOptionRow';
 
 export function LanguageSelector() {
   const { t, locale, setLocale, needsRestartForDirection } = useTranslation();
+  const brand = useBrand();
 
   const labels: Record<Locale, string> = {
     ar: t.settings.language.arabic,
@@ -26,7 +27,7 @@ export function LanguageSelector() {
       ))}
 
       {needsRestartForDirection ? (
-        <View style={styles.notice}>
+        <View style={[styles.notice, { backgroundColor: brand.primarySoft }]}>
           <AppText color="secondary" variant="bodySmall">
             {t.settings.language.restartRequired}
           </AppText>

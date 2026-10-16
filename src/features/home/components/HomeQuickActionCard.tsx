@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
-import { colors, opacity, spacing } from '../../../theme';
+import { colors, opacity, spacing, useBrand } from '../../../theme';
 import { createPressScaleAnim } from '../../../utils/motion';
 import type { HomeQuickAction } from '../types';
 
@@ -13,6 +13,7 @@ type HomeQuickActionCardProps = {
 };
 
 export function HomeQuickActionCard({ action, marker, onPress }: HomeQuickActionCardProps) {
+  const brand = useBrand();
   const disabled = action.disabled || !onPress;
   const { scale, onPressIn, onPressOut } = useRef(createPressScaleAnim()).current;
 
@@ -30,7 +31,7 @@ export function HomeQuickActionCard({ action, marker, onPress }: HomeQuickAction
         <AppCard padding="md" style={styles.card} variant="default">
           <Stack gap="md">
             <View style={styles.header}>
-              <View style={styles.marker}>
+              <View style={[styles.marker, { backgroundColor: brand.primarySoft }]}>
                 <AppText align="center" color="brand" variant="button">
                   {marker}
                 </AppText>

@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
-import { colors, opacity, spacing } from '../../../theme';
+import { colors, opacity, spacing, useBrand } from '../../../theme';
 import { createPressScaleAnim } from '../../../utils/motion';
 import { useTranslation } from '../../../i18n';
 import { formatRelativeDate } from '../../../utils/formatRelativeDate';
@@ -24,6 +24,7 @@ type NotificationCardProps = {
 
 export function NotificationCard({ notification, onPress }: NotificationCardProps) {
   const { t, locale } = useTranslation();
+  const brand = useBrand();
   const title = getNotificationTitle(notification, t.notifications);
   const body = getNotificationBody(notification);
   const unread = isNotificationUnread(notification);
@@ -47,13 +48,15 @@ export function NotificationCard({ notification, onPress }: NotificationCardProp
     >
       <Animated.View style={{ transform: [{ scale }] }}>
         <AppCard
-          style={unread ? styles.unreadCard : null}
+          style={unread ? [styles.unreadCard, { borderColor: brand.primary }] : null}
           variant={unread ? 'outlined' : 'default'}
         >
           <Stack gap="md">
             <Stack direction="horizontal" gap="md" style={styles.header}>
               <NotificationTypeIcon type={notification.type} />
-              <View style={[styles.unreadDot, unread ? styles.unreadDotActive : null]} />
+              <View
+                style={[styles.unreadDot, unread ? { backgroundColor: brand.primary } : null]}
+              />
               <Stack gap="xs" style={styles.titleBlock}>
                 <AppText numberOfLines={2} variant="title">
                   {title}

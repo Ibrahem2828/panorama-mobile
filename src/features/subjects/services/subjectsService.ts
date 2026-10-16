@@ -7,11 +7,14 @@ import {
 import type { Id, Subject } from '../types';
 import type { TranslationCatalog } from '../../../i18n';
 
-const SUBJECTS_PAGE_SIZE = 500;
+const SUBJECTS_PAGE_SIZE = 100;
+const SUBJECTS_MAX_PAGES = 10;
 type SubjectsCatalog = TranslationCatalog['subjects'];
 
 export type LoadSubjectsInput = {
-  majorId: Id;
+  facultyId: Id;
+  /** Optional specialization tag: when set the backend also returns the faculty-wide subjects. */
+  majorId?: Id | null;
   academicYearId?: Id | null;
   semesterId?: Id | null;
   search?: string;
@@ -136,24 +139,36 @@ export function filterSubjectsBySearch(
   });
 }
 
-export async function loadSubjectsForMajor(
+// Subjects belong to the faculty (a major is only an optional tag), so a student can browse and retake any year or semester.
+export async function loadSubjectsForFaculty(
   input: LoadSubjectsInput,
 ): Promise<PaginatedResult<Subject>> {
-  const response = await academicService.listSubjectsForMajor(
-    input.majorId,
-    {
-      pageSize: SUBJECTS_PAGE_SIZE,
-      academic_year: input.academicYearId ?? undefined,
-      semester: input.semesterId ?? undefined,
-      search: input.search,
-      // Subjects have no `order` column; the backend's OrderingFilter 500s if it is requested.
-      ordering: 'name',
-    },
-    input.authToken,
-  );
+  const results: Subject[] = [];
+  let count = 0;
 
-  return {
-    ...response,
-    results: response.results.map(normalizeSubject),
-  };
+  for (let page = 1; page <= SUBJECTS_MAX_PAGES; page += 1) {
+    const response = await academicService.listSubjectsForFaculty(
+      input.facultyId,
+      {
+        page,
+        pageSize: SUBJECTS_PAGE_SIZE,
+        academic_year: input.academicYearId ?? undefined,
+        semester: input.semesterId ?? undefined,
+        major: input.majorId ?? undefined,
+        search: input.search,
+        // Subjects have no `order` column; the backend's OrderingFilter 500s if it is requested.
+        ordering: 'name',
+      },
+      input.authToken,
+    );
+
+    count = response.count ?? count;
+    results.push(...response.results.map(normalizeSubject));
+
+    if (!response.next || response.results.length === 0) {
+      break;
+    }
+  }
+
+  return { count: count || results.length, next: null, previous: null, results };
 }

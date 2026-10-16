@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 import { AppCard, AppText, Stack } from '../../../components';
-import { colors } from '../../../theme';
+import { colors, useBrand } from '../../../theme';
 import { getChatMessageSenderName, getChatMessageText, isOwnChatMessage } from '../services';
 import type { ChatMessage, Id } from '../types';
 import { useTranslation } from '../../../i18n';
@@ -14,13 +14,18 @@ type ChatMessageBubbleProps = {
 
 export function ChatMessageBubble({ message, currentUserId }: ChatMessageBubbleProps) {
   const { t, locale } = useTranslation();
+  const brand = useBrand();
   const isOwn = isOwnChatMessage(message, currentUserId);
   const timestamp = formatDateTime(message.created_at ?? message.updated_at, locale);
 
   return (
     <Stack align={isOwn ? 'flex-start' : 'flex-end'}>
       <AppCard
-        style={[styles.bubble, isOwn ? styles.ownBubble : styles.otherBubble]}
+        style={[
+          styles.bubble,
+          isOwn ? styles.ownBubble : styles.otherBubble,
+          isOwn ? { borderColor: brand.primary, backgroundColor: brand.primarySoft } : null,
+        ]}
         variant="default"
       >
         <Stack gap="xs">

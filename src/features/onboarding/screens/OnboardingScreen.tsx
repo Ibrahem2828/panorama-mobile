@@ -14,7 +14,7 @@ import { images } from '../../../assets/images';
 import { AppButton, AppScreen, AppText, Stack } from '../../../components';
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
-import { colors, radius, spacing } from '../../../theme';
+import { colors, radius, spacing, useBrand } from '../../../theme';
 import { markOnboardingSeen } from '../services';
 import { useTranslation } from '../../../i18n';
 
@@ -30,6 +30,7 @@ const SLIDE_IMAGES = [
 
 export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
   const { t } = useTranslation();
+  const brand = useBrand();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isCompleting, setIsCompleting] = useState(false);
   const { width } = useWindowDimensions();
@@ -142,7 +143,12 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
           {slides.map((slide, index) => (
             <View
               key={slide.title}
-              style={[styles.dot, index === activeIndex ? styles.dotActive : null]}
+              style={[
+                styles.dot,
+                index === activeIndex
+                  ? [styles.dotActive, { backgroundColor: brand.primary }]
+                  : null,
+              ]}
             />
           ))}
         </View>

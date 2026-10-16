@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { AppBadge, AppText, Stack } from '../../../components';
-import { colors, radius, spacing } from '../../../theme';
+import { colors, radius, spacing, useBrand } from '../../../theme';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
 
 type StudentSetupStep = 1 | 2 | 3;
@@ -21,6 +21,7 @@ const steps: {
 
 export function StudentSetupStepper({ currentStep }: StudentSetupStepperProps) {
   const { t } = useTranslation();
+  const brand = useBrand();
   return (
     <Stack direction="horizontal" gap="sm" wrap>
       {steps.map((item) => {
@@ -32,7 +33,12 @@ export function StudentSetupStepper({ currentStep }: StudentSetupStepperProps) {
             key={item.step}
             style={[
               styles.step,
-              isCurrent ? styles.currentStep : null,
+              isCurrent
+                ? [
+                    styles.currentStep,
+                    { borderColor: brand.primary, backgroundColor: brand.primarySoft },
+                  ]
+                : null,
               isDone ? styles.doneStep : null,
             ]}
           >

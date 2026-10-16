@@ -1,4 +1,7 @@
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 
 import { assertClientEnvForRelease } from './src/config/env';
 import { configureApiAuthBridge } from './src/features/auth/services/apiAuthBridge';
@@ -6,8 +9,10 @@ import { RootNavigator } from './src/navigation';
 import { AppProviders } from './src/providers/AppProviders';
 import { RootErrorBoundary } from './src/providers/RootErrorBoundary';
 import { initMonitoring } from './src/services/monitoring';
+import { fontFiles, useBrandStore } from './src/theme';
 import { configureRtl } from './src/utils/rtl';
 
+void SplashScreen.preventAutoHideAsync().catch(() => undefined);
 initMonitoring();
 configureRtl();
 configureApiAuthBridge();
@@ -28,6 +33,23 @@ export default function App() {
  */
 function AppRoot() {
   assertClientEnvForRelease();
+  const [fontsReady, fontError] = useFonts(fontFiles);
+  const hydrateBrand = useBrandStore((state) => state.hydrate);
+  const ready = fontsReady || fontError !== null;
+
+  useEffect(() => {
+    void hydrateBrand();
+  }, [hydrateBrand]);
+
+  useEffect(() => {
+    if (ready) {
+      void SplashScreen.hideAsync().catch(() => undefined);
+    }
+  }, [ready]);
+
+  if (!ready) {
+    return null;
+  }
 
   return (
     <AppProviders>

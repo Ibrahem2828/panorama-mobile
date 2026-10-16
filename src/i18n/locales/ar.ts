@@ -7,6 +7,14 @@
 export const ar = {
   appName: 'بانوراما',
 
+  tabs: {
+    home: 'الرئيسية',
+    subjects: 'المواد',
+    groups: 'المجموعات',
+    printing: 'الطباعة',
+    profile: 'حسابي',
+  },
+
   common: {
     loading: 'جاري التحميل...',
     retry: 'إعادة المحاولة',
@@ -291,7 +299,7 @@ export const ar = {
       network: 'تعذر تحميل المواد. تحقق من اتصال الإنترنت وحاول مرة أخرى.',
       unauthorized: 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.',
       generic: 'تعذر تحميل المواد. حاول مرة أخرى.',
-      missingMajor: 'لا يمكن تحميل المواد قبل إكمال البيانات الأكاديمية.',
+      missingFaculty: 'لا يمكن تحميل المواد قبل إكمال البيانات الأكاديمية.',
     },
   },
 
@@ -340,16 +348,19 @@ export const ar = {
     universityEmpty: 'لا توجد جامعات متاحة حاليا.',
     facultyLabel: 'الكلية',
     facultyEmpty: 'اختر الجامعة أولا لعرض الكليات.',
-    majorLabel: 'الاختصاص',
+    majorLabel: 'الاختصاص (اختياري)',
+    majorOptionalHint:
+      'يبدأ التخصص من السنة الثالثة. يمكنك تركه فارغا أو إلغاء اختياره بالضغط عليه مرة أخرى.',
     majorEmpty: 'اختر الكلية أولا لعرض الاختصاصات.',
     academicYearLabel: 'السنة الأكاديمية',
     academicYearEmpty: 'لا توجد سنوات أكاديمية متاحة حاليا.',
     semesterLabel: 'الفصل الدراسي',
     semesterEmpty: 'لا توجد فصول دراسية متاحة حاليا.',
-    majorSubjectsTitle: 'مواد الاختصاص',
-    majorSubjectsLoading: 'جاري تحميل المواد المرتبطة بالاختصاص...',
-    majorSubjectsLoaded: (count: number) => `تم تحميل ${count} مادة مرتبطة باختصاصك.`,
-    majorSubjectsEmpty: 'لا توجد مواد متاحة لهذا الاختصاص حاليا.',
+    majorSubjectsTitle: 'مواد الكلية',
+    majorSubjectsLoading: 'جاري تحميل مواد الكلية...',
+    majorSubjectsLoaded: (count: number) =>
+      `تتوفر ${count} مادة في كليتك، ويمكنك تصفح أي سنة أو فصل.`,
+    majorSubjectsEmpty: 'لا توجد مواد متاحة لهذه الكلية حاليا.',
     saveAndContinue: 'حفظ ومتابعة التوثيق',
 
     selectField: {

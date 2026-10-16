@@ -1,7 +1,7 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 import { Image, StyleSheet, View } from 'react-native';
 
-import { colors, layout, radius } from '../../theme';
+import { colors, layout, radius, useBrand } from '../../theme';
 import { getInitials } from '../../utils/strings';
 import { AppText } from './AppText';
 
@@ -22,6 +22,7 @@ export function AppAvatar({
   accessibilityLabel,
   style,
 }: AppAvatarProps) {
+  const brand = useBrand();
   const dimension = layout.avatar[size];
   const containerStyle = {
     width: dimension,
@@ -33,7 +34,7 @@ export function AppAvatar({
     <View
       accessibilityLabel={accessibilityLabel ?? name}
       accessibilityRole="image"
-      style={[styles.base, containerStyle, style]}
+      style={[styles.base, { backgroundColor: brand.primarySoft }, containerStyle, style]}
     >
       {imageUri ? (
         <Image source={{ uri: imageUri }} style={[styles.image, containerStyle]} />

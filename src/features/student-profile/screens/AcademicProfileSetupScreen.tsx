@@ -46,7 +46,6 @@ function canSubmitProfile(input: {
   return Boolean(
     input.selectedUniversityId &&
       input.selectedFacultyId &&
-      input.selectedMajorId &&
       input.selectedAcademicYearId &&
       input.selectedSemesterId &&
       input.studentNumber.trim(),
@@ -63,7 +62,6 @@ export function AcademicProfileSetupScreen() {
   const majors = useStudentProfileStore((state) => state.majors);
   const academicYears = useStudentProfileStore((state) => state.academicYears);
   const semesters = useStudentProfileStore((state) => state.semesters);
-  const subjects = useStudentProfileStore((state) => state.subjects);
   const selectedUniversityId = useStudentProfileStore((state) => state.selectedUniversityId);
   const selectedFacultyId = useStudentProfileStore((state) => state.selectedFacultyId);
   const selectedMajorId = useStudentProfileStore((state) => state.selectedMajorId);
@@ -75,6 +73,7 @@ export function AcademicProfileSetupScreen() {
   const isBootstrapping = useStudentProfileStore((state) => state.isBootstrapping);
   const isLoadingOptions = useStudentProfileStore((state) => state.isLoadingOptions);
   const isLoadingFaculties = useStudentProfileStore((state) => state.isLoadingFaculties);
+  const facultySubjectsCount = useStudentProfileStore((state) => state.facultySubjectsCount);
   const isLoadingMajors = useStudentProfileStore((state) => state.isLoadingMajors);
   const isLoadingSubjects = useStudentProfileStore((state) => state.isLoadingSubjects);
   const isParsingStudentNumber = useStudentProfileStore((state) => state.isParsingStudentNumber);
@@ -223,9 +222,11 @@ export function AcademicProfileSetupScreen() {
                 emptyText={t.studentProfile.majorEmpty}
                 isLoading={isLoadingMajors}
                 label={t.studentProfile.majorLabel}
+                onClear={() => selectMajor(null)}
                 onSelect={selectMajor}
                 options={majors}
                 selectedId={selectedMajorId}
+                hint={t.studentProfile.majorOptionalHint}
               />
 
               <AcademicSelectField
@@ -246,15 +247,15 @@ export function AcademicProfileSetupScreen() {
                 selectedId={selectedSemesterId}
               />
 
-              {selectedMajorId ? (
+              {selectedFacultyId ? (
                 <AppCard padding="md" variant="muted">
                   <Stack gap="xs">
                     <AppText variant="title">{t.studentProfile.majorSubjectsTitle}</AppText>
                     <AppText color="secondary" variant="bodySmall">
                       {isLoadingSubjects
                         ? t.studentProfile.majorSubjectsLoading
-                        : subjects.length > 0
-                          ? t.studentProfile.majorSubjectsLoaded(subjects.length)
+                        : facultySubjectsCount > 0
+                          ? t.studentProfile.majorSubjectsLoaded(facultySubjectsCount)
                           : t.studentProfile.majorSubjectsEmpty}
                     </AppText>
                   </Stack>

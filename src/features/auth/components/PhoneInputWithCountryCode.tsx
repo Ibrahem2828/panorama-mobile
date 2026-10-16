@@ -4,7 +4,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react
 import { AppText } from '../../../components';
 import { FormField } from '../../../components/forms/FormField';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
-import { colors, layout, radius, spacing, typography } from '../../../theme';
+import { colors, layout, radius, spacing, typography, useBrand } from '../../../theme';
 import { getFlexDirection } from '../../../utils/rtl';
 
 /** Dialling data only. The displayed name comes from the catalog, keyed by `id`. */
@@ -49,6 +49,7 @@ export function PhoneInputWithCountryCode({
   placeholder,
 }: PhoneInputWithCountryCodeProps) {
   const { t } = useTranslation();
+  const brand = useBrand();
   const [selectedCountry, setSelectedCountry] = useState<CountryCode>(COUNTRIES[0]!);
   const [showPicker, setShowPicker] = useState(false);
   const inputRef = useRef<TextInput>(null);
@@ -138,7 +139,10 @@ export function PhoneInputWithCountryCode({
                 return (
                   <Pressable
                     key={country.code}
-                    style={[styles.countryItem, isSelected && styles.countryItemSelected]}
+                    style={[
+                      styles.countryItem,
+                      isSelected && { backgroundColor: brand.primarySoft },
+                    ]}
                     onPress={() => handleSelectCountry(country)}
                   >
                     <AppText variant="body">{country.flag}</AppText>

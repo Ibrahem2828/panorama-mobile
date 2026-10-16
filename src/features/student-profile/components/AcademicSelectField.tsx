@@ -1,7 +1,7 @@
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
-import { colors, layout, spacing } from '../../../theme';
+import { colors, layout, spacing, useBrand } from '../../../theme';
 import type { AcademicOption } from '../types';
 import { useTranslation } from '../../../i18n';
 
@@ -13,6 +13,9 @@ type AcademicSelectFieldProps = {
   disabled?: boolean;
   isLoading?: boolean;
   emptyText?: string;
+  /** Optional fields: tapping the selected option again clears it. */
+  onClear?: () => void | Promise<void>;
+  hint?: string;
 };
 
 function isSelectedOption(optionId: string | number, selectedId: string | number | null): boolean {
@@ -27,14 +30,22 @@ export function AcademicSelectField({
   disabled = false,
   isLoading = false,
   emptyText,
+  onClear,
+  hint,
 }: AcademicSelectFieldProps) {
   const { t } = useTranslation();
+  const brand = useBrand();
   return (
     <Stack gap="sm">
       <View style={styles.labelRow}>
         <AppText variant="title">{label}</AppText>
-        {isLoading ? <ActivityIndicator color={colors.brand.primary} size="small" /> : null}
+        {isLoading ? <ActivityIndicator color={brand.primary} size="small" /> : null}
       </View>
+      {hint ? (
+        <AppText color="muted" variant="caption">
+          {hint}
+        </AppText>
+      ) : null}
 
       <AppCard padding="none" style={disabled ? styles.disabledCard : null} variant="default">
         {options.length === 0 ? (
@@ -57,11 +68,17 @@ export function AcademicSelectField({
                   disabled={disabled}
                   key={String(option.id)}
                   onPress={() => {
+                    if (selected && onClear) {
+                      void onClear();
+                      return;
+                    }
                     void onSelect(option.id);
                   }}
                   style={({ pressed }) => [
                     styles.option,
-                    selected ? styles.selectedOption : null,
+                    selected
+                      ? [styles.selectedOption, { backgroundColor: brand.primarySoft }]
+                      : null,
                     pressed && !disabled ? styles.pressedOption : null,
                   ]}
                 >

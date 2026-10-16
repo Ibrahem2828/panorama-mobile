@@ -34,6 +34,7 @@ export const endpoints = {
     facultiesForUniversity: (universityId: EndpointId) =>
       `${API_PREFIX}/universities/${universityId}/faculties/`,
     majorsForFaculty: (facultyId: EndpointId) => `${API_PREFIX}/faculties/${facultyId}/majors/`,
+    subjectsForFaculty: (facultyId: EndpointId) => `${API_PREFIX}/faculties/${facultyId}/subjects/`,
     subjectsForMajor: (majorId: EndpointId) => `${API_PREFIX}/majors/${majorId}/subjects/`,
   },
   verification: {

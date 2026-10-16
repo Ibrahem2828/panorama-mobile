@@ -20,8 +20,8 @@ function requiredReleaseValue(name: string, value: string | undefined, appEnv: s
 }
 
 const EAS_PROJECT_ID = '3804d959-0d36-4747-aeb0-d3339ad57f90';
-const DEFAULT_PRIVACY_URL = 'https://xn--mgbaab0cxheq.tech/ar/privacy';
-const DEFAULT_TERMS_URL = 'https://xn--mgbaab0cxheq.tech/ar/terms';
+const DEFAULT_PRIVACY_URL = 'https://app.xn--mgbaab0cxheq.tech/legal/privacy.html';
+const DEFAULT_TERMS_URL = 'https://app.xn--mgbaab0cxheq.tech/legal/terms.html';
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   const appEnv = (process.env.EXPO_PUBLIC_APP_ENV ?? 'development').trim();
@@ -56,7 +56,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     orientation: 'portrait',
     scheme: 'panorama',
     icon: './src/assets/app/icon.png',
-    userInterfaceStyle: 'automatic',
+    userInterfaceStyle: 'light',
     runtimeVersion: { policy: 'appVersion' },
     updates: {
       url: `https://u.expo.dev/${EAS_PROJECT_ID}`,
@@ -66,6 +66,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     plugins: [
       'expo-secure-store',
+      [
+        'expo-font',
+        {
+          fonts: [
+            './src/assets/fonts/NotoKufiArabic-Regular.ttf',
+            './src/assets/fonts/NotoKufiArabic-SemiBold.ttf',
+            './src/assets/fonts/NotoKufiArabic-Bold.ttf',
+          ],
+        },
+      ],
       'expo-notifications',
       'expo-updates',
       [

@@ -1554,12 +1554,16 @@
                                 "group_membership_blocked",
                                 "group_membership_rejected",
                                 "group_updated",
+                                "lecture_deleted",
                                 "lecture_note_updated",
+                                "lecture_processing_retried",
                                 "lecture_processing_updated",
+                                "lecture_updated",
                                 "lecture_uploaded",
                                 "lecture_viewed",
                                 "maintenance_mode_updated",
                                 "message_deleted",
+                                "message_report_resolved",
                                 "mobile_release_policy_updated",
                                 "notification_campaign_created",
                                 "otp_failed",
@@ -1592,7 +1596,7 @@
                                 "verification_submitted"
                             ]
                         },
-                        "description": "* `user_registered` - User Registered\n* `user_role_changed` - User Role Changed\n* `user_status_changed` - User Status Changed\n* `user_permission_override_changed` - User Permission Override Changed\n* `student_profile_updated` - Student Profile Updated\n* `account_locked` - Account Locked After Failed Logins\n* `account_login_unlocked` - Account Login Unlocked\n* `password_changed` - Password Changed\n* `password_reset_completed` - Password Reset Completed\n* `otp_sent` - OTP Sent\n* `otp_verified` - OTP Verified\n* `otp_failed` - OTP Failed\n* `verification_submitted` - Verification Submitted\n* `verification_approved` - Verification Approved\n* `verification_rejected` - Verification Rejected\n* `verification_needs_update` - Verification Needs Update\n* `verification_card_accessed` - Verification Card Accessed\n* `group_created` - Group Created\n* `group_updated` - Group Updated\n* `group_deleted` - Group Deleted\n* `group_membership_approved` - Group Membership Approved\n* `group_membership_rejected` - Group Membership Rejected\n* `group_membership_blocked` - Group Membership Blocked\n* `group_external_channel_updated` - External Channel Updated\n* `group_external_channel_ticket_issued` - External Channel Ticket Issued\n* `group_external_channel_opened` - External Channel Opened\n* `file_uploaded` - File Uploaded\n* `file_updated` - File Updated\n* `file_deleted` - File Deleted\n* `file_access_ticket_issued` - File Access Ticket Issued\n* `lecture_uploaded` - Lecture Uploaded\n* `lecture_processing_updated` - Lecture Processing Updated\n* `lecture_viewed` - Lecture Viewed\n* `lecture_note_updated` - Lecture Note Updated\n* `announcement_created` - Announcement Created\n* `announcement_updated` - Announcement Updated\n* `announcement_deleted` - Announcement Deleted\n* `print_order_created` - Print Order Created\n* `print_order_status_changed` - Print Order Status Changed\n* `print_order_assigned` - Print Order Assigned\n* `print_order_note_updated` - Print Order Note Updated\n* `print_pricing_changed` - Print Pricing Changed\n* `support_ticket_created` - Support Ticket Created\n* `support_ticket_status_changed` - Support Ticket Status Changed\n* `support_ticket_assigned` - Support Ticket Assigned\n* `support_ticket_priority_changed` - Support Ticket Priority Changed\n* `message_deleted` - Message Deleted\n* `feedback_submitted` - Feedback Submitted\n* `feedback_workflow_updated` - Feedback Workflow Updated\n* `feedback_privacy_requested` - Feedback Privacy Requested\n* `mobile_release_policy_updated` - Mobile Release Policy Updated\n* `maintenance_mode_updated` - Maintenance Mode Updated\n* `feature_flag_updated` - Feature Flag Updated\n* `device_installation_registered` - Device Installation Registered\n* `device_installation_revoked` - Device Installation Revoked\n* `policy_accepted` - Policy Accepted\n* `account_deletion_requested` - Account Deletion Requested\n* `account_deletion_cancelled` - Account Deletion Cancelled\n* `account_deletion_completed` - Account Deletion Completed\n* `notification_campaign_created` - Notification Campaign Created\n* `academic_entity_created` - Academic Entity Created\n* `academic_entity_updated` - Academic Entity Updated\n* `academic_entity_deleted` - Academic Entity Deleted\n* `policy_version_published` - Policy Version Published\n* `policy_version_updated` - Policy Version Updated\n* `policy_version_unpublished` - Policy Version Unpublished"
+                        "description": "* `user_registered` - User Registered\n* `user_role_changed` - User Role Changed\n* `user_status_changed` - User Status Changed\n* `user_permission_override_changed` - User Permission Override Changed\n* `student_profile_updated` - Student Profile Updated\n* `account_locked` - Account Locked After Failed Logins\n* `account_login_unlocked` - Account Login Unlocked\n* `password_changed` - Password Changed\n* `password_reset_completed` - Password Reset Completed\n* `otp_sent` - OTP Sent\n* `otp_verified` - OTP Verified\n* `otp_failed` - OTP Failed\n* `verification_submitted` - Verification Submitted\n* `verification_approved` - Verification Approved\n* `verification_rejected` - Verification Rejected\n* `verification_needs_update` - Verification Needs Update\n* `verification_card_accessed` - Verification Card Accessed\n* `group_created` - Group Created\n* `group_updated` - Group Updated\n* `group_deleted` - Group Deleted\n* `group_membership_approved` - Group Membership Approved\n* `group_membership_rejected` - Group Membership Rejected\n* `group_membership_blocked` - Group Membership Blocked\n* `group_external_channel_updated` - External Channel Updated\n* `group_external_channel_ticket_issued` - External Channel Ticket Issued\n* `group_external_channel_opened` - External Channel Opened\n* `file_uploaded` - File Uploaded\n* `file_updated` - File Updated\n* `file_deleted` - File Deleted\n* `file_access_ticket_issued` - File Access Ticket Issued\n* `lecture_uploaded` - Lecture Uploaded\n* `lecture_processing_updated` - Lecture Processing Updated\n* `lecture_viewed` - Lecture Viewed\n* `lecture_note_updated` - Lecture Note Updated\n* `lecture_updated` - Lecture Updated\n* `lecture_deleted` - Lecture Deleted\n* `lecture_processing_retried` - Lecture Processing Retried\n* `announcement_created` - Announcement Created\n* `announcement_updated` - Announcement Updated\n* `announcement_deleted` - Announcement Deleted\n* `print_order_created` - Print Order Created\n* `print_order_status_changed` - Print Order Status Changed\n* `print_order_assigned` - Print Order Assigned\n* `print_order_note_updated` - Print Order Note Updated\n* `print_pricing_changed` - Print Pricing Changed\n* `support_ticket_created` - Support Ticket Created\n* `support_ticket_status_changed` - Support Ticket Status Changed\n* `support_ticket_assigned` - Support Ticket Assigned\n* `support_ticket_priority_changed` - Support Ticket Priority Changed\n* `message_deleted` - Message Deleted\n* `message_report_resolved` - Message Report Resolved\n* `feedback_submitted` - Feedback Submitted\n* `feedback_workflow_updated` - Feedback Workflow Updated\n* `feedback_privacy_requested` - Feedback Privacy Requested\n* `mobile_release_policy_updated` - Mobile Release Policy Updated\n* `maintenance_mode_updated` - Maintenance Mode Updated\n* `feature_flag_updated` - Feature Flag Updated\n* `device_installation_registered` - Device Installation Registered\n* `device_installation_revoked` - Device Installation Revoked\n* `policy_accepted` - Policy Accepted\n* `account_deletion_requested` - Account Deletion Requested\n* `account_deletion_cancelled` - Account Deletion Cancelled\n* `account_deletion_completed` - Account Deletion Completed\n* `notification_campaign_created` - Notification Campaign Created\n* `academic_entity_created` - Academic Entity Created\n* `academic_entity_updated` - Academic Entity Updated\n* `academic_entity_deleted` - Academic Entity Deleted\n* `policy_version_published` - Policy Version Published\n* `policy_version_updated` - Policy Version Updated\n* `policy_version_unpublished` - Policy Version Unpublished"
                     },
                     {
                         "in": "query",
@@ -1738,6 +1742,131 @@
                                 "schema": {
                                     "type": "object",
                                     "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/dashboard/chat/reports/": {
+            "get": {
+                "operationId": "v1_dashboard_chat_reports_list",
+                "description": "``GET /dashboard/chat/reports/``: filter by ``status`` / ``group``; search the reason and message text.",
+                "parameters": [
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "أي حقل يجب استخدامه عند ترتيب النتائج.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "رقم الصفحة ضمن النتائج المقسمة.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "عدد النتائج التي يجب إرجاعها في كل صفحة.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "required": false,
+                        "in": "query",
+                        "description": "مصطلح البحث.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "v1"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedDashboardMessageReportList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/dashboard/chat/reports/{id}/resolve/": {
+            "post": {
+                "operationId": "v1_dashboard_chat_reports_resolve_create",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Dashboard"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ResolveMessageReportRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ResolveMessageReportRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ResolveMessageReportRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DashboardMessageReport"
                                 }
                             }
                         },
@@ -4079,6 +4208,13 @@
                 "description": "Standard envelopes for the two methods safe for read-only resources.",
                 "parameters": [
                     {
+                        "in": "query",
+                        "name": "is_published",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
                         "name": "page",
                         "required": false,
                         "in": "query",
@@ -4092,6 +4228,32 @@
                         "required": false,
                         "in": "query",
                         "description": "عدد النتائج التي يجب إرجاعها في كل صفحة.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "status",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "converting",
+                                "extracting",
+                                "failed",
+                                "quarantined",
+                                "queued",
+                                "ready",
+                                "rendering",
+                                "scanning",
+                                "uploaded"
+                            ]
+                        },
+                        "description": "* `uploaded` - Uploaded\n* `queued` - Queued\n* `scanning` - Scanning\n* `converting` - Converting\n* `extracting` - Extracting\n* `rendering` - Rendering\n* `ready` - Ready\n* `failed` - Failed\n* `quarantined` - Quarantined"
+                    },
+                    {
+                        "in": "query",
+                        "name": "subject",
                         "schema": {
                             "type": "integer"
                         }
@@ -4382,6 +4544,46 @@
                 "responses": {
                     "200": {
                         "description": "Original private document"
+                    }
+                }
+            }
+        },
+        "/api/v1/dashboard/lectures/{id}/retry/": {
+            "post": {
+                "operationId": "v1_dashboard_lectures_retry_create",
+                "description": "Re-queue conversion of a failed (or stuck) lecture.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "نوع رقم صحيح فريد يحدد هذا lecture.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Dashboard lectures"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DashboardLecture"
+                                }
+                            }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -7153,6 +7355,20 @@
                     },
                     {
                         "in": "query",
+                        "name": "faculty",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "has_major",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "query",
                         "name": "is_active",
                         "schema": {
                             "type": "boolean"
@@ -9429,6 +9645,104 @@
                 }
             }
         },
+        "/api/v1/faculties/{faculty_pk}/subjects/": {
+            "get": {
+                "operationId": "v1_faculties_subjects_list",
+                "description": "Subjects of a faculty. ``?major=<id>`` narrows to that major's subjects plus the faculty-level ones.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "academic_year",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "faculty_pk",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "major",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Only faculty-level subjects and this major's."
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "أي حقل يجب استخدامه عند ترتيب النتائج.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "رقم الصفحة ضمن النتائج المقسمة.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "عدد النتائج التي يجب إرجاعها في كل صفحة.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "required": false,
+                        "in": "query",
+                        "description": "مصطلح البحث.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "semester",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Universities"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "bearerAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedSubjectList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/feedback/": {
             "post": {
                 "operationId": "v1_feedback_create",
@@ -10924,6 +11238,45 @@
                 }
             }
         },
+        "/api/v1/groups/{id}/whatsapp-launch/": {
+            "post": {
+                "operationId": "v1_groups_whatsapp_launch_create",
+                "description": "Web clients: returns the ``whatsapp://`` deep link so the app opens straight into the group/chat.\n\nThe https invite link is never returned, shown or put in a URL: the client navigates to the app scheme, so no link ever\nappears in the address bar, history or search. Each call is authorised, throttled and audited.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Groups"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExternalChannelAppLink"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/groups/{id}/whatsapp-ticket/": {
             "post": {
                 "operationId": "v1_groups_whatsapp_ticket_create",
@@ -11875,7 +12228,7 @@
         "/api/v1/majors/{major_pk}/subjects/": {
             "get": {
                 "operationId": "v1_majors_subjects_list",
-                "description": "List/retrieve only.\n\nDRF routers discover actions by attribute. Write methods must never be added\nto this class, otherwise a nominally read-only resource becomes writable.",
+                "description": "Backward-compatible: the major's subjects plus the faculty-level subjects of the same faculty.",
                 "parameters": [
                     {
                         "in": "query",
@@ -12588,6 +12941,112 @@
                 }
             }
         },
+        "/api/v1/notifications/web-push/public-key/": {
+            "get": {
+                "operationId": "v1_notifications_web_push_public_key_retrieve",
+                "description": "The VAPID application server key the browser needs for ``pushManager.subscribe``.",
+                "tags": [
+                    "Notifications"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebPushPublicKey"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/notifications/web-push/subscriptions/": {
+            "post": {
+                "operationId": "v1_notifications_web_push_subscriptions_create",
+                "description": "Register (upsert by endpoint) or remove the calling user's browser push subscription.",
+                "tags": [
+                    "Notifications"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/WebPushSubscriptionRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/WebPushSubscriptionRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/WebPushSubscriptionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebPushSubscription"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "v1_notifications_web_push_subscriptions_destroy",
+                "description": "Register (upsert by endpoint) or remove the calling user's browser push subscription.",
+                "tags": [
+                    "Notifications"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/policies/accept/": {
             "post": {
                 "operationId": "v1_policies_accept_create",
@@ -13175,6 +13634,63 @@
                 "responses": {
                     "200": {
                         "description": "Inline protected print item"
+                    }
+                }
+            }
+        },
+        "/api/v1/search/": {
+            "get": {
+                "operationId": "v1_search_retrieve",
+                "description": "Search subjects, lectures, groups, files and announcements the caller may already see.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Results per type, default 5, max 20."
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "2 to 50 characters, case-insensitive.",
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "types",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Comma separated subset of subjects,lectures,groups,files,announcements (default all)."
+                    }
+                ],
+                "tags": [
+                    "Search"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -14074,6 +14590,28 @@
                 }
             }
         },
+        "/api/v1/verification/me/card/": {
+            "get": {
+                "operationId": "v1_verification_me_card_retrieve",
+                "description": "Let a user view the card image they uploaded (and nobody else's).\n\nStreamed directly to the authenticated owner (the dashboard reviewers use a ticket because their UI embeds the\nimage by URL; the owner's clients call this with their session/JWT like every other owner-scoped endpoint).\nThe content type is detected from the stored bytes and the download name is fixed, never the stored filename.",
+                "tags": [
+                    "Verification"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The user's own card image"
+                    }
+                }
+            }
+        },
         "/api/v1/verification/resubmit/": {
             "post": {
                 "operationId": "v1_verification_resubmit_create",
@@ -14818,6 +15356,9 @@
                     "lecture_processing_updated",
                     "lecture_viewed",
                     "lecture_note_updated",
+                    "lecture_updated",
+                    "lecture_deleted",
+                    "lecture_processing_retried",
                     "announcement_created",
                     "announcement_updated",
                     "announcement_deleted",
@@ -14831,6 +15372,7 @@
                     "support_ticket_assigned",
                     "support_ticket_priority_changed",
                     "message_deleted",
+                    "message_report_resolved",
                     "feedback_submitted",
                     "feedback_workflow_updated",
                     "feedback_privacy_requested",
@@ -14852,7 +15394,7 @@
                     "policy_version_unpublished"
                 ],
                 "type": "string",
-                "description": "* `user_registered` - User Registered\n* `user_role_changed` - User Role Changed\n* `user_status_changed` - User Status Changed\n* `user_permission_override_changed` - User Permission Override Changed\n* `student_profile_updated` - Student Profile Updated\n* `account_locked` - Account Locked After Failed Logins\n* `account_login_unlocked` - Account Login Unlocked\n* `password_changed` - Password Changed\n* `password_reset_completed` - Password Reset Completed\n* `otp_sent` - OTP Sent\n* `otp_verified` - OTP Verified\n* `otp_failed` - OTP Failed\n* `verification_submitted` - Verification Submitted\n* `verification_approved` - Verification Approved\n* `verification_rejected` - Verification Rejected\n* `verification_needs_update` - Verification Needs Update\n* `verification_card_accessed` - Verification Card Accessed\n* `group_created` - Group Created\n* `group_updated` - Group Updated\n* `group_deleted` - Group Deleted\n* `group_membership_approved` - Group Membership Approved\n* `group_membership_rejected` - Group Membership Rejected\n* `group_membership_blocked` - Group Membership Blocked\n* `group_external_channel_updated` - External Channel Updated\n* `group_external_channel_ticket_issued` - External Channel Ticket Issued\n* `group_external_channel_opened` - External Channel Opened\n* `file_uploaded` - File Uploaded\n* `file_updated` - File Updated\n* `file_deleted` - File Deleted\n* `file_access_ticket_issued` - File Access Ticket Issued\n* `lecture_uploaded` - Lecture Uploaded\n* `lecture_processing_updated` - Lecture Processing Updated\n* `lecture_viewed` - Lecture Viewed\n* `lecture_note_updated` - Lecture Note Updated\n* `announcement_created` - Announcement Created\n* `announcement_updated` - Announcement Updated\n* `announcement_deleted` - Announcement Deleted\n* `print_order_created` - Print Order Created\n* `print_order_status_changed` - Print Order Status Changed\n* `print_order_assigned` - Print Order Assigned\n* `print_order_note_updated` - Print Order Note Updated\n* `print_pricing_changed` - Print Pricing Changed\n* `support_ticket_created` - Support Ticket Created\n* `support_ticket_status_changed` - Support Ticket Status Changed\n* `support_ticket_assigned` - Support Ticket Assigned\n* `support_ticket_priority_changed` - Support Ticket Priority Changed\n* `message_deleted` - Message Deleted\n* `feedback_submitted` - Feedback Submitted\n* `feedback_workflow_updated` - Feedback Workflow Updated\n* `feedback_privacy_requested` - Feedback Privacy Requested\n* `mobile_release_policy_updated` - Mobile Release Policy Updated\n* `maintenance_mode_updated` - Maintenance Mode Updated\n* `feature_flag_updated` - Feature Flag Updated\n* `device_installation_registered` - Device Installation Registered\n* `device_installation_revoked` - Device Installation Revoked\n* `policy_accepted` - Policy Accepted\n* `account_deletion_requested` - Account Deletion Requested\n* `account_deletion_cancelled` - Account Deletion Cancelled\n* `account_deletion_completed` - Account Deletion Completed\n* `notification_campaign_created` - Notification Campaign Created\n* `academic_entity_created` - Academic Entity Created\n* `academic_entity_updated` - Academic Entity Updated\n* `academic_entity_deleted` - Academic Entity Deleted\n* `policy_version_published` - Policy Version Published\n* `policy_version_updated` - Policy Version Updated\n* `policy_version_unpublished` - Policy Version Unpublished"
+                "description": "* `user_registered` - User Registered\n* `user_role_changed` - User Role Changed\n* `user_status_changed` - User Status Changed\n* `user_permission_override_changed` - User Permission Override Changed\n* `student_profile_updated` - Student Profile Updated\n* `account_locked` - Account Locked After Failed Logins\n* `account_login_unlocked` - Account Login Unlocked\n* `password_changed` - Password Changed\n* `password_reset_completed` - Password Reset Completed\n* `otp_sent` - OTP Sent\n* `otp_verified` - OTP Verified\n* `otp_failed` - OTP Failed\n* `verification_submitted` - Verification Submitted\n* `verification_approved` - Verification Approved\n* `verification_rejected` - Verification Rejected\n* `verification_needs_update` - Verification Needs Update\n* `verification_card_accessed` - Verification Card Accessed\n* `group_created` - Group Created\n* `group_updated` - Group Updated\n* `group_deleted` - Group Deleted\n* `group_membership_approved` - Group Membership Approved\n* `group_membership_rejected` - Group Membership Rejected\n* `group_membership_blocked` - Group Membership Blocked\n* `group_external_channel_updated` - External Channel Updated\n* `group_external_channel_ticket_issued` - External Channel Ticket Issued\n* `group_external_channel_opened` - External Channel Opened\n* `file_uploaded` - File Uploaded\n* `file_updated` - File Updated\n* `file_deleted` - File Deleted\n* `file_access_ticket_issued` - File Access Ticket Issued\n* `lecture_uploaded` - Lecture Uploaded\n* `lecture_processing_updated` - Lecture Processing Updated\n* `lecture_viewed` - Lecture Viewed\n* `lecture_note_updated` - Lecture Note Updated\n* `lecture_updated` - Lecture Updated\n* `lecture_deleted` - Lecture Deleted\n* `lecture_processing_retried` - Lecture Processing Retried\n* `announcement_created` - Announcement Created\n* `announcement_updated` - Announcement Updated\n* `announcement_deleted` - Announcement Deleted\n* `print_order_created` - Print Order Created\n* `print_order_status_changed` - Print Order Status Changed\n* `print_order_assigned` - Print Order Assigned\n* `print_order_note_updated` - Print Order Note Updated\n* `print_pricing_changed` - Print Pricing Changed\n* `support_ticket_created` - Support Ticket Created\n* `support_ticket_status_changed` - Support Ticket Status Changed\n* `support_ticket_assigned` - Support Ticket Assigned\n* `support_ticket_priority_changed` - Support Ticket Priority Changed\n* `message_deleted` - Message Deleted\n* `message_report_resolved` - Message Report Resolved\n* `feedback_submitted` - Feedback Submitted\n* `feedback_workflow_updated` - Feedback Workflow Updated\n* `feedback_privacy_requested` - Feedback Privacy Requested\n* `mobile_release_policy_updated` - Mobile Release Policy Updated\n* `maintenance_mode_updated` - Maintenance Mode Updated\n* `feature_flag_updated` - Feature Flag Updated\n* `device_installation_registered` - Device Installation Registered\n* `device_installation_revoked` - Device Installation Revoked\n* `policy_accepted` - Policy Accepted\n* `account_deletion_requested` - Account Deletion Requested\n* `account_deletion_cancelled` - Account Deletion Cancelled\n* `account_deletion_completed` - Account Deletion Completed\n* `notification_campaign_created` - Notification Campaign Created\n* `academic_entity_created` - Academic Entity Created\n* `academic_entity_updated` - Academic Entity Updated\n* `academic_entity_deleted` - Academic Entity Deleted\n* `policy_version_published` - Policy Version Published\n* `policy_version_updated` - Policy Version Updated\n* `policy_version_unpublished` - Policy Version Unpublished"
             },
             "BindingEnum": {
                 "enum": [
@@ -15740,6 +16282,90 @@
                     "title"
                 ]
             },
+            "DashboardMessageReport": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "status": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/MessageReportStatusEnum"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "reason": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "reporter_id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "group_id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "group_name": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "message_id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "message_sender_id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "message_excerpt": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "message_is_deleted": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "resolved_by_id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "resolved_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "resolution_note": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "group_id",
+                    "group_name",
+                    "id",
+                    "message_excerpt",
+                    "message_id",
+                    "message_is_deleted",
+                    "message_sender_id",
+                    "reason",
+                    "reporter_id",
+                    "resolution_note",
+                    "resolved_at",
+                    "resolved_by_id",
+                    "status"
+                ]
+            },
             "DashboardPrintOrder": {
                 "type": "object",
                 "properties": {
@@ -16408,6 +17034,18 @@
                 ],
                 "type": "string",
                 "description": "* `shown` - shown\n* `dismissed` - dismissed"
+            },
+            "ExternalChannelAppLink": {
+                "type": "object",
+                "properties": {
+                    "app_url": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "app_url"
+                ]
             },
             "ExternalChannelTicket": {
                 "type": "object",
@@ -17761,10 +18399,12 @@
             "MessageReportStatusEnum": {
                 "enum": [
                     "open",
-                    "reviewed"
+                    "reviewed",
+                    "dismissed",
+                    "message_deleted"
                 ],
                 "type": "string",
-                "description": "* `open` - Open\n* `reviewed` - Reviewed"
+                "description": "* `open` - Open\n* `reviewed` - Reviewed\n* `dismissed` - Dismissed\n* `message_deleted` - Message deleted"
             },
             "MessageSender": {
                 "type": "object",
@@ -18220,6 +18860,16 @@
                         ],
                         "writeOnly": true,
                         "default": "email"
+                    },
+                    "accept_terms_version": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "maxLength": 64
+                    },
+                    "accept_privacy_version": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "maxLength": 64
                     }
                 },
                 "required": [
@@ -18611,6 +19261,37 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/DashboardLecture"
+                        }
+                    }
+                }
+            },
+            "PaginatedDashboardMessageReportList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DashboardMessageReport"
                         }
                     }
                 }
@@ -20201,9 +20882,14 @@
             },
             "PatchedSubjectRequest": {
                 "type": "object",
+                "description": "A subject belongs to a faculty; ``major`` is an optional specialization tag.\n\nOn write, ``faculty`` is required unless ``major`` is given (the faculty is then derived from the major).",
                 "properties": {
-                    "major": {
+                    "faculty": {
                         "type": "integer"
+                    },
+                    "major": {
+                        "type": "integer",
+                        "nullable": true
                     },
                     "academic_year": {
                         "type": "integer"
@@ -21117,6 +21803,29 @@
                     }
                 }
             },
+            "ResolveMessageReportActionEnum": {
+                "enum": [
+                    "dismiss",
+                    "delete_message"
+                ],
+                "type": "string",
+                "description": "* `dismiss` - dismiss\n* `delete_message` - delete_message"
+            },
+            "ResolveMessageReportRequest": {
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "$ref": "#/components/schemas/ResolveMessageReportActionEnum"
+                    },
+                    "note": {
+                        "type": "string",
+                        "maxLength": 500
+                    }
+                },
+                "required": [
+                    "action"
+                ]
+            },
             "Semester": {
                 "type": "object",
                 "properties": {
@@ -21432,6 +22141,16 @@
                         "writeOnly": true,
                         "default": "email"
                     },
+                    "accept_terms_version": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "maxLength": 64
+                    },
+                    "accept_privacy_version": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "maxLength": 64
+                    },
                     "student_number": {
                         "type": "string",
                         "maxLength": 64
@@ -21459,17 +22178,44 @@
             },
             "Subject": {
                 "type": "object",
+                "description": "A subject belongs to a faculty; ``major`` is an optional specialization tag.\n\nOn write, ``faculty`` is required unless ``major`` is given (the faculty is then derived from the major).",
                 "properties": {
                     "id": {
                         "type": "integer",
                         "readOnly": true
                     },
-                    "major": {
+                    "faculty": {
                         "type": "integer"
+                    },
+                    "faculty_name": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "faculty_detail": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/SubjectFaculty"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "major": {
+                        "type": "integer",
+                        "nullable": true
                     },
                     "major_name": {
                         "type": "string",
+                        "nullable": true,
                         "readOnly": true
+                    },
+                    "major_detail": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Major"
+                            }
+                        ],
+                        "readOnly": true,
+                        "nullable": true
                     },
                     "academic_year": {
                         "type": "integer"
@@ -21513,10 +22259,11 @@
                 "required": [
                     "academic_year",
                     "academic_year_name",
-                    "code",
                     "created_at",
+                    "faculty_detail",
+                    "faculty_name",
                     "id",
-                    "major",
+                    "major_detail",
                     "major_name",
                     "name",
                     "semester",
@@ -21524,11 +22271,48 @@
                     "updated_at"
                 ]
             },
+            "SubjectFaculty": {
+                "type": "object",
+                "description": "Compact faculty summary embedded in a subject.",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "name": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "code": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "university": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/University"
+                            }
+                        ],
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "code",
+                    "id",
+                    "name",
+                    "university"
+                ]
+            },
             "SubjectRequest": {
                 "type": "object",
+                "description": "A subject belongs to a faculty; ``major`` is an optional specialization tag.\n\nOn write, ``faculty`` is required unless ``major`` is given (the faculty is then derived from the major).",
                 "properties": {
-                    "major": {
+                    "faculty": {
                         "type": "integer"
+                    },
+                    "major": {
+                        "type": "integer",
+                        "nullable": true
                     },
                     "academic_year": {
                         "type": "integer"
@@ -21554,8 +22338,6 @@
                 },
                 "required": [
                     "academic_year",
-                    "code",
-                    "major",
                     "name",
                     "semester"
                 ]
@@ -22075,7 +22857,8 @@
                         "readOnly": true
                     },
                     "major": {
-                        "type": "integer"
+                        "type": "integer",
+                        "nullable": true
                     },
                     "major_detail": {
                         "allOf": [
@@ -22192,7 +22975,6 @@
                     "faculty_detail",
                     "has_card_image",
                     "id",
-                    "major",
                     "major_detail",
                     "rejection_reason",
                     "reviewed_at",
@@ -22218,7 +23000,8 @@
                         "type": "integer"
                     },
                     "major": {
-                        "type": "integer"
+                        "type": "integer",
+                        "nullable": true
                     },
                     "academic_year": {
                         "type": "integer"
@@ -22242,7 +23025,6 @@
                     "academic_year",
                     "card_image",
                     "faculty",
-                    "major",
                     "student_number",
                     "university"
                 ]
@@ -22301,7 +23083,8 @@
                         "readOnly": true
                     },
                     "major": {
-                        "type": "integer"
+                        "type": "integer",
+                        "nullable": true
                     },
                     "major_detail": {
                         "allOf": [
@@ -22408,7 +23191,6 @@
                     "faculty_detail",
                     "has_card_image",
                     "id",
-                    "major",
                     "major_detail",
                     "rejection_reason",
                     "reviewed_at",
@@ -22522,6 +23304,127 @@
                 ],
                 "type": "string",
                 "description": "* `public` - Public\n* `students_only` - Students Only\n* `verified_students_only` - Verified Students Only\n* `major_only` - Major Only\n* `group_only` - Group Only\n* `admin_only` - Admin Only"
+            },
+            "WebPushKeys": {
+                "type": "object",
+                "properties": {
+                    "p256dh": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "auth": {
+                        "type": "string",
+                        "maxLength": 255
+                    }
+                },
+                "required": [
+                    "auth",
+                    "p256dh"
+                ]
+            },
+            "WebPushKeysRequest": {
+                "type": "object",
+                "properties": {
+                    "p256dh": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 255
+                    },
+                    "auth": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 255
+                    }
+                },
+                "required": [
+                    "auth",
+                    "p256dh"
+                ]
+            },
+            "WebPushPublicKey": {
+                "type": "object",
+                "properties": {
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "public_key": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "enabled",
+                    "public_key"
+                ]
+            },
+            "WebPushSubscription": {
+                "type": "object",
+                "description": "Body of ``PushSubscription.toJSON()`` (``endpoint`` + ``keys``) plus an optional ``user_agent``.\n\nThe endpoint and keys are write-only: the endpoint is a capability URL and is never echoed back.",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "user_agent": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "last_used_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "id",
+                    "is_active",
+                    "last_used_at",
+                    "updated_at"
+                ]
+            },
+            "WebPushSubscriptionRequest": {
+                "type": "object",
+                "description": "Body of ``PushSubscription.toJSON()`` (``endpoint`` + ``keys``) plus an optional ``user_agent``.\n\nThe endpoint and keys are write-only: the endpoint is a capability URL and is never echoed back.",
+                "properties": {
+                    "endpoint": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "minLength": 1,
+                        "maxLength": 1024
+                    },
+                    "keys": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/WebPushKeysRequest"
+                            }
+                        ],
+                        "writeOnly": true
+                    },
+                    "user_agent": {
+                        "type": "string",
+                        "maxLength": 255
+                    }
+                },
+                "required": [
+                    "endpoint",
+                    "keys"
+                ]
             },
             "WhatsAppChannelUpdate": {
                 "type": "object",

@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import { AppCard, AppText, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { formatDateTime } from '../../../utils/formatDateTime';
-import { colors } from '../../../theme';
+import { colors, useBrand } from '../../../theme';
 import { getSupportMessageText, isSupportStaffMessage } from '../services';
 import type { SupportTicketMessage } from '../types';
 
@@ -13,11 +13,15 @@ type SupportMessageBubbleProps = {
 
 export function SupportMessageBubble({ message }: SupportMessageBubbleProps) {
   const { t, locale } = useTranslation();
+  const brand = useBrand();
   const isStaff = isSupportStaffMessage(message);
   const date = formatDateTime(message.created_at ?? message.updated_at, locale);
 
   return (
-    <AppCard style={isStaff ? styles.staffCard : styles.userCard} variant="default">
+    <AppCard
+      style={isStaff ? [styles.staffCard, { borderColor: brand.primary }] : styles.userCard}
+      variant="default"
+    >
       <Stack gap="xs">
         <AppText color={isStaff ? 'brand' : 'primary'} variant="caption" weight="600">
           {isStaff

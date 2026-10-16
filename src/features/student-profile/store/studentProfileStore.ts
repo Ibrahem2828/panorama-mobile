@@ -10,7 +10,7 @@ import {
   getStudentProfileStudentNumber,
   listFacultiesForUniversity,
   listMajorsForFaculty,
-  listSubjectsForMajor,
+  countSubjectsForFaculty,
   parseStudentNumber,
   toSafeStudentProfileErrorMessage,
   updateMyStudentProfile,
@@ -32,6 +32,7 @@ type StudentProfileState = {
   academicYears: AcademicOption[];
   semesters: AcademicOption[];
   subjects: AcademicSubject[];
+  facultySubjectsCount: number;
   selectedUniversityId: string | number | null;
   selectedFacultyId: string | number | null;
   selectedMajorId: string | number | null;
@@ -84,6 +85,7 @@ function getInitialDataState() {
     academicYears: [],
     semesters: [],
     subjects: [],
+    facultySubjectsCount: 0,
     selectedUniversityId: null,
     selectedFacultyId: null,
     selectedMajorId: null,
@@ -128,7 +130,6 @@ function buildProfileInput(state: StudentProfileState): StudentProfileUpdateInpu
   if (
     !state.selectedUniversityId ||
     !state.selectedFacultyId ||
-    !state.selectedMajorId ||
     !state.selectedAcademicYearId ||
     !state.selectedSemesterId ||
     !studentNumber
@@ -139,7 +140,7 @@ function buildProfileInput(state: StudentProfileState): StudentProfileUpdateInpu
   return {
     university: state.selectedUniversityId,
     faculty: state.selectedFacultyId,
-    major: state.selectedMajorId,
+    ...(state.selectedMajorId ? { major: state.selectedMajorId } : {}),
     academic_year: state.selectedAcademicYearId,
     semester: state.selectedSemesterId,
     student_number: studentNumber,
@@ -187,7 +188,7 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
       const hydratedSelection = getHydratedSelection(profile);
       let faculties: AcademicOption[] = [];
       let majors: AcademicOption[] = [];
-      let subjects: AcademicSubject[] = [];
+      const subjects: AcademicSubject[] = [];
 
       if (hydratedSelection.selectedUniversityId) {
         faculties = await listFacultiesForUniversity(
@@ -200,8 +201,13 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
         majors = await listMajorsForFaculty(hydratedSelection.selectedFacultyId, accessToken);
       }
 
-      if (hydratedSelection.selectedMajorId) {
-        subjects = await listSubjectsForMajor(hydratedSelection.selectedMajorId, accessToken);
+      let facultySubjectsCount = 0;
+
+      if (hydratedSelection.selectedFacultyId) {
+        facultySubjectsCount = await countSubjectsForFaculty(
+          hydratedSelection.selectedFacultyId,
+          accessToken,
+        ).catch(() => 0);
       }
 
       set({
@@ -210,6 +216,7 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
         faculties,
         majors,
         subjects,
+        facultySubjectsCount,
         ...hydratedSelection,
         hasBootstrapped: true,
         isBootstrapping: false,
@@ -261,6 +268,7 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
       faculties: [],
       majors: [],
       subjects: [],
+      facultySubjectsCount: 0,
       errorMessage: null,
     });
 
@@ -297,6 +305,7 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
       selectedMajorId: null,
       majors: [],
       subjects: [],
+      facultySubjectsCount: 0,
       errorMessage: null,
     });
 
@@ -306,55 +315,33 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
 
     const { accessToken } = requireAuthContext();
 
-    set({ isLoadingMajors: true });
+    set({ isLoadingMajors: true, isLoadingSubjects: true });
 
     try {
-      const majors = await listMajorsForFaculty(facultyId, accessToken);
+      const [majors, facultySubjectsCount] = await Promise.all([
+        listMajorsForFaculty(facultyId, accessToken),
+        countSubjectsForFaculty(facultyId, accessToken).catch(() => 0),
+      ]);
 
       set({
         majors,
+        facultySubjectsCount,
         isLoadingMajors: false,
+        isLoadingSubjects: false,
       });
     } catch (error) {
       set({
         isLoadingMajors: false,
+        isLoadingSubjects: false,
         errorMessage: toSafeStudentProfileErrorMessage(error, studentProfileCatalog()),
       });
     }
   },
 
-  async selectMajor(majorId) {
-    if (majorId === get().selectedMajorId) {
-      return;
-    }
-
-    set({
-      selectedMajorId: majorId,
-      subjects: [],
-      errorMessage: null,
-    });
-
-    if (!majorId) {
-      return;
-    }
-
-    const { accessToken } = requireAuthContext();
-
-    set({ isLoadingSubjects: true });
-
-    try {
-      const subjects = await listSubjectsForMajor(majorId, accessToken);
-
-      set({
-        subjects,
-        isLoadingSubjects: false,
-      });
-    } catch (error) {
-      set({
-        isLoadingSubjects: false,
-        errorMessage: toSafeStudentProfileErrorMessage(error, studentProfileCatalog()),
-      });
-    }
+  // The specialization is an optional tag (it starts in year 3); it never restricts which subjects the student sees.
+  selectMajor(majorId) {
+    set({ selectedMajorId: majorId, errorMessage: null });
+    return Promise.resolve();
   },
 
   selectAcademicYear(academicYearId) {

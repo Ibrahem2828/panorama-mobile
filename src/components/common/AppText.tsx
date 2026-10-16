@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import type { StyleProp, TextProps, TextStyle } from 'react-native';
 import { StyleSheet, Text } from 'react-native';
 
-import { colors, typography } from '../../theme';
+import { colors, fontFamilyForWeight, typography, useBrand } from '../../theme';
 import { getRTLTextAlign } from '../../utils/rtl';
 
 type AppTextVariant = keyof typeof typography.variants;
@@ -25,7 +25,7 @@ type AppTextProps = TextProps & {
   style?: StyleProp<TextStyle>;
 };
 
-const textColors: Record<AppTextColor, string> = {
+const textColors: Record<Exclude<AppTextColor, 'brand'>, string> = {
   primary: colors.text.primary,
   secondary: colors.text.secondary,
   muted: colors.text.muted,
@@ -33,8 +33,16 @@ const textColors: Record<AppTextColor, string> = {
   success: colors.semantic.success,
   warning: colors.semantic.warning,
   error: colors.semantic.error,
-  brand: colors.brand.primary,
 };
+
+function finalWeight(
+  variant: AppTextVariant,
+  weight: TextStyle['fontWeight'],
+  style: StyleProp<TextStyle>,
+): TextStyle['fontWeight'] {
+  const flat = StyleSheet.flatten(style);
+  return flat?.fontWeight ?? weight ?? typography.variants[variant].fontWeight;
+}
 
 export function AppText({
   children,
@@ -45,6 +53,7 @@ export function AppText({
   style,
   ...props
 }: AppTextProps) {
+  const brand = useBrand();
   return (
     <Text
       {...props}
@@ -52,11 +61,16 @@ export function AppText({
         styles.base,
         typography.variants[variant],
         {
-          color: textColors[color],
+          color: color === 'brand' ? brand.primary : textColors[color],
           textAlign: align ?? getRTLTextAlign(),
         },
         weight ? { fontWeight: weight } : null,
         style,
+        // Last: the bundled Kufi family is picked from the final weight, and fontWeight is cleared so Android never fakes bold.
+        {
+          fontFamily: fontFamilyForWeight(finalWeight(variant, weight, style)),
+          fontWeight: 'normal',
+        },
       ]}
     >
       {children}

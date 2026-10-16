@@ -52,6 +52,25 @@ export function listMajorsForFaculty(
   );
 }
 
+export function listSubjectsForFaculty(
+  facultyId: string | number,
+  params?: SubjectListParams & { major?: string | number | null },
+  authToken?: string | null,
+) {
+  return apiClient.get<PaginatedResult<SubjectRecord>>(
+    endpoints.academic.subjectsForFaculty(facultyId),
+    {
+      authToken,
+      query: {
+        ...toPaginationQuery(params),
+        academic_year: params?.academic_year,
+        semester: params?.semester,
+        major: params?.major ?? undefined,
+      },
+    },
+  );
+}
+
 export function listSubjectsForMajor(
   majorId: string | number,
   params?: SubjectListParams,

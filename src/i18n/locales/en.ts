@@ -3,6 +3,14 @@ import type { TranslationCatalog } from '../types';
 export const en: TranslationCatalog = {
   appName: 'Panorama',
 
+  tabs: {
+    home: 'Home',
+    subjects: 'Subjects',
+    groups: 'Groups',
+    printing: 'Printing',
+    profile: 'Account',
+  },
+
   common: {
     loading: 'Loading...',
     retry: 'Try again',
@@ -299,7 +307,7 @@ export const en: TranslationCatalog = {
       network: 'Could not load subjects. Check your connection and try again.',
       unauthorized: 'Your session has expired. Please sign in again.',
       generic: 'Could not load subjects. Please try again.',
-      missingMajor: 'Subjects cannot be loaded until your academic details are complete.',
+      missingFaculty: 'Subjects cannot be loaded until your academic details are complete.',
     },
   },
 
@@ -351,16 +359,19 @@ export const en: TranslationCatalog = {
     universityEmpty: 'No universities are available right now.',
     facultyLabel: 'Faculty',
     facultyEmpty: 'Choose a university first to see its faculties.',
-    majorLabel: 'Major',
+    majorLabel: 'Major (optional)',
+    majorOptionalHint:
+      'Specialization starts in year 3. Leave it empty, or tap the selected option again to clear it.',
     majorEmpty: 'Choose a faculty first to see its majors.',
     academicYearLabel: 'Academic year',
     academicYearEmpty: 'No academic years are available right now.',
     semesterLabel: 'Semester',
     semesterEmpty: 'No semesters are available right now.',
-    majorSubjectsTitle: 'Subjects in your major',
-    majorSubjectsLoading: 'Loading the subjects for this major...',
-    majorSubjectsLoaded: (count: number) => `Loaded ${count} subjects for your major.`,
-    majorSubjectsEmpty: 'No subjects are available for this major right now.',
+    majorSubjectsTitle: 'Faculty subjects',
+    majorSubjectsLoading: 'Loading the faculty subjects...',
+    majorSubjectsLoaded: (count: number) =>
+      `${count} subjects are available in your faculty; you can browse any year or semester.`,
+    majorSubjectsEmpty: 'No subjects are available for this faculty right now.',
     saveAndContinue: 'Save and continue to verification',
 
     selectField: {

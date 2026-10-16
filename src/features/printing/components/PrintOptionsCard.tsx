@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppCard, AppText, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import { colors, radius, spacing } from '../../../theme';
+import { colors, radius, spacing, useBrand } from '../../../theme';
 import type { PrintDraft, PrintPickupLocation } from '../types';
 
 type Props = {
@@ -31,9 +31,13 @@ function Choice<T extends string>({
   label: string;
   onPress: () => void;
 }) {
+  const brand = useBrand();
   const selected = value === current;
   return (
-    <Pressable onPress={onPress} style={[styles.choice, selected ? styles.selected : null]}>
+    <Pressable
+      onPress={onPress}
+      style={[styles.choice, selected ? [styles.selected, { borderColor: brand.primary }] : null]}
+    >
       <AppText color={selected ? 'brand' : 'secondary'} variant="caption">
         {label}
       </AppText>

@@ -5,6 +5,7 @@ import { NetworkStatusBanner } from '../features/connectivity';
 import { FeedbackProvider } from '../features/feedback';
 import { LifecycleGate } from '../features/lifecycle';
 import { PushNotificationsProvider } from '../features/notifications';
+import { BrandSync } from '../features/student-profile';
 import { useLocaleStore } from '../i18n';
 
 type AppProvidersProps = { children: ReactNode };
@@ -19,6 +20,7 @@ export function AppProviders({ children }: AppProvidersProps) {
   return (
     <SafeAreaProvider>
       <FeedbackProvider>
+        <BrandSync />
         <NetworkStatusBanner />
         {children}
         <LifecycleGate />

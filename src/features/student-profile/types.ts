@@ -34,7 +34,7 @@ export type StudentProfile = {
 export type StudentProfileUpdateInput = {
   university: EntityId;
   faculty: EntityId;
-  major: EntityId;
+  major?: EntityId;
   academic_year: EntityId;
   semester: EntityId;
   student_number: string;

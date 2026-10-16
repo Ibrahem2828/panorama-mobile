@@ -142,6 +142,19 @@ export async function listSubjectsForMajor(
   return normalizeAcademicList(response);
 }
 
+export async function countSubjectsForFaculty(
+  facultyId: EntityId,
+  authToken?: string | null,
+): Promise<number> {
+  const response = await academicService.listSubjectsForFaculty(
+    facultyId,
+    { pageSize: 1 },
+    authToken,
+  );
+
+  return response.count ?? response.results.length;
+}
+
 export async function getMyStudentProfile(authToken?: string | null) {
   try {
     return await apiClient.get<StudentProfile>(endpoints.students.profile, {
@@ -200,7 +213,6 @@ export function isStudentProfileComplete(profile: StudentProfile | null): boolea
   return Boolean(
     profile.university &&
       profile.faculty &&
-      profile.major &&
       getStudentProfileAcademicYear(profile) &&
       profile.semester &&
       getStudentProfileStudentNumber(profile),

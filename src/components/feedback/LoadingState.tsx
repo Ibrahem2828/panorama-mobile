@@ -1,7 +1,7 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-import { colors, spacing } from '../../theme';
+import { spacing, useBrand } from '../../theme';
 import { AppText } from '../common';
 import { useTranslation } from '../../i18n';
 
@@ -14,6 +14,7 @@ type LoadingStateProps = {
 
 export function LoadingState({ message, title, centered = false, style }: LoadingStateProps) {
   const { t } = useTranslation();
+  const brand = useBrand();
 
   return (
     <View style={[styles.container, centered ? styles.centered : null, style]}>
@@ -22,7 +23,7 @@ export function LoadingState({ message, title, centered = false, style }: Loadin
           {title}
         </AppText>
       ) : null}
-      <ActivityIndicator color={colors.brand.primary} size="large" />
+      <ActivityIndicator color={brand.primary} size="large" />
       <AppText align="center" color="secondary" variant="bodySmall">
         {message ?? t.common.loading}
       </AppText>

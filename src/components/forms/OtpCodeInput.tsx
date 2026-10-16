@@ -3,7 +3,7 @@ import { StyleSheet, TextInput, View } from 'react-native';
 import type { NativeSyntheticEvent, TextInputKeyPressEventData } from 'react-native';
 
 import { AppText } from '../common';
-import { colors, radius, spacing, typography } from '../../theme';
+import { colors, radius, spacing, typography, useBrand } from '../../theme';
 import { useTranslation } from '../../i18n';
 
 interface OtpCodeInputProps {
@@ -32,6 +32,7 @@ export function OtpCodeInput({
   autoFocus = true,
 }: OtpCodeInputProps) {
   const { t } = useTranslation();
+  const brand = useBrand();
   const inputsRef = useRef<Array<TextInput | null>>([]);
   const [focusedIndex, setFocusedIndex] = useState(0);
 
@@ -129,6 +130,7 @@ export function OtpCodeInput({
               style={[
                 styles.box,
                 isFocused && styles.boxFocused,
+                isFocused && { borderColor: brand.primary },
                 !!error && styles.boxError,
                 success && styles.boxSuccess,
                 isDisabled && !success && styles.boxDisabled,
