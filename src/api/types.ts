@@ -353,6 +353,17 @@ export type AnnouncementRecord = ApiEntity & {
   end_date?: string | null;
   is_active?: boolean;
   type?: string;
+  image?: string | null;
+  link?: string | null;
+  starts_at?: string | null;
+  ends_at?: string | null;
+  target_user_type?: string | null;
+  target_university?: number | null;
+  target_faculty?: number | null;
+  target_major?: number | null;
+  target_academic_year?: number | null;
+  target_semester?: number | null;
+  created_by_name?: string | null;
 };
 
 export type SubjectRecord = ApiEntity & {

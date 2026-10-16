@@ -42,7 +42,10 @@ export const endpoints = {
     me: `${API_PREFIX}/verification/me/`,
     resubmit: `${API_PREFIX}/verification/resubmit/`,
   },
-  announcements: { list: `${API_PREFIX}/announcements/` },
+  announcements: {
+    list: `${API_PREFIX}/announcements/`,
+    detail: (announcementId: EndpointId) => `${API_PREFIX}/announcements/${announcementId}/`,
+  },
   groups: {
     available: `${API_PREFIX}/groups/available/`,
     my: `${API_PREFIX}/groups/my/`,

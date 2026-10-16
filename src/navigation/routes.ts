@@ -32,6 +32,8 @@ export const TabRoutes = {
 
 export const HomeRoutes = {
   Home: 'Home',
+  AnnouncementsList: 'AnnouncementsList',
+  AnnouncementDetail: 'AnnouncementDetail',
 } as const;
 
 export const SubjectsRoutes = {
