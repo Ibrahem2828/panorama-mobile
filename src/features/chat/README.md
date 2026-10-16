@@ -1,69 +1,36 @@
 # chat
 
-Student group chat foundation implemented in Phase 15.
+Group chat for approved members, at parity with the web chat.
 
-## Implemented In Phase 15
+## Behaviour
 
-- Real ChatRoom screen for group messages.
-- REST-first message loading through the official group messages endpoint.
-- Message sending through the official group messages endpoint.
-- Optional WebSocket client using the official group chat path.
-- Safe reconnect status display with REST fallback.
-- Send permission checks based on loaded group detail fields.
-- Empty, loading, refresh, error, permission, and sending states.
-- Arabic RTL chat UI with reusable message, header, status, notice, and input components.
+- **Entry guard**: only approved members (or staff roles) open the room; others see a friendly
+  explanation. A 403 from the server (membership changed) switches the room to the same state.
+- **Realtime**: ticketed WebSocket (a fresh single-use ticket per connect), exponential backoff with
+  jitter, pause on background / resume on foreground and on network return, REST catch-up on every
+  (re)connect. REST polling runs only while the socket is not connected, foreground and online.
+- **De-duplication**: messages merge by server id (socket, REST pages, send responses); the sender's
+  own socket echo replaces its optimistic bubble; live `message.deleted` frames are honoured and a
+  stale page never resurrects them.
+- **Sending**: optimistic bubbles (`sending` -> `failed`), one idempotency key per send that is reused
+  on retry (and replaced after a definitive 4xx), one-tap retry or delete, image attachments via
+  multipart with upload progress and cancel. Limit 4000 characters (backend serializer).
+- **History**: inverted `FlatList`; older pages load on reaching the top (page 2, 3, ...);
+  `maintainVisibleContentPosition` keeps the reading position; "jump to latest" button with a counter
+  of messages that arrived while reading history; day separators and sender grouping.
+- **Attachments**: images only (PNG/JPG/WEBP, 25 MB) because only `expo-image-picker` is installed.
+  Viewing goes through the protected attachment ticket, in-app only, screen capture blocked.
 
 ## Structure
 
-- `components/`: reusable chat UI components.
-- `screens/`: ChatRoom screen.
-- `services/`: message normalization, permission helpers, REST orchestration, and optional WebSocket client.
-- `store/`: Zustand state for messages, drafts, loading, sending, refresh, and realtime status.
-- `types.ts`: flexible chat models using `unknown` for backend fields not yet finalized.
+- `logic/`: pure, unit-tested code (message normalise/merge/prune, optimistic state machine, day
+  grouping, attachment validation).
+- `services/`: REST calls, permission rules, WebSocket client (`chatWebSocketService`), app-state and
+  network environment.
+- `store/`: zustand store with per-room state (messages, pending, pagination, errors).
+- `components/`: list, rows, composer (owns its own text state), viewer, header, status line.
+- `screens/ChatRoomScreen.tsx`: wires the above together.
 
-## API Scope
+## Not implemented (web has them)
 
-Phase 15 uses only official API collection contracts:
-
-- `GET /api/v1/groups/{group_id}/messages/`
-- `POST /api/v1/groups/{group_id}/messages/`
-
-Message creation sends only:
-
-```json
-{
-  "type": "message",
-  "content": "..."
-}
-```
-
-Screens use the Chat store and never call the API client directly.
-
-## WebSocket Scope
-
-The optional realtime client uses the official path:
-
-```text
-ws://{host}/ws/v1/groups/{group_id}/chat/?token={access_token}
-```
-
-`EXPO_PUBLIC_WS_BASE_URL` supplies the host separately from the REST API base. HTTP deployments
-use WS; production HTTPS deployments must use WSS. The access token is URL-encoded, and the
-complete token-bearing URL is never logged.
-
-REST remains the source of truth. If WebSocket is unavailable, the user can still load, refresh, and send messages through REST.
-
-## Deferred
-
-- Voice messages.
-- Attachments.
-- Reactions.
-- Read receipts.
-- Typing indicators.
-- Message search.
-- Message edit.
-- Pinned messages.
-- Moderation tools.
-- Push notifications.
-- Admin chat tools.
-- Message delete/report actions.
+Reply/quote, delete-own-message, report, typing indicator, persisted unsent queue across app restarts.

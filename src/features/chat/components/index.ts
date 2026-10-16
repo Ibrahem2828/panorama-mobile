@@ -1,6 +1,8 @@
-export { ChatConnectionStatusIndicator } from './ChatConnectionStatus';
-export { ChatEmptyState } from './ChatEmptyState';
-export { ChatMessageBubble } from './ChatMessageBubble';
-export { ChatMessageInput } from './ChatMessageInput';
-export { ChatPermissionNotice } from './ChatPermissionNotice';
-export { ChatRoomHeader } from './ChatRoomHeader';
+export * from './ChatAttachmentViewer';
+export * from './ChatComposer';
+export * from './ChatConnectionStatus';
+export * from './ChatEmptyState';
+export * from './ChatMessageList';
+export * from './ChatMessageRow';
+export * from './ChatPermissionNotice';
+export * from './ChatRoomHeader';

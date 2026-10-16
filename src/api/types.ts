@@ -160,7 +160,18 @@ export type GroupJoinResult = Record<string, unknown> & {
   group?: GroupRecord;
 };
 
+export type GroupMessageSenderDetail = {
+  id: number;
+  full_name?: string;
+};
+
 export type GroupMessage = ApiEntity & {
+  sender_detail?: GroupMessageSenderDetail | null;
+  message_type?: string;
+  has_attachment?: boolean;
+  attachment_ticket_endpoint?: string | null;
+  reply_to?: number | null;
+  is_deleted?: boolean;
   group?: EntityId | Record<string, unknown> | null;
   sender?: EntityId | CurrentUser | Record<string, unknown> | null;
   sender_name?: string | null;
@@ -176,8 +187,10 @@ export type GroupMessage = ApiEntity & {
 };
 
 export type SendGroupMessageRequest = {
-  type: 'message';
   content: string;
+  message_type?: 'text';
+  /** Ignored by the backend; kept so older callers still type-check. */
+  type?: 'message';
 };
 
 export type FileRecord = ApiEntity & {

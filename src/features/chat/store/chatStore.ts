@@ -1,58 +1,91 @@
+import NetInfo from '@react-native-community/netinfo';
 import { create } from 'zustand';
 
-import { createApiError } from '../../../api';
+import { createApiError, normalizeApiError } from '../../../api';
+import { generateIdempotencyKey } from '../../../api/idempotency';
+import { UPLOAD_CANCELLED } from '../../../api/upload';
 import { useLocaleStore } from '../../../i18n';
 
 import { useAuthStore } from '../../auth/store';
 import { useGroupsStore } from '../../groups/store';
 import type { Group } from '../../groups/types';
+import { validateChatAttachment } from '../logic/attachments';
+import { mergeChatMessages, pruneMissingMessages, removeChatMessageById } from '../logic/messages';
+import {
+  createPending,
+  findMatchingPending,
+  isDefinitiveRejection,
+  markFailed,
+  markSending,
+  removePending,
+  setProgress,
+} from '../logic/pending';
 import {
   canSendMessageToGroup,
   createChatWebSocketClient,
-  loadGroupChatMessages,
-  mergeChatMessages,
+  loadGroupChatMessagesPage,
   nativeChatConnectionEnvironment,
   requestChatSocketTicket,
-  sendGroupChatMessage,
+  sendAttachmentMessage,
+  sendTextMessage,
   toSafeChatErrorMessage,
   toSafeSendChatErrorMessage,
   type ChatWebSocketClient,
 } from '../services';
-import type { ChatConnectionStatus, ChatMessage, Id } from '../types';
+import {
+  MAX_MESSAGE_LENGTH,
+  type ChatAttachment,
+  type ChatConnectionStatus,
+  type ChatMessage,
+  type Id,
+  type PendingMessage,
+} from '../types';
+
+/** REST catch-up cadence while the live connection is down (foreground only). */
+export const FALLBACK_POLL_INTERVAL_MS = 8000;
+
+export type ChatRoomState = {
+  /** Server messages, oldest first. */
+  messages: ChatMessage[];
+  /** Optimistic sends not yet confirmed, oldest first. */
+  pending: PendingMessage[];
+  /** Next (older) REST page to fetch. */
+  nextPage: number;
+  hasOlder: boolean;
+  hasLoaded: boolean;
+  isLoading: boolean;
+  isRefreshing: boolean;
+  isLoadingOlder: boolean;
+  loadOlderFailed: boolean;
+  error: string | null;
+  /** The server refused this user (not a member / removed). */
+  forbidden: boolean;
+};
+
+export type SendResult = { ok: true } | { ok: false; error: string };
 
 type ChatState = {
-  messagesByGroupId: Record<string, ChatMessage[]>;
-  draftByGroupId: Record<string, string>;
+  rooms: Record<string, ChatRoomState>;
   activeGroupId: Id | null;
   connectionStatus: ChatConnectionStatus;
-  isLoadingMessages: boolean;
-  isRefreshing: boolean;
-  isSending: boolean;
-  errorMessage: string | null;
-  sendErrorMessage: string | null;
-  lastLoadedAtByGroupId: Record<string, string>;
+  isOnline: boolean;
 
-  loadMessages: (groupId: Id) => Promise<void>;
-  refreshMessages: (groupId: Id) => Promise<void>;
-  catchUpMessages: (groupId: Id) => Promise<void>;
-  sendMessage: (groupId: Id) => Promise<void>;
-  setDraftMessage: (groupId: Id, message: string) => void;
-  addIncomingMessage: (groupId: Id, message: ChatMessage) => void;
-  connectGroupChat: (groupId: Id) => void;
-  disconnectGroupChat: () => void;
-  clearError: () => void;
-  clearSendError: () => void;
+  openRoom: (groupId: Id) => void;
+  closeRoom: () => void;
+  refresh: (groupId: Id) => Promise<void>;
+  loadOlder: (groupId: Id) => Promise<void>;
+  send: (groupId: Id, input: { text: string; attachment?: ChatAttachment | null }) => SendResult;
+  retry: (groupId: Id, localId: string) => void;
+  discard: (groupId: Id, localId: string) => void;
   reset: () => void;
 };
 
-// Read when the action runs so the message follows the current locale.
+// Read when the action runs so messages follow the current locale.
 function chatCatalog() {
   return useLocaleStore.getState().t.chat;
 }
 
-let chatWebSocketClient: ChatWebSocketClient | null = null;
-
-function getGroupKey(groupId: Id): string {
+function keyOf(groupId: Id): string {
   return String(groupId);
 }
 
@@ -66,281 +99,507 @@ function getCurrentUserId(): Id | null {
 
 function getKnownGroup(groupId: Id): Group | null {
   const groupsState = useGroupsStore.getState();
-  const groupKey = getGroupKey(groupId);
+  const key = keyOf(groupId);
 
-  if (groupsState.selectedGroup && getGroupKey(groupsState.selectedGroup.id) === groupKey) {
+  if (groupsState.selectedGroup && keyOf(groupsState.selectedGroup.id) === key) {
     return groupsState.selectedGroup;
   }
 
   return (
     [...groupsState.myGroups, ...groupsState.availableGroups].find(
-      (group) => getGroupKey(group.id) === groupKey,
+      (group) => keyOf(group.id) === key,
     ) ?? null
   );
 }
 
+function emptyRoom(): ChatRoomState {
+  return {
+    messages: [],
+    pending: [],
+    nextPage: 2,
+    hasOlder: false,
+    hasLoaded: false,
+    isLoading: false,
+    isRefreshing: false,
+    isLoadingOlder: false,
+    loadOlderFailed: false,
+    error: null,
+    forbidden: false,
+  };
+}
+
+// ---- module-level bookkeeping that must not trigger renders --------------------------------
+
+let chatWebSocketClient: ChatWebSocketClient | null = null;
+let pollTimer: ReturnType<typeof setInterval> | null = null;
+let unsubscribeNetInfo: (() => void) | null = null;
+/** Bumped whenever a room is opened/closed so late async results of an old room are ignored. */
+let session = 0;
+const syncing = new Set<string>();
+/** Bumped on local changes so a stale catch-up page cannot prune a message that just arrived. */
+const epochs = new Map<string, number>();
+/** Ids deleted live; a stale REST page must not resurrect them. */
+const deletedIds = new Map<string, Set<number>>();
+const uploadAborts = new Map<string, () => void>();
+
+function bumpEpoch(groupKey: string) {
+  epochs.set(groupKey, (epochs.get(groupKey) ?? 0) + 1);
+}
+
+function deletedSet(groupKey: string): Set<number> {
+  let set = deletedIds.get(groupKey);
+
+  if (!set) {
+    set = new Set();
+    deletedIds.set(groupKey, set);
+  }
+
+  return set;
+}
+
 const initialChatState = {
-  messagesByGroupId: {},
-  draftByGroupId: {},
+  rooms: {},
   activeGroupId: null,
   connectionStatus: 'idle' as const,
-  isLoadingMessages: false,
-  isRefreshing: false,
-  isSending: false,
-  errorMessage: null,
-  sendErrorMessage: null,
-  lastLoadedAtByGroupId: {},
+  isOnline: true,
 };
 
 export const useChatStore = create<ChatState>((set, get) => {
-  function requireToken(options?: { field?: 'errorMessage' | 'sendErrorMessage' }): string | null {
-    const accessToken = getAccessToken();
-    const field = options?.field ?? 'errorMessage';
+  function patchRoom(groupKey: string, change: (room: ChatRoomState) => Partial<ChatRoomState>) {
+    set((state) => {
+      const room = state.rooms[groupKey] ?? emptyRoom();
 
-    if (!accessToken) {
-      set({
-        [field]: chatCatalog().errors.unauthorized,
-        isLoadingMessages: false,
-        isRefreshing: false,
-        isSending: false,
-      });
-      return null;
-    }
-
-    return accessToken;
+      return { rooms: { ...state.rooms, [groupKey]: { ...room, ...change(room) } } };
+    });
   }
 
-  async function reloadMessages(groupId: Id, authToken: string) {
-    const response = await loadGroupChatMessages(groupId, authToken);
-    const groupKey = getGroupKey(groupId);
+  function markForbidden(groupKey: string) {
+    patchRoom(groupKey, () => ({ forbidden: true, isLoading: false, isRefreshing: false }));
+    stopRealtime();
+    // The membership data the screen reads is stale; refresh it (read-only call).
+    void useGroupsStore.getState().loadGroupDetail(groupKey);
+  }
 
-    set((state) => ({
-      messagesByGroupId: {
-        ...state.messagesByGroupId,
-        [groupKey]: mergeChatMessages(state.messagesByGroupId[groupKey] ?? [], response.results),
-      },
-      lastLoadedAtByGroupId: {
-        ...state.lastLoadedAtByGroupId,
-        [groupKey]: new Date().toISOString(),
-      },
+  /**
+   * Re-reads the newest page: first load, fallback polling, manual refresh and the catch-up
+   * after a (re)connect. Safe to call concurrently: one request per room at a time.
+   */
+  async function syncLatest(groupId: Id, mode: 'initial' | 'poll' | 'manual') {
+    const groupKey = keyOf(groupId);
+    const accessToken = getAccessToken();
+
+    if (syncing.has(groupKey)) {
+      return;
+    }
+
+    if (!accessToken) {
+      patchRoom(groupKey, () => ({
+        isLoading: false,
+        isRefreshing: false,
+        error: chatCatalog().errors.unauthorized,
+      }));
+      return;
+    }
+
+    syncing.add(groupKey);
+    const epochBefore = epochs.get(groupKey) ?? 0;
+    const sessionBefore = session;
+
+    try {
+      const page = await loadGroupChatMessagesPage(groupId, accessToken, 1);
+
+      if (sessionBefore !== session) {
+        return;
+      }
+
+      const canPrune = (epochs.get(groupKey) ?? 0) === epochBefore;
+      const deleted = deletedSet(groupKey);
+
+      patchRoom(groupKey, (room) => {
+        const base = canPrune
+          ? pruneMissingMessages(room.messages, page.messages, !page.hasMore)
+          : room.messages;
+        const isFirstPage = !room.hasLoaded;
+
+        return {
+          messages: mergeChatMessages(base, page.messages, deleted),
+          hasLoaded: true,
+          nextPage: isFirstPage ? 2 : room.nextPage,
+          hasOlder: isFirstPage ? page.hasMore : room.hasOlder,
+          error: null,
+        };
+      });
+    } catch (error) {
+      if (sessionBefore !== session) {
+        return;
+      }
+
+      if (normalizeApiError(error).code === 'FORBIDDEN') {
+        markForbidden(groupKey);
+      } else if (mode !== 'poll') {
+        patchRoom(groupKey, () => ({ error: toSafeChatErrorMessage(error, chatCatalog()) }));
+      }
+    } finally {
+      syncing.delete(groupKey);
+
+      if (sessionBefore === session) {
+        patchRoom(groupKey, () => ({ isLoading: false, isRefreshing: false }));
+      }
+    }
+  }
+
+  function applyIncoming(groupId: Id, message: ChatMessage) {
+    const groupKey = keyOf(groupId);
+
+    if (deletedSet(groupKey).has(message.id)) {
+      return;
+    }
+
+    bumpEpoch(groupKey);
+    patchRoom(groupKey, (room) => {
+      const match = findMatchingPending(room.pending, message, getCurrentUserId());
+
+      return {
+        messages: mergeChatMessages(room.messages, [message], deletedSet(groupKey)),
+        pending: match ? [...removePending(room.pending, match.localId)] : room.pending,
+      };
+    });
+  }
+
+  function applyDeleted(groupId: Id, messageId: number) {
+    const groupKey = keyOf(groupId);
+
+    deletedSet(groupKey).add(messageId);
+    bumpEpoch(groupKey);
+    patchRoom(groupKey, (room) => ({
+      messages: [...removeChatMessageById(room.messages, messageId)],
     }));
+  }
+
+  function stopPolling() {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  }
+
+  function stopRealtime() {
+    stopPolling();
+    unsubscribeNetInfo?.();
+    unsubscribeNetInfo = null;
+    chatWebSocketClient?.disconnect();
+    chatWebSocketClient = null;
+  }
+
+  function startPolling(groupId: Id) {
+    stopPolling();
+    // REST only runs while the live connection is not delivering, and only in the foreground.
+    pollTimer = setInterval(() => {
+      const { connectionStatus, isOnline } = get();
+
+      if (
+        connectionStatus !== 'connected' &&
+        isOnline &&
+        nativeChatConnectionEnvironment.isForeground()
+      ) {
+        void syncLatest(groupId, 'poll');
+      }
+    }, FALLBACK_POLL_INTERVAL_MS);
+  }
+
+  function connectRealtime(groupId: Id) {
+    chatWebSocketClient = createChatWebSocketClient({
+      groupId,
+      environment: nativeChatConnectionEnvironment,
+      // The JWT only ever travels in the Authorization header of this REST call; the
+      // socket itself authenticates with the single-use ticket it returns.
+      getTicket: async () => {
+        const accessToken = getAccessToken();
+
+        if (!accessToken) {
+          throw createApiError({ code: 'UNAUTHORIZED', status: 401 });
+        }
+
+        return requestChatSocketTicket(groupId, accessToken);
+      },
+      handlers: {
+        onMessage: (message) => applyIncoming(groupId, message),
+        onMessageDeleted: (id) => applyDeleted(groupId, id),
+        onStatusChange: (status) => {
+          set({ connectionStatus: status });
+
+          // Anything sent while the socket was down is never replayed: catch up over REST.
+          if (status === 'connected') {
+            void syncLatest(groupId, 'poll');
+          }
+        },
+        onTerminal: (reason) => {
+          if (reason === 'permission') {
+            markForbidden(keyOf(groupId));
+          }
+        },
+      },
+    });
+
+    chatWebSocketClient.connect();
+  }
+
+  function observeNetwork(groupId: Id) {
+    let wasOnline: boolean | null = null;
+
+    unsubscribeNetInfo = NetInfo.addEventListener((state) => {
+      const isOnline = state.isConnected !== false && state.isInternetReachable !== false;
+
+      if (get().isOnline !== isOnline) {
+        set({ isOnline });
+      }
+
+      if (isOnline && wasOnline === false) {
+        void syncLatest(groupId, 'poll');
+      }
+
+      wasOnline = isOnline;
+    });
+  }
+
+  /** Sends (or re-sends) one pending bubble. Never throws; failures become a "failed" state. */
+  async function deliver(groupId: Id, localId: string) {
+    const groupKey = keyOf(groupId);
+    const item = get().rooms[groupKey]?.pending.find((candidate) => candidate.localId === localId);
+
+    if (!item) {
+      return;
+    }
+
+    const accessToken = getAccessToken();
+
+    if (!accessToken) {
+      patchRoom(groupKey, (room) => ({
+        pending: markFailed(room.pending, localId, chatCatalog().errors.unauthorized, false),
+      }));
+      return;
+    }
+
+    try {
+      let sent: ChatMessage | null;
+
+      if (item.attachment) {
+        const upload = sendAttachmentMessage(
+          groupId,
+          { content: item.content, attachment: item.attachment },
+          item.idempotencyKey,
+          accessToken,
+          (fraction) =>
+            patchRoom(groupKey, (room) => ({
+              pending: setProgress(room.pending, localId, fraction),
+            })),
+        );
+
+        uploadAborts.set(localId, upload.abort);
+        sent = await upload.promise;
+      } else {
+        sent = await sendTextMessage(groupId, item.content, item.idempotencyKey, accessToken);
+      }
+
+      // Discarded while in flight: the message still reached the server, so show it.
+      bumpEpoch(groupKey);
+      patchRoom(groupKey, (room) => ({
+        pending: [...removePending(room.pending, localId)],
+        messages: sent
+          ? mergeChatMessages(room.messages, [sent], deletedSet(groupKey))
+          : room.messages,
+      }));
+
+      if (!sent) {
+        // No server id came back; fetch the authoritative copy rather than guess one.
+        void syncLatest(groupId, 'poll');
+      }
+    } catch (error) {
+      const normalized = normalizeApiError(error);
+
+      if (normalized.errorCode === UPLOAD_CANCELLED) {
+        patchRoom(groupKey, (room) => ({ pending: [...removePending(room.pending, localId)] }));
+        return;
+      }
+
+      if (normalized.code === 'FORBIDDEN') {
+        void useGroupsStore.getState().loadGroupDetail(groupId);
+      }
+
+      patchRoom(groupKey, (room) => ({
+        pending: markFailed(
+          room.pending,
+          localId,
+          toSafeSendChatErrorMessage(error, chatCatalog()),
+          isDefinitiveRejection(normalized.status, normalized.code),
+        ),
+      }));
+    } finally {
+      uploadAborts.delete(localId);
+    }
   }
 
   return {
     ...initialChatState,
 
-    async loadMessages(groupId) {
-      if (get().isLoadingMessages) {
-        return;
-      }
+    openRoom(groupId) {
+      stopRealtime();
+      session += 1;
 
-      const accessToken = requireToken();
+      const groupKey = keyOf(groupId);
+      const existing = get().rooms[groupKey];
+      const showSpinner = !existing?.hasLoaded;
 
-      if (!accessToken) {
-        return;
-      }
+      set((state) => ({
+        activeGroupId: groupId,
+        connectionStatus: 'idle',
+        rooms: {
+          ...state.rooms,
+          [groupKey]: {
+            ...(existing ?? emptyRoom()),
+            error: null,
+            forbidden: false,
+            isLoading: showSpinner,
+          },
+        },
+      }));
 
-      set({ activeGroupId: groupId, isLoadingMessages: true, errorMessage: null });
-
-      try {
-        await reloadMessages(groupId, accessToken);
-        set({ isLoadingMessages: false });
-      } catch (error) {
-        set({
-          isLoadingMessages: false,
-          errorMessage: toSafeChatErrorMessage(error, chatCatalog()),
-        });
-      }
+      observeNetwork(groupId);
+      connectRealtime(groupId);
+      startPolling(groupId);
+      void syncLatest(groupId, 'initial');
     },
 
-    async refreshMessages(groupId) {
-      if (get().isRefreshing) {
-        return;
-      }
-
-      const accessToken = requireToken();
-
-      if (!accessToken) {
-        return;
-      }
-
-      set({ isRefreshing: true, errorMessage: null });
-
-      try {
-        await reloadMessages(groupId, accessToken);
-        set({ isRefreshing: false });
-      } catch (error) {
-        set({
-          isRefreshing: false,
-          errorMessage: toSafeChatErrorMessage(error, chatCatalog()),
-        });
-      }
+    closeRoom() {
+      session += 1;
+      stopRealtime();
+      set({ activeGroupId: null, connectionStatus: 'disconnected' });
     },
 
-    /** Silent REST fetch of the latest messages, merged by server id (after a reconnect). */
-    async catchUpMessages(groupId) {
+    async refresh(groupId) {
+      patchRoom(keyOf(groupId), () => ({ isRefreshing: true, error: null }));
+      await syncLatest(groupId, 'manual');
+    },
+
+    async loadOlder(groupId) {
+      const groupKey = keyOf(groupId);
+      const room = get().rooms[groupKey];
       const accessToken = getAccessToken();
 
-      if (!accessToken) {
+      if (!room || !room.hasOlder || room.isLoadingOlder || !accessToken) {
         return;
       }
 
+      const sessionBefore = session;
+
+      patchRoom(groupKey, () => ({ isLoadingOlder: true, loadOlderFailed: false }));
+
       try {
-        await reloadMessages(groupId, accessToken);
-      } catch {
-        // Best effort: the user can still pull to refresh, and the next reconnect retries.
+        const page = await loadGroupChatMessagesPage(groupId, accessToken, room.nextPage);
+
+        if (sessionBefore !== session) {
+          return;
+        }
+
+        patchRoom(groupKey, (current) => ({
+          messages: mergeChatMessages(current.messages, page.messages, deletedSet(groupKey)),
+          nextPage: current.nextPage + 1,
+          hasOlder: page.hasMore,
+          isLoadingOlder: false,
+        }));
+      } catch (error) {
+        if (sessionBefore !== session) {
+          return;
+        }
+
+        if (normalizeApiError(error).code === 'FORBIDDEN') {
+          markForbidden(groupKey);
+        }
+
+        patchRoom(groupKey, () => ({ isLoadingOlder: false, loadOlderFailed: true }));
       }
     },
 
-    async sendMessage(groupId) {
-      if (get().isSending) {
-        return;
+    send(groupId, { text, attachment = null }) {
+      const t = chatCatalog();
+      const content = text.trim();
+
+      if (!content && !attachment) {
+        return { ok: false, error: t.errors.emptyMessage };
       }
 
-      const groupKey = getGroupKey(groupId);
-      const message = (get().draftByGroupId[groupKey] ?? '').trim();
-
-      if (!message) {
-        set({ sendErrorMessage: chatCatalog().errors.emptyMessage });
-        return;
+      if (content.length > MAX_MESSAGE_LENGTH) {
+        return { ok: false, error: t.errors.longMessage };
       }
 
-      if (message.length > 1000) {
-        set({ sendErrorMessage: chatCatalog().errors.longMessage });
-        return;
+      if (attachment) {
+        const problem = validateChatAttachment(attachment);
+
+        if (problem) {
+          return {
+            ok: false,
+            error:
+              problem === 'size'
+                ? t.errors.attachmentSize
+                : problem === 'empty'
+                  ? t.errors.attachmentEmpty
+                  : t.errors.attachmentType,
+          };
+        }
       }
 
       const group = getKnownGroup(groupId);
-      const permission = group
-        ? canSendMessageToGroup(group, getCurrentUserId(), chatCatalog())
-        : { allowed: true, permission: 'unknown' as const };
+      const permission = canSendMessageToGroup(group, getCurrentUserId(), t);
 
       if (!permission.allowed) {
-        set({ sendErrorMessage: permission.reason ?? chatCatalog().errors.permission });
-        return;
+        return { ok: false, error: permission.reason ?? t.errors.permission };
       }
 
-      const accessToken = requireToken({ field: 'sendErrorMessage' });
-
-      if (!accessToken) {
-        return;
-      }
-
-      set({ isSending: true, sendErrorMessage: null });
-
-      try {
-        const sentMessage = await sendGroupChatMessage(groupId, { message }, accessToken);
-
-        set((state) => ({
-          messagesByGroupId: sentMessage
-            ? {
-                ...state.messagesByGroupId,
-                [groupKey]: mergeChatMessages(state.messagesByGroupId[groupKey] ?? [], [
-                  sentMessage,
-                ]),
-              }
-            : state.messagesByGroupId,
-          draftByGroupId: {
-            ...state.draftByGroupId,
-            [groupKey]: '',
-          },
-          isSending: false,
-        }));
-
-        if (!sentMessage) {
-          // No server id came back; fetch the authoritative copy rather than guess one.
-          void get().catchUpMessages(groupId);
-        }
-      } catch (error) {
-        set({
-          isSending: false,
-          sendErrorMessage: toSafeSendChatErrorMessage(error, chatCatalog()),
-        });
-      }
-    },
-
-    setDraftMessage(groupId, message) {
-      const groupKey = getGroupKey(groupId);
-
-      set((state) => ({
-        draftByGroupId: {
-          ...state.draftByGroupId,
-          [groupKey]: message,
-        },
-        errorMessage: null,
-        sendErrorMessage: null,
-      }));
-    },
-
-    addIncomingMessage(groupId, message) {
-      const groupKey = getGroupKey(groupId);
-
-      set((state) => ({
-        messagesByGroupId: {
-          ...state.messagesByGroupId,
-          [groupKey]: mergeChatMessages(state.messagesByGroupId[groupKey] ?? [], [message]),
-        },
-      }));
-    },
-
-    connectGroupChat(groupId) {
-      if (!getAccessToken()) {
-        set({ connectionStatus: 'idle' });
-        return;
-      }
-
-      if (chatWebSocketClient) {
-        chatWebSocketClient.disconnect();
-      }
-
-      chatWebSocketClient = createChatWebSocketClient({
-        groupId,
-        environment: nativeChatConnectionEnvironment,
-        // The JWT only ever travels in the Authorization header of this REST call; the
-        // socket itself authenticates with the single-use ticket it returns.
-        getTicket: async () => {
-          const accessToken = getAccessToken();
-
-          if (!accessToken) {
-            throw createApiError({ code: 'UNAUTHORIZED', status: 401 });
-          }
-
-          return requestChatSocketTicket(groupId, accessToken);
-        },
-        handlers: {
-          onMessage: (message) => get().addIncomingMessage(groupId, message),
-          onStatusChange: (status) => set({ connectionStatus: status }),
-          onError: (message) => set({ errorMessage: message }),
-          onReconnected: () => void get().catchUpMessages(groupId),
-        },
+      const groupKey = keyOf(groupId);
+      const item = createPending({
+        localId: generateIdempotencyKey(),
+        idempotencyKey: generateIdempotencyKey(),
+        content,
+        attachment,
+        now: new Date(),
       });
 
-      chatWebSocketClient.connect();
+      bumpEpoch(groupKey);
+      patchRoom(groupKey, (room) => ({ pending: [...room.pending, item] }));
+      void deliver(groupId, item.localId);
+
+      return { ok: true };
     },
 
-    disconnectGroupChat() {
-      if (chatWebSocketClient) {
-        chatWebSocketClient.disconnect();
-        chatWebSocketClient = null;
+    retry(groupId, localId) {
+      const groupKey = keyOf(groupId);
+      const item = get().rooms[groupKey]?.pending.find(
+        (candidate) => candidate.localId === localId,
+      );
+
+      if (!item || item.status !== 'failed') {
+        return;
       }
 
-      set({ connectionStatus: 'disconnected' });
+      patchRoom(groupKey, (room) => ({
+        pending: markSending(room.pending, localId, generateIdempotencyKey),
+      }));
+      void deliver(groupId, localId);
     },
 
-    clearError() {
-      set({ errorMessage: null });
-    },
-
-    clearSendError() {
-      set({ sendErrorMessage: null });
+    discard(groupId, localId) {
+      uploadAborts.get(localId)?.();
+      patchRoom(keyOf(groupId), (room) => ({ pending: [...removePending(room.pending, localId)] }));
     },
 
     reset() {
-      if (chatWebSocketClient) {
-        chatWebSocketClient.disconnect();
-        chatWebSocketClient = null;
-      }
-
+      session += 1;
+      stopRealtime();
+      uploadAborts.forEach((abort) => abort());
+      uploadAborts.clear();
+      syncing.clear();
+      epochs.clear();
+      deletedIds.clear();
       set(initialChatState);
     },
   };

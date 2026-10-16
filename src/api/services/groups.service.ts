@@ -3,6 +3,7 @@ import { endpoints } from '../endpoints';
 import type {
   ApiListParams,
   EmptyResponse,
+  FileAccessTicket,
   GroupChatTicket,
   GroupJoinResult,
   GroupMessage,
@@ -12,6 +13,7 @@ import type {
 } from '../types';
 import type { PaginatedResult } from '../pagination';
 import { toPaginationQuery } from '../pagination';
+import { uploadFormData, type UploadHandle } from '../upload';
 
 export type AvailableGroupsParams = ApiListParams & {
   /** Subject id: only the groups of that subject. */
@@ -67,9 +69,11 @@ export function leaveGroup(groupId: string | number, authToken: string): Promise
 export function listGroupMessages(
   groupId: string | number,
   authToken: string,
+  params?: ApiListParams,
 ): Promise<PaginatedResult<GroupMessage>> {
   return apiClient.get<PaginatedResult<GroupMessage>>(endpoints.groups.messages(groupId), {
     authToken,
+    query: toPaginationQuery(params),
   });
 }
 
@@ -83,6 +87,36 @@ export function sendGroupMessage(
     endpoints.groups.messages(groupId),
     input,
     { authToken, idempotencyKey },
+  );
+}
+
+/**
+ * Posts a message with an image/file attachment (multipart) and reports upload progress.
+ * The returned handle can abort the upload.
+ */
+export function sendGroupMessageWithAttachment(
+  groupId: string | number,
+  formData: FormData,
+  authToken: string,
+  options: { idempotencyKey?: string; onProgress?: (fraction: number) => void } = {},
+): UploadHandle<GroupMessage> {
+  return uploadFormData<GroupMessage>(endpoints.groups.messages(groupId), formData, {
+    authToken,
+    idempotencyKey: options.idempotencyKey,
+    onProgress: options.onProgress,
+  });
+}
+
+/** Issues a short-lived, in-app-only URL for one chat attachment. */
+export function requestGroupMessageAttachmentTicket(
+  groupId: string | number,
+  messageId: string | number,
+  authToken: string,
+): Promise<FileAccessTicket> {
+  return apiClient.post<FileAccessTicket, EmptyResponse>(
+    endpoints.groups.messageAttachmentTicket(groupId, messageId),
+    {},
+    { authToken },
   );
 }
 

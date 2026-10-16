@@ -1,55 +1,70 @@
-import { AppBadge, AppCard, AppText, Stack } from '../../../components';
-import { useTranslation, type TranslationCatalog } from '../../../i18n';
+import { memo } from 'react';
+import { StyleSheet, View } from 'react-native';
+
+import { AppIconButton, AppText, Icon, Stack } from '../../../components';
+import { colors, layout, spacing } from '../../../theme';
+import { useTranslation } from '../../../i18n';
+import { getIsRTL } from '../../../utils/rtl';
 import { getGroupDisplayName } from '../../groups/services';
 import type { Group } from '../../groups/types';
 import type { ChatConnectionStatus } from '../types';
+import { ChatConnectionStatusLine } from './ChatConnectionStatus';
 
 type ChatRoomHeaderProps = {
   group: Group | null;
   connectionStatus: ChatConnectionStatus;
+  isOnline: boolean;
+  onBack: () => void;
 };
 
-function getMembershipLabel(status: string | undefined, t: TranslationCatalog): string {
-  switch (status) {
-    case 'approved':
-    case 'member':
-      return t.chat.membership.member;
-    case 'pending':
-      return t.chat.membership.pending;
-    case 'blocked':
-      return t.chat.membership.blocked;
-    default:
-      return t.chat.membership.unknown;
-  }
-}
-
-export function ChatRoomHeader({ group, connectionStatus }: ChatRoomHeaderProps) {
+export const ChatRoomHeader = memo(function ChatRoomHeader({
+  group,
+  connectionStatus,
+  isOnline,
+  onBack,
+}: ChatRoomHeaderProps) {
   const { t } = useTranslation();
 
   return (
-    <AppCard padding="lg" variant="elevated">
-      <Stack gap="md">
-        <Stack gap="xs">
-          <AppText variant="title">
-            {group ? getGroupDisplayName(group, t.groups) : t.groups.details.chatTitle}
-          </AppText>
+    <View style={styles.container}>
+      <AppIconButton
+        accessibilityLabel={t.common.back}
+        icon={
+          <Icon color={colors.text.primary} name={getIsRTL() ? 'chevronRight' : 'chevronLeft'} />
+        }
+        onPress={onBack}
+      />
+      <View style={styles.titleBlock}>
+        <AppText numberOfLines={1} variant="title">
+          {group ? getGroupDisplayName(group, t.groups) : t.chat.title}
+        </AppText>
+        <Stack align="center" direction="horizontal" gap="md">
+          <ChatConnectionStatusLine isOnline={isOnline} status={connectionStatus} />
           {group?.members_count !== undefined ? (
-            <AppText color="secondary" variant="bodySmall">
+            <AppText color="muted" numberOfLines={1} variant="caption">
               {t.chat.membersCount(group.members_count)}
             </AppText>
           ) : null}
         </Stack>
-        <Stack direction="horizontal" gap="sm" wrap>
-          <AppBadge
-            label={getMembershipLabel(group?.current_user_membership_status, t)}
-            variant="info"
-          />
-          <AppBadge
-            label={connectionStatus === 'connected' ? 'WebSocket' : 'REST'}
-            variant={connectionStatus === 'connected' ? 'success' : 'neutral'}
-          />
-        </Stack>
-      </Stack>
-    </AppCard>
+      </View>
+    </View>
   );
-}
+});
+
+const styles = StyleSheet.create({
+  container: {
+    minHeight: layout.headerHeight - spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border.default,
+    backgroundColor: colors.background.surface,
+  },
+  titleBlock: {
+    flex: 1,
+    gap: spacing.xxs,
+    alignItems: 'flex-start',
+  },
+});

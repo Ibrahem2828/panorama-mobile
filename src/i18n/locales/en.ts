@@ -143,7 +143,7 @@ export const en: TranslationCatalog = {
 
   chat: {
     title: 'Chat',
-    subtitle: 'Text chat inside the group',
+    subtitle: 'Group chat',
     loadingMessages: 'Loading messages...',
     membersCount: (count: number) => `Members: ${count}`,
     inputPlaceholder: 'Write a message...',
@@ -165,10 +165,57 @@ export const en: TranslationCatalog = {
     connection: {
       connecting: 'Connecting',
       connected: 'Connected',
-      reconnecting: 'Reconnecting',
-      restAvailable: 'REST available',
+      reconnecting: 'Reconnecting…',
+      restAvailable: 'Reconnecting…',
       offline: 'Offline',
-      note: 'Chat runs over REST; WebSocket is only an optional live update.',
+      note: 'New messages arrive automatically once you are back online.',
+      offlineBanner:
+        'You are offline. You can read saved messages and updates resume automatically.',
+    },
+
+    today: 'Today',
+    yesterday: 'Yesterday',
+    systemMessage: 'System message',
+    messagesLog: 'Chat messages',
+    composerLabel: 'Message text',
+    sending: 'Sending…',
+    sendingAttachment: (percent: number) => `Uploading photo ${percent}%`,
+    failed: 'Message not sent',
+    retrySend: 'Try again',
+    discard: 'Delete',
+    cancelUpload: 'Cancel upload',
+    loadOlder: 'Load older messages',
+    loadingOlder: 'Loading older messages…',
+    loadOlderFailed: 'Could not load older messages. Tap to try again.',
+    jumpToLatest: 'Jump to latest messages',
+    newMessages: (count: number) => (count === 1 ? '1 new message' : `${count} new messages`),
+    charCount: (used: number, max: number) => `${used} / ${max}`,
+    messageFrom: (name: string) => `Message from ${name}`,
+    ownMessage: 'Your message',
+
+    attachment: {
+      attach: 'Attach a photo',
+      remove: 'Remove photo',
+      image: 'Photo',
+      file: 'Attached file',
+      tapToView: 'Tap to view',
+      viewerTitle: 'Attachment',
+      loading: 'Preparing the attachment…',
+      loadError: 'Could not show the attachment. Please try again.',
+      permissionDenied: 'Allow access to your photos to pick one.',
+      pickError: 'Could not pick the photo. Please try again.',
+      sizeLabel: (megabytes: string) => `${megabytes} MB`,
+    },
+
+    guard: {
+      title: 'Chat is for members only',
+      message: 'Join the group and wait for approval to read and take part in the chat.',
+      pendingMessage:
+        'Your join request is under review. The chat opens as soon as it is approved.',
+      removedTitle: 'You can no longer open this chat',
+      removedMessage:
+        'Your membership in this group has changed. Go back to the group for details.',
+      back: 'Back to the group',
     },
 
     permission: {
@@ -187,9 +234,15 @@ export const en: TranslationCatalog = {
       permission: 'You cannot send messages in this group right now.',
       send: 'Could not send the message. Please try again.',
       generic: 'Could not load messages. Please try again.',
-      websocket: 'The chat connection was lost. You can refresh the messages manually.',
+      websocket: 'The chat connection dropped. Reconnecting.',
       emptyMessage: 'Write a message before sending.',
-      longMessage: 'A message must not exceed 1000 characters.',
+      longMessage: 'A message must not exceed 4000 characters.',
+      rateLimited: 'You sent many messages quickly. Wait a moment and try again.',
+      sendNetwork: 'The message was not sent because of a weak connection. Tap to try again.',
+      attachmentType: 'Only PNG, JPG or WEBP photos can be attached.',
+      attachmentSize: 'The photo is too large. The maximum is 25 MB.',
+      attachmentEmpty: 'The selected photo is empty. Pick another one.',
+      attachmentRejected: 'The attachment was not accepted. Try another photo.',
     },
   },
 
