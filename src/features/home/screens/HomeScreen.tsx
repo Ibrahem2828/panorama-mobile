@@ -20,6 +20,7 @@ import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { formatTime } from '../../../utils/formatDateTime';
 import {
   GroupsRoutes,
+  LecturesRoutes,
   PrintingRoutes,
   ProfileRoutes,
   SharedRoutes,
@@ -56,6 +57,7 @@ function getQuickActions(
     { key: 'subjects', title: t.subjects, description: t.subjectsDescription },
     { key: 'groups', title: t.groups, description: t.groupsDescription },
     { key: 'files', title: t.files, description: t.filesDescription },
+    { key: 'lectures', title: t.lectures, description: t.lecturesDescription },
     { key: 'search', title: t.search, description: t.searchDescription },
     { key: 'printing', title: t.printing, description: t.printingDescription },
     { key: 'support', title: t.support, description: t.supportDescription },
@@ -69,7 +71,7 @@ function getQuickActions(
   ];
   return isStudent
     ? actions
-    : actions.filter((action) => !['subjects', 'groups', 'files'].includes(action.key));
+    : actions.filter((action) => !['subjects', 'groups', 'files', 'lectures'].includes(action.key));
 }
 
 export function HomeScreen() {
@@ -135,6 +137,9 @@ export function HomeScreen() {
         break;
       case 'files':
         navigation.navigate(SharedRoutes.FilesList);
+        break;
+      case 'lectures':
+        navigation.navigate(TabRoutes.Subjects, { screen: LecturesRoutes.LecturesList });
         break;
       case 'search':
         navigation.navigate(SharedRoutes.Search);
@@ -267,6 +272,7 @@ const TILE_ICONS: Record<HomeQuickActionKey, IconName> = {
   subjects: 'book',
   groups: 'users',
   files: 'folder',
+  lectures: 'lecture',
   search: 'search',
   printing: 'printer',
   support: 'help',

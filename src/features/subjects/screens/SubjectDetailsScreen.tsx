@@ -19,6 +19,7 @@ import { SubjectDetailHeader, SubjectLinkedSectionCard } from '../components';
 import { useSubjectsStore } from '../store';
 import type { Subject } from '../types';
 import { useTranslation } from '../../../i18n';
+import { SubjectLecturesSection } from '../../lectures';
 
 type SubjectDetailsScreenProps = NativeStackScreenProps<SubjectsStackParamList, 'SubjectDetails'>;
 type AppTabsNavigation = BottomTabNavigationProp<AppTabsParamList>;
@@ -137,6 +138,7 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
             title={t.subjects.details.groupsTitle}
           />
         </Stack>
+        <SubjectLecturesSection subjectId={subject.id} />
       </Stack>
     </AppScreen>
   );

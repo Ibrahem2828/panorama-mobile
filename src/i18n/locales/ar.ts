@@ -1145,6 +1145,8 @@ export const ar = {
       subjectsDescription: 'انتقل إلى قائمة المواد الدراسية.',
       groups: 'المجموعات',
       groupsDescription: 'تصفح المجموعات والمساحات المرتبطة بالدراسة.',
+      lectures: 'المحاضرات',
+      lecturesDescription: 'اقرأ محاضرات موادك داخل التطبيق.',
       files: 'الملفات',
       filesDescription: 'افتح الملفات المتاحة داخل التطبيق.',
       search: 'البحث',

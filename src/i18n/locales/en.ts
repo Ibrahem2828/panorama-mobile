@@ -1170,6 +1170,8 @@ export const en: TranslationCatalog = {
       subjectsDescription: 'Go to your list of subjects.',
       groups: 'Groups',
       groupsDescription: 'Browse the groups and spaces linked to your studies.',
+      lectures: 'Lectures',
+      lecturesDescription: 'Read your subject lectures in the app.',
       files: 'Files',
       filesDescription: 'Open the files available to you inside the app.',
       search: 'Search',
