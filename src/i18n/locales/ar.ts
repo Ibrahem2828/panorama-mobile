@@ -267,6 +267,14 @@ export const ar = {
     untitled: 'مادة بدون اسم',
     badge: 'مادة',
     codeLabel: (code: string) => `رمز المادة: ${code}`,
+    filters: {
+      year: 'السنة',
+      semester: 'الفصل',
+      all: 'الكل',
+    },
+    general: 'مادة عامة',
+    resultsCount: (count: number) => `${count} مادة`,
+    levelHint: 'تعرض المواد حسب سنتك وفصلك افتراضيا. اختر «الكل» لتصفح أي سنة أو فصل، مثل مواد الإعادة.',
     codeBadge: (code: string) => `رمز ${code}`,
     filesCount: (count: number) => `ملفات ${count}`,
     groupsCount: (count: number) => `مجموعات ${count}`,
@@ -949,6 +957,13 @@ export const ar = {
     title: 'الرئيسية',
     subtitle: 'لوحة الطالب',
     loading: 'جاري تحميل الصفحة الرئيسية...',
+
+    hero: {
+      welcome: 'أهلا بك',
+      guest: 'طالبنا العزيز',
+      notifications: 'الإشعارات',
+      searchPlaceholder: 'ابحث عن مادة أو مجموعة أو ملف',
+    },
 
     greeting: {
       withName: (name: string) => `مرحبا، ${name}`,

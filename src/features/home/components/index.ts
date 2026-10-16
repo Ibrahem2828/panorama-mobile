@@ -4,3 +4,5 @@ export { HomeGreetingCard } from './HomeGreetingCard';
 export { HomeQuickActionCard } from './HomeQuickActionCard';
 export { HomeSectionHeader } from './HomeSectionHeader';
 export { StudentStatusCard } from './StudentStatusCard';
+export { HomeHero } from './HomeHero';
+export { QuickActionTile } from './QuickActionTile';

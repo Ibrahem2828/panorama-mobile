@@ -3,18 +3,18 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Animated, StyleSheet } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 
 import { images } from '../../../assets/images';
 import {
   AppButton,
-  AppHeader,
   AppScreen,
   AppText,
   EmptyState,
   ErrorState,
   LoadingState,
   Stack,
+  type IconName,
 } from '../../../components';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { formatTime } from '../../../utils/formatDateTime';
@@ -34,10 +34,9 @@ import { isStudentProfileComplete, useStudentProfileStore } from '../../student-
 import { getVerificationStatus, useVerificationStore } from '../../verification';
 import {
   AnnouncementCard,
-  HomeAcademicSummaryCard,
-  HomeGreetingCard,
-  HomeQuickActionCard,
+  HomeHero,
   HomeSectionHeader,
+  QuickActionTile,
   StudentStatusCard,
 } from '../components';
 import { useHomeStore } from '../store';
@@ -147,55 +146,55 @@ export function HomeScreen() {
     void refreshHome();
   }
 
+  const facultyName = profile?.faculty?.name ?? null;
+  const yearName = profile?.academic_year?.name ?? profile?.academicYear?.name ?? null;
+  const semesterName = profile?.semester?.name ?? null;
+  const levelLabel = [yearName, semesterName].filter(Boolean).join(' - ') || null;
+
+  const hero = (
+    <HomeHero
+      displayName={displayName}
+      facultyName={isStudent ? facultyName : null}
+      levelLabel={isStudent ? levelLabel : null}
+      onOpenNotifications={() => handleQuickActionPress('notifications')}
+      onOpenSearch={() => handleQuickActionPress('search')}
+      unreadCount={unreadNotificationsCount}
+    />
+  );
+
   if (showInitialLoading) {
     return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.home.subtitle} title={t.home.title} />
-        <HomeGreetingCard
-          displayName={displayName}
-          unreadNotificationsCount={unreadNotificationsCount}
-          userRole={user?.role}
-        />
-        <LoadingState message={t.home.loading} />
+      <AppScreen contentContainerStyle={styles.scrollContent} horizontalPadding={false} scroll>
+        {hero}
+        <View style={styles.body}>
+          <LoadingState message={t.home.loading} />
+        </View>
       </AppScreen>
     );
   }
 
   if (showInitialError) {
     return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.home.subtitle} title={t.home.title} />
-        <HomeGreetingCard
-          displayName={displayName}
-          unreadNotificationsCount={unreadNotificationsCount}
-          userRole={user?.role}
-        />
-        <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
+      <AppScreen contentContainerStyle={styles.scrollContent} horizontalPadding={false} scroll>
+        {hero}
+        <View style={styles.body}>
+          <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
+        </View>
       </AppScreen>
     );
   }
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
-      <Stack gap="xl">
-        <AppHeader subtitle={t.home.subtitle} title={t.home.title} />
-
-        <HomeGreetingCard
-          displayName={displayName}
-          unreadNotificationsCount={unreadNotificationsCount}
-          userRole={user?.role}
-        />
-
+    <AppScreen contentContainerStyle={styles.scrollContent} horizontalPadding={false} scroll>
+      {hero}
+      <View style={styles.body}>
         {isStudent ? (
-          <>
-            <StudentStatusCard
-              hasProfileState={hasProfileState}
-              hasVerificationState={hasVerificationState}
-              profileComplete={profileComplete}
-              verificationStatus={verificationStatus}
-            />
-            <HomeAcademicSummaryCard profile={profile} />
-          </>
+          <StudentStatusCard
+            hasProfileState={hasProfileState}
+            hasVerificationState={hasVerificationState}
+            profileComplete={profileComplete}
+            verificationStatus={verificationStatus}
+          />
         ) : null}
 
         <Animated.View
@@ -204,58 +203,52 @@ export function HomeScreen() {
             transform: [{ translateY: mainContentAnim.translateY }],
           }}
         >
-          <Stack gap="md">
-            <HomeSectionHeader
-              action={
-                <AppButton
-                  loading={isRefreshing}
-                  onPress={handleRefresh}
-                  size="sm"
-                  title={t.common.refresh}
-                  variant="outline"
-                />
-              }
-              subtitle={t.home.announcements.subtitle}
-              title={t.home.announcements.title}
-            />
+          <Stack gap="xl">
+            <Stack gap="sm">
+              <HomeSectionHeader title={t.home.services.title} />
+              <View style={styles.tiles}>
+                {quickActions.map((action) => (
+                  <QuickActionTile
+                    badge={action.badge}
+                    icon={TILE_ICONS[action.key]}
+                    key={action.key}
+                    label={action.title}
+                    onPress={() => handleQuickActionPress(action.key)}
+                  />
+                ))}
+              </View>
+            </Stack>
 
-            {errorMessage ? (
-              <ErrorState message={errorMessage} onRetry={handleRefresh} />
-            ) : announcements.length === 0 ? (
-              <EmptyState
+            <Stack gap="md">
+              <HomeSectionHeader
                 action={
                   <AppButton
                     loading={isRefreshing}
                     onPress={handleRefresh}
-                    title={t.common.retryVerify}
-                    variant="outline"
+                    size="sm"
+                    title={t.common.refresh}
+                    variant="ghost"
                   />
                 }
-                message={t.home.announcements.emptyMessage}
-                title={t.home.announcements.emptyTitle}
-                illustrationLabel={t.home.announcements.emptyIllustrationAlt}
-                illustrationSource={images.emptyStates.announcements}
+                title={t.home.announcements.title}
               />
-            ) : (
-              <Stack gap="md">
-                {announcements.map((announcement) => (
-                  <AnnouncementCard announcement={announcement} key={String(announcement.id)} />
-                ))}
-              </Stack>
-            )}
-          </Stack>
 
-          <Stack gap="md">
-            <HomeSectionHeader subtitle={t.home.services.subtitle} title={t.home.services.title} />
-            <Stack direction="horizontal" gap="md" wrap>
-              {quickActions.map((action) => (
-                <HomeQuickActionCard
-                  action={action}
-                  key={action.key}
-                  marker={t.home.serviceInitials[action.key]}
-                  onPress={action.disabled ? undefined : () => handleQuickActionPress(action.key)}
+              {errorMessage ? (
+                <ErrorState message={errorMessage} onRetry={handleRefresh} />
+              ) : announcements.length === 0 ? (
+                <EmptyState
+                  illustrationLabel={t.home.announcements.emptyIllustrationAlt}
+                  illustrationSource={images.emptyStates.announcements}
+                  message={t.home.announcements.emptyMessage}
+                  title={t.home.announcements.emptyTitle}
                 />
-              ))}
+              ) : (
+                <Stack gap="md">
+                  {announcements.slice(0, 5).map((announcement) => (
+                    <AnnouncementCard announcement={announcement} key={String(announcement.id)} />
+                  ))}
+                </Stack>
+              )}
             </Stack>
           </Stack>
         </Animated.View>
@@ -265,13 +258,35 @@ export function HomeScreen() {
             {t.common.lastUpdatedAt(formatTime(lastLoadedAt, locale) ?? '')}
           </AppText>
         ) : null}
-      </Stack>
+      </View>
     </AppScreen>
   );
 }
 
+const TILE_ICONS: Record<HomeQuickActionKey, IconName> = {
+  subjects: 'book',
+  groups: 'users',
+  files: 'folder',
+  search: 'search',
+  printing: 'printer',
+  support: 'help',
+  notifications: 'bell',
+  profile: 'user',
+};
+
 const styles = StyleSheet.create({
-  content: {
+  scrollContent: {
+    paddingTop: 0,
+    paddingBottom: spacing.xxl,
+  },
+  body: {
     gap: spacing.xl,
+    paddingHorizontal: spacing.screen.horizontal,
+    paddingTop: spacing.xl,
+  },
+  tiles: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    rowGap: spacing.xs,
   },
 });

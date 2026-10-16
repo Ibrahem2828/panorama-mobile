@@ -274,6 +274,14 @@ export const en: TranslationCatalog = {
     untitled: 'Unnamed subject',
     badge: 'Subject',
     codeLabel: (code: string) => `Subject code: ${code}`,
+    filters: {
+      year: 'Year',
+      semester: 'Semester',
+      all: 'All',
+    },
+    general: 'General subject',
+    resultsCount: (count: number) => `${count} subjects`,
+    levelHint: 'Subjects are filtered to your year and semester by default. Choose “All” to browse any year or semester, for example retakes.',
     codeBadge: (code: string) => `Code ${code}`,
     filesCount: (count: number) => `${count} files`,
     groupsCount: (count: number) => `${count} groups`,
@@ -967,6 +975,13 @@ export const en: TranslationCatalog = {
     title: 'Home',
     subtitle: 'Student dashboard',
     loading: 'Loading your home screen...',
+
+    hero: {
+      welcome: 'Welcome',
+      guest: 'Student',
+      notifications: 'Notifications',
+      searchPlaceholder: 'Search subjects, groups or files',
+    },
 
     greeting: {
       withName: (name: string) => `Hello, ${name}`,

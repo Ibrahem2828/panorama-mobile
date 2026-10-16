@@ -1,17 +1,16 @@
-import { useRef } from 'react';
-import { Animated, Pressable, StyleSheet } from 'react-native';
+import { memo } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { AppBadge, AppCard, AppText, Stack } from '../../../components';
-import { opacity } from '../../../theme';
-import { createPressScaleAnim } from '../../../utils/motion';
+import { AppBadge, AppText, Icon } from '../../../components';
+import { useTranslation, type TranslationCatalog } from '../../../i18n';
+import { colors, radius, shadows, useBrand } from '../../../theme';
 import {
   getEntityLabel,
   getSubjectCode,
-  getSubjectDescription,
   getSubjectDisplayName,
+  parseSubjectMeta,
 } from '../services';
 import type { Subject } from '../types';
-import { useTranslation, type TranslationCatalog } from '../../../i18n';
 
 type SubjectCardProps = {
   subject: Subject;
@@ -28,75 +27,90 @@ function getCountBadges(subject: Subject, t: TranslationCatalog) {
   ].filter((value): value is string => Boolean(value));
 }
 
-export function SubjectCard({ subject, onPress }: SubjectCardProps) {
+function SubjectCardComponent({ subject, onPress }: SubjectCardProps) {
   const { t } = useTranslation();
+  const brand = useBrand();
   const title = getSubjectDisplayName(subject, t.subjects);
   const code = getSubjectCode(subject);
-  const description = getSubjectDescription(subject);
+  const { credits, category, englishName } = parseSubjectMeta(subject);
   const academicYear = getEntityLabel(subject.academic_year);
   const semester = getEntityLabel(subject.semester);
+  const major = getEntityLabel(subject.major);
   const countBadges = getCountBadges(subject, t);
-
-  const { scale, onPressIn, onPressOut } = useRef(createPressScaleAnim()).current;
 
   return (
     <Pressable
+      accessibilityLabel={title}
       accessibilityRole="button"
+      android_ripple={{ color: brand.primarySoft }}
       disabled={!onPress}
       onPress={onPress}
-      onPressIn={onPress ? onPressIn : undefined}
-      onPressOut={onPress ? onPressOut : undefined}
-      style={({ pressed }) => [pressed && onPress ? styles.pressed : null]}
+      style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
     >
-      <Animated.View style={{ transform: [{ scale }] }}>
-        <AppCard variant="elevated">
-          <Stack gap="md">
-            <Stack direction="horizontal" gap="md" style={styles.header}>
-              <Stack gap="xs" style={styles.titleBlock}>
-                <AppText variant="title">{title}</AppText>
-                {code ? (
-                  <AppText color="muted" variant="caption">
-                    {t.subjects.codeLabel(code)}
-                  </AppText>
-                ) : null}
-              </Stack>
-              <AppBadge label={t.subjects.badge} variant="brand" />
-            </Stack>
-
-            {description ? (
-              <AppText color="secondary" variant="bodySmall">
-                {description}
+      <View style={[styles.accent, { backgroundColor: brand.primary }]} />
+      <View style={styles.body}>
+        <View style={styles.titleRow}>
+          <View style={[styles.iconBox, { backgroundColor: brand.primarySoft }]}>
+            <Icon color={brand.primary} name="book" size={20} />
+          </View>
+          <View style={styles.titleBlock}>
+            <AppText numberOfLines={2} variant="title">
+              {title}
+            </AppText>
+            {englishName ? (
+              <AppText color="muted" numberOfLines={1} style={styles.ltr} variant="caption">
+                {englishName}
               </AppText>
             ) : null}
-
-            <Stack direction="horizontal" gap="sm" wrap>
-              {academicYear ? (
-                <AppBadge label={t.subjects.academicYear(academicYear)} variant="info" />
-              ) : null}
-              {semester ? (
-                <AppBadge label={t.subjects.semester(semester)} variant="neutral" />
-              ) : null}
-              {countBadges.map((label) => (
-                <AppBadge key={label} label={label} variant="neutral" />
-              ))}
-            </Stack>
-          </Stack>
-        </AppCard>
-      </Animated.View>
+          </View>
+          {code ? (
+            <View style={[styles.codeBox, { backgroundColor: brand.primarySoft }]}>
+              <AppText style={{ color: brand.primary }} variant="caption" weight="700">
+                {code}
+              </AppText>
+            </View>
+          ) : null}
+        </View>
+        <View style={styles.badges}>
+          {academicYear ? <AppBadge label={academicYear} variant="info" /> : null}
+          {semester ? <AppBadge label={semester} variant="neutral" /> : null}
+          {credits ? <AppBadge label={credits} variant="neutral" /> : null}
+          {category ? <AppBadge label={category} variant="brand" /> : null}
+          <AppBadge label={major ?? t.subjects.general} variant={major ? 'warning' : 'success'} />
+          {countBadges.map((label) => (
+            <AppBadge key={label} label={label} variant="neutral" />
+          ))}
+        </View>
+      </View>
     </Pressable>
   );
 }
 
+export const SubjectCard = memo(SubjectCardComponent);
+
 const styles = StyleSheet.create({
-  pressed: {
-    opacity: opacity.pressed,
+  card: {
+    flexDirection: 'row',
+    overflow: 'hidden',
+    borderRadius: radius.xl,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border.default,
+    backgroundColor: colors.background.surface,
+    ...shadows.card,
   },
-  header: {
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+  pressed: { opacity: 0.92 },
+  accent: { width: 5 },
+  body: { flex: 1, gap: 12, padding: 14 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  iconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  titleBlock: {
-    flex: 1,
-    minWidth: 0,
-  },
+  titleBlock: { flex: 1, minWidth: 0, gap: 2 },
+  ltr: { writingDirection: 'ltr', textAlign: 'left' },
+  codeBox: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.full },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
 });

@@ -22,6 +22,8 @@ export type BrandPalette = {
   /** Main interactive colour (buttons, active tab, links). Always >= 4.5:1 against white text. */
   primary: string;
   primarySoft: string;
+  /** A darker shade of `primary` for gradients and pressed states. */
+  deep: string;
   /** Secondary brand colour (the logo purple). */
   secondary: string;
   secondarySoft: string;
@@ -48,6 +50,21 @@ const LOGOS = {
 const LOGO_PURPLE = colors.brand.secondary;
 const LOGO_BURGUNDY = colors.brand.accent;
 
+function mixHex(from: string, to: string, amount: number): string {
+  const parse = (hex: string): [number, number, number] => [
+    parseInt(hex.slice(1, 3), 16),
+    parseInt(hex.slice(3, 5), 16),
+    parseInt(hex.slice(5, 7), 16),
+  ];
+  const [r1, g1, b1] = parse(from);
+  const [r2, g2, b2] = parse(to);
+  const blend = (a: number, b: number) =>
+    Math.round(a + (b - a) * amount)
+      .toString(16)
+      .padStart(2, '0');
+  return `#${blend(r1, r2)}${blend(g1, g2)}${blend(b1, b2)}`;
+}
+
 function palette(
   key: FacultyThemeKey,
   primary: string,
@@ -59,6 +76,7 @@ function palette(
     key,
     primary,
     primarySoft,
+    deep: mixHex(primary, '#0A0F2C', 0.42),
     secondary: overrides.secondary ?? LOGO_PURPLE,
     secondarySoft: overrides.secondarySoft ?? colors.brand.secondarySoft,
     accent: LOGO_BURGUNDY,

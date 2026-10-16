@@ -91,6 +91,25 @@ export function getSubjectCode(subject: Subject): string | null {
   return toText(subject.code) ?? null;
 }
 
+export type SubjectMeta = {
+  credits: string | null;
+  category: string | null;
+  englishName: string | null;
+};
+
+/** Imported descriptions look like "3 ساعات معتمدة · متطلب كلية · Algorithms and Data Structures 1". */
+export function parseSubjectMeta(subject: Subject): SubjectMeta {
+  const description = toText(subject.description);
+  if (!description) {
+    return { credits: null, category: null, englishName: null };
+  }
+  const parts = description.split(' · ').map((part) => part.trim());
+  if (parts.length < 3) {
+    return { credits: null, category: null, englishName: null };
+  }
+  return { credits: parts[0] || null, category: parts[1] || null, englishName: parts[2] || null };
+}
+
 export function getSubjectDescription(subject: Subject): string | null {
   return toText(subject.description) ?? null;
 }
