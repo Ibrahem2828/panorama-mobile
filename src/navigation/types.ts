@@ -22,17 +22,24 @@ export type StudentSetupStackParamList = {
   VerificationStatus: undefined;
 };
 
+export type LecturesListParams = { subjectId?: string | number } | undefined;
+export type LectureViewerParams = { lectureId: string | number; title?: string; page?: number };
+
 export type HomeStackParamList = {
   Home: undefined;
   FilesList: undefined;
   FileDetails: { fileId: string | number };
   PdfViewer: { fileId: string | number; title?: string };
   Search: { query?: string } | undefined;
+  LecturesList: LecturesListParams;
+  LectureViewer: LectureViewerParams;
 };
 
 export type SubjectsStackParamList = {
   SubjectsList: undefined;
   SubjectDetails: { subjectId: string | number };
+  LecturesList: LecturesListParams;
+  LectureViewer: LectureViewerParams;
 };
 
 export type GroupsStackParamList = {
