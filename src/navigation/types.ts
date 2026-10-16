@@ -26,7 +26,7 @@ export type HomeStackParamList = {
   Home: undefined;
   AnnouncementsList: undefined;
   AnnouncementDetail: { announcementId: string | number };
-  FilesList: { subjectId?: string | number } | undefined;
+  FilesList: { subjectId?: string | number; subjectName?: string } | undefined;
   FileDetails: { fileId: string | number };
   PdfViewer: { fileId: string | number; title?: string };
   Search: { query?: string } | undefined;
@@ -77,7 +77,7 @@ export type ProfileStackParamList = {
 };
 
 export type SharedStackParamList = {
-  FilesList: { subjectId?: string | number } | undefined;
+  FilesList: { subjectId?: string | number; subjectName?: string } | undefined;
   FileDetails: { fileId: string | number };
   PdfViewer: { fileId: string | number; title?: string };
   GroupFiles: { groupId: string | number };

@@ -240,6 +240,7 @@ export type FilesPageParams = {
   search?: string;
   subjectId?: Id;
   printableOnly?: boolean;
+  ordering?: string;
 };
 
 /** One server-filtered page of the files the student may see. */
@@ -252,6 +253,7 @@ export async function loadFilesPage(
       page: params.page,
       pageSize: FILES_PAGE_SIZE,
       search: params.search?.trim() || undefined,
+      ordering: params.ordering || undefined,
       subject: params.subjectId,
       isActive: true,
       isPrintable: params.printableOnly ? true : undefined,
