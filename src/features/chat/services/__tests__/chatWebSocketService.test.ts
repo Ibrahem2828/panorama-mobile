@@ -8,7 +8,6 @@ jest.mock('expo-constants', () => ({
 }));
 
 import { ApiClientError } from '../../../../api/errors';
-import type { ChatMessage } from '../../types';
 import {
   RECONNECT_BASE_DELAY_MS,
   RECONNECT_MAX_DELAY_MS,
@@ -18,7 +17,6 @@ import {
   normalizeSocketMessage,
   type ChatConnectionEnvironment,
 } from '../chatWebSocketService';
-import { mergeChatMessages } from '../chatService';
 
 class FakeWebSocket {
   static CONNECTING = 0;
@@ -386,52 +384,5 @@ describe('message frames', () => {
     lastSocket().open();
     expect(client.send('hello')).toBe(true);
     expect(JSON.parse(lastSocket().sent[0])).toEqual({ type: 'message', content: 'hello' });
-  });
-});
-
-describe('merging by server id', () => {
-  const at = (id: number, created_at: string, content = `m${id}`): ChatMessage => ({
-    id,
-    content,
-    created_at,
-  });
-
-  it('de-duplicates the WS and REST copies of the same message', () => {
-    const fromSocket = at(5, '2026-01-01T00:00:05Z');
-    const fromRest = { ...at(5, '2026-01-01T00:00:05Z'), sender_name: 'Ali' };
-
-    const merged = mergeChatMessages([fromSocket], [fromRest]);
-
-    expect(merged).toHaveLength(1);
-    expect(merged[0].sender_name).toBe('Ali');
-  });
-
-  it('treats string and number ids as the same server id', () => {
-    expect(
-      mergeChatMessages(
-        [at(5, '2026-01-01T00:00:05Z')],
-        [{ ...at(5, '2026-01-01T00:00:05Z'), id: '5' }],
-      ),
-    ).toHaveLength(1);
-  });
-
-  it('after a reconnect, the catch-up fills the gap in order without duplicates', () => {
-    const before = [at(1, '2026-01-01T00:00:01Z'), at(2, '2026-01-01T00:00:02Z')];
-    const catchUp = [
-      at(2, '2026-01-01T00:00:02Z'),
-      at(3, '2026-01-01T00:00:03Z'),
-      at(4, '2026-01-01T00:00:04Z'),
-    ];
-
-    expect(mergeChatMessages(before, catchUp).map((message) => message.id)).toEqual([1, 2, 3, 4]);
-  });
-
-  it('orders by created_at and breaks ties with the id', () => {
-    const merged = mergeChatMessages(
-      [at(9, '2026-01-01T00:00:01Z'), at(2, '2026-01-01T00:00:01Z'), at(1, '2026-01-01T00:00:02Z')],
-      [],
-    );
-
-    expect(merged.map((message) => message.id)).toEqual([2, 9, 1]);
   });
 });

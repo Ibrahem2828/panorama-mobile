@@ -1,12 +1,17 @@
 import { buildGroupChatWebSocketUrl } from '../../../config/env';
 import { normalizeApiError } from '../../../api';
+import { normalizeChatMessage, parseDeletedFrame } from '../logic/messages';
 import type { ChatConnectionStatus, ChatMessage, Id } from '../types';
 import { useLocaleStore } from '../../../i18n';
 
 export type ChatWebSocketHandlers = {
   onMessage?: (message: ChatMessage) => void;
+  /** A moderator or the author removed a message; `id` is its server id. */
+  onMessageDeleted?: (id: number) => void;
   onStatusChange?: (status: ChatConnectionStatus) => void;
   onError?: (message: string) => void;
+  /** The server refused this user for good (not a member / session invalid); no retry follows. */
+  onTerminal?: (reason: 'permission' | 'unauthorized') => void;
   /**
    * Fired after every successful RE-connect (not the first connect). Messages sent while
    * the socket was down are never replayed by the server, so the owner must run a REST
@@ -72,26 +77,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-function toText(value: unknown): string | undefined {
-  if (typeof value === 'string' && value.trim().length > 0) {
-    return value.trim();
-  }
-
-  if (typeof value === 'number') {
-    return String(value);
-  }
-
-  return undefined;
-}
-
-function toId(value: unknown): Id | null {
-  if (typeof value === 'string' || typeof value === 'number') {
-    return value;
-  }
-
-  return null;
-}
-
 /**
  * Accepts only server-issued chat messages. Frames without a server id are dropped on
  * purpose: a locally invented id would never match the REST copy of the same message and
@@ -102,37 +87,12 @@ export function normalizeSocketMessage(payload: unknown, groupId: Id): ChatMessa
     return null;
   }
 
-  // `{type:'typing'}` and `{type:'error', message}` frames are not chat messages.
+  // `{type:'typing'}`, `{type:'error'}` and `{type:'message.deleted'}` frames are not messages.
   if (payload.type !== undefined && payload.type !== 'message') {
     return null;
   }
 
-  const candidate = isRecord(payload.data)
-    ? payload.data
-    : isRecord(payload.message)
-      ? payload.message
-      : payload;
-  const id = toId(candidate.id);
-  const content =
-    toText(candidate.content) ??
-    toText(candidate.message) ??
-    toText(candidate.body) ??
-    toText(candidate.text);
-
-  if (id === null || !content) {
-    return null;
-  }
-
-  return {
-    ...candidate,
-    id,
-    group: toId(candidate.group) ?? groupId,
-    sender: toId(candidate.sender) ?? (isRecord(candidate.sender) ? candidate.sender : null),
-    sender_name: toText(candidate.sender_name),
-    content,
-    created_at: toText(candidate.created_at),
-    updated_at: toText(candidate.updated_at),
-  };
+  return normalizeChatMessage(payload, groupId);
 }
 
 function isTerminalTicketError(error: unknown): boolean {
@@ -225,13 +185,13 @@ export function createChatWebSocketClient({
       isAcquiringTicket = false;
 
       if (isTerminalTicketError(error)) {
+        const reason =
+          normalizeApiError(error).code === 'FORBIDDEN' ? 'permission' : 'unauthorized';
+
         isRunning = false;
         setStatus('disconnected');
-        handlers?.onError?.(
-          normalizeApiError(error).code === 'FORBIDDEN'
-            ? chatErrors().permission
-            : chatErrors().unauthorized,
-        );
+        handlers?.onTerminal?.(reason);
+        handlers?.onError?.(chatErrors()[reason]);
         return;
       }
 
@@ -295,6 +255,15 @@ export function createChatWebSocketClient({
           return;
         }
 
+        if (isRecord(payload) && payload.type === 'message.deleted') {
+          const deletedId = parseDeletedFrame(payload);
+
+          if (deletedId !== null) {
+            handlers?.onMessageDeleted?.(deletedId);
+          }
+          return;
+        }
+
         const message = normalizeSocketMessage(payload, groupId);
 
         if (message) {
@@ -325,11 +294,12 @@ export function createChatWebSocketClient({
       }
 
       if (isTerminalCloseCode(event?.code)) {
+        const reason = event.code === 4403 ? 'permission' : 'unauthorized';
+
         isRunning = false;
         setStatus('disconnected');
-        handlers?.onError?.(
-          event.code === 4403 ? chatErrors().permission : chatErrors().unauthorized,
-        );
+        handlers?.onTerminal?.(reason);
+        handlers?.onError?.(chatErrors()[reason]);
         return;
       }
 

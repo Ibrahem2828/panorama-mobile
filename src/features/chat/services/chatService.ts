@@ -1,20 +1,18 @@
 import {
   groupsService as apiGroupsService,
   normalizeApiError,
-  runIdempotentAction,
-  type GroupMessage as ApiGroupMessage,
   type PaginatedResult,
 } from '../../../api';
-import type {
-  ChatMessage,
-  ChatMessageSender,
-  ChatSendPermission,
-  Id,
-  SendChatMessageInput,
-} from '../types';
+import { isTrustedBackendUrl } from '../../../utils/trustedUrl';
 import type { TranslationCatalog } from '../../../i18n';
+import { buildMessageFormData } from '../logic/attachments';
+import { mergeChatMessages, normalizeChatMessage } from '../logic/messages';
+import type { ChatAttachment, ChatMessage, ChatSendPermission, Id } from '../types';
 
 type ChatCatalog = TranslationCatalog['chat'];
+
+/** Messages per REST page (newest first). */
+export const MESSAGES_PAGE_SIZE = 30;
 
 const ADMIN_ROLES = new Set(['admin', 'group_admin', 'moderator', 'it_support']);
 const APPROVED_MEMBERSHIP_STATUSES = new Set(['approved', 'member']);
@@ -29,155 +27,32 @@ function toText(value: unknown): string | undefined {
     return value.trim();
   }
 
-  if (typeof value === 'number') {
-    return String(value);
-  }
-
   return undefined;
-}
-
-function toId(value: unknown): Id | null {
-  if (typeof value === 'string' || typeof value === 'number') {
-    return value;
-  }
-
-  return null;
-}
-
-function normalizeSender(value: unknown): Id | ChatMessageSender | null {
-  if (typeof value === 'string' || typeof value === 'number') {
-    return value;
-  }
-
-  if (!isRecord(value)) {
-    return null;
-  }
-
-  return {
-    ...value,
-    id: toId(value.id) ?? undefined,
-    full_name: toText(value.full_name ?? value.name),
-    username: toText(value.username) ?? null,
-    email: toText(value.email),
-    role: toText(value.role),
-  };
-}
-
-/**
- * Message identity is the SERVER id. A payload without one is not a persisted message, so
- * it is rejected instead of being given an invented id that could never be de-duplicated.
- */
-function normalizeMessage(
-  message: ApiGroupMessage | ChatMessage | Record<string, unknown>,
-): ChatMessage | null {
-  const id = toId(message.id);
-
-  if (id === null) {
-    return null;
-  }
-
-  return {
-    ...message,
-    id,
-    group: toId(message.group) ?? (isRecord(message.group) ? message.group : null),
-    sender: normalizeSender(message.sender),
-    sender_name: toText(message.sender_name),
-    message: toText(message.message),
-    body: toText(message.body),
-    content: toText(message.content),
-    text: toText(message.text),
-    is_own: typeof message.is_own === 'boolean' ? message.is_own : undefined,
-    created_at: toText(message.created_at ?? message.createdAt),
-    updated_at: toText(message.updated_at),
-  };
-}
-
-function normalizeList(response: PaginatedResult<ApiGroupMessage>): PaginatedResult<ChatMessage> {
-  return {
-    ...response,
-    results: response.results
-      .map((message) => normalizeMessage(message))
-      .filter((message): message is ChatMessage => message !== null),
-  };
-}
-
-function getSenderId(message: ChatMessage): Id | null {
-  if (typeof message.sender === 'string' || typeof message.sender === 'number') {
-    return message.sender;
-  }
-
-  return message.sender?.id ?? null;
 }
 
 function isAdminRole(role?: string | null): boolean {
   return Boolean(role && ADMIN_ROLES.has(role));
 }
 
-function timeOf(message: ChatMessage): number {
-  const time = message.created_at ? new Date(message.created_at).getTime() : Number.NaN;
+function readMembership(group: Record<string, unknown>) {
+  const status = toText(group.current_user_membership_status)?.toLowerCase();
+  const role = toText(group.current_user_group_role)?.toLowerCase() ?? null;
 
-  return Number.isNaN(time) ? 0 : time;
+  return { status, role, isAdmin: isAdminRole(role) };
 }
 
-/** Oldest first by created_at; the server id breaks ties so the order is stable. */
-function sortMessages(messages: ChatMessage[]): ChatMessage[] {
-  return [...messages].sort((left, right) => {
-    const byTime = timeOf(left) - timeOf(right);
-
-    if (byTime !== 0) {
-      return byTime;
-    }
-
-    const leftId = Number(left.id);
-    const rightId = Number(right.id);
-
-    if (!Number.isNaN(leftId) && !Number.isNaN(rightId)) {
-      return leftId - rightId;
-    }
-
-    return String(left.id).localeCompare(String(right.id));
-  });
-}
-
-export function getChatMessageText(message: ChatMessage, t: ChatCatalog): string {
-  return (
-    toText(message.content) ??
-    toText(message.message) ??
-    toText(message.body) ??
-    toText(message.text) ??
-    t.emptyMessageBody
-  );
-}
-
-export function getChatMessageSenderName(message: ChatMessage, t: ChatCatalog): string {
-  if (message.sender_name) {
-    return message.sender_name;
-  }
-
-  if (isRecord(message.sender)) {
-    return (
-      toText(message.sender.full_name) ??
-      toText(message.sender.username) ??
-      toText(message.sender.email) ??
-      t.unnamedSender
-    );
-  }
-
-  return t.unnamedSender;
-}
-
-export function isOwnChatMessage(message: ChatMessage, currentUserId?: Id | null): boolean {
-  if (message.is_own === true) {
-    return true;
-  }
-
-  if (!currentUserId) {
+/**
+ * Only approved members (or staff roles) may open a group's chat. A loaded group with no
+ * membership status is someone who never joined, so it is NOT a member.
+ */
+export function canOpenGroupChat(group: unknown): boolean {
+  if (!isRecord(group)) {
     return false;
   }
 
-  const senderId = getSenderId(message);
+  const { status, isAdmin } = readMembership(group);
 
-  return senderId !== null && String(senderId) === String(currentUserId);
+  return isAdmin || Boolean(status && APPROVED_MEMBERSHIP_STATUSES.has(status));
 }
 
 export function canSendMessageToGroup(
@@ -190,31 +65,29 @@ export function canSendMessageToGroup(
   permission: ChatSendPermission;
 } {
   if (!isRecord(group)) {
-    return {
-      allowed: false,
-      reason: t.permission.undetermined,
-      permission: 'unknown',
-    };
+    return { allowed: false, reason: t.permission.undetermined, permission: 'unknown' };
   }
 
-  const membershipStatus = toText(group.current_user_membership_status)?.toLowerCase();
-  const role = toText(group.current_user_group_role)?.toLowerCase() ?? null;
+  const { status, isAdmin } = readMembership(group);
   const sendPermission = toText(group.send_messages_permission)?.toLowerCase();
-  const isApprovedMember =
-    !membershipStatus || APPROVED_MEMBERSHIP_STATUSES.has(membershipStatus) || isAdminRole(role);
+  const isApprovedMember = isAdmin || Boolean(status && APPROVED_MEMBERSHIP_STATUSES.has(status));
 
-  if (membershipStatus && BLOCKED_MEMBERSHIP_STATUSES.has(membershipStatus)) {
+  if (!status && !isAdmin) {
+    return { allowed: false, reason: t.permission.membersOnly, permission: 'not_member' };
+  }
+
+  if (status && BLOCKED_MEMBERSHIP_STATUSES.has(status) && !isAdmin) {
     return {
       allowed: false,
       reason: t.permission.membersOnly,
-      permission: membershipStatus === 'blocked' ? 'blocked' : 'not_member',
+      permission: status === 'blocked' ? 'blocked' : 'not_member',
     };
   }
 
   if (sendPermission === 'admins_only') {
     return {
-      allowed: isAdminRole(role),
-      reason: isAdminRole(role) ? undefined : t.permission.adminsOnly,
+      allowed: isAdmin,
+      reason: isAdmin ? undefined : t.permission.adminsOnly,
       permission: 'admins_only',
     };
   }
@@ -227,29 +100,11 @@ export function canSendMessageToGroup(
     };
   }
 
-  if (!sendPermission) {
-    return {
-      allowed: isApprovedMember,
-      reason: isApprovedMember ? undefined : t.permission.readOnly,
-      permission: 'unknown',
-    };
-  }
-
   return {
     allowed: isApprovedMember,
-    reason: isApprovedMember ? undefined : t.permission.blocked,
+    reason: isApprovedMember ? undefined : t.permission.readOnly,
     permission: 'unknown',
   };
-}
-
-export function mergeChatMessages(current: ChatMessage[], incoming: ChatMessage[]): ChatMessage[] {
-  const byId = new Map<string, ChatMessage>();
-
-  for (const message of [...current, ...incoming]) {
-    byId.set(String(message.id), message);
-  }
-
-  return sortMessages(Array.from(byId.values()));
 }
 
 export function toSafeChatErrorMessage(error: unknown, t: ChatCatalog): string {
@@ -267,24 +122,57 @@ export function toSafeChatErrorMessage(error: unknown, t: ChatCatalog): string {
     return t.errors.permission;
   }
 
-  return normalizedError.message || t.errors.generic;
+  return t.errors.generic;
 }
 
 export function toSafeSendChatErrorMessage(error: unknown, t: ChatCatalog): string {
   const normalizedError = normalizeApiError(error);
 
-  if (normalizedError.code === 'FORBIDDEN') {
-    return t.errors.permission;
+  switch (normalizedError.code) {
+    case 'FORBIDDEN':
+      return t.errors.permission;
+    case 'UNAUTHORIZED':
+      return t.errors.unauthorized;
+    case 'RATE_LIMITED':
+      return t.errors.rateLimited;
+    case 'NETWORK_ERROR':
+    case 'TIMEOUT':
+      return t.errors.sendNetwork;
+    case 'VALIDATION_ERROR':
+      return normalizedError.fieldErrors?.attachment ? t.errors.attachmentRejected : t.errors.send;
+    default:
+      return t.errors.send;
   }
-
-  return toSafeChatErrorMessage(error, t) || t.errors.send;
 }
 
-export async function loadGroupChatMessages(
+export type ChatMessagesPage = {
+  /** Oldest first. */
+  messages: ChatMessage[];
+  hasMore: boolean;
+};
+
+function toPage(response: PaginatedResult<unknown>, groupId: Id): ChatMessagesPage {
+  const messages = response.results
+    .map((message) => normalizeChatMessage(message, groupId))
+    .filter((message): message is ChatMessage => message !== null);
+
+  return { messages: mergeChatMessages([], messages), hasMore: Boolean(response.next) };
+}
+
+/** Newest-first REST page (page 1 = newest). */
+export async function loadGroupChatMessagesPage(
   groupId: Id,
   authToken: string,
-): Promise<PaginatedResult<ChatMessage>> {
-  return normalizeList(await apiGroupsService.listGroupMessages(groupId, authToken));
+  page: number,
+): Promise<ChatMessagesPage> {
+  return toPage(
+    await apiGroupsService.listGroupMessages(groupId, authToken, {
+      page,
+      pageSize: MESSAGES_PAGE_SIZE,
+      ordering: '-created_at',
+    }),
+    groupId,
+  );
 }
 
 /** Requests a fresh single-use WebSocket ticket for the group chat. */
@@ -299,23 +187,73 @@ export async function requestChatSocketTicket(groupId: Id, authToken: string): P
 }
 
 /**
- * Sends over REST. Resolves with the persisted message (carrying its server id), or `null`
- * when the response had none; the caller then refreshes instead of inventing an id.
+ * Sends a text message. Resolves with the persisted message (carrying its server id), or
+ * `null` when the response had none; the caller then refreshes instead of inventing an id.
  */
-export async function sendGroupChatMessage(
+export async function sendTextMessage(
   groupId: Id,
-  input: SendChatMessageInput,
+  content: string,
+  idempotencyKey: string,
   authToken: string,
 ): Promise<ChatMessage | null> {
-  const payload = { type: 'message' as const, content: input.message };
-  // One key per "send this message" action: re-sending the same text after a timeout
-  // re-uses it so a message that did reach the server is not posted twice.
-  const response = await runIdempotentAction(
-    `chat:send:${String(groupId)}`,
-    payload,
-    (idempotencyKey) =>
-      apiGroupsService.sendGroupMessage(groupId, payload, authToken, idempotencyKey),
+  const response = await apiGroupsService.sendGroupMessage(
+    groupId,
+    { content },
+    authToken,
+    idempotencyKey,
   );
 
-  return normalizeMessage(response);
+  return normalizeChatMessage(response, groupId);
+}
+
+export type AttachmentUpload = {
+  promise: Promise<ChatMessage | null>;
+  abort: () => void;
+};
+
+/** Sends an image message (multipart) with progress reporting and a cancel handle. */
+export function sendAttachmentMessage(
+  groupId: Id,
+  input: { content: string; attachment: ChatAttachment },
+  idempotencyKey: string,
+  authToken: string,
+  onProgress: (fraction: number) => void,
+): AttachmentUpload {
+  const handle = apiGroupsService.sendGroupMessageWithAttachment(
+    groupId,
+    buildMessageFormData(input),
+    authToken,
+    { idempotencyKey, onProgress },
+  );
+
+  return {
+    promise: handle.promise.then((response) => normalizeChatMessage(response, groupId)),
+    abort: handle.abort,
+  };
+}
+
+export const CHAT_ATTACHMENT_PATH_PREFIX = '/api/v1/protected-chat-attachments/';
+
+/** Short-lived, in-app-only URL of one attachment. Rejects anything that is not our backend. */
+export async function requestChatAttachmentUrl(
+  groupId: Id,
+  messageId: number,
+  authToken: string,
+): Promise<string> {
+  const ticket = await apiGroupsService.requestGroupMessageAttachmentTicket(
+    groupId,
+    messageId,
+    authToken,
+  );
+
+  if (
+    !isTrustedBackendUrl(ticket.preview_url, {
+      pathPrefixes: [CHAT_ATTACHMENT_PATH_PREFIX],
+      allowHttpInDevelopment: true,
+    })
+  ) {
+    throw new Error('Untrusted attachment URL');
+  }
+
+  return ticket.preview_url;
 }

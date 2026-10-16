@@ -52,6 +52,8 @@ export const endpoints = {
     files: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/files/`,
     messages: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/messages/`,
     chatTicket: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/chat-ticket/`,
+    messageAttachmentTicket: (groupId: EndpointId, messageId: EndpointId) =>
+      `${API_PREFIX}/groups/${groupId}/messages/${messageId}/attachment-ticket/`,
     whatsappTicket: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/whatsapp-ticket/`,
   },
   files: {
