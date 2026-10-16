@@ -86,6 +86,22 @@ export const endpoints = {
     attachmentTicket: (messageId: EndpointId) =>
       `${API_PREFIX}/support/messages/${messageId}/attachment-ticket/`,
   },
+  lectures: {
+    list: `${API_PREFIX}/lectures/`,
+    detail: (lectureId: EndpointId) => `${API_PREFIX}/lectures/${lectureId}/`,
+    processingStatus: (lectureId: EndpointId) =>
+      `${API_PREFIX}/lectures/${lectureId}/processing-status/`,
+    viewerSession: (lectureId: EndpointId) => `${API_PREFIX}/lectures/${lectureId}/viewer/session/`,
+    pageImage: (lectureId: EndpointId, page: number) =>
+      `${API_PREFIX}/lectures/${lectureId}/viewer/pages/${page}/`,
+    pageThumbnail: (lectureId: EndpointId, page: number) =>
+      `${API_PREFIX}/lectures/${lectureId}/viewer/pages/${page}/thumbnail/`,
+    pageText: (lectureId: EndpointId, page: number) =>
+      `${API_PREFIX}/lectures/${lectureId}/viewer/pages/${page}/text/`,
+    notes: (lectureId: EndpointId) => `${API_PREFIX}/lectures/${lectureId}/notes/`,
+    noteDetail: (lectureId: EndpointId, noteId: EndpointId) =>
+      `${API_PREFIX}/lectures/${lectureId}/notes/${noteId}/`,
+  },
   feedback: {
     submit: `${API_PREFIX}/feedback/`,
     prompt: `${API_PREFIX}/feedback/prompt/`,

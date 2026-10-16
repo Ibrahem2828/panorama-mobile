@@ -39,6 +39,11 @@ export const SubjectsRoutes = {
   SubjectDetails: 'SubjectDetails',
 } as const;
 
+export const LecturesRoutes = {
+  LecturesList: 'LecturesList',
+  LectureViewer: 'LectureViewer',
+} as const;
+
 export const GroupsRoutes = {
   GroupsOverview: 'GroupsOverview',
   AvailableGroups: 'AvailableGroups',
