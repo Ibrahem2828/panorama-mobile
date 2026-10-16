@@ -1,69 +1,60 @@
 import { StyleSheet, View } from 'react-native';
 
-import { AppButton, AppText, Stack } from '../../../components';
+import { AppIconButton, AppText, Icon, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { colors, radius, spacing } from '../../../theme';
+import { MAX_COPIES } from '../services/printDraft';
 
 type PrintCopiesStepperProps = {
   value: number;
   error?: string;
-  onIncrement: () => void;
-  onDecrement: () => void;
+  onChange: (value: number) => void;
 };
 
-export function PrintCopiesStepper({
-  value,
-  error,
-  onIncrement,
-  onDecrement,
-}: PrintCopiesStepperProps) {
+export function PrintCopiesStepper({ value, error, onChange }: PrintCopiesStepperProps) {
   const { t } = useTranslation();
 
   return (
     <Stack gap="sm">
-      <AppText variant="title">{t.printing.copies.title}</AppText>
-      <Stack direction="horizontal" gap="md" style={styles.controls}>
-        <AppButton
+      <AppText variant="label">{t.printing.copies.title}</AppText>
+      <Stack align="center" direction="horizontal" gap="md">
+        <AppIconButton
           accessibilityLabel={t.printing.copies.decrease}
           disabled={value <= 1}
-          onPress={onDecrement}
-          size="sm"
-          title="-"
-          variant="outline"
+          icon={<Icon name="minus" />}
+          onPress={() => onChange(value - 1)}
+          variant="surface"
         />
-        <View style={styles.valueBox}>
+        <View
+          accessibilityLabel={t.printing.copies.title}
+          accessibilityRole="adjustable"
+          accessibilityValue={{ min: 1, max: MAX_COPIES, now: value }}
+          style={styles.valueBox}
+        >
           <AppText align="center" variant="title">
             {value}
           </AppText>
         </View>
-        <AppButton
+        <AppIconButton
           accessibilityLabel={t.printing.copies.increase}
-          disabled={value >= 99}
-          onPress={onIncrement}
-          size="sm"
-          title="+"
-          variant="outline"
+          disabled={value >= MAX_COPIES}
+          icon={<Icon name="plus" />}
+          onPress={() => onChange(value + 1)}
+          variant="surface"
         />
       </Stack>
       {error ? (
         <AppText color="error" variant="bodySmall">
           {error}
         </AppText>
-      ) : (
-        <AppText color="muted" variant="caption">
-          {t.printing.copies.limit}
-        </AppText>
-      )}
+      ) : null}
     </Stack>
   );
 }
 
 const styles = StyleSheet.create({
-  controls: {
-    alignItems: 'center',
-  },
   valueBox: {
-    minWidth: 88,
+    minWidth: 72,
     minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',

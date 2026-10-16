@@ -56,6 +56,7 @@ export const PrintingRoutes = {
   PrintPriceSummary: 'PrintPriceSummary',
   MyPrintOrders: 'MyPrintOrders',
   PrintOrderDetails: 'PrintOrderDetails',
+  PrintItemViewer: 'PrintItemViewer',
 } as const;
 
 export const ProfileRoutes = {

@@ -24,6 +24,7 @@ export {
 } from './idempotency';
 export { registerLifecycleHandler, reportLifecycleError } from './lifecycleBridge';
 export { buildQueryString, toPaginationQuery } from './pagination';
+export type { UploadProgress } from './uploadTransport';
 export { buildApiUrl, buildDefaultApiUrl, buildRequestHeaders } from './request';
 export { isApiError, isApiResponseEnvelope, isApiSuccess } from './response';
 export * as accountService from './services/account.service';

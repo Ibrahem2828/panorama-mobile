@@ -5,3 +5,4 @@ export * from './FileTypeBadge';
 export * from './FileTypeIcon';
 export * from './FileViewerFallback';
 export * from './InAppFileViewer';
+export { ProtectedPreview } from './ProtectedPreview';

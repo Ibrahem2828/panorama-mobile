@@ -12,51 +12,15 @@ jest.mock('expo-constants', () => ({
 import { ar } from '../../../i18n/locales/ar';
 import { en } from '../../../i18n/locales/en';
 import {
-  buildCreatePrintOrderRequest,
   canCancelPrintOrder,
+  formatMoneyAmount,
+  formatPrintMoney,
+  getPrintOrderItemFileLabel,
   getPrintOrderStatusPresentation,
-  validatePrintDraft,
 } from '../services/printingService';
-import type { PrintDraft, PrintOrder } from '../types';
+import type { PrintOrder } from '../types';
 
-const draft: PrintDraft = {
-  sourceFileId: 7,
-  sourceFileTitle: 'المحاضرة الأولى',
-  copies: 2,
-  colorMode: 'black_white',
-  paperSize: 'A4',
-  sides: 'double_sided',
-  binding: 'spiral',
-  pickupLocationId: 3,
-  userNotes: 'يرجى التدقيق',
-};
-
-describe('printing contract', () => {
-  it('sends options but never sends a client-computed price', () => {
-    const request = buildCreatePrintOrderRequest(draft);
-    expect(request).toEqual({
-      items: [
-        {
-          source_file: 7,
-          copies: 2,
-          color_mode: 'black_white',
-          paper_size: 'A4',
-          sides: 'double_sided',
-          binding: 'spiral',
-        },
-      ],
-      pickup_location: 3,
-      user_notes: 'يرجى التدقيق',
-    });
-    expect(request).not.toHaveProperty('total_price');
-  });
-
-  it('rejects a draft without a source file', () => {
-    expect(
-      validatePrintDraft({ ...draft, sourceFileId: null }, ar.printing).sourceFileId,
-    ).toBeTruthy();
-  });
-
+describe('printing service helpers', () => {
   it('limits cancellation to non-terminal workflow states', () => {
     const base: PrintOrder = { id: 1, status: 'submitted', items: [] };
     expect(canCancelPrintOrder({ ...base, status: 'under_review' })).toBe(true);
@@ -81,5 +45,28 @@ describe('printing contract', () => {
     );
     expect(presentation.label).toBe('brand_new');
     expect(presentation.variant).toBe('neutral');
+  });
+
+  it('formats money the way a student reads it', () => {
+    expect(formatMoneyAmount('15000.00')).toBe('15,000');
+    expect(formatMoneyAmount('1250.5')).toBe('1,250.5');
+    expect(formatMoneyAmount(null)).toBeNull();
+    expect(formatMoneyAmount('abc')).toBe('abc');
+    expect(formatPrintMoney('300', 'SYP')).toBe('300 SYP');
+    expect(formatPrintMoney('300', null)).toBe('300 SYP');
+  });
+
+  it('names an item by its library title, original name, or a generic uploaded label', () => {
+    const t = ar.printing;
+    expect(getPrintOrderItemFileLabel({ copies: 1, source_file_title: 'محاضرة' }, t)).toBe(
+      'محاضرة',
+    );
+    expect(getPrintOrderItemFileLabel({ copies: 1, original_file_name: 'scan.jpg' }, t)).toBe(
+      'scan.jpg',
+    );
+    expect(getPrintOrderItemFileLabel({ copies: 1, has_uploaded_file: true }, t)).toBe(
+      t.order.uploadedFile,
+    );
+    expect(getPrintOrderItemFileLabel({ copies: 1 }, t)).toBe(t.order.fallbackFileTitle);
   });
 });

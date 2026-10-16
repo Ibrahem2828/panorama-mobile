@@ -4,13 +4,25 @@ import type { ApiListParams, FileAccessTicket, FileRecord } from '../types';
 import type { PaginatedResult } from '../pagination';
 import { toPaginationQuery } from '../pagination';
 
+export type FileListParams = ApiListParams & {
+  /** Backend `subject` filter: only files attached to this subject. */
+  subject?: string | number;
+  isPrintable?: boolean;
+  isActive?: boolean;
+};
+
 export function listFiles(
   authToken: string,
-  params?: ApiListParams,
+  params?: FileListParams,
 ): Promise<PaginatedResult<FileRecord>> {
   return apiClient.get<PaginatedResult<FileRecord>>(endpoints.files.list, {
     authToken,
-    query: toPaginationQuery(params),
+    query: {
+      ...toPaginationQuery(params),
+      subject: params?.subject,
+      is_printable: params?.isPrintable,
+      is_active: params?.isActive,
+    },
   });
 }
 

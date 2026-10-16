@@ -39,6 +39,7 @@ const shapes = {
   chevronLeft: [p('m15 18-6-6 6-6')],
   chevronDown: [p('m6 9 6 6 6-6')],
   plus: [p('M5 12h14'), p('M12 5v14')],
+  minus: [p('M5 12h14')],
   send: [p('m22 2-7 20-4-9-9-4z'), p('M22 2 11 13')],
   image: [{ r: [3, 3, 18, 18, 2] }, c(9, 9, 2), p('m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21')],
   paperclip: [
