@@ -26,6 +26,8 @@ export type Group = {
   send_messages_permission?: SendMessagesPermission;
   has_whatsapp_channel?: boolean;
   university?: Id | Record<string, unknown> | null;
+  faculty?: Id | Record<string, unknown> | null;
+  requires_approval?: boolean;
   major?: Id | Record<string, unknown> | null;
   academic_year?: Id | Record<string, unknown> | null;
   semester?: Id | Record<string, unknown> | null;
@@ -43,4 +45,8 @@ export type GroupJoinResult = {
   [key: string]: unknown;
 };
 
-export type WhatsAppAccessTicket = { open_url: string; expires_at: string };
+/** Display data of a subject, looked up by the id a group carries. */
+export type SubjectLabel = { name: string; code: string | null };
+
+/** Result of tapping "open WhatsApp": the app opened, WhatsApp is missing, or the launch failed. */
+export type WhatsAppLaunchResult = 'opened' | 'not-installed' | 'failed';

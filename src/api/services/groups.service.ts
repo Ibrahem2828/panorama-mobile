@@ -7,19 +7,24 @@ import type {
   GroupJoinResult,
   GroupMessage,
   GroupRecord,
-  GroupWhatsAppTicket,
+  GroupWhatsAppLaunch,
   SendGroupMessageRequest,
 } from '../types';
 import type { PaginatedResult } from '../pagination';
 import { toPaginationQuery } from '../pagination';
 
+export type AvailableGroupsParams = ApiListParams & {
+  /** Subject id: only the groups of that subject. */
+  subject?: string | number | null;
+};
+
 export function listAvailableGroups(
   authToken: string,
-  params?: ApiListParams,
+  params?: AvailableGroupsParams,
 ): Promise<PaginatedResult<GroupRecord>> {
   return apiClient.get<PaginatedResult<GroupRecord>>(endpoints.groups.available, {
     authToken,
-    query: toPaginationQuery(params),
+    query: { ...toPaginationQuery(params), subject: params?.subject ?? undefined },
   });
 }
 
@@ -96,12 +101,16 @@ export function requestGroupChatTicket(
   );
 }
 
-export function requestGroupWhatsAppTicket(
+/**
+ * Asks the server for a one-off `whatsapp://` deep link (members only). The https invite link is
+ * never returned, so it can never be shown, logged or opened in a browser.
+ */
+export function requestGroupWhatsAppLaunch(
   groupId: string | number,
   authToken: string,
-): Promise<GroupWhatsAppTicket> {
-  return apiClient.post<GroupWhatsAppTicket, EmptyResponse>(
-    endpoints.groups.whatsappTicket(groupId),
+): Promise<GroupWhatsAppLaunch> {
+  return apiClient.post<GroupWhatsAppLaunch, EmptyResponse>(
+    endpoints.groups.whatsappLaunch(groupId),
     {},
     { authToken },
   );

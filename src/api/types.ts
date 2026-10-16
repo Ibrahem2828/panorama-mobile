@@ -141,9 +141,9 @@ export type GroupRecord = ApiEntity & {
   updated_at?: string;
 };
 
-export type GroupWhatsAppTicket = {
-  open_url: string;
-  expires_at: string;
+/** Response of the WhatsApp launch call: a `whatsapp://` deep link, never the https invite link. */
+export type GroupWhatsAppLaunch = {
+  app_url: string;
 };
 
 /** Single-use credential for the chat WebSocket handshake (`?ticket=`). */

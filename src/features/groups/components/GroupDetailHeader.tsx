@@ -3,15 +3,16 @@ import { StyleSheet } from 'react-native';
 import { AppAvatar, AppCard, AppText, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { getGroupDescription, getGroupDisplayName, getGroupImageUri } from '../services';
-import type { Group } from '../types';
+import type { Group, SubjectLabel } from '../types';
 import { GroupMembershipBadge } from './GroupMembershipBadge';
 import { GroupStatsRow } from './GroupStatsRow';
 
 type GroupDetailHeaderProps = {
   group: Group;
+  subject?: SubjectLabel | null;
 };
 
-export function GroupDetailHeader({ group }: GroupDetailHeaderProps) {
+export function GroupDetailHeader({ group, subject }: GroupDetailHeaderProps) {
   const { t } = useTranslation();
   const title = getGroupDisplayName(group, t.groups);
   const description = getGroupDescription(group);
@@ -34,7 +35,7 @@ export function GroupDetailHeader({ group }: GroupDetailHeaderProps) {
           </AppText>
         ) : null}
 
-        <GroupStatsRow group={group} />
+        <GroupStatsRow group={group} subject={subject} />
       </Stack>
     </AppCard>
   );

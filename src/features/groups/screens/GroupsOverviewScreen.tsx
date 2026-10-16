@@ -70,7 +70,7 @@ export function GroupsOverviewScreen({ navigation }: GroupsOverviewScreenProps) 
   const resolvedMyGroupsCount = myGroupsCount || myGroups.length;
 
   useEffect(() => {
-    void loadAvailableGroups();
+    void loadAvailableGroups({ search: '', subjectId: null });
     void loadMyGroups();
   }, [loadAvailableGroups, loadMyGroups]);
 
