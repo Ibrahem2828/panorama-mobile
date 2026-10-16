@@ -291,14 +291,14 @@ export const ar = {
       academicYearLabel: 'السنة الأكاديمية',
       semesterLabel: 'الفصل',
       majorLabel: 'الاختصاص',
-      orderLabel: 'ترتيب العرض',
+      orderLabel: 'الترتيب',
       linkedTitle: 'المحتوى المرتبط',
       filesTitle: 'الملفات',
       filesDescription:
-        'افتح قائمة الملفات المتاحة داخل التطبيق. لا يوجد فلتر موثق حسب المادة في هذه المرحلة.',
+        'تصفح الملفات والملخصات المتاحة لك داخل التطبيق.',
       groupsTitle: 'المجموعات',
       groupsDescription:
-        'افتح المجموعات العامة المتاحة. لا يوجد ربط موثق حسب المادة في هذه المرحلة.',
+        'انضم إلى مجموعة هذه المادة وتابع الدردشة مع زملائك.',
       announcementsTitle: 'الإعلانات',
       announcementsDescription: 'لا يوجد endpoint موثق لإعلانات المادة في هذه المرحلة.',
     },

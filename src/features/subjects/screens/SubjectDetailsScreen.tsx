@@ -65,7 +65,10 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
   function handleOpenGroups() {
     navigation
       .getParent<AppTabsNavigation>()
-      ?.navigate(TabRoutes.Groups, { screen: GroupsRoutes.GroupsOverview });
+      ?.navigate(TabRoutes.Groups, {
+        screen: GroupsRoutes.AvailableGroups,
+        params: { subjectId: subject?.id },
+      });
   }
 
   function handleOpenFiles() {
@@ -132,11 +135,6 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
             description={t.subjects.details.groupsDescription}
             onPress={handleOpenGroups}
             title={t.subjects.details.groupsTitle}
-          />
-          <SubjectLinkedSectionCard
-            description={t.subjects.details.announcementsDescription}
-            disabled
-            title={t.subjects.details.announcementsTitle}
           />
         </Stack>
       </Stack>
