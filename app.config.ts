@@ -70,6 +70,12 @@ const withReleaseSigning: ConfigPlugin = (config) => {
     const marker = '// panorama-release-signing';
     if (mod.modResults.language === 'groovy' && !mod.modResults.contents.includes(marker)) {
       let contents = mod.modResults.contents;
+      // 1) point buildTypes.release at the release key (before the signingConfigs block exists, so the
+      //    pattern cannot match anything else); 2) add the environment-driven release signing config.
+      contents = contents.replace(
+        /(buildTypes\s*\{[\s\S]*?release\s*\{[\s\S]*?)signingConfig signingConfigs\.debug/,
+        '$1signingConfig System.getenv("PANORAMA_KEYSTORE_FILE") ? signingConfigs.release : signingConfigs.debug',
+      );
       contents = contents.replace(
         'signingConfigs {',
         `signingConfigs {
@@ -83,10 +89,6 @@ const withReleaseSigning: ConfigPlugin = (config) => {
                 keyPassword System.getenv("PANORAMA_KEY_PASSWORD")
             }
         }`,
-      );
-      contents = contents.replace(
-        /(release \{[\s\S]*?)signingConfig signingConfigs\.debug/,
-        '$1signingConfig System.getenv("PANORAMA_KEYSTORE_FILE") ? signingConfigs.release : signingConfigs.debug',
       );
       mod.modResults.contents = contents;
     }
