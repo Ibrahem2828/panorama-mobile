@@ -69,7 +69,12 @@ function getAuthErrorMessage(error: unknown, context: 'login' | 'session' | 'gen
   }
 
   if (normalizedError.code === 'VALIDATION_ERROR') {
-    return context === 'login' ? messages.invalidCredentials : messages.generic;
+    // The API answers a wrong password with 400 + field errors; a bare 400 from a proxy or
+    // misconfigured host carries none and must not be shown as "wrong password".
+    const fromApi = Boolean(
+      normalizedError.fieldErrors && Object.keys(normalizedError.fieldErrors).length > 0,
+    );
+    return context === 'login' && fromApi ? messages.invalidCredentials : messages.generic;
   }
 
   if (normalizedError.code === 'FORBIDDEN') {
