@@ -7,10 +7,12 @@ import {
   addSupportTicketMessage,
   canReplyToSupportTicket,
   createSupportTicket,
+  isUploadCancelled,
   loadMySupportTickets,
   loadSupportTicketDetail,
   toSafeSupportErrorMessage,
 } from '../services';
+import type { LocalFile } from '../../attachments/services/localFile';
 import type {
   Id,
   SupportTicket,
@@ -24,6 +26,11 @@ type SupportState = {
   selectedTicket: SupportTicket | null;
   createDraft: SupportTicketDraft;
   replyMessage: string;
+  replyAttachment: LocalFile | null;
+  uploadPercent: number | null;
+  nextTicketsPage: number | null;
+  statusFilter: string;
+  isLoadingMoreTickets: boolean;
   validation: SupportTicketDraftValidation;
   isLoadingTickets: boolean;
   isLoadingDetail: boolean;
@@ -35,7 +42,11 @@ type SupportState = {
   lastLoadedAt: string | null;
   ticketsCount: number;
 
-  loadMyTickets: () => Promise<void>;
+  loadMyTickets: (status?: string) => Promise<void>;
+  loadMoreTickets: () => Promise<void>;
+  cancelUpload: () => void;
+  setAttachment: (file: LocalFile | null) => void;
+  setReplyAttachment: (file: LocalFile | null) => void;
   refreshMyTickets: () => Promise<void>;
   loadTicketDetail: (ticketId: Id) => Promise<void>;
   createTicket: () => Promise<SupportTicket | null>;
@@ -56,6 +67,7 @@ const DEFAULT_DRAFT: SupportTicketDraft = {
   category: 'technical',
   subject: '',
   message: '',
+  attachment: null,
 };
 
 function getInitialSupportState() {
@@ -64,6 +76,11 @@ function getInitialSupportState() {
     selectedTicket: null,
     createDraft: { ...DEFAULT_DRAFT },
     replyMessage: '',
+    replyAttachment: null,
+    uploadPercent: null,
+    nextTicketsPage: null,
+    statusFilter: '',
+    isLoadingMoreTickets: false,
     validation: {},
     isLoadingTickets: false,
     isLoadingDetail: false,
@@ -124,6 +141,43 @@ function hasValidationErrors(validation: SupportTicketDraftValidation): boolean 
   );
 }
 
+/** One attachment upload at a time; this is the handle the cancel button aborts. */
+let activeUpload: AbortController | null = null;
+
+type SetState = (partial: Partial<SupportState>) => void;
+
+function startUpload(set: SetState, hasAttachment: boolean) {
+  activeUpload?.abort();
+
+  const controller = new AbortController();
+  let lastPercent = -1;
+
+  activeUpload = controller;
+  set({ uploadPercent: hasAttachment ? 0 : null });
+
+  return {
+    signal: controller.signal,
+    options: {
+      signal: controller.signal,
+      onUploadProgress: ({ loaded, total }: { loaded: number; total: number }) => {
+        const percent = total > 0 ? Math.min(100, Math.round((loaded / total) * 100)) : 0;
+
+        if (hasAttachment && percent !== lastPercent) {
+          lastPercent = percent;
+          set({ uploadPercent: percent });
+        }
+      },
+    },
+    finish: () => {
+      if (activeUpload === controller) {
+        activeUpload = null;
+      }
+
+      set({ uploadPercent: null });
+    },
+  };
+}
+
 export const useSupportStore = create<SupportState>((set, get) => {
   function requireToken(): string | null {
     const accessToken = getAccessToken();
@@ -144,11 +198,16 @@ export const useSupportStore = create<SupportState>((set, get) => {
   }
 
   async function reloadTickets(accessToken: string) {
-    const response = await loadMySupportTickets(accessToken);
+    const status = get().statusFilter;
+    const response = await loadMySupportTickets(accessToken, {
+      page: 1,
+      status: status || undefined,
+    });
 
     set({
       tickets: response.results,
       ticketsCount: response.count,
+      nextTicketsPage: response.next ? 2 : null,
       lastLoadedAt: new Date().toISOString(),
     });
   }
@@ -166,7 +225,12 @@ export const useSupportStore = create<SupportState>((set, get) => {
   return {
     ...getInitialSupportState(),
 
-    async loadMyTickets() {
+    async loadMyTickets(status) {
+      if (status !== undefined && status !== get().statusFilter) {
+        // A different filter replaces whatever load is still running.
+        set({ statusFilter: status, isLoadingTickets: false });
+      }
+
       if (get().isLoadingTickets) {
         return;
       }
@@ -188,6 +252,67 @@ export const useSupportStore = create<SupportState>((set, get) => {
           errorMessage: toSafeSupportErrorMessage(error, supportCatalog()),
         });
       }
+    },
+
+    async loadMoreTickets() {
+      const {
+        nextTicketsPage,
+        isLoadingMoreTickets,
+        isLoadingTickets,
+        isRefreshing,
+        statusFilter,
+      } = get();
+      const accessToken = getAccessToken();
+
+      if (
+        nextTicketsPage === null ||
+        isLoadingMoreTickets ||
+        isLoadingTickets ||
+        isRefreshing ||
+        !accessToken
+      ) {
+        return;
+      }
+
+      set({ isLoadingMoreTickets: true, errorMessage: null });
+
+      try {
+        const response = await loadMySupportTickets(accessToken, {
+          page: nextTicketsPage,
+          status: statusFilter || undefined,
+        });
+
+        set((state) => {
+          const known = new Set(state.tickets.map((ticket) => String(ticket.id)));
+
+          return {
+            tickets: [
+              ...state.tickets,
+              ...response.results.filter((ticket) => !known.has(String(ticket.id))),
+            ],
+            ticketsCount: response.count,
+            nextTicketsPage: response.next ? nextTicketsPage + 1 : null,
+            isLoadingMoreTickets: false,
+          };
+        });
+      } catch (error) {
+        set({
+          isLoadingMoreTickets: false,
+          errorMessage: toSafeSupportErrorMessage(error, supportCatalog()),
+        });
+      }
+    },
+
+    cancelUpload() {
+      activeUpload?.abort();
+    },
+
+    setAttachment(file) {
+      set((state) => ({ createDraft: { ...state.createDraft, attachment: file } }));
+    },
+
+    setReplyAttachment(file) {
+      set({ replyAttachment: file });
     },
 
     async refreshMyTickets() {
@@ -266,14 +391,18 @@ export const useSupportStore = create<SupportState>((set, get) => {
 
       set({ isCreating: true, errorMessage: null, successMessage: null });
 
+      const upload = startUpload(set, Boolean(draft.attachment));
+
       try {
         const ticket = await createSupportTicket(
           {
             category: draft.category,
             subject: draft.subject.trim(),
             message: draft.message.trim(),
+            attachment: draft.attachment,
           },
           accessToken,
+          upload.options,
         );
 
         set((state) => ({
@@ -291,9 +420,13 @@ export const useSupportStore = create<SupportState>((set, get) => {
       } catch (error) {
         set({
           isCreating: false,
-          errorMessage: toSafeSupportErrorMessage(error, supportCatalog()),
+          errorMessage: isUploadCancelled(error, upload.signal)
+            ? null
+            : toSafeSupportErrorMessage(error, supportCatalog()),
         });
         return null;
+      } finally {
+        upload.finish();
       }
     },
 
@@ -327,11 +460,20 @@ export const useSupportStore = create<SupportState>((set, get) => {
 
       set({ isSendingMessage: true, errorMessage: null, successMessage: null });
 
+      const attachment = get().replyAttachment;
+      const upload = startUpload(set, Boolean(attachment));
+
       try {
-        await addSupportTicketMessage(ticketId, { message }, accessToken);
+        await addSupportTicketMessage(
+          ticketId,
+          { message, attachment },
+          accessToken,
+          upload.options,
+        );
         await reloadDetail(ticketId, accessToken);
         set({
           replyMessage: '',
+          replyAttachment: null,
           validation: {},
           isSendingMessage: false,
           successMessage: supportCatalog().messages.sendSuccess,
@@ -339,8 +481,12 @@ export const useSupportStore = create<SupportState>((set, get) => {
       } catch (error) {
         set({
           isSendingMessage: false,
-          errorMessage: toSafeSupportErrorMessage(error, supportCatalog()),
+          errorMessage: isUploadCancelled(error, upload.signal)
+            ? null
+            : toSafeSupportErrorMessage(error, supportCatalog()),
         });
+      } finally {
+        upload.finish();
       }
     },
 
@@ -396,6 +542,7 @@ export const useSupportStore = create<SupportState>((set, get) => {
     },
 
     reset() {
+      activeUpload?.abort();
       set(getInitialSupportState());
     },
   };

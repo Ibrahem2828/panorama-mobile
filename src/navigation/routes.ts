@@ -70,6 +70,7 @@ export const ProfileRoutes = {
   SupportTickets: 'SupportTickets',
   CreateSupportTicket: 'CreateSupportTicket',
   TicketDetails: 'TicketDetails',
+  SupportAttachment: 'SupportAttachment',
   PrivacyPolicy: 'PrivacyPolicy',
   Terms: 'Terms',
   About: 'About',

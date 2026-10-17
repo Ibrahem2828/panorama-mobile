@@ -1,3 +1,13 @@
+import {
+  MAX_UPLOAD_BYTES,
+  UPLOAD_EXTENSIONS,
+  UPLOAD_MIME_TYPES,
+  appendLocalFile,
+  fileExtension,
+  mimeTypeOf,
+  toLocalFile,
+  validateUploadCandidate,
+} from '../../attachments/services/localFile';
 import type {
   PrintCartItem,
   PrintDraft,
@@ -5,33 +15,24 @@ import type {
   PrintItemValidation,
   PrintLocalFile,
   PrintSource,
-  UploadProblem,
 } from '../types';
 
 /** Backend `PrintOrderItemInputSerializer.copies` max_value. */
 export const MAX_COPIES = 99;
 /** Backend limit: "A single order cannot contain more than 10 items." */
 export const MAX_PRINT_ITEMS = 10;
-/** Backend document upload policy: 1 byte .. 25 MB. */
-export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+export {
+  MAX_UPLOAD_BYTES,
+  UPLOAD_EXTENSIONS,
+  UPLOAD_MIME_TYPES,
+  fileExtension,
+  mimeTypeOf,
+  toLocalFile,
+  validateUploadCandidate,
+};
+
 /** One request's total multipart budget (backend body cap with envelope slack). */
 export const MAX_REQUEST_UPLOAD_BYTES = 48 * 1024 * 1024;
-
-export const UPLOAD_EXTENSIONS = ['pdf', 'png', 'jpg', 'jpeg', 'webp'] as const;
-export const UPLOAD_MIME_TYPES = [
-  'application/pdf',
-  'image/png',
-  'image/jpeg',
-  'image/webp',
-] as const;
-
-const MIME_BY_EXTENSION: Record<string, string> = {
-  pdf: 'application/pdf',
-  png: 'image/png',
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  webp: 'image/webp',
-};
 
 export const DEFAULT_ITEM_OPTIONS = {
   copies: 1,
@@ -51,74 +52,6 @@ export function newCartItem(source: PrintSource = null): PrintCartItem {
 
 export function createEmptyDraft(): PrintDraft {
   return { items: [newCartItem()], pickupLocationId: null, userNotes: '' };
-}
-
-export function fileExtension(name: string): string {
-  const index = name.lastIndexOf('.');
-
-  return index < 0 ? '' : name.slice(index + 1).toLowerCase();
-}
-
-/** Returns what is wrong with a candidate upload, or null when it satisfies the policy. */
-export function validateUploadCandidate(
-  file: Pick<PrintLocalFile, 'name' | 'size' | 'mimeType'>,
-): UploadProblem | null {
-  if (!(UPLOAD_EXTENSIONS as readonly string[]).includes(fileExtension(file.name))) {
-    return 'type';
-  }
-
-  const mime = (file.mimeType ?? '').split(';')[0]?.trim().toLowerCase() ?? '';
-
-  if (
-    mime &&
-    mime !== 'application/octet-stream' &&
-    !(UPLOAD_MIME_TYPES as readonly string[]).includes(mime)
-  ) {
-    return 'type';
-  }
-
-  if (file.size !== null) {
-    if (file.size <= 0) {
-      return 'empty';
-    }
-
-    if (file.size > MAX_UPLOAD_BYTES) {
-      return 'size';
-    }
-  }
-
-  return null;
-}
-
-/** Builds a local file from an image-picker asset, filling the gaps platforms leave. */
-export function toLocalFile(asset: {
-  uri: string;
-  fileName?: string | null;
-  fileSize?: number | null;
-  mimeType?: string | null;
-}): PrintLocalFile {
-  const uriName = asset.uri.split('?')[0]?.split('/').pop() ?? '';
-  const rawName = (asset.fileName ?? uriName).trim();
-  const extensionFromMime = Object.entries(MIME_BY_EXTENSION).find(
-    ([, mime]) => mime === asset.mimeType?.toLowerCase(),
-  )?.[0];
-  const hasKnownExtension = (UPLOAD_EXTENSIONS as readonly string[]).includes(
-    fileExtension(rawName),
-  );
-  const name = hasKnownExtension
-    ? rawName
-    : `${rawName || `photo-${Date.now().toString(36)}`}.${extensionFromMime ?? 'jpg'}`;
-
-  return {
-    uri: asset.uri,
-    name,
-    size: typeof asset.fileSize === 'number' && asset.fileSize >= 0 ? asset.fileSize : null,
-    mimeType: asset.mimeType ?? MIME_BY_EXTENSION[fileExtension(name)] ?? null,
-  };
-}
-
-export function mimeTypeOf(file: PrintLocalFile): string {
-  return file.mimeType ?? MIME_BY_EXTENSION[fileExtension(file.name)] ?? 'application/octet-stream';
 }
 
 export function validateItem(item: PrintCartItem): PrintItemValidation {
@@ -178,11 +111,6 @@ export type PrintOrderJson = PrintQuoteJson & {
   user_notes?: string;
   pickup_location: number | string | null;
 };
-
-function appendLocalFile(form: FormData, field: string, file: PrintLocalFile) {
-  // React Native streams a { uri, name, type } descriptor straight from disk.
-  form.append(field, { uri: file.uri, name: file.name, type: mimeTypeOf(file) } as unknown as Blob);
-}
 
 /**
  * JSON when every item is a library file; multipart (`items[i]field`, the DRF html-list

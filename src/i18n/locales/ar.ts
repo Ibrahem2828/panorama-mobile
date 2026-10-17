@@ -1022,6 +1022,21 @@ export const ar = {
     },
   },
 
+  attachments: {
+    attach: 'إرفاق صورة',
+    hint: 'الصور المدعومة: PNG وJPG وWEBP، بحد أقصى 25 م.ب.',
+    remove: 'إزالة المرفق',
+    selected: 'مرفق محدد',
+    uploading: (percent: number) => `جاري الرفع ${percent}%`,
+    invalidType: 'صيغة الملف غير مدعومة. اختر صورة PNG أو JPG أو WEBP.',
+    tooLarge: 'حجم الملف يتجاوز 25 م.ب.',
+    empty: 'الملف فارغ.',
+    pickerFailed: 'تعذر فتح معرض الصور. حاول مرة أخرى.',
+    viewAttachment: 'عرض المرفق',
+    viewerTitle: 'مرفق',
+    viewerSubtitle: 'عرض محمي داخل التطبيق',
+  },
+
   home: {
     title: 'الرئيسية',
     subtitle: 'لوحة الطالب',
@@ -1114,8 +1129,13 @@ export const ar = {
     title: 'الدعم الفني',
     subtitle: 'تذاكر دعم الطلاب',
     loading: 'جاري تحميل تذاكر الدعم...',
-    intro:
-      'يمكنك إنشاء تذكرة دعم ومتابعة الردود الخاصة بك فقط. لا توجد مرفقات أو محادثة فورية في هذه المرحلة.',
+    intro: 'أنشئ تذكرة دعم وأرفق صورة توضح المشكلة، وتابع ردود فريق الدعم هنا.',
+    filterLabel: 'تصفية حسب الحالة',
+    filterAll: 'الكل',
+    filteredEmptyTitle: 'لا توجد تذاكر بهذه الحالة',
+    filteredEmptyMessage: 'جرّب حالة أخرى أو اعرض كل التذاكر.',
+    loadMore: 'عرض المزيد',
+    cancelUpload: 'إلغاء الرفع',
     ticketsCount: (count: number) => `عدد التذاكر: ${count}`,
     createTicket: 'إنشاء تذكرة جديدة',
     createFirstTicket: 'إنشاء أول تذكرة',
@@ -1128,8 +1148,7 @@ export const ar = {
     create: {
       title: 'إنشاء تذكرة دعم',
       subtitle: 'إرسال مشكلة إلى فريق الدعم',
-      notice:
-        'يتم إرسال التصنيف والعنوان والرسالة فقط حسب واجهة الدعم الرسمية. لا يتم رفع مرفقات أو طلب تصنيفات من الخادم في هذه المرحلة.',
+      notice: 'اختر التصنيف واكتب تفاصيل المشكلة، ويمكنك إرفاق صورة تساعد فريق الدعم.',
       subjectLabel: 'عنوان المشكلة',
       subjectPlaceholder: 'مثال: مشكلة في فتح ملف',
       messageLabel: 'تفاصيل المشكلة',

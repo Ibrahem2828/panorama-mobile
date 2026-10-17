@@ -1039,6 +1039,21 @@ export const en: TranslationCatalog = {
     },
   },
 
+  attachments: {
+    attach: 'Attach an image',
+    hint: 'Supported images: PNG, JPG and WEBP, up to 25 MB.',
+    remove: 'Remove attachment',
+    selected: 'Selected attachment',
+    uploading: (percent: number) => `Uploading ${percent}%`,
+    invalidType: 'Unsupported file type. Choose a PNG, JPG or WEBP image.',
+    tooLarge: 'The file is larger than 25 MB.',
+    empty: 'The file is empty.',
+    pickerFailed: 'Could not open the photo library. Please try again.',
+    viewAttachment: 'View attachment',
+    viewerTitle: 'Attachment',
+    viewerSubtitle: 'Protected view inside the app',
+  },
+
   home: {
     title: 'Home',
     subtitle: 'Student dashboard',
@@ -1133,7 +1148,13 @@ export const en: TranslationCatalog = {
     subtitle: 'Student support tickets',
     loading: 'Loading support tickets...',
     intro:
-      'You can create a support ticket and follow the replies to it. There are no attachments or live chat at this stage.',
+      'Create a support ticket, attach an image that shows the problem, and follow the replies here.',
+    filterLabel: 'Filter by status',
+    filterAll: 'All',
+    filteredEmptyTitle: 'No tickets with this status',
+    filteredEmptyMessage: 'Try another status or show all tickets.',
+    loadMore: 'Load more',
+    cancelUpload: 'Cancel upload',
     ticketsCount: (count: number) => `Tickets: ${count}`,
     createTicket: 'New ticket',
     createFirstTicket: 'Create your first ticket',
@@ -1147,7 +1168,7 @@ export const en: TranslationCatalog = {
       title: 'New support ticket',
       subtitle: 'Send a problem to the support team',
       notice:
-        'Only the category, title and message are sent, as the support API defines. Attachments and server-provided categories are not part of this stage.',
+        'Choose a category and describe the problem. You can attach an image to help the support team.',
       subjectLabel: 'Problem title',
       subjectPlaceholder: 'For example: cannot open a file',
       messageLabel: 'Problem details',

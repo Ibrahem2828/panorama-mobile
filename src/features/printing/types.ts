@@ -1,4 +1,5 @@
 import type { StatusVariant } from '../../types/common';
+import type { LocalFile, UploadProblem } from '../attachments/services/localFile';
 
 export type Id = string | number;
 export type PrintColorMode = 'black_white' | 'color';
@@ -79,13 +80,7 @@ export type PrintOrder = {
 };
 
 /** A file picked on the device (image library) and not yet uploaded. */
-export type PrintLocalFile = {
-  uri: string;
-  name: string;
-  /** Bytes, or null when the platform could not tell. The server stays authoritative. */
-  size: number | null;
-  mimeType: string | null;
-};
+export type PrintLocalFile = LocalFile;
 
 /** Where one item's file comes from: an existing library file, or a local upload. */
 export type PrintSource =
@@ -122,7 +117,7 @@ export type PrintDraftValidation = {
   valid: boolean;
 };
 
-export type UploadProblem = 'type' | 'size' | 'empty';
+export type { UploadProblem };
 
 export type PrintQuoteItem = {
   pages_count: number;

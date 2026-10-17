@@ -5,6 +5,12 @@ export type UploadProgress = {
   total: number;
 };
 
+/** What a caller passes to follow and cancel an upload. */
+export type UploadOptions = {
+  signal?: AbortSignal;
+  onUploadProgress?: (progress: UploadProgress) => void;
+};
+
 type UploadTransportInit = {
   method: string;
   headers: HttpHeaders;

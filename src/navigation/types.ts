@@ -68,6 +68,7 @@ export type ProfileStackParamList = {
   SupportTickets: undefined;
   CreateSupportTicket: undefined;
   TicketDetails: { ticketId: string | number };
+  SupportAttachment: { messageId: string | number; title?: string };
   PrivacyPolicy: undefined;
   Terms: undefined;
   About: undefined;
