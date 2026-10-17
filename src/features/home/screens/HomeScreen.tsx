@@ -1,25 +1,28 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Animated, StyleSheet } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
-  AppHeader,
   AppScreen,
   AppText,
+  BrandRefreshControl,
   EmptyState,
   ErrorState,
-  LoadingState,
+  Reveal,
+  SkeletonList,
   Stack,
+  type IconName,
 } from '../../../components';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { formatTime } from '../../../utils/formatDateTime';
 import {
   GroupsRoutes,
+  HomeRoutes,
+  LecturesRoutes,
   PrintingRoutes,
   ProfileRoutes,
   SharedRoutes,
@@ -34,11 +37,10 @@ import { isStudentProfileComplete, useStudentProfileStore } from '../../student-
 import { getVerificationStatus, useVerificationStore } from '../../verification';
 import {
   AnnouncementCard,
-  HomeAcademicSummaryCard,
-  HomeGreetingCard,
-  HomeQuickActionCard,
+  HomeHero,
   HomeSectionHeader,
-  StudentStatusCard,
+  QuickActionTile,
+  StudentStatusBanner,
 } from '../components';
 import { useHomeStore } from '../store';
 import type { HomeQuickAction, HomeQuickActionKey } from '../types';
@@ -57,7 +59,7 @@ function getQuickActions(
     { key: 'subjects', title: t.subjects, description: t.subjectsDescription },
     { key: 'groups', title: t.groups, description: t.groupsDescription },
     { key: 'files', title: t.files, description: t.filesDescription },
-    { key: 'search', title: t.search, description: t.searchDescription },
+    { key: 'lectures', title: t.lectures, description: t.lecturesDescription },
     { key: 'printing', title: t.printing, description: t.printingDescription },
     { key: 'support', title: t.support, description: t.supportDescription },
     {
@@ -70,7 +72,7 @@ function getQuickActions(
   ];
   return isStudent
     ? actions
-    : actions.filter((action) => !['subjects', 'groups', 'files'].includes(action.key));
+    : actions.filter((action) => !['subjects', 'groups', 'files', 'lectures'].includes(action.key));
 }
 
 export function HomeScreen() {
@@ -114,88 +116,136 @@ export function HomeScreen() {
     }
   }, [showInitialLoading, showInitialError]);
 
-  function handleQuickActionPress(key: HomeQuickActionKey) {
-    switch (key) {
-      case 'subjects':
-        navigation.navigate(TabRoutes.Subjects, { screen: SubjectsRoutes.SubjectsList });
-        break;
-      case 'groups':
-        navigation.navigate(TabRoutes.Groups, { screen: GroupsRoutes.GroupsOverview });
-        break;
-      case 'printing':
-        navigation.navigate(TabRoutes.Printing, { screen: PrintingRoutes.PrintHome });
-        break;
-      case 'support':
-        navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.SupportTickets });
-        break;
-      case 'notifications':
-        navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.Notifications });
-        break;
-      case 'profile':
-        navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.ProfileHome });
-        break;
-      case 'files':
-        navigation.navigate(SharedRoutes.FilesList);
-        break;
-      case 'search':
-        navigation.navigate(SharedRoutes.Search);
-        break;
-    }
-  }
+  const handleQuickActionPress = useCallback(
+    (key: HomeQuickActionKey) => {
+      switch (key) {
+        case 'subjects':
+          navigation.navigate(TabRoutes.Subjects, { screen: SubjectsRoutes.SubjectsList });
+          break;
+        case 'groups':
+          navigation.navigate(TabRoutes.Groups, { screen: GroupsRoutes.GroupsOverview });
+          break;
+        case 'printing':
+          navigation.navigate(TabRoutes.Printing, { screen: PrintingRoutes.PrintHome });
+          break;
+        case 'support':
+          navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.SupportTickets });
+          break;
+        case 'notifications':
+          navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.Notifications });
+          break;
+        case 'profile':
+          navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.ProfileHome });
+          break;
+        case 'files':
+          navigation.navigate(SharedRoutes.FilesList);
+          break;
+        case 'lectures':
+          navigation.navigate(TabRoutes.Subjects, { screen: LecturesRoutes.LecturesList });
+          break;
+        case 'search':
+          navigation.navigate(SharedRoutes.Search);
+          break;
+      }
+    },
+    [navigation],
+  );
 
-  function handleRefresh() {
+  const handleRefresh = useCallback(() => {
     void refreshHome();
-  }
+  }, [refreshHome]);
+
+  const handleOpenAnnouncement = useCallback(
+    (id: string | number) =>
+      navigation.navigate(HomeRoutes.AnnouncementDetail, { announcementId: id }),
+    [navigation],
+  );
+
+  const handleOpenStatus = useCallback(
+    () => navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.AcademicInfo }),
+    [navigation],
+  );
+
+  const handleOpenNotifications = useCallback(
+    () => handleQuickActionPress('notifications'),
+    [handleQuickActionPress],
+  );
+  const handleOpenSearch = useCallback(
+    () => handleQuickActionPress('search'),
+    [handleQuickActionPress],
+  );
+  const refreshControl = (
+    <BrandRefreshControl onRefresh={handleRefresh} refreshing={isRefreshing} />
+  );
+
+  const facultyName = profile?.faculty?.name ?? null;
+  const yearName = profile?.academic_year?.name ?? profile?.academicYear?.name ?? null;
+  const semesterName = profile?.semester?.name ?? null;
+  const levelLabel = [yearName, semesterName].filter(Boolean).join(' - ') || null;
+
+  const hero = (
+    <HomeHero
+      displayName={displayName}
+      facultyName={isStudent ? facultyName : null}
+      levelLabel={isStudent ? levelLabel : null}
+      onOpenNotifications={handleOpenNotifications}
+      onOpenSearch={handleOpenSearch}
+      unreadCount={unreadNotificationsCount}
+    />
+  );
 
   if (showInitialLoading) {
     return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.home.subtitle} title={t.home.title} />
-        <HomeGreetingCard
-          displayName={displayName}
-          unreadNotificationsCount={unreadNotificationsCount}
-          userRole={user?.role}
-        />
-        <LoadingState message={t.home.loading} />
+      <AppScreen
+        contentContainerStyle={styles.scrollContent}
+        horizontalPadding={false}
+        maxContentWidth={false}
+        refreshControl={refreshControl}
+        scroll
+      >
+        {hero}
+        <View style={styles.body}>
+          <SkeletonList count={3} />
+        </View>
       </AppScreen>
     );
   }
 
   if (showInitialError) {
     return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.home.subtitle} title={t.home.title} />
-        <HomeGreetingCard
-          displayName={displayName}
-          unreadNotificationsCount={unreadNotificationsCount}
-          userRole={user?.role}
-        />
-        <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
+      <AppScreen
+        contentContainerStyle={styles.scrollContent}
+        horizontalPadding={false}
+        maxContentWidth={false}
+        refreshControl={refreshControl}
+        scroll
+      >
+        {hero}
+        <View style={styles.body}>
+          <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
+        </View>
       </AppScreen>
     );
   }
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
-      <Stack gap="xl">
-        <AppHeader subtitle={t.home.subtitle} title={t.home.title} />
-
-        <HomeGreetingCard
-          displayName={displayName}
-          unreadNotificationsCount={unreadNotificationsCount}
-          userRole={user?.role}
-        />
-
+    <AppScreen
+      contentContainerStyle={styles.scrollContent}
+      horizontalPadding={false}
+      maxContentWidth={false}
+      refreshControl={refreshControl}
+      scroll
+    >
+      {hero}
+      <View style={styles.body}>
         {isStudent ? (
-          <>
-            <StudentStatusCard
-              hasProfileState={hasProfileState}
-              hasVerificationState={hasVerificationState}
-              profileComplete={profileComplete}
-              verificationStatus={verificationStatus}
-            />
-            <HomeAcademicSummaryCard profile={profile} />
-          </>
+          <StudentStatusBanner
+            hasProfileState={hasProfileState}
+            hasVerificationState={hasVerificationState}
+            onPress={handleOpenStatus}
+            profileComplete={profileComplete}
+            verificationStatus={verificationStatus}
+          />
         ) : null}
 
         <Animated.View
@@ -204,58 +254,58 @@ export function HomeScreen() {
             transform: [{ translateY: mainContentAnim.translateY }],
           }}
         >
-          <Stack gap="md">
-            <HomeSectionHeader
-              action={
-                <AppButton
-                  loading={isRefreshing}
-                  onPress={handleRefresh}
-                  size="sm"
-                  title={t.common.refresh}
-                  variant="outline"
-                />
-              }
-              subtitle={t.home.announcements.subtitle}
-              title={t.home.announcements.title}
-            />
+          <Stack gap="xl">
+            <Stack gap="sm">
+              <HomeSectionHeader title={t.home.services.title} />
+              <View style={styles.tiles}>
+                {quickActions.map((action, i) => (
+                  <Reveal index={i} key={action.key} style={styles.tileSlot}>
+                    <QuickActionTile
+                      badge={action.badge}
+                      icon={TILE_ICONS[action.key]}
+                      actionKey={action.key}
+                      label={action.title}
+                      onPress={handleQuickActionPress}
+                    />
+                  </Reveal>
+                ))}
+              </View>
+            </Stack>
 
-            {errorMessage ? (
-              <ErrorState message={errorMessage} onRetry={handleRefresh} />
-            ) : announcements.length === 0 ? (
-              <EmptyState
+            <Stack gap="md">
+              <HomeSectionHeader
                 action={
                   <AppButton
-                    loading={isRefreshing}
-                    onPress={handleRefresh}
-                    title={t.common.retryVerify}
-                    variant="outline"
+                    onPress={() => navigation.navigate(HomeRoutes.AnnouncementsList)}
+                    size="sm"
+                    title={t.home.announcements.seeAll}
+                    variant="ghost"
                   />
                 }
-                message={t.home.announcements.emptyMessage}
-                title={t.home.announcements.emptyTitle}
-                illustrationLabel={t.home.announcements.emptyIllustrationAlt}
-                illustrationSource={images.emptyStates.announcements}
+                title={t.home.announcements.title}
               />
-            ) : (
-              <Stack gap="md">
-                {announcements.map((announcement) => (
-                  <AnnouncementCard announcement={announcement} key={String(announcement.id)} />
-                ))}
-              </Stack>
-            )}
-          </Stack>
 
-          <Stack gap="md">
-            <HomeSectionHeader subtitle={t.home.services.subtitle} title={t.home.services.title} />
-            <Stack direction="horizontal" gap="md" wrap>
-              {quickActions.map((action) => (
-                <HomeQuickActionCard
-                  action={action}
-                  key={action.key}
-                  marker={t.home.serviceInitials[action.key]}
-                  onPress={action.disabled ? undefined : () => handleQuickActionPress(action.key)}
+              {errorMessage ? (
+                <ErrorState message={errorMessage} onRetry={handleRefresh} />
+              ) : announcements.length === 0 ? (
+                <EmptyState
+                  illustrationLabel={t.home.announcements.emptyIllustrationAlt}
+                  artwork="announcements"
+                  message={t.home.announcements.emptyMessage}
+                  title={t.home.announcements.emptyTitle}
                 />
-              ))}
+              ) : (
+                <Stack gap="md">
+                  {announcements.slice(0, 5).map((announcement, i) => (
+                    <Reveal index={i + 2} key={String(announcement.id)}>
+                      <AnnouncementCard
+                        announcement={announcement}
+                        onPress={handleOpenAnnouncement}
+                      />
+                    </Reveal>
+                  ))}
+                </Stack>
+              )}
             </Stack>
           </Stack>
         </Animated.View>
@@ -265,13 +315,37 @@ export function HomeScreen() {
             {t.common.lastUpdatedAt(formatTime(lastLoadedAt, locale) ?? '')}
           </AppText>
         ) : null}
-      </Stack>
+      </View>
     </AppScreen>
   );
 }
 
+const TILE_ICONS: Record<HomeQuickActionKey, IconName> = {
+  subjects: 'book',
+  groups: 'users',
+  files: 'folder',
+  lectures: 'lecture',
+  search: 'search',
+  printing: 'printer',
+  support: 'help',
+  notifications: 'bell',
+  profile: 'user',
+};
+
 const styles = StyleSheet.create({
-  content: {
+  scrollContent: {
+    paddingTop: 0,
+    paddingBottom: spacing.xxl,
+  },
+  body: {
     gap: spacing.xl,
+    paddingHorizontal: spacing.screen.horizontal,
+    paddingTop: spacing.xl,
+  },
+  tileSlot: { width: '25%' },
+  tiles: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    rowGap: spacing.xs,
   },
 });

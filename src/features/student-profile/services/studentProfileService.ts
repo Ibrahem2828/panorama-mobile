@@ -17,6 +17,7 @@ import type {
   StudentProfileUpdateInput,
 } from '../types';
 import type { TranslationCatalog } from '../../../i18n';
+import { normalizeStudentProfile } from './normalizeProfile';
 
 const ACADEMIC_PAGE_SIZE = 500;
 
@@ -142,11 +143,26 @@ export async function listSubjectsForMajor(
   return normalizeAcademicList(response);
 }
 
+export async function countSubjectsForFaculty(
+  facultyId: EntityId,
+  authToken?: string | null,
+): Promise<number> {
+  const response = await academicService.listSubjectsForFaculty(
+    facultyId,
+    { pageSize: 1 },
+    authToken,
+  );
+
+  return response.count ?? response.results.length;
+}
+
 export async function getMyStudentProfile(authToken?: string | null) {
   try {
-    return await apiClient.get<StudentProfile>(endpoints.students.profile, {
-      authToken,
-    });
+    return normalizeStudentProfile(
+      await apiClient.get<StudentProfile>(endpoints.students.profile, {
+        authToken,
+      }),
+    );
   } catch (error) {
     if (isNotFound(error)) {
       return null;
@@ -156,14 +172,16 @@ export async function getMyStudentProfile(authToken?: string | null) {
   }
 }
 
-export function updateMyStudentProfile(
+export async function updateMyStudentProfile(
   input: StudentProfileUpdateInput,
   authToken?: string | null,
 ) {
-  return apiClient.patch<StudentProfile, StudentProfileUpdateInput>(
-    endpoints.students.profile,
-    input,
-    { authToken },
+  return normalizeStudentProfile(
+    await apiClient.patch<StudentProfile, StudentProfileUpdateInput>(
+      endpoints.students.profile,
+      input,
+      { authToken },
+    ),
   );
 }
 
@@ -200,7 +218,6 @@ export function isStudentProfileComplete(profile: StudentProfile | null): boolea
   return Boolean(
     profile.university &&
       profile.faculty &&
-      profile.major &&
       getStudentProfileAcademicYear(profile) &&
       profile.semester &&
       getStudentProfileStudentNumber(profile),

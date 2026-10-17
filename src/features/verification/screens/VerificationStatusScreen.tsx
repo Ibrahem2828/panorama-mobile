@@ -1,24 +1,22 @@
 import { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import {
   AppButton,
   AppCard,
-  AppHeader,
-  AppScreen,
   AppText,
   ErrorState,
+  FormScreen,
   LoadingState,
-  Stack,
 } from '../../../components';
 import { StudentSetupRoutes } from '../../../navigation/routes';
 import type { StudentSetupStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { useStudentProfileStore } from '../../student-profile';
-import { StudentSetupStepper } from '../../student-profile/components';
-import { VerificationStatusCard } from '../components';
+import { SetupHeader } from '../../student-profile/components';
+import { VerificationStatusCard, VerificationTimeline } from '../components';
 import {
   canResubmitVerification,
   getVerificationStatus,
@@ -60,107 +58,103 @@ export function VerificationStatusScreen() {
     ]);
   }
 
+  const header = (
+    <SetupHeader
+      step={3}
+      subtitle={t.verificationFlow.status.cardSubtitle}
+      title={t.verificationFlow.status.title}
+    />
+  );
+
   if (isLoadingVerification && !hasLoadedVerification) {
     return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.verificationFlow.subtitle} title={t.verificationFlow.status.title} />
-        <StudentSetupStepper currentStep={3} />
+      <FormScreen>
+        {header}
         <LoadingState message={t.verificationFlow.loading} />
-      </AppScreen>
+      </FormScreen>
     );
   }
 
   if (errorMessage && !verification) {
     return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.verificationFlow.subtitle} title={t.verificationFlow.status.title} />
-        <StudentSetupStepper currentStep={3} />
+      <FormScreen>
+        {header}
         <ErrorState message={errorMessage} onRetry={handleRefresh} />
-      </AppScreen>
+      </FormScreen>
     );
   }
 
+  // One primary action per state.
+  const footer = approved ? (
+    <AppButton
+      fullWidth
+      loading={isLoadingVerification}
+      onPress={() => {
+        void handleEnterApp();
+      }}
+      size="lg"
+      title={t.verificationFlow.status.enterApp}
+    />
+  ) : status === 'none' ? (
+    <AppButton
+      fullWidth
+      onPress={() => navigation.replace(StudentSetupRoutes.SubmitVerification)}
+      size="lg"
+      title={t.verificationFlow.status.sendCard}
+    />
+  ) : canResubmit ? (
+    <AppButton
+      fullWidth
+      onPress={() => navigation.replace(StudentSetupRoutes.SubmitVerification)}
+      size="lg"
+      title={t.verificationFlow.status.resendUpdated}
+    />
+  ) : (
+    <AppButton
+      fullWidth
+      loading={isLoadingVerification}
+      onPress={handleRefresh}
+      size="lg"
+      title={t.verificationFlow.status.refreshStatus}
+      variant="outline"
+    />
+  );
+
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
-      <Stack gap="xl">
-        <Stack gap="md">
-          <AppHeader
-            subtitle={t.verificationFlow.status.cardSubtitle}
-            title={t.verificationFlow.status.title}
-          />
-          <StudentSetupStepper currentStep={3} />
-        </Stack>
+    <FormScreen footer={footer}>
+      {header}
 
-        <VerificationStatusCard verification={verification} />
+      <VerificationStatusCard verification={verification} />
 
-        {status === 'none' ? (
-          <AppButton
-            fullWidth
-            onPress={() => navigation.replace(StudentSetupRoutes.SubmitVerification)}
-            title={t.verificationFlow.status.sendCard}
-          />
-        ) : null}
+      <AppCard padding="lg" variant="default">
+        <VerificationTimeline status={status} />
+      </AppCard>
 
-        {canResubmit ? (
-          <AppButton
-            fullWidth
-            onPress={() => navigation.replace(StudentSetupRoutes.SubmitVerification)}
-            title={t.verificationFlow.status.resendUpdated}
-          />
-        ) : null}
+      {status === 'pending' ? (
+        <View style={styles.note}>
+          <AppText align="center" color="secondary" variant="bodySmall">
+            {t.verificationFlow.status.pendingNote}
+          </AppText>
+        </View>
+      ) : null}
 
-        {status === 'pending' ? (
-          <AppCard padding="md" variant="muted">
-            <AppText color="secondary" variant="bodySmall">
-              {t.verificationFlow.status.pendingNote}
-            </AppText>
-          </AppCard>
-        ) : null}
+      {approved ? (
+        <View style={styles.note}>
+          <AppText align="center" color="secondary" variant="bodySmall">
+            {t.verificationFlow.status.approvedDescription}
+          </AppText>
+        </View>
+      ) : null}
 
-        {status === 'pending' ? (
-          <AppButton
-            fullWidth
-            loading={isLoadingVerification}
-            onPress={handleRefresh}
-            title={t.verificationFlow.status.refreshStatus}
-            variant="outline"
-          />
-        ) : null}
-
-        {approved ? (
-          <AppCard padding="md" variant="muted">
-            <Stack gap="sm">
-              <AppText color="success" variant="bodySmall" weight="600">
-                {t.verificationFlow.status.approvedTitle}
-              </AppText>
-              <AppText color="secondary" variant="bodySmall">
-                {t.verificationFlow.status.approvedDescription}
-              </AppText>
-            </Stack>
-          </AppCard>
-        ) : null}
-
-        {approved ? (
-          <AppButton
-            fullWidth
-            loading={isLoadingVerification}
-            onPress={() => {
-              void handleEnterApp();
-            }}
-            title={t.verificationFlow.status.enterApp}
-          />
-        ) : null}
-
-        {errorMessage && verification ? (
-          <ErrorState message={errorMessage} onRetry={handleRefresh} />
-        ) : null}
-      </Stack>
-    </AppScreen>
+      {errorMessage && verification ? (
+        <ErrorState message={errorMessage} onRetry={handleRefresh} />
+      ) : null}
+    </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    gap: spacing.xl,
+  note: {
+    paddingHorizontal: spacing.md,
   },
 });

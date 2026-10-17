@@ -51,6 +51,9 @@ export type RegisterStudentRequest = {
   password_confirm: string;
   student_number?: string;
   otp_channel?: OtpChannel;
+  /** Versions of the terms / privacy policy the user ticked (sent only when one is published). */
+  accept_terms_version?: string;
+  accept_privacy_version?: string;
 };
 
 export type RegisterNormalRequest = Omit<RegisterStudentRequest, 'student_number'>;
@@ -141,9 +144,9 @@ export type GroupRecord = ApiEntity & {
   updated_at?: string;
 };
 
-export type GroupWhatsAppTicket = {
-  open_url: string;
-  expires_at: string;
+/** Response of the WhatsApp launch call: a `whatsapp://` deep link, never the https invite link. */
+export type GroupWhatsAppLaunch = {
+  app_url: string;
 };
 
 /** Single-use credential for the chat WebSocket handshake (`?ticket=`). */
@@ -160,7 +163,18 @@ export type GroupJoinResult = Record<string, unknown> & {
   group?: GroupRecord;
 };
 
+export type GroupMessageSenderDetail = {
+  id: number;
+  full_name?: string;
+};
+
 export type GroupMessage = ApiEntity & {
+  sender_detail?: GroupMessageSenderDetail | null;
+  message_type?: string;
+  has_attachment?: boolean;
+  attachment_ticket_endpoint?: string | null;
+  reply_to?: number | null;
+  is_deleted?: boolean;
   group?: EntityId | Record<string, unknown> | null;
   sender?: EntityId | CurrentUser | Record<string, unknown> | null;
   sender_name?: string | null;
@@ -176,8 +190,10 @@ export type GroupMessage = ApiEntity & {
 };
 
 export type SendGroupMessageRequest = {
-  type: 'message';
   content: string;
+  message_type?: 'text';
+  /** Ignored by the backend; kept so older callers still type-check. */
+  type?: 'message';
 };
 
 export type FileRecord = ApiEntity & {
@@ -280,12 +296,23 @@ export type PrintSides = 'one_sided' | 'double_sided';
 export type PrintBinding = 'none' | 'staple' | 'spiral' | 'thermal';
 
 export type CreatePrintOrderItemInput = {
-  source_file: EntityId;
+  source_file?: EntityId;
+  /** Reference to a Word/PowerPoint upload already converted to PDF by the server. */
+  converted_upload?: string;
   copies: number;
   color_mode: PrintColorMode;
   paper_size: PrintPaperSize;
   sides: PrintSides;
   binding: PrintBinding;
+};
+
+/** A Word/PowerPoint upload converted to PDF on the server (`status` is `pending` until the worker is done). */
+export type PrintConversion = {
+  id: string;
+  status: 'pending' | 'ready' | 'failed';
+  filename: string;
+  pages_count: number | null;
+  expires_at: string;
 };
 
 export type PrintQuoteRequest = { items: CreatePrintOrderItemInput[] };
@@ -341,6 +368,21 @@ export type NotificationRecord = ApiEntity & {
   data?: Record<string, unknown> | null;
   created_at?: string;
   updated_at?: string;
+  title_ar?: string | null;
+  title_en?: string | null;
+  body_ar?: string | null;
+  body_en?: string | null;
+  /** App path chosen by the backend; validated before it is ever followed. */
+  deep_link?: string | null;
+  related_object_type?: string | null;
+  related_object_id?: string | null;
+  expires_at?: string | null;
+};
+
+export type NotificationPreferences = {
+  in_app_enabled: boolean;
+  push_enabled: boolean;
+  disabled_types: string[];
 };
 
 export type AnnouncementRecord = ApiEntity & {
@@ -353,6 +395,17 @@ export type AnnouncementRecord = ApiEntity & {
   end_date?: string | null;
   is_active?: boolean;
   type?: string;
+  image?: string | null;
+  link?: string | null;
+  starts_at?: string | null;
+  ends_at?: string | null;
+  target_user_type?: string | null;
+  target_university?: number | null;
+  target_faculty?: number | null;
+  target_major?: number | null;
+  target_academic_year?: number | null;
+  target_semester?: number | null;
+  created_by_name?: string | null;
 };
 
 export type SubjectRecord = ApiEntity & {

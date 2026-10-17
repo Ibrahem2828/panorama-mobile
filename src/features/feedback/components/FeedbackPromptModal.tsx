@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(8,13,34,0.62)',
   },
   card: { width: '100%', maxWidth: 520, alignSelf: 'center' },
-  stars: { flexDirection: 'row-reverse', justifyContent: 'center', gap: spacing.sm },
+  stars: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sm },
   starButton: {
     minWidth: 46,
     minHeight: 46,
@@ -103,6 +103,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.background.muted,
   },
-  starSelected: { backgroundColor: '#FFF3C4', borderWidth: 1, borderColor: '#F5A524' },
-  starText: { fontSize: 28, color: '#F5A524' },
+  starSelected: {
+    backgroundColor: colors.semantic.warningSoft,
+    borderWidth: 1,
+    borderColor: colors.semantic.warning,
+  },
+  starText: { fontSize: 28, color: colors.semantic.warning },
 });

@@ -5,12 +5,16 @@ import { StyleSheet, View } from 'react-native';
 
 import { spacing } from '../../theme';
 import { AppText } from '../common';
+import type { ArtworkKey } from '../media';
 import { StateIllustration } from '../media';
 
 type EmptyStateProps = {
   title: string;
   message?: string;
   icon?: ReactNode;
+  /** Icon artwork, rendered in the student's brand colour. */
+  artwork?: ArtworkKey;
+  /** Legacy bitmap artwork, only for flows that still ship their own images. */
   illustrationSource?: ImageSourcePropType;
   illustrationLabel?: string;
   action?: ReactNode;
@@ -21,6 +25,7 @@ export function EmptyState({
   title,
   message,
   icon,
+  artwork,
   illustrationSource,
   illustrationLabel,
   action,
@@ -28,9 +33,10 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <View style={[styles.container, style]}>
-      {illustrationSource ? (
+      {artwork || illustrationSource ? (
         <StateIllustration
           accessibilityLabel={illustrationLabel ?? title}
+          artwork={artwork}
           compact
           source={illustrationSource}
         />
@@ -58,8 +64,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.md,
     paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.lg,
   },
   textBlock: {
     gap: spacing.xs,
+    maxWidth: 360,
   },
 });

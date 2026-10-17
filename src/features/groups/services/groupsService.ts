@@ -1,4 +1,5 @@
 import {
+  academicService,
   groupsService as apiGroupsService,
   normalizeApiError,
   runIdempotentAction,
@@ -6,9 +7,10 @@ import {
   type GroupJoinResult as ApiGroupJoinResult,
   type GroupRecord,
   type PaginatedResult,
-  type GroupWhatsAppTicket,
 } from '../../../api';
-import type { TranslationCatalog } from '../../../i18n';
+import type { AvailableGroupsParams } from '../../../api/services/groups.service';
+import { useLocaleStore, type TranslationCatalog } from '../../../i18n';
+import { resolveMembershipState } from './membership';
 import type {
   Group,
   GroupJoinResult,
@@ -16,6 +18,7 @@ import type {
   GroupRole,
   Id,
   SendMessagesPermission,
+  SubjectLabel,
 } from '../types';
 
 type GroupsCatalog = TranslationCatalog['groups'];
@@ -113,9 +116,21 @@ export function getGroupImageUri(group: Group): string | null {
   return imageUri;
 }
 
+/**
+ * Human label of a related entity. A bare id (number or numeric string, or an object with
+ * only an id) is never shown: it falls back to the localized "not specified" text.
+ */
 export function getEntityLabel(value: unknown): string | null {
-  if (typeof value === 'string' || typeof value === 'number') {
-    return String(value);
+  const unspecified = useLocaleStore.getState().t.common.notSpecified;
+
+  if (typeof value === 'number') {
+    return unspecified;
+  }
+
+  if (typeof value === 'string') {
+    const text = value.trim();
+
+    return text && !/^\d+$/u.test(text) ? text : unspecified;
   }
 
   if (!isRecord(value)) {
@@ -127,24 +142,35 @@ export function getEntityLabel(value: unknown): string | null {
     toText(value.title) ??
     toText(value.label) ??
     toText(value.code) ??
-    toText(value.id) ??
-    null
+    unspecified
   );
 }
 
 export function canRequestJoin(group: Group): boolean {
-  const status = group.current_user_membership_status;
-
-  return !status || status === 'none' || status === 'rejected' || status === 'left';
+  return resolveMembershipState(group).canRequestJoin;
 }
 
 export function canLeaveGroup(group: Group): boolean {
-  const status = group.current_user_membership_status;
-  const role = group.current_user_group_role;
+  return resolveMembershipState(group).canLeave;
+}
 
-  return (
-    status === 'approved' || role === 'member' || role === 'moderator' || role === 'group_admin'
-  );
+export function matchesGroupSearch(
+  group: Group,
+  query: string,
+  t: GroupsCatalog,
+  subject?: SubjectLabel | null,
+): boolean {
+  const needle = query.trim().toLowerCase();
+
+  if (!needle) {
+    return true;
+  }
+
+  return [getGroupDisplayName(group, t), getGroupDescription(group), subject?.name, subject?.code]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+    .includes(needle);
 }
 
 export function toSafeGroupsErrorMessage(error: unknown, t: GroupsCatalog): string {
@@ -165,12 +191,85 @@ export function toSafeGroupsErrorMessage(error: unknown, t: GroupsCatalog): stri
   return normalizedError.message || t.errors.generic;
 }
 
-export async function loadAvailableGroups(authToken: string): Promise<PaginatedResult<Group>> {
-  return normalizeGroupList(await apiGroupsService.listAvailableGroups(authToken));
+export const AVAILABLE_GROUPS_PAGE_SIZE = 20;
+const MY_GROUPS_PAGE_SIZE = 100;
+const MY_GROUPS_MAX_PAGES = 10;
+const SUBJECTS_PAGE_SIZE = 100;
+const SUBJECTS_MAX_PAGES = 10;
+
+/** One page of the groups the student can request to join; search and subject run on the server. */
+export async function loadAvailableGroups(
+  authToken: string,
+  params: AvailableGroupsParams = {},
+): Promise<PaginatedResult<Group>> {
+  return normalizeGroupList(
+    await apiGroupsService.listAvailableGroups(authToken, {
+      pageSize: AVAILABLE_GROUPS_PAGE_SIZE,
+      ...params,
+      search: params.search?.trim() || undefined,
+    }),
+  );
 }
 
+/** "My groups" is small and membership-bound, so it is read completely (bounded) and searched locally. */
 export async function loadMyGroups(authToken: string): Promise<PaginatedResult<Group>> {
-  return normalizeGroupList(await apiGroupsService.listMyGroups(authToken));
+  const results: Group[] = [];
+  let count = 0;
+
+  for (let page = 1; page <= MY_GROUPS_MAX_PAGES; page += 1) {
+    const response = normalizeGroupList(
+      await apiGroupsService.listMyGroups(authToken, { page, pageSize: MY_GROUPS_PAGE_SIZE }),
+    );
+
+    results.push(...response.results);
+    count = response.count;
+
+    if (!response.next || response.results.length === 0) {
+      break;
+    }
+  }
+
+  return { count: Math.max(count, results.length), next: null, previous: null, results };
+}
+
+/** Subject names and codes of a faculty, keyed by subject id (groups only carry the id). */
+export async function loadSubjectLabels(
+  facultyId: Id,
+  authToken: string,
+): Promise<Record<string, SubjectLabel>> {
+  const labels: Record<string, SubjectLabel> = {};
+
+  for (let page = 1; page <= SUBJECTS_MAX_PAGES; page += 1) {
+    const response = await academicService.listSubjectsForFaculty(
+      facultyId,
+      { page, pageSize: SUBJECTS_PAGE_SIZE, ordering: 'name' },
+      authToken,
+    );
+
+    for (const subject of response.results) {
+      const name = toText(subject.name) ?? toText(subject.title);
+
+      if (name) {
+        labels[String(subject.id)] = { name, code: toText(subject.code) ?? null };
+      }
+    }
+
+    if (!response.next || response.results.length === 0) {
+      break;
+    }
+  }
+
+  return labels;
+}
+
+export function getGroupSubjectId(group: Group): string | null {
+  const subject = group.subject;
+
+  if (typeof subject === 'string' || typeof subject === 'number') {
+    return String(subject);
+  }
+
+  return isRecord(subject) ? (toText(subject.id) ?? null) : null;
 }
 
 export async function loadGroupDetail(groupId: Id, authToken: string): Promise<Group> {
@@ -196,9 +295,8 @@ export function requestLeaveGroup(groupId: Id, authToken: string): Promise<Empty
   return apiGroupsService.leaveGroup(groupId, authToken);
 }
 
-export async function requestWhatsAppAccess(
-  groupId: Id,
-  authToken: string,
-): Promise<GroupWhatsAppTicket> {
-  return apiGroupsService.requestGroupWhatsAppTicket(groupId, authToken);
+export function requestWhatsAppLaunchLink(groupId: Id, authToken: string): Promise<unknown> {
+  return apiGroupsService
+    .requestGroupWhatsAppLaunch(groupId, authToken)
+    .then((response) => response?.app_url);
 }

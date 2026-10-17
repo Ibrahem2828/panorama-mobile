@@ -4,7 +4,7 @@ import { useLocaleStore } from '../../../i18n';
 
 import { useAuthStore } from '../../auth/store';
 import { getStudentProfileAcademicYear, useStudentProfileStore } from '../../student-profile';
-import { loadSubjectsForMajor, toSafeSubjectsErrorMessage } from '../services';
+import { loadSubjectsForFaculty, toSafeSubjectsErrorMessage } from '../services';
 import type { Id, Subject, SubjectListStateSource } from '../types';
 
 type SubjectsState = {
@@ -18,7 +18,12 @@ type SubjectsState = {
   lastLoadKey: string | null;
   totalCount: number;
   stateSource: SubjectListStateSource;
+  /** null = every year / semester of the faculty (retakes), otherwise the chosen level. */
+  academicYearId: Id | null;
+  semesterId: Id | null;
+  filtersReady: boolean;
 
+  setLevelFilter: (filter: { academicYearId?: Id | null; semesterId?: Id | null }) => void;
   loadSubjects: () => Promise<void>;
   refreshSubjects: () => Promise<void>;
   setSearch: (value: string) => void;
@@ -60,28 +65,32 @@ function isSameId(left: Id, right: Id): boolean {
 function getAcademicIdentity() {
   const studentProfileState = useStudentProfileStore.getState();
   const profile = studentProfileState.profile;
+  const facultyId = toId(profile?.faculty) ?? studentProfileState.selectedFacultyId;
   const majorId = toId(profile?.major) ?? studentProfileState.selectedMajorId;
   const academicYearId =
     toId(getStudentProfileAcademicYear(profile)) ?? studentProfileState.selectedAcademicYearId;
   const semesterId = toId(profile?.semester) ?? studentProfileState.selectedSemesterId;
 
   return {
+    facultyId,
     majorId,
     academicYearId,
     semesterId,
-    source: majorId ? ('studentProfile' as const) : ('unknown' as const),
+    source: facultyId ? ('studentProfile' as const) : ('unknown' as const),
   };
 }
 
 function buildLoadKey(input: {
   userId: Id | null;
-  majorId: Id;
+  facultyId: Id;
+  majorId?: Id | null;
   academicYearId?: Id | null;
   semesterId?: Id | null;
 }) {
   return [
     input.userId ?? 'anonymous',
-    input.majorId,
+    input.facultyId,
+    input.majorId ?? 'no-major',
     input.academicYearId ?? 'all-years',
     input.semesterId ?? 'all-semesters',
   ].join(':');
@@ -98,26 +107,44 @@ const initialSubjectsState = {
   lastLoadKey: null,
   totalCount: 0,
   stateSource: 'unknown' as const,
+  academicYearId: null,
+  semesterId: null,
+  filtersReady: false,
 };
+
+let latestRequest = 0;
 
 export const useSubjectsStore = create<SubjectsState>((set, get) => {
   async function load(mode: 'load' | 'refresh') {
     const { isLoading, isRefreshing, lastLoadedAt, lastLoadKey } = get();
 
-    if (isLoading || isRefreshing) {
+    if (mode === 'load' && (isLoading || isRefreshing)) {
       return;
     }
+    latestRequest += 1;
+    const requestId = latestRequest;
 
     const { accessToken, user } = useAuthStore.getState();
-    const { majorId, academicYearId, semesterId, source } = getAcademicIdentity();
+    const identity = getAcademicIdentity();
+    const { facultyId, majorId, source } = identity;
 
-    if (!majorId) {
+    // First load starts at the student's own year/semester; the student can widen it to every level.
+    if (!get().filtersReady) {
+      set({
+        academicYearId: identity.academicYearId,
+        semesterId: identity.semesterId,
+        filtersReady: true,
+      });
+    }
+    const { academicYearId, semesterId } = get();
+
+    if (!facultyId) {
       set({
         subjects: [],
         selectedSubject: null,
         isLoading: false,
         isRefreshing: false,
-        errorMessage: subjectsCatalog().errors.missingMajor,
+        errorMessage: subjectsCatalog().errors.missingFaculty,
         lastLoadedAt: null,
         lastLoadKey: null,
         totalCount: 0,
@@ -128,6 +155,7 @@ export const useSubjectsStore = create<SubjectsState>((set, get) => {
 
     const nextLoadKey = buildLoadKey({
       userId: user?.id ?? null,
+      facultyId,
       majorId,
       academicYearId,
       semesterId,
@@ -145,12 +173,16 @@ export const useSubjectsStore = create<SubjectsState>((set, get) => {
     });
 
     try {
-      const response = await loadSubjectsForMajor({
+      const response = await loadSubjectsForFaculty({
+        facultyId,
         majorId,
         academicYearId,
         semesterId,
         authToken: accessToken,
       });
+      if (requestId !== latestRequest) {
+        return; // a newer filter change superseded this response
+      }
       const selectedSubject = get().selectedSubject;
       const nextSelectedSubject = selectedSubject
         ? (response.results.find((subject) => isSameId(subject.id, selectedSubject.id)) ?? null)
@@ -167,6 +199,9 @@ export const useSubjectsStore = create<SubjectsState>((set, get) => {
         totalCount: response.count,
       });
     } catch (error) {
+      if (requestId !== latestRequest) {
+        return;
+      }
       set({
         isLoading: false,
         isRefreshing: false,
@@ -184,6 +219,16 @@ export const useSubjectsStore = create<SubjectsState>((set, get) => {
 
     async refreshSubjects() {
       await load('refresh');
+    },
+
+    setLevelFilter(filter) {
+      set((state) => ({
+        academicYearId:
+          filter.academicYearId === undefined ? state.academicYearId : filter.academicYearId,
+        semesterId: filter.semesterId === undefined ? state.semesterId : filter.semesterId,
+        filtersReady: true,
+      }));
+      void load('refresh');
     },
 
     setSearch(value) {

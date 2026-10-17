@@ -1,8 +1,10 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 import { Image, StyleSheet, View } from 'react-native';
 
-import { colors, layout, radius } from '../../theme';
+import { colors, layout, radius, useBrand } from '../../theme';
 import { getInitials } from '../../utils/strings';
+import type { IconName } from '../icons';
+import { Icon } from '../icons';
 import { AppText } from './AppText';
 
 type AvatarSize = keyof typeof layout.avatar;
@@ -10,6 +12,8 @@ type AvatarSize = keyof typeof layout.avatar;
 type AppAvatarProps = {
   name: string;
   imageUri?: string;
+  /** Shown instead of initials (e.g. for groups, whose Arabic initial is just a stroke). */
+  icon?: IconName;
   size?: AvatarSize;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
@@ -18,10 +22,12 @@ type AppAvatarProps = {
 export function AppAvatar({
   name,
   imageUri,
+  icon,
   size = 'md',
   accessibilityLabel,
   style,
 }: AppAvatarProps) {
+  const brand = useBrand();
   const dimension = layout.avatar[size];
   const containerStyle = {
     width: dimension,
@@ -33,12 +39,14 @@ export function AppAvatar({
     <View
       accessibilityLabel={accessibilityLabel ?? name}
       accessibilityRole="image"
-      style={[styles.base, containerStyle, style]}
+      style={[styles.base, { backgroundColor: brand.primarySoft }, containerStyle, style]}
     >
       {imageUri ? (
         <Image source={{ uri: imageUri }} style={[styles.image, containerStyle]} />
+      ) : icon ? (
+        <Icon color={brand.primary} name={icon} size={Math.round(dimension * 0.5)} />
       ) : (
-        <AppText align="center" color="brand" variant="label" weight="700">
+        <AppText align="center" color="brand" variant={size === 'xl' ? 'h3' : 'label'} weight="700">
           {getInitials(name)}
         </AppText>
       )}

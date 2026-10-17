@@ -22,22 +22,34 @@ export type StudentSetupStackParamList = {
   VerificationStatus: undefined;
 };
 
+export type LecturesListParams = { subjectId?: string | number } | undefined;
+export type LectureViewerParams = { lectureId: string | number; title?: string; page?: number };
+
 export type HomeStackParamList = {
   Home: undefined;
-  FilesList: undefined;
+  AnnouncementsList: undefined;
+  AnnouncementDetail: { announcementId: string | number };
+  FilesList: { subjectId?: string | number; subjectName?: string } | undefined;
   FileDetails: { fileId: string | number };
   PdfViewer: { fileId: string | number; title?: string };
   Search: { query?: string } | undefined;
+  LecturesList: LecturesListParams;
+  LectureViewer: LectureViewerParams;
 };
 
 export type SubjectsStackParamList = {
   SubjectsList: undefined;
   SubjectDetails: { subjectId: string | number };
+  FilesList: { subjectId?: string | number; subjectName?: string } | undefined;
+  FileDetails: { fileId: string | number };
+  PdfViewer: { fileId: string | number; title?: string };
+  LecturesList: LecturesListParams;
+  LectureViewer: LectureViewerParams;
 };
 
 export type GroupsStackParamList = {
   GroupsOverview: undefined;
-  AvailableGroups: undefined;
+  AvailableGroups: { subjectId?: string | number } | undefined;
   MyGroups: undefined;
   GroupDetails: { groupId: string | number };
   GroupFiles: { groupId: string | number };
@@ -52,6 +64,7 @@ export type PrintingStackParamList = {
   PrintPriceSummary: undefined;
   MyPrintOrders: undefined;
   PrintOrderDetails: { orderId: string | number };
+  PrintItemViewer: { itemId: string | number; title?: string };
 };
 
 export type ProfileStackParamList = {
@@ -65,6 +78,7 @@ export type ProfileStackParamList = {
   SupportTickets: undefined;
   CreateSupportTicket: undefined;
   TicketDetails: { ticketId: string | number };
+  SupportAttachment: { messageId: string | number; title?: string };
   PrivacyPolicy: undefined;
   Terms: undefined;
   About: undefined;
@@ -74,7 +88,7 @@ export type ProfileStackParamList = {
 };
 
 export type SharedStackParamList = {
-  FilesList: undefined;
+  FilesList: { subjectId?: string | number; subjectName?: string } | undefined;
   FileDetails: { fileId: string | number };
   PdfViewer: { fileId: string | number; title?: string };
   GroupFiles: { groupId: string | number };

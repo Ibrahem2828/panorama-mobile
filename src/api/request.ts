@@ -3,6 +3,7 @@ import { getAppClientHeaders } from './appInfo';
 import type { HttpHeaders, HttpMethod } from './http';
 import { CONTENT_TYPE_JSON } from './http';
 import { buildQueryString } from './pagination';
+import type { UploadProgress } from './uploadTransport';
 
 export type ApiQueryParamValue = string | number | boolean | null | undefined;
 
@@ -21,6 +22,14 @@ export type ApiRequestOptions<TBody = unknown> = {
    * pass the same key when that action is retried (see ./idempotency).
    */
   idempotencyKey?: string;
+  /** Lets the caller cancel an in-flight request (for example a long upload). */
+  signal?: AbortSignal;
+  /**
+   * Multipart bodies only: reports bytes sent. Supplying it switches the request to an
+   * XMLHttpRequest transport, and `timeoutMs` then acts as a stall timeout that restarts on
+   * every progress event instead of a hard cap on the whole upload.
+   */
+  onUploadProgress?: (progress: UploadProgress) => void;
 };
 
 function normalizeApiBaseUrl(baseUrl: string): string {

@@ -1,9 +1,10 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { formatDate } from '../../../utils/formatDateTime';
-import { opacity } from '../../../theme';
+import { colors, opacity } from '../../../theme';
 import {
   formatFileSize,
   getEntityLabel,
@@ -24,7 +25,7 @@ type FileCardProps = {
   onPress?: () => void;
 };
 
-export function FileCard({ file, onPress }: FileCardProps) {
+function FileCardComponent({ file, onPress }: FileCardProps) {
   const { t, locale } = useTranslation();
   const title = getFileDisplayTitle(file, t.files);
   const description = getFileDescription(file);
@@ -46,6 +47,7 @@ export function FileCard({ file, onPress }: FileCardProps) {
   return (
     <Pressable
       accessibilityRole="button"
+      android_ripple={{ color: colors.ripple, foreground: true }}
       disabled={!onPress}
       onPress={onPress}
       style={({ pressed }) => [pressed && onPress ? styles.pressed : null]}
@@ -79,6 +81,8 @@ export function FileCard({ file, onPress }: FileCardProps) {
     </Pressable>
   );
 }
+
+export const FileCard = memo(FileCardComponent);
 
 const styles = StyleSheet.create({
   header: {

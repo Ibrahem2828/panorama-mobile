@@ -29,6 +29,8 @@ export function useStudentAccessGate(): StudentAccessGate {
   const verification = useVerificationStore((state) => state.verification);
   const hasLoadedVerification = useVerificationStore((state) => state.hasLoadedVerification);
   const isLoadingVerification = useVerificationStore((state) => state.isLoadingVerification);
+  const profileLoadFailed = useStudentProfileStore((state) => state.loadFailed);
+  const verificationLoadFailed = useVerificationStore((state) => state.loadFailed);
   const loadVerification = useVerificationStore((state) => state.loadVerification);
   const resetVerification = useVerificationStore((state) => state.reset);
   const isStudentAccount = isStudentUser(user);
@@ -43,8 +45,14 @@ export function useStudentAccessGate(): StudentAccessGate {
     isLoadingVerification,
   };
   const journeyPhase = resolveStudentJourneyPhase(journeyInput);
+  // A failed load keeps the student on the loading screen, which offers a retry, instead of
+  // silently pushing them into the setup flow as if nothing had been saved.
+  const studentContextFailed =
+    journeyPhase !== 'loading' && (profileLoadFailed || verificationLoadFailed);
   const isResolvingStudentContext =
-    status === 'authenticated' && isStudentAccount && journeyPhase === 'loading';
+    status === 'authenticated' &&
+    isStudentAccount &&
+    (journeyPhase === 'loading' || studentContextFailed);
 
   useEffect(() => {
     if (status !== 'authenticated' || !user || !isStudentAccount) {

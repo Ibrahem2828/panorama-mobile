@@ -1,23 +1,23 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { StyleSheet } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppHeader,
   AppScreen,
   AppText,
+  BrandRefreshControl,
   EmptyState,
   ErrorState,
-  LoadingState,
-  SectionHeader,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { SubjectsRoutes } from '../../../navigation/routes';
 import type { SubjectsStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
-import { SubjectCard, SubjectSearchBar } from '../components';
+import { SubjectCard, SubjectLevelFilter, SubjectSearchBar } from '../components';
+import { useStudentProfileStore } from '../../student-profile';
 import { filterSubjectsBySearch } from '../services';
 import { useSubjectsStore } from '../store';
 import type { Subject } from '../types';
@@ -39,6 +39,11 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
   const refreshSubjects = useSubjectsStore((state) => state.refreshSubjects);
   const setSearch = useSubjectsStore((state) => state.setSearch);
   const setSelectedSubject = useSubjectsStore((state) => state.setSelectedSubject);
+  const setLevelFilter = useSubjectsStore((state) => state.setLevelFilter);
+  const academicYearId = useSubjectsStore((state) => state.academicYearId);
+  const semesterId = useSubjectsStore((state) => state.semesterId);
+  const years = useStudentProfileStore((state) => state.academicYears);
+  const semesters = useStudentProfileStore((state) => state.semesters);
   const filteredSubjects = useMemo(
     () => filterSubjectsBySearch(subjects, search, t.subjects),
     [subjects, search, t.subjects],
@@ -59,10 +64,27 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
     navigation.navigate(SubjectsRoutes.SubjectDetails, { subjectId: subject.id });
   }
 
+  const renderItem = useCallback(
+    ({ item }: { item: Subject }) => (
+      <SubjectCard onPress={() => handleSubjectPress(item)} subject={item} />
+    ),
+    [],
+  );
+
   function renderHeader() {
     return (
       <Stack gap="lg">
         <AppHeader subtitle={t.subjects.subtitle} title={t.subjects.title} />
+        <SubjectLevelFilter
+          academicYearId={academicYearId}
+          onChange={setLevelFilter}
+          semesterId={semesterId}
+          semesters={semesters}
+          years={years}
+        />
+        <AppText color="muted" variant="caption">
+          {t.subjects.levelHint}
+        </AppText>
         <SubjectSearchBar
           onChangeText={setSearch}
           resultCount={filteredSubjects.length}
@@ -77,7 +99,7 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         <AppHeader subtitle={t.subjects.subtitle} title={t.subjects.title} />
-        <LoadingState message={t.subjects.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }
@@ -91,76 +113,81 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
     );
   }
 
-  return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
-      <Stack gap="xl">
-        {renderHeader()}
+  const listHeader = (
+    <Stack gap="lg" style={styles.listHeader}>
+      {renderHeader()}
+      {errorMessage ? <ErrorState message={errorMessage} onRetry={handleRefresh} /> : null}
+    </Stack>
+  );
 
-        <SectionHeader
-          action={
-            <AppButton
-              loading={isRefreshing}
-              onPress={handleRefresh}
-              size="sm"
-              title={t.common.refresh}
-              variant="outline"
-            />
-          }
-          subtitle={t.subjects.listSubtitle}
-          title={t.subjects.listTitle}
-        />
-
-        {errorMessage ? (
-          <ErrorState message={errorMessage} onRetry={handleRefresh} />
-        ) : filteredSubjects.length === 0 ? (
-          <EmptyState
-            action={
-              search ? (
-                <AppButton
-                  onPress={() => setSearch('')}
-                  title={t.common.searchClear}
-                  variant="outline"
-                />
-              ) : (
-                <AppButton
-                  loading={isRefreshing}
-                  onPress={handleRefresh}
-                  title={t.common.retryVerify}
-                  variant="outline"
-                />
-              )
-            }
-            message={search ? t.common.searchNoResultsMessage : t.subjects.emptyMessage}
-            title={search ? t.common.searchNoResultsTitle : t.subjects.emptyTitle}
-            illustrationLabel={
-              search ? t.common.noSearchResultsAlt : t.subjects.emptyIllustrationAlt
-            }
-            illustrationSource={search ? images.illustrations.search : images.emptyStates.subjects}
-          />
+  const emptyView = errorMessage ? null : (
+    <EmptyState
+      action={
+        search ? (
+          <AppButton onPress={() => setSearch('')} title={t.common.searchClear} variant="outline" />
         ) : (
-          <Stack gap="md">
-            {filteredSubjects.map((subject) => (
-              <SubjectCard
-                key={String(subject.id)}
-                onPress={() => handleSubjectPress(subject)}
-                subject={subject}
-              />
-            ))}
-          </Stack>
-        )}
+          <AppButton
+            loading={isRefreshing}
+            onPress={handleRefresh}
+            title={t.common.retryVerify}
+            variant="outline"
+          />
+        )
+      }
+      illustrationLabel={search ? t.common.noSearchResultsAlt : t.subjects.emptyIllustrationAlt}
+      artwork={search ? 'search' : 'subjects'}
+      message={search ? t.common.searchNoResultsMessage : t.subjects.emptyMessage}
+      title={search ? t.common.searchNoResultsTitle : t.subjects.emptyTitle}
+    />
+  );
 
-        {lastLoadedAt ? (
-          <AppText align="center" color="muted" variant="caption">
-            {t.common.lastUpdatedAt(formatTime(lastLoadedAt, locale) ?? '')}
-          </AppText>
-        ) : null}
-      </Stack>
+  return (
+    <AppScreen safeArea scroll={false}>
+      <FlatList
+        ItemSeparatorComponent={ListGap}
+        ListEmptyComponent={emptyView}
+        ListFooterComponent={
+          lastLoadedAt ? (
+            <AppText align="center" color="muted" style={styles.footer} variant="caption">
+              {t.common.lastUpdatedAt(formatTime(lastLoadedAt, locale) ?? '')}
+            </AppText>
+          ) : null
+        }
+        ListHeaderComponent={listHeader}
+        contentContainerStyle={styles.listContent}
+        data={filteredSubjects}
+        initialNumToRender={10}
+        keyExtractor={keyExtractor}
+        keyboardShouldPersistTaps="handled"
+        maxToRenderPerBatch={10}
+        refreshControl={<BrandRefreshControl onRefresh={handleRefresh} refreshing={isRefreshing} />}
+        removeClippedSubviews
+        renderItem={renderItem}
+        windowSize={7}
+      />
     </AppScreen>
   );
+}
+
+function ListGap() {
+  return <View style={styles.gap} />;
+}
+
+function keyExtractor(subject: Subject) {
+  return String(subject.id);
 }
 
 const styles = StyleSheet.create({
   content: {
     gap: spacing.xl,
   },
+  listContent: {
+    paddingBottom: spacing.xxl,
+    paddingTop: spacing.lg,
+  },
+  listHeader: {
+    marginBottom: spacing.lg,
+  },
+  gap: { height: spacing.md },
+  footer: { marginTop: spacing.lg },
 });

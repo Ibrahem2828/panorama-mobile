@@ -62,9 +62,6 @@ export function GroupPermissionCard({
             label={permissions.yourRole(getRoleLabel(currentUserGroupRole, permissions))}
             variant="neutral"
           />
-          {sendMessagesPermission ? (
-            <AppBadge label={permissions.sending(sendMessagesPermission)} variant="info" />
-          ) : null}
         </Stack>
       </Stack>
     </AppCard>

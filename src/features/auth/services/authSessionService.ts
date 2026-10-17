@@ -1,4 +1,4 @@
-import { authService, normalizeApiError } from '../../../api';
+import { ApiClientError, authService, containsArabic, normalizeApiError } from '../../../api';
 import type {
   AuthTokens as ApiAuthTokens,
   CurrentUser,
@@ -69,7 +69,12 @@ function getAuthErrorMessage(error: unknown, context: 'login' | 'session' | 'gen
   }
 
   if (normalizedError.code === 'VALIDATION_ERROR') {
-    return context === 'login' ? messages.invalidCredentials : messages.generic;
+    // The API answers a wrong password with 400 + field errors; a bare 400 from a proxy or
+    // misconfigured host carries none and must not be shown as "wrong password".
+    const fromApi = Boolean(
+      normalizedError.fieldErrors && Object.keys(normalizedError.fieldErrors).length > 0,
+    );
+    return context === 'login' && fromApi ? messages.invalidCredentials : messages.generic;
   }
 
   if (normalizedError.code === 'FORBIDDEN') {
@@ -229,7 +234,14 @@ export async function logoutSession(currentTokens?: Partial<AuthTokens>): Promis
 }
 
 export function toSafeAuthErrorMessage(error: unknown): string {
-  return error instanceof Error && error.message
-    ? error.message
-    : getAuthErrorMessage(error, 'generic');
+  // ApiClientError is an Error whose message may be server text: localize it by code.
+  // Errors created locally by this service already carry a localized (Arabic) message.
+  if (
+    !(error instanceof ApiClientError) &&
+    error instanceof Error &&
+    containsArabic(error.message)
+  ) {
+    return error.message;
+  }
+  return getAuthErrorMessage(error, 'generic');
 }

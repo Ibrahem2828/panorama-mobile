@@ -1,12 +1,40 @@
 import { apiClient } from '../client';
 import { endpoints } from '../endpoints';
-import type { NotificationRecord, RegisterDeviceTokenRequest, UnreadCountResponse } from '../types';
+import type {
+  ApiListParams,
+  NotificationPreferences,
+  NotificationRecord,
+  RegisterDeviceTokenRequest,
+  UnreadCountResponse,
+} from '../types';
 import type { PaginatedResult } from '../pagination';
+import { toPaginationQuery } from '../pagination';
 
-export function listNotifications(authToken: string): Promise<PaginatedResult<NotificationRecord>> {
+export function listNotifications(
+  authToken: string,
+  params?: ApiListParams,
+): Promise<PaginatedResult<NotificationRecord>> {
   return apiClient.get<PaginatedResult<NotificationRecord>>(endpoints.notifications.list, {
     authToken,
+    query: toPaginationQuery(params),
   });
+}
+
+export function getNotificationPreferences(authToken: string): Promise<NotificationPreferences> {
+  return apiClient.get<NotificationPreferences>(endpoints.notifications.preferences, {
+    authToken,
+  });
+}
+
+export function updateNotificationPreferences(
+  patch: Partial<NotificationPreferences>,
+  authToken: string,
+): Promise<NotificationPreferences> {
+  return apiClient.patch<NotificationPreferences, Partial<NotificationPreferences>>(
+    endpoints.notifications.preferences,
+    patch,
+    { authToken },
+  );
 }
 
 export function getUnreadCount(authToken: string): Promise<UnreadCountResponse> {

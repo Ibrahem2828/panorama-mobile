@@ -2,24 +2,35 @@ import {
   normalizeApiError,
   printingService as api,
   runIdempotentAction,
-  type CreatePrintOrderRequest,
   type PaginatedResult,
   type PrintOrder as ApiPrintOrder,
+  type PrintQuoteRequest,
+  type CreatePrintOrderRequest,
+  type UploadProgress,
 } from '../../../api';
 import type { Locale, TranslationCatalog } from '../../../i18n';
 import type {
   Id,
   PrintDraft,
-  PrintDraftValidation,
+  PrintLocalFile,
   PrintOrder,
   PrintPickupLocation,
   PrintQuote,
   PrintStatusPresentation,
 } from '../types';
+import { appendLocalFile } from '../../attachments/services/localFile';
+import { buildOrderBody, buildQuoteBody, orderSignature } from './printDraft';
 
 type PrintingCatalog = TranslationCatalog['printing'];
 
-function normalizeOrder(order: ApiPrintOrder): PrintOrder {
+export const PRINT_ORDERS_PAGE_SIZE = 10;
+
+export type PrintTransferOptions = {
+  signal?: AbortSignal;
+  onUploadProgress?: (progress: UploadProgress) => void;
+};
+
+export function normalizeOrder(order: ApiPrintOrder): PrintOrder {
   return {
     ...order,
     id: order.id,
@@ -27,6 +38,7 @@ function normalizeOrder(order: ApiPrintOrder): PrintOrder {
     items: Array.isArray(order.items)
       ? order.items.map((item) => ({ ...item, copies: Number(item.copies ?? 1) }))
       : [],
+    status_history: Array.isArray(order.status_history) ? order.status_history : [],
   } as PrintOrder;
 }
 
@@ -90,7 +102,7 @@ export function getPrintOrderStatusPresentation(
   }
 }
 
-export function canCancelPrintOrder(order: PrintOrder): boolean {
+export function canCancelPrintOrder(order: Pick<PrintOrder, 'status'>): boolean {
   return ['submitted', 'under_review', 'accepted'].includes(order.status);
 }
 export function getPrintOrderDisplayTitle(order: PrintOrder, t: PrintingCatalog) {
@@ -105,51 +117,74 @@ export function getPrintOrderCopiesCount(order: PrintOrder) {
 export function getPrintOrderItemFileLabel(item: PrintOrder['items'][number], t: PrintingCatalog) {
   return (
     item.source_file_title ||
+    item.original_file_name ||
     (typeof item.source_file === 'object' && item.source_file && 'title' in item.source_file
       ? String(item.source_file.title)
-      : t.order.fallbackFileTitle)
+      : item.has_uploaded_file
+        ? t.order.uploadedFile
+        : t.order.fallbackFileTitle)
   );
 }
+
 const DATE_LOCALES: Record<Locale, string> = { ar: 'ar-SY', en: 'en-GB' };
 
 export function formatPrintOrderDate(value: string | null | undefined, locale: Locale) {
-  return value ? new Date(value).toLocaleDateString(DATE_LOCALES[locale]) : null;
-}
-export function formatPrintOrderPrice(order: PrintOrder) {
-  if (order.total_price == null) return null;
-  return `${order.total_price} ${order.currency ?? 'SYP'}`;
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString(DATE_LOCALES[locale]);
 }
 
-export function validatePrintDraft(draft: PrintDraft, t: PrintingCatalog): PrintDraftValidation {
-  const validation: PrintDraftValidation = {};
-  if (draft.sourceFileId == null) validation.sourceFileId = t.errors.missingFile;
-  if (!Number.isInteger(draft.copies) || draft.copies < 1 || draft.copies > 99)
-    validation.copies = t.errors.invalidCopies;
-  return validation;
-}
-export function hasPrintDraftValidationErrors(v: PrintDraftValidation) {
-  return Boolean(v.sourceFileId || v.copies);
+export function formatPrintOrderDateTime(value: string | null | undefined, locale: Locale) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime())
+    ? null
+    : date.toLocaleString(DATE_LOCALES[locale], {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
 }
 
-export function buildPrintItem(draft: PrintDraft) {
-  if (draft.sourceFileId == null) return null;
-  return {
-    source_file: draft.sourceFileId,
-    copies: draft.copies,
-    color_mode: draft.colorMode,
-    paper_size: draft.paperSize,
-    sides: draft.sides,
-    binding: draft.binding,
-  } as const;
+/** `15000.00` becomes `15,000`; only meaningful decimals are kept. Falls back to the raw text. */
+export function formatMoneyAmount(value: string | number | null | undefined): string | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount)) {
+    return String(value);
+  }
+
+  return amount.toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
-export function buildCreatePrintOrderRequest(draft: PrintDraft): CreatePrintOrderRequest | null {
-  const item = buildPrintItem(draft);
-  if (!item) return null;
-  return {
-    items: [item],
-    user_notes: draft.userNotes.trim() || undefined,
-    pickup_location: draft.pickupLocationId,
-  };
+
+export function formatPrintMoney(
+  value: string | number | null | undefined,
+  currency: string | null | undefined,
+): string | null {
+  const amount = formatMoneyAmount(value);
+
+  return amount === null ? null : `${amount} ${currency || 'SYP'}`;
+}
+
+export function formatPrintOrderPrice(order: Pick<PrintOrder, 'total_price' | 'currency'>) {
+  return formatPrintMoney(order.total_price, order.currency);
+}
+
+export function isUserAbort(error: unknown, signal?: AbortSignal): boolean {
+  return Boolean(signal?.aborted) && normalizeApiError(error).code === 'TIMEOUT';
 }
 
 export function toSafePrintingErrorMessage(error: unknown, t: PrintingCatalog): string {
@@ -157,30 +192,93 @@ export function toSafePrintingErrorMessage(error: unknown, t: PrintingCatalog): 
   if (normalized.code === 'NETWORK_ERROR' || normalized.code === 'TIMEOUT') return t.errors.network;
   if (normalized.code === 'UNAUTHORIZED') return t.errors.unauthorized;
   if (normalized.code === 'FORBIDDEN') return t.errors.forbidden;
-  return normalized.message || t.errors.generic;
+  if (normalized.status === 413) return t.errors.tooLarge;
+  if (normalized.errorCode === 'PRINT_PRICING_UNAVAILABLE') return t.errors.pricingUnavailable;
+  if (normalized.errorCode === 'PRINT_BINDING_UNAVAILABLE') return t.errors.bindingUnavailable;
+  // Server messages are English and meant for developers: users get the localized generic text.
+  return t.errors.generic;
 }
 
 export async function calculatePrintQuote(
   draft: PrintDraft,
   token: string,
-  t: PrintingCatalog,
+  options?: PrintTransferOptions,
 ): Promise<PrintQuote> {
-  const item = buildPrintItem(draft);
-  if (!item) throw new Error(t.errors.missingFile);
-  return api.quotePrintOrder({ items: [item] }, token) as Promise<PrintQuote>;
+  const body = buildQuoteBody(draft);
+
+  return api.quotePrintOrder(body as PrintQuoteRequest | FormData, token, options);
+}
+const CONVERSION_POLL_MS = 2500;
+const CONVERSION_MAX_WAIT_MS = 3 * 60 * 1000;
+
+/** Uploads a Word/PowerPoint file and waits until the server has converted it to PDF. */
+export async function convertOfficeDocument(
+  file: PrintLocalFile,
+  token: string,
+  options?: PrintTransferOptions,
+): Promise<{ id: string; name: string; pages: number | null }> {
+  const form = new FormData();
+
+  appendLocalFile(form, 'file', file);
+
+  let conversion = await api.convertPrintDocument(form, token, options);
+  const deadline = Date.now() + CONVERSION_MAX_WAIT_MS;
+
+  while (conversion.status === 'pending') {
+    if (Date.now() > deadline) {
+      throw new Error('conversion timed out');
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, CONVERSION_POLL_MS));
+    conversion = await api.getPrintConversion(conversion.id, token);
+  }
+
+  if (conversion.status !== 'ready') {
+    throw new Error('conversion failed');
+  }
+
+  return { id: conversion.id, name: file.name, pages: conversion.pages_count };
 }
 export async function loadPickupLocations(token: string): Promise<PrintPickupLocation[]> {
-  return api.listPickupLocations(token) as Promise<PrintPickupLocation[]>;
+  const response: unknown = await api.listPickupLocations(token);
+  const list = Array.isArray(response)
+    ? response
+    : Array.isArray((response as { results?: unknown })?.results)
+      ? (response as { results: unknown[] }).results
+      : [];
+
+  return (list as PrintPickupLocation[])
+    .filter((location) => location.is_active !== false)
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
 }
-export async function createPrintOrder(request: CreatePrintOrderRequest, token: string) {
+export async function createPrintOrder(
+  draft: PrintDraft,
+  token: string,
+  options?: PrintTransferOptions,
+): Promise<PrintOrder> {
   // One key per "place this order" action: a retry of the same order re-uses it, so the
-  // backend returns the original order instead of creating a duplicate.
-  return runIdempotentAction('print-order:create', request, async (idempotencyKey) =>
-    normalizeOrder(await api.createPrintOrder(request, token, idempotencyKey)),
+  // backend returns the original order instead of creating a duplicate. The scope payload
+  // is the order signature (not the multipart body), which stays stable across retries.
+  return runIdempotentAction('print-order:create', orderSignature(draft), async (idempotencyKey) =>
+    normalizeOrder(
+      await api.createPrintOrder(
+        buildOrderBody(draft) as CreatePrintOrderRequest | FormData,
+        token,
+        idempotencyKey,
+        options,
+      ),
+    ),
   );
 }
-export async function loadMyPrintOrders(token: string): Promise<PaginatedResult<PrintOrder>> {
-  const response = await api.listMyPrintOrders(token);
+export async function loadMyPrintOrders(
+  token: string,
+  params: { page: number; status?: string },
+): Promise<PaginatedResult<PrintOrder>> {
+  const response = await api.listMyPrintOrders(token, {
+    page: params.page,
+    pageSize: PRINT_ORDERS_PAGE_SIZE,
+    status: params.status,
+  });
   return { ...response, results: response.results.map(normalizeOrder) };
 }
 export async function loadPrintOrderDetail(id: Id, token: string) {
@@ -188,4 +286,7 @@ export async function loadPrintOrderDetail(id: Id, token: string) {
 }
 export async function cancelPrintOrder(id: Id, token: string) {
   await api.cancelPrintOrder(id, token);
+}
+export async function requestPrintItemTicket(itemId: Id, token: string) {
+  return api.requestPrintItemAccessTicket(itemId, token);
 }

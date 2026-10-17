@@ -32,11 +32,18 @@ export const TabRoutes = {
 
 export const HomeRoutes = {
   Home: 'Home',
+  AnnouncementsList: 'AnnouncementsList',
+  AnnouncementDetail: 'AnnouncementDetail',
 } as const;
 
 export const SubjectsRoutes = {
   SubjectsList: 'SubjectsList',
   SubjectDetails: 'SubjectDetails',
+} as const;
+
+export const LecturesRoutes = {
+  LecturesList: 'LecturesList',
+  LectureViewer: 'LectureViewer',
 } as const;
 
 export const GroupsRoutes = {
@@ -54,6 +61,7 @@ export const PrintingRoutes = {
   PrintPriceSummary: 'PrintPriceSummary',
   MyPrintOrders: 'MyPrintOrders',
   PrintOrderDetails: 'PrintOrderDetails',
+  PrintItemViewer: 'PrintItemViewer',
 } as const;
 
 export const ProfileRoutes = {
@@ -67,6 +75,7 @@ export const ProfileRoutes = {
   SupportTickets: 'SupportTickets',
   CreateSupportTicket: 'CreateSupportTicket',
   TicketDetails: 'TicketDetails',
+  SupportAttachment: 'SupportAttachment',
   PrivacyPolicy: 'PrivacyPolicy',
   Terms: 'Terms',
   About: 'About',

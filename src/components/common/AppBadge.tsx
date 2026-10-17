@@ -1,7 +1,7 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 import { StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing } from '../../theme';
+import { colors, radius, spacing, useBrand } from '../../theme';
 import type { StatusVariant } from '../../types/common';
 import { AppText } from './AppText';
 
@@ -53,7 +53,11 @@ const sizeStyles: Record<BadgeSize, ViewStyle> = {
 };
 
 export function AppBadge({ label, variant = 'neutral', size = 'sm', style }: AppBadgeProps) {
-  const selectedColors = badgeColors[variant];
+  const brand = useBrand();
+  const selectedColors =
+    variant === 'brand'
+      ? { backgroundColor: brand.primarySoft, color: brand.primary }
+      : badgeColors[variant];
 
   return (
     <View

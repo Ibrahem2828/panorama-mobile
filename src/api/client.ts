@@ -7,6 +7,7 @@ import { reportLifecycleError } from './lifecycleBridge';
 import type { ApiRequestOptions } from './request';
 import { buildDefaultApiUrl, buildRequestHeaders } from './request';
 import { isApiResponseEnvelope, isApiSuccess } from './response';
+import { uploadWithProgress } from './uploadTransport';
 
 type ParsedResponse = {
   body: unknown;
@@ -94,10 +95,16 @@ async function executeRequest<TData, TBody = unknown>(
   options: InternalRequestOptions<TBody>,
 ): Promise<TData> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(
-    () => controller.abort(),
-    options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS,
-  );
+  const timeoutMs = options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS;
+  let timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const abortFromCaller = () => controller.abort();
+
+  if (options.signal?.aborted) {
+    controller.abort();
+  } else {
+    options.signal?.addEventListener('abort', abortFromCaller);
+  }
+
   const method = options.method ?? 'GET';
   const hasBody = options.body !== undefined && options.body !== null;
   const hasFormDataBody = isFormDataBody(options.body);
@@ -111,12 +118,27 @@ async function executeRequest<TData, TBody = unknown>(
   const url = buildDefaultApiUrl(options);
 
   try {
-    const response = await fetch(url, {
-      method,
-      headers,
-      body: buildFetchBody(options.body),
-      signal: controller.signal,
-    });
+    const { onUploadProgress } = options;
+    const response =
+      onUploadProgress && isFormDataBody(options.body)
+        ? await uploadWithProgress(url, {
+            method,
+            headers,
+            body: options.body,
+            signal: controller.signal,
+            onUploadProgress: (progress) => {
+              // Progress means the connection is alive: restart the stall timer.
+              clearTimeout(timeoutId);
+              timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+              onUploadProgress(progress);
+            },
+          })
+        : await fetch(url, {
+            method,
+            headers,
+            body: buildFetchBody(options.body),
+            signal: controller.signal,
+          });
     const parsedResponse = await parseResponse(response);
 
     if (!response.ok) {
@@ -151,6 +173,7 @@ async function executeRequest<TData, TBody = unknown>(
     throw new ApiClientError(normalizedError);
   } finally {
     clearTimeout(timeoutId);
+    options.signal?.removeEventListener('abort', abortFromCaller);
   }
 }
 

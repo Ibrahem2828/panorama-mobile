@@ -1,17 +1,18 @@
 import { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import {
   AppButton,
   AppCard,
-  AppHeader,
-  AppScreen,
   AppText,
   AppTextInput,
   EmptyState,
   ErrorState,
+  FormAlert,
+  FormScreen,
+  Icon,
   LoadingState,
   Stack,
 } from '../../../components';
@@ -19,13 +20,13 @@ import { isNormalUser } from '../../../navigation/guards/navigationGuards';
 import { StudentSetupRoutes } from '../../../navigation/routes';
 import { isStudentProfileComplete } from '../services';
 import type { StudentSetupStackParamList } from '../../../navigation/types';
-import { spacing } from '../../../theme';
+import { spacing, useBrand } from '../../../theme';
 import { useAuthStore } from '../../auth/store';
 import {
   AcademicSelectField,
   NormalUserIntroCard,
+  SetupHeader,
   StudentNumberPreviewCard,
-  StudentSetupStepper,
 } from '../components';
 import { useStudentProfileStore } from '../store';
 import { useTranslation } from '../../../i18n';
@@ -38,7 +39,6 @@ type AcademicProfileSetupNavigation = NativeStackNavigationProp<
 function canSubmitProfile(input: {
   selectedUniversityId: string | number | null;
   selectedFacultyId: string | number | null;
-  selectedMajorId: string | number | null;
   selectedAcademicYearId: string | number | null;
   selectedSemesterId: string | number | null;
   studentNumber: string;
@@ -46,7 +46,6 @@ function canSubmitProfile(input: {
   return Boolean(
     input.selectedUniversityId &&
       input.selectedFacultyId &&
-      input.selectedMajorId &&
       input.selectedAcademicYearId &&
       input.selectedSemesterId &&
       input.studentNumber.trim(),
@@ -55,6 +54,7 @@ function canSubmitProfile(input: {
 
 export function AcademicProfileSetupScreen() {
   const { t } = useTranslation();
+  const brand = useBrand();
   const navigation = useNavigation<AcademicProfileSetupNavigation>();
   const user = useAuthStore((state) => state.user);
   const bootstrap = useStudentProfileStore((state) => state.bootstrap);
@@ -63,7 +63,6 @@ export function AcademicProfileSetupScreen() {
   const majors = useStudentProfileStore((state) => state.majors);
   const academicYears = useStudentProfileStore((state) => state.academicYears);
   const semesters = useStudentProfileStore((state) => state.semesters);
-  const subjects = useStudentProfileStore((state) => state.subjects);
   const selectedUniversityId = useStudentProfileStore((state) => state.selectedUniversityId);
   const selectedFacultyId = useStudentProfileStore((state) => state.selectedFacultyId);
   const selectedMajorId = useStudentProfileStore((state) => state.selectedMajorId);
@@ -75,6 +74,7 @@ export function AcademicProfileSetupScreen() {
   const isBootstrapping = useStudentProfileStore((state) => state.isBootstrapping);
   const isLoadingOptions = useStudentProfileStore((state) => state.isLoadingOptions);
   const isLoadingFaculties = useStudentProfileStore((state) => state.isLoadingFaculties);
+  const facultySubjectsCount = useStudentProfileStore((state) => state.facultySubjectsCount);
   const isLoadingMajors = useStudentProfileStore((state) => state.isLoadingMajors);
   const isLoadingSubjects = useStudentProfileStore((state) => state.isLoadingSubjects);
   const isParsingStudentNumber = useStudentProfileStore((state) => state.isParsingStudentNumber);
@@ -98,7 +98,6 @@ export function AcademicProfileSetupScreen() {
   const canSubmit = canSubmitProfile({
     selectedUniversityId,
     selectedFacultyId,
-    selectedMajorId,
     selectedAcademicYearId,
     selectedSemesterId,
     studentNumber,
@@ -128,165 +127,197 @@ export function AcademicProfileSetupScreen() {
     }
   }
 
+  const header = (
+    <SetupHeader
+      step={1}
+      subtitle={t.studentProfile.cardSubtitle}
+      title={t.studentProfile.setupTitle}
+    />
+  );
+
   if (initialLoading) {
     return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.studentProfile.setupSubtitle} title={t.studentProfile.setupTitle} />
-        <StudentSetupStepper currentStep={1} />
+      <FormScreen>
+        {header}
         <LoadingState message={t.studentProfile.loading} />
-      </AppScreen>
+      </FormScreen>
     );
   }
 
   if (hasProfileLoadError) {
     return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.studentProfile.setupSubtitle} title={t.studentProfile.setupTitle} />
-        <StudentSetupStepper currentStep={1} />
+      <FormScreen>
+        {header}
         <ErrorState message={errorMessage ?? undefined} onRetry={handleRetry} />
-      </AppScreen>
+      </FormScreen>
+    );
+  }
+
+  if (showEmptyUniversities) {
+    return (
+      <FormScreen>
+        {header}
+        <EmptyState
+          action={<AppButton onPress={handleRetry} title={t.common.retry} variant="outline" />}
+          message={t.studentProfile.noAcademicDataMessage}
+          title={t.studentProfile.noAcademicDataTitle}
+        />
+      </FormScreen>
     );
   }
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardAvoid}
-      >
-        <Stack gap="xl">
-          <Stack gap="md">
-            <AppHeader
-              subtitle={t.studentProfile.cardSubtitle}
-              title={t.studentProfile.setupTitle}
-            />
-            <StudentSetupStepper currentStep={1} />
-          </Stack>
+    <FormScreen
+      footer={
+        <>
+          {errorMessage ? <FormAlert message={errorMessage} /> : null}
+          <AppButton
+            disabled={!canSubmit || isSubmitting}
+            fullWidth
+            loading={isSubmitting}
+            onPress={handleSubmit}
+            size="lg"
+            title={t.studentProfile.saveAndContinue}
+          />
+        </>
+      }
+    >
+      {header}
 
-          {isNormalUser(user) ? <NormalUserIntroCard /> : null}
+      {isNormalUser(user) ? <NormalUserIntroCard /> : null}
 
-          {showEmptyUniversities ? (
-            <EmptyState
-              message={t.studentProfile.noAcademicDataMessage}
-              title={t.studentProfile.noAcademicDataTitle}
-              action={<AppButton onPress={handleRetry} title={t.common.retry} variant="outline" />}
-            />
-          ) : (
-            <>
-              <Stack gap="md">
-                <AppText variant="title">{t.studentProfile.studentNumberTitle}</AppText>
-                <AppTextInput
-                  accessibilityLabel={t.studentProfile.studentNumberTitle}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  disabled={isSubmitting}
-                  error={parseErrorMessage ?? undefined}
-                  helperText={t.studentProfile.studentNumberHelper}
-                  keyboardType="number-pad"
-                  label={t.studentProfile.studentNumberTitle}
-                  onChangeText={setStudentNumber}
-                  placeholder="2150094"
-                  value={studentNumber}
-                />
-                <AppButton
-                  loading={isParsingStudentNumber}
-                  onPress={() => {
-                    void parseCurrentStudentNumber();
-                  }}
-                  title={t.studentProfile.parseNumber}
-                  variant="outline"
-                />
-                <StudentNumberPreviewCard parsedStudentNumber={parsedStudentNumber} />
-              </Stack>
-
-              <AcademicSelectField
-                emptyText={t.studentProfile.universityEmpty}
-                isLoading={isLoadingOptions}
-                label={t.studentProfile.universityLabel}
-                onSelect={selectUniversity}
-                options={universities}
-                selectedId={selectedUniversityId}
-              />
-
-              <AcademicSelectField
-                disabled={!selectedUniversityId}
-                emptyText={t.studentProfile.facultyEmpty}
-                isLoading={isLoadingFaculties}
-                label={t.studentProfile.facultyLabel}
-                onSelect={selectFaculty}
-                options={faculties}
-                selectedId={selectedFacultyId}
-              />
-
-              <AcademicSelectField
-                disabled={!selectedFacultyId}
-                emptyText={t.studentProfile.majorEmpty}
-                isLoading={isLoadingMajors}
-                label={t.studentProfile.majorLabel}
-                onSelect={selectMajor}
-                options={majors}
-                selectedId={selectedMajorId}
-              />
-
-              <AcademicSelectField
-                emptyText={t.studentProfile.academicYearEmpty}
-                isLoading={isLoadingOptions}
-                label={t.studentProfile.academicYearLabel}
-                onSelect={selectAcademicYear}
-                options={academicYears}
-                selectedId={selectedAcademicYearId}
-              />
-
-              <AcademicSelectField
-                emptyText={t.studentProfile.semesterEmpty}
-                isLoading={isLoadingOptions}
-                label={t.studentProfile.semesterLabel}
-                onSelect={selectSemester}
-                options={semesters}
-                selectedId={selectedSemesterId}
-              />
-
-              {selectedMajorId ? (
-                <AppCard padding="md" variant="muted">
-                  <Stack gap="xs">
-                    <AppText variant="title">{t.studentProfile.majorSubjectsTitle}</AppText>
-                    <AppText color="secondary" variant="bodySmall">
-                      {isLoadingSubjects
-                        ? t.studentProfile.majorSubjectsLoading
-                        : subjects.length > 0
-                          ? t.studentProfile.majorSubjectsLoaded(subjects.length)
-                          : t.studentProfile.majorSubjectsEmpty}
-                    </AppText>
-                  </Stack>
-                </AppCard>
-              ) : null}
-
-              {errorMessage ? (
-                <AppText color="error" variant="bodySmall">
-                  {errorMessage}
-                </AppText>
-              ) : null}
-
-              <AppButton
-                disabled={!canSubmit || isSubmitting}
-                fullWidth
-                loading={isSubmitting}
-                onPress={handleSubmit}
-                title={t.studentProfile.saveAndContinue}
-              />
-            </>
-          )}
+      <AppCard padding="lg" variant="elevated">
+        <Stack gap="md">
+          <View style={styles.sectionTitle}>
+            <Icon color={brand.primary} name="idCard" size={22} />
+            <AppText variant="title">{t.studentProfile.studentNumberTitle}</AppText>
+          </View>
+          <AppTextInput
+            accessibilityLabel={t.studentProfile.studentNumberTitle}
+            autoCapitalize="none"
+            autoCorrect={false}
+            disabled={isSubmitting}
+            error={parseErrorMessage ?? undefined}
+            helperText={t.studentProfile.studentNumberHelper}
+            keyboardType="number-pad"
+            onChangeText={setStudentNumber}
+            placeholder={t.studentProfile.studentNumberPlaceholder}
+            value={studentNumber}
+          />
+          <AppButton
+            disabled={!studentNumber.trim()}
+            loading={isParsingStudentNumber}
+            onPress={() => {
+              void parseCurrentStudentNumber();
+            }}
+            size="sm"
+            title={t.studentProfile.parseNumber}
+            variant="outline"
+          />
+          <StudentNumberPreviewCard parsedStudentNumber={parsedStudentNumber} />
         </Stack>
-      </KeyboardAvoidingView>
-    </AppScreen>
+      </AppCard>
+
+      <AppCard padding="lg" variant="elevated">
+        <Stack gap="md">
+          <View style={styles.sectionTitle}>
+            <Icon color={brand.primary} name="cap" size={22} />
+            <AppText variant="title">{t.studentProfile.academicSectionTitle}</AppText>
+          </View>
+
+          <AcademicSelectField
+            autoSelect
+            emptyText={t.studentProfile.universityEmpty}
+            isLoading={isLoadingOptions}
+            label={t.studentProfile.universityLabel}
+            onSelect={selectUniversity}
+            options={universities}
+            placeholder={t.studentProfile.universityPlaceholder}
+            selectedId={selectedUniversityId}
+          />
+
+          <AcademicSelectField
+            autoSelect
+            disabled={!selectedUniversityId}
+            emptyText={
+              selectedUniversityId ? t.studentProfile.facultyNone : t.studentProfile.facultyEmpty
+            }
+            isLoading={isLoadingFaculties}
+            label={t.studentProfile.facultyLabel}
+            onSelect={selectFaculty}
+            options={faculties}
+            placeholder={t.studentProfile.facultyPlaceholder}
+            selectedId={selectedFacultyId}
+          />
+
+          <AcademicSelectField
+            autoSelect
+            emptyText={t.studentProfile.academicYearEmpty}
+            isLoading={isLoadingOptions}
+            label={t.studentProfile.academicYearLabel}
+            onSelect={selectAcademicYear}
+            options={academicYears}
+            placeholder={t.studentProfile.academicYearPlaceholder}
+            selectedId={selectedAcademicYearId}
+          />
+
+          <AcademicSelectField
+            autoSelect
+            emptyText={t.studentProfile.semesterEmpty}
+            isLoading={isLoadingOptions}
+            label={t.studentProfile.semesterLabel}
+            onSelect={selectSemester}
+            options={semesters}
+            placeholder={t.studentProfile.semesterPlaceholder}
+            selectedId={selectedSemesterId}
+          />
+
+          <AcademicSelectField
+            clearLabel={t.studentProfile.majorNone}
+            disabled={!selectedFacultyId || (majors.length === 0 && !isLoadingMajors)}
+            emptyText={
+              selectedFacultyId ? t.studentProfile.majorNoneAvailable : t.studentProfile.majorEmpty
+            }
+            hint={t.studentProfile.majorOptionalHint}
+            isLoading={isLoadingMajors}
+            label={t.studentProfile.majorLabel}
+            onClear={() => selectMajor(null)}
+            onSelect={selectMajor}
+            options={majors}
+            placeholder={t.studentProfile.majorNone}
+            selectedId={selectedMajorId}
+          />
+        </Stack>
+      </AppCard>
+
+      {selectedFacultyId ? (
+        <View style={styles.subjects}>
+          <Icon color={brand.primary} name="book" size={20} />
+          <AppText color="secondary" style={styles.subjectsText} variant="bodySmall">
+            {isLoadingSubjects
+              ? t.studentProfile.majorSubjectsLoading
+              : facultySubjectsCount > 0
+                ? t.studentProfile.majorSubjectsLoaded(facultySubjectsCount)
+                : t.studentProfile.majorSubjectsEmpty}
+          </AppText>
+        </View>
+      ) : null}
+    </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    gap: spacing.xl,
+  sectionTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
-  keyboardAvoid: {
+  subjects: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  subjectsText: {
     flex: 1,
   },
 });

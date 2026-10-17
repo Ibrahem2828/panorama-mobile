@@ -15,7 +15,7 @@ import {
 } from '../../../components';
 import { ProfileRoutes } from '../../../navigation/routes';
 import type { ProfileStackParamList } from '../../../navigation/types';
-import { colors, radius, spacing } from '../../../theme';
+import { colors, radius, spacing, useBrand } from '../../../theme';
 import { useAuthStore } from '../../auth/store';
 import { submitFeedback, toSafeFeedbackErrorMessage } from '../services';
 import type { FeedbackKind } from '../types';
@@ -38,6 +38,7 @@ const KIND_OPTIONS: KindOption[] = [
 
 export function FeedbackCenterScreen({ navigation }: Props) {
   const { t } = useTranslation();
+  const brand = useBrand();
   const accessToken = useAuthStore((state) => state.accessToken);
   const [kind, setKind] = useState<FeedbackKind>('rating');
   const [rating, setRating] = useState<number | null>(5);
@@ -121,7 +122,6 @@ export function FeedbackCenterScreen({ navigation }: Props) {
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <AppHeader subtitle={t.feedback.centerSubtitle} title={t.feedback.centerTitle} />
-        <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
 
         <AppCard variant="muted">
           <Stack gap="xs">
@@ -146,7 +146,10 @@ export function FeedbackCenterScreen({ navigation }: Props) {
                     setKind(option.value);
                     setErrorMessage(null);
                   }}
-                  style={[styles.kindCard, selected ? styles.kindCardSelected : null]}
+                  style={[
+                    styles.kindCard,
+                    selected ? [styles.kindCardSelected, { borderColor: brand.primary }] : null,
+                  ]}
                 >
                   <AppText color={selected ? 'brand' : 'primary'} variant="label">
                     {t.feedback.kinds[option.labelKey]}
@@ -170,7 +173,10 @@ export function FeedbackCenterScreen({ navigation }: Props) {
                 accessibilityState={{ selected: rating === value }}
                 key={value}
                 onPress={() => setRating(value)}
-                style={[styles.star, rating === value ? styles.starSelected : null]}
+                style={[
+                  styles.star,
+                  rating === value ? [styles.starSelected, { borderColor: brand.primary }] : null,
+                ]}
               >
                 <AppText style={styles.starText}>★</AppText>
               </Pressable>
@@ -241,7 +247,7 @@ const styles = StyleSheet.create({
     borderColor: colors.brand.primary,
     backgroundColor: colors.background.muted,
   },
-  stars: { flexDirection: 'row-reverse', justifyContent: 'center', gap: spacing.sm },
+  stars: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sm },
   star: {
     width: 48,
     height: 48,

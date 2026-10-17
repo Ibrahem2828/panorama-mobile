@@ -3,8 +3,14 @@ import { create } from 'zustand';
 import { useLocaleStore } from '../../../i18n';
 
 import { useAuthStore } from '../../auth/store';
-import { loadFileDetail, loadFiles, loadGroupFiles, toSafeFilesErrorMessage } from '../services';
-import type { FileResource, Id } from '../types';
+import {
+  loadFileDetail,
+  loadFiles,
+  loadFilesPage,
+  loadGroupFiles,
+  toSafeFilesErrorMessage,
+} from '../services';
+import type { FileResource, FilesListQuery, Id } from '../types';
 
 type FilesState = {
   files: FileResource[];
@@ -18,7 +24,21 @@ type FilesState = {
   lastLoadedAt: string | null;
   filesCount: number;
   groupFilesCountByGroupId: Record<string, number>;
+  /** The searchable, filterable, paginated list shown by the files screen. */
+  list: FileResource[];
+  listCount: number;
+  listNextPage: number | null;
+  listQuery: FilesListQuery;
+  hasLoadedList: boolean;
+  isLoadingList: boolean;
+  isLoadingMoreList: boolean;
+  isRefreshingList: boolean;
+  listError: string | null;
+  loadMoreError: string | null;
 
+  loadList: (query: FilesListQuery) => Promise<void>;
+  refreshList: () => Promise<void>;
+  loadMoreList: () => Promise<void>;
   loadFiles: () => Promise<void>;
   refreshFiles: () => Promise<void>;
   loadFileDetail: (fileId: Id) => Promise<void>;
@@ -69,7 +89,20 @@ const initialFilesState = {
   lastLoadedAt: null,
   filesCount: 0,
   groupFilesCountByGroupId: {},
+  list: [] as FileResource[],
+  listCount: 0,
+  listNextPage: null as number | null,
+  listQuery: {} as FilesListQuery,
+  hasLoadedList: false,
+  isLoadingList: false,
+  isLoadingMoreList: false,
+  isRefreshingList: false,
+  listError: null as string | null,
+  loadMoreError: null as string | null,
 };
+
+/** Only the newest list request may write results; older ones are dropped. */
+let listRequestId = 0;
 
 export const useFilesStore = create<FilesState>((set, get) => {
   function requireToken(): string | null {
@@ -130,14 +163,120 @@ export const useFilesStore = create<FilesState>((set, get) => {
       return {
         selectedFile: file,
         files: upsertFile(state.files, file),
+        list: upsertFile(state.list, file),
         groupFilesByGroupId: nextGroupFilesByGroupId,
         lastLoadedAt: new Date().toISOString(),
       };
     });
   }
 
+  async function fetchListFirstPage(query: FilesListQuery, mode: 'load' | 'refresh') {
+    const accessToken = getAccessToken();
+
+    if (!accessToken) {
+      set({ listError: filesCatalog().errors.unauthorized });
+      return;
+    }
+
+    const requestId = ++listRequestId;
+
+    set(
+      mode === 'load'
+        ? { isLoadingList: true, isRefreshingList: false, listError: null, listQuery: query }
+        : { isRefreshingList: true, listError: null },
+    );
+
+    try {
+      const response = await loadFilesPage(accessToken, { ...query, page: 1 });
+
+      if (requestId !== listRequestId) {
+        return;
+      }
+
+      set({
+        list: response.results,
+        listCount: response.count,
+        listNextPage: response.next ? 2 : null,
+        hasLoadedList: true,
+        isLoadingList: false,
+        isRefreshingList: false,
+        loadMoreError: null,
+        lastLoadedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      if (requestId !== listRequestId) {
+        return;
+      }
+
+      set({
+        isLoadingList: false,
+        isRefreshingList: false,
+        listError: toSafeFilesErrorMessage(error, filesCatalog()),
+      });
+    }
+  }
+
   return {
     ...initialFilesState,
+
+    async loadList(query) {
+      await fetchListFirstPage(query, 'load');
+    },
+
+    async refreshList() {
+      if (get().isRefreshingList) {
+        return;
+      }
+
+      await fetchListFirstPage(get().listQuery, 'refresh');
+    },
+
+    async loadMoreList() {
+      const { listNextPage, isLoadingMoreList, isLoadingList, isRefreshingList, listQuery } = get();
+      const accessToken = getAccessToken();
+
+      if (
+        listNextPage === null ||
+        isLoadingMoreList ||
+        isLoadingList ||
+        isRefreshingList ||
+        !accessToken
+      ) {
+        return;
+      }
+
+      const requestId = listRequestId;
+
+      set({ isLoadingMoreList: true, loadMoreError: null });
+
+      try {
+        const response = await loadFilesPage(accessToken, { ...listQuery, page: listNextPage });
+
+        if (requestId !== listRequestId) {
+          set({ isLoadingMoreList: false });
+          return;
+        }
+
+        set((state) => {
+          const known = new Set(state.list.map((file) => String(file.id)));
+
+          return {
+            list: [
+              ...state.list,
+              ...response.results.filter((file) => !known.has(String(file.id))),
+            ],
+            listCount: response.count,
+            listNextPage: response.next ? listNextPage + 1 : null,
+            isLoadingMoreList: false,
+          };
+        });
+      } catch (error) {
+        set({
+          isLoadingMoreList: false,
+          loadMoreError: toSafeFilesErrorMessage(error, filesCatalog()),
+        });
+      }
+    },
 
     async loadFiles() {
       if (get().isLoadingFiles) {
@@ -265,7 +404,9 @@ export const useFilesStore = create<FilesState>((set, get) => {
 
     getFileById(fileId) {
       const state = get();
-      const fromFiles = state.files.find((file) => isSameId(file.id, fileId));
+      const fromFiles =
+        state.files.find((file) => isSameId(file.id, fileId)) ??
+        state.list.find((file) => isSameId(file.id, fileId));
 
       if (fromFiles) {
         return fromFiles;
@@ -287,6 +428,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
     },
 
     reset() {
+      listRequestId += 1;
       set(initialFilesState);
     },
   };

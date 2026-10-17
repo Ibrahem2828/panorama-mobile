@@ -1,19 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { AppButton, AppScreen, AppText, AppTextInput, Stack } from '../../../components';
+import { AppButton, AppText, FormAlert, OtpCodeInput } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
-import { spacing } from '../../../theme';
-import { AuthFormCard, PasswordInput } from '../components';
+import { AuthScreen, PasswordInput } from '../components';
+import { formatCountdown, useResendCountdown } from '../hooks/useResendCountdown';
 import {
   confirmPasswordReset,
   requestPasswordResetCode,
   toSafePasswordResetErrorMessage,
 } from '../services';
 import { validateOtpCode, validatePasswordPair } from '../utils/authFormValidation';
+import { isolateLtr } from '../../../utils/rtl';
 
 type Props = NativeStackScreenProps<PublicStackParamList, 'ResetPassword'>;
 const RESEND_SECONDS = 60;
@@ -24,23 +25,21 @@ export function ResetPasswordScreen({ navigation, route }: Props) {
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [codeError, setCodeError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [remainingSeconds, setRemainingSeconds] = useState(RESEND_SECONDS);
-
-  useEffect(() => {
-    if (remainingSeconds <= 0) return;
-    const timer = setInterval(() => setRemainingSeconds((value) => Math.max(0, value - 1)), 1000);
-    return () => clearInterval(timer);
-  }, [remainingSeconds]);
+  const { remaining, restart } = useResendCountdown(RESEND_SECONDS);
 
   async function handleSubmit() {
     const otpError = validateOtpCode(code, t.auth.validation);
-    const passwordError = validatePasswordPair(password, passwordConfirm, t.auth.validation);
-    if (otpError || passwordError) return setErrorMessage(otpError ?? passwordError);
+    const pairError = validatePasswordPair(password, passwordConfirm, t.auth.validation);
+    setCodeError(otpError);
+    setPasswordError(pairError);
+    if (otpError || pairError) return;
     setIsSubmitting(true);
-    setErrorMessage(null);
+    setServerError(null);
     try {
       await confirmPasswordReset({
         identifier,
@@ -51,96 +50,100 @@ export function ResetPasswordScreen({ navigation, route }: Props) {
       });
       navigation.reset({ index: 0, routes: [{ name: PublicRoutes.Login }] });
     } catch (error) {
-      setErrorMessage(toSafePasswordResetErrorMessage(error, t.auth.errors));
+      setServerError(toSafePasswordResetErrorMessage(error, t.auth.errors));
     } finally {
       setIsSubmitting(false);
     }
   }
 
   async function handleResend() {
-    if (remainingSeconds > 0) return;
+    if (remaining > 0 || isResending) return;
     setIsResending(true);
+    setServerError(null);
     try {
       await requestPasswordResetCode(identifier, channel);
-      setRemainingSeconds(RESEND_SECONDS);
+      restart();
     } catch (error) {
-      setErrorMessage(toSafePasswordResetErrorMessage(error, t.auth.errors));
+      setServerError(toSafePasswordResetErrorMessage(error, t.auth.errors));
     } finally {
       setIsResending(false);
     }
   }
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardAvoid}
-      >
-        <Stack gap="lg">
-          <Stack gap="xs">
-            <AppText variant="h1">{t.auth.resetPassword.title}</AppText>
-            <AppText color="secondary">{t.auth.resetPassword.subtitle}</AppText>
-          </Stack>
-          <AuthFormCard
-            subtitle={t.auth.resetPassword.cardSubtitle(identifier)}
-            title={t.auth.resetPassword.cardTitle}
-          >
-            <Stack gap="md">
-              <AppTextInput
-                disabled={isSubmitting}
-                keyboardType="number-pad"
-                label={t.auth.fields.otpCode}
-                maxLength={6}
-                onChangeText={(value) => {
-                  setCode(value);
-                  setErrorMessage(null);
-                }}
-                value={code}
-              />
-              <PasswordInput
-                disabled={isSubmitting}
-                error={errorMessage ?? undefined}
-                onChangeText={setPassword}
-                value={password}
-              />
-              <AppTextInput
-                disabled={isSubmitting}
-                label={t.auth.fields.passwordConfirm}
-                onChangeText={setPasswordConfirm}
-                secureTextEntry
-                value={passwordConfirm}
-              />
-              <AppButton
-                disabled={isSubmitting}
-                fullWidth
-                loading={isSubmitting}
-                onPress={() => void handleSubmit()}
-                title={t.auth.resetPassword.submit}
-              />
-              <AppButton
-                disabled={isSubmitting || isResending || remainingSeconds > 0}
-                fullWidth
-                loading={isResending}
-                onPress={() => void handleResend()}
-                title={
-                  remainingSeconds > 0 ? t.auth.otp.resendIn(remainingSeconds) : t.auth.otp.resend
-                }
-                variant="outline"
-              />
-            </Stack>
-          </AuthFormCard>
-          <Pressable onPress={() => navigation.navigate(PublicRoutes.Login)}>
-            <AppText align="center" color="brand">
-              {t.auth.backToLogin}
-            </AppText>
-          </Pressable>
-        </Stack>
-      </KeyboardAvoidingView>
-    </AppScreen>
+    <AuthScreen
+      footer={
+        <AppButton
+          disabled={isSubmitting}
+          fullWidth
+          loading={isSubmitting}
+          onPress={() => void handleSubmit()}
+          size="lg"
+          title={t.auth.resetPassword.submit}
+        />
+      }
+      onBack={() => navigation.goBack()}
+      subtitle={t.auth.resetPassword.cardSubtitle(isolateLtr(identifier))}
+      title={t.auth.resetPassword.title}
+    >
+      {serverError ? <FormAlert message={serverError} /> : null}
+      <OtpCodeInput
+        disabled={isSubmitting}
+        error={codeError}
+        onChange={(value: string) => {
+          setCode(value);
+          setCodeError(null);
+        }}
+        value={code}
+      />
+      <View style={styles.center}>
+        {remaining > 0 ? (
+          <AppText color="muted" variant="bodySmall">
+            {t.auth.otp.resendIn(formatCountdown(remaining))}
+          </AppText>
+        ) : (
+          <AppButton
+            disabled={isSubmitting || isResending}
+            loading={isResending}
+            onPress={() => void handleResend()}
+            size="sm"
+            title={t.auth.otp.resend}
+            variant="outline"
+          />
+        )}
+      </View>
+      <PasswordInput
+        autoComplete="new-password"
+        disabled={isSubmitting}
+        error={
+          passwordError && passwordError !== t.auth.validation.passwordMismatch
+            ? passwordError
+            : undefined
+        }
+        helperText={t.auth.fields.passwordHint}
+        label={t.auth.resetPassword.newPassword}
+        onChangeText={(value) => {
+          setPassword(value);
+          setPasswordError(null);
+        }}
+        value={password}
+      />
+      <PasswordInput
+        autoComplete="new-password"
+        disabled={isSubmitting}
+        error={passwordError === t.auth.validation.passwordMismatch ? passwordError : undefined}
+        label={t.auth.fields.passwordConfirm}
+        onChangeText={(value) => {
+          setPasswordConfirm(value);
+          setPasswordError(null);
+        }}
+        placeholder={t.auth.fields.passwordConfirmPlaceholder}
+        value={passwordConfirm}
+      />
+    </AuthScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { justifyContent: 'center', gap: spacing.xl },
-  keyboardAvoid: { flex: 1 },
+  center: { alignItems: 'center' },
 });

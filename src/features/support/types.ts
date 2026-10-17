@@ -1,3 +1,5 @@
+import type { LocalFile } from '../attachments/services/localFile';
+
 export type Id = string | number;
 
 export type SupportTicketStatus =
@@ -24,6 +26,8 @@ export type SupportTicketCategory =
 
 export type SupportTicketMessage = {
   id?: Id;
+  has_attachment?: boolean;
+  attachment_preview_endpoint?: string | null;
   message?: string;
   body?: string;
   content?: string;
@@ -55,16 +59,19 @@ export type CreateSupportTicketInput = {
   category: SupportTicketCategory;
   subject: string;
   message: string;
+  attachment?: LocalFile | null;
 };
 
 export type AddSupportTicketMessageInput = {
   message: string;
+  attachment?: LocalFile | null;
 };
 
 export type SupportTicketDraft = {
   category: SupportTicketCategory;
   subject: string;
   message: string;
+  attachment: LocalFile | null;
 };
 
 export type SupportTicketDraftValidation = {

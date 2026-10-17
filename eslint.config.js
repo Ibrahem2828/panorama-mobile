@@ -48,7 +48,7 @@ module.exports = tseslint.config(
     },
   },
   {
-    files: ['src/assets/images/index.ts'],
+    files: ['src/assets/images/index.ts', 'src/theme/facultyTheme.ts', 'src/theme/fonts.ts'],
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
     },

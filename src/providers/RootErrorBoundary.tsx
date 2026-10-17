@@ -2,6 +2,8 @@ import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+// Plain palette module (no stores), so the fallback still follows the theme when other modules failed.
+import { colors } from '../theme/colors';
 import { reportError } from '../services/monitoring';
 import { logger } from '../utils/logger';
 
@@ -15,7 +17,7 @@ type RootErrorBoundaryState = { error: Error | null };
  */
 const COPY = {
   ar: {
-    title: 'حدث خطأ غير متوقع',
+    title: 'حدث خطأ ما',
     message: 'تعذّر عرض هذه الشاشة. يمكنك المحاولة مرة أخرى، وإن تكرر الخطأ أعد تشغيل التطبيق.',
     retry: 'إعادة المحاولة',
   },
@@ -84,7 +86,7 @@ export class RootErrorBoundary extends Component<RootErrorBoundaryProps, RootErr
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.background.primary,
     flex: 1,
   },
   content: {
@@ -94,34 +96,34 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   title: {
-    color: '#101828',
+    color: colors.text.primary,
     fontSize: 24,
     fontWeight: '700',
     textAlign: 'center',
   },
   message: {
-    color: '#475467',
+    color: colors.text.secondary,
     fontSize: 16,
     lineHeight: 24,
     textAlign: 'center',
   },
   diagnostic: {
-    backgroundColor: '#FDECEC',
+    backgroundColor: colors.semantic.errorSoft,
     borderRadius: 8,
-    color: '#D93025',
+    color: colors.semantic.error,
     fontSize: 13,
     padding: 12,
     textAlign: 'left',
   },
   button: {
     alignItems: 'center',
-    backgroundColor: '#002B7F',
+    backgroundColor: colors.brand.primary,
     borderRadius: 12,
     paddingHorizontal: 24,
     paddingVertical: 14,
   },
   buttonLabel: {
-    color: '#FFFFFF',
+    color: colors.text.inverse,
     fontSize: 16,
     fontWeight: '600',
   },

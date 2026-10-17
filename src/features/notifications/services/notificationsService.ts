@@ -5,10 +5,16 @@ import {
   type PaginatedResult,
 } from '../../../api';
 import type { StatusVariant } from '../../../types/common';
-import { resolveTargetFromData } from './notificationRoutingService';
+import type { Locale } from '../../../i18n';
+import { parseDeepLink } from './notificationDeepLink';
+import {
+  resolveNotificationRouteIntent,
+  resolveTargetFromData,
+} from './notificationRoutingService';
 import type {
   Id,
   NotificationRecord,
+  NotificationRouteIntent,
   NotificationTarget,
   NotificationType,
   RegisterDeviceTokenInput,
@@ -55,9 +61,17 @@ function normalizeNotification(record: ApiNotificationRecord): NotificationRecor
     ...record,
     id: record.id,
     title: toText(record.title),
+    title_ar: toText(record.title_ar),
+    title_en: toText(record.title_en),
     subject: toText(record.subject),
     message: toText(record.message),
     body: toText(record.body),
+    body_ar: toText(record.body_ar),
+    body_en: toText(record.body_en),
+    deep_link: toText(record.deep_link),
+    related_object_type: toText(record.related_object_type),
+    related_object_id: toText(record.related_object_id),
+    expires_at: toNullableText(record.expires_at),
     type: toText(record.type),
     is_read: typeof record.is_read === 'boolean' ? record.is_read : undefined,
     read_at: toNullableText(record.read_at),
@@ -82,8 +96,10 @@ function normalizeList(
 export function getNotificationTitle(
   notification: NotificationRecord,
   t: NotificationsCatalog,
+  locale: Locale = 'ar',
 ): string {
   return (
+    toText(locale === 'ar' ? notification.title_ar : notification.title_en) ??
     toText(notification.title) ??
     toText(notification.subject) ??
     toText(getDataField(notification, 'title')) ??
@@ -91,8 +107,12 @@ export function getNotificationTitle(
   );
 }
 
-export function getNotificationBody(notification: NotificationRecord): string | null {
+export function getNotificationBody(
+  notification: NotificationRecord,
+  locale: Locale = 'ar',
+): string | null {
   return (
+    toText(locale === 'ar' ? notification.body_ar : notification.body_en) ??
     toText(notification.message) ??
     toText(notification.body) ??
     toText(getDataField(notification, 'message')) ??
@@ -227,10 +247,54 @@ export function toSafeNotificationsErrorMessage(error: unknown, t: Notifications
   return normalizedError.message || t.errors.generic;
 }
 
+export const NOTIFICATIONS_PAGE_SIZE = 20;
+
 export async function loadNotifications(
   authToken: string,
+  page = 1,
 ): Promise<PaginatedResult<NotificationRecord>> {
-  return normalizeList(await apiNotificationsService.listNotifications(authToken));
+  return normalizeList(
+    await apiNotificationsService.listNotifications(authToken, {
+      page,
+      pageSize: NOTIFICATIONS_PAGE_SIZE,
+    }),
+  );
+}
+
+/**
+ * Where a notification leads. A valid backend `deep_link` wins (it is the backend's explicit
+ * choice); otherwise the target type and id decide.
+ */
+export function resolveNotificationIntent(
+  notification: Pick<
+    NotificationRecord,
+    | 'deep_link'
+    | 'data'
+    | 'related_object_type'
+    | 'related_object_id'
+    | 'type'
+    | 'target_type'
+    | 'target_id'
+  >,
+): NotificationRouteIntent {
+  const linked = parseDeepLink(notification.deep_link);
+
+  if (linked) {
+    return linked;
+  }
+
+  return resolveNotificationRouteIntent(getNotificationTarget(notification as NotificationRecord));
+}
+
+export async function loadNotificationPreferences(authToken: string) {
+  return apiNotificationsService.getNotificationPreferences(authToken);
+}
+
+export async function saveNotificationPreferences(
+  patch: Parameters<typeof apiNotificationsService.updateNotificationPreferences>[0],
+  authToken: string,
+) {
+  return apiNotificationsService.updateNotificationPreferences(patch, authToken);
 }
 
 export async function loadUnreadCount(authToken: string): Promise<UnreadCountResponse> {

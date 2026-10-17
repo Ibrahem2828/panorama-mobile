@@ -4,12 +4,13 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
 import {
-  AppButton,
   AppHeader,
   AppScreen,
+  BrandRefreshControl,
   ErrorState,
-  LoadingState,
   SectionHeader,
+  Skeleton,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { GroupsRoutes, SharedRoutes, TabRoutes } from '../../../navigation/routes';
@@ -19,6 +20,10 @@ import { SubjectDetailHeader, SubjectLinkedSectionCard } from '../components';
 import { useSubjectsStore } from '../store';
 import type { Subject } from '../types';
 import { useTranslation } from '../../../i18n';
+import { GroupWhatsAppCard, useSubjectGroupAccess } from '../../groups';
+import { SubjectLecturesSection } from '../../lectures';
+import { SubjectLockedCard } from '../components/SubjectLockedCard';
+import { getSubjectDisplayName } from '../services';
 
 type SubjectDetailsScreenProps = NativeStackScreenProps<SubjectsStackParamList, 'SubjectDetails'>;
 type AppTabsNavigation = BottomTabNavigationProp<AppTabsParamList>;
@@ -42,6 +47,7 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
     selectedSubject && isSameSubjectId(selectedSubject, subjectId)
       ? selectedSubject
       : (subjects.find((item) => isSameSubjectId(item, subjectId)) ?? null);
+  const access = useSubjectGroupAccess(subjectId);
   const isBusy = isLoading || isRefreshing;
 
   useEffect(() => {
@@ -60,25 +66,39 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
   function handleRetry() {
     didAttemptReload.current = true;
     void refreshSubjects();
+    void access.reload();
   }
 
   function handleOpenGroups() {
-    navigation
-      .getParent<AppTabsNavigation>()
-      ?.navigate(TabRoutes.Groups, { screen: GroupsRoutes.GroupsOverview });
+    navigation.getParent<AppTabsNavigation>()?.navigate(TabRoutes.Groups, {
+      screen: GroupsRoutes.AvailableGroups,
+      params: { subjectId: subject?.id },
+    });
   }
 
   function handleOpenFiles() {
-    navigation
-      .getParent<AppTabsNavigation>()
-      ?.navigate(TabRoutes.Home, { screen: SharedRoutes.FilesList });
+    // Pushed onto the Subjects stack so Back returns to this subject.
+    navigation.navigate(SharedRoutes.FilesList, {
+      subjectId: subject?.id,
+      subjectName: subject ? getSubjectDisplayName(subject, t.subjects) : undefined,
+    });
+  }
+
+  function handleOpenChat() {
+    if (!access.group) return;
+    navigation.getParent<AppTabsNavigation>()?.navigate(TabRoutes.Groups, {
+      screen: GroupsRoutes.ChatRoom,
+      params: { groupId: access.group.id },
+      initial: false,
+    });
   }
 
   if (!subject && isBusy) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.subjects.details.subtitle} title={t.subjects.title} />
-        <LoadingState message={t.subjects.details.loading} />
+        <AppHeader title={t.subjects.title} />
+        <Skeleton height={180} borderRadius={24} />
+        <SkeletonList count={2} />
       </AppScreen>
     );
   }
@@ -87,17 +107,7 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         <Stack gap="lg">
-          <AppHeader
-            leftAction={
-              <AppButton
-                onPress={() => navigation.goBack()}
-                title={t.common.back}
-                variant="ghost"
-              />
-            }
-            subtitle={t.subjects.details.subtitle}
-            title={t.subjects.title}
-          />
+          <AppHeader subtitle={t.subjects.details.subtitle} title={t.subjects.title} />
           <ErrorState
             message={errorMessage ?? t.subjects.details.unavailableMessage}
             onRetry={handleRetry}
@@ -109,36 +119,51 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
   }
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
+    <AppScreen
+      contentContainerStyle={styles.content}
+      refreshControl={<BrandRefreshControl onRefresh={handleRetry} refreshing={isRefreshing} />}
+      scroll
+    >
       <Stack gap="xl">
-        <AppHeader
-          leftAction={
-            <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
-          }
-          subtitle={t.subjects.details.listSubtitle}
-          title={t.subjects.title}
-        />
+        <AppHeader subtitle={t.subjects.details.listSubtitle} title={t.subjects.title} />
 
         <SubjectDetailHeader subject={subject} />
 
         <Stack gap="md">
           <SectionHeader title={t.subjects.details.linkedTitle} />
           <SubjectLinkedSectionCard
-            description={t.subjects.details.filesDescription}
-            onPress={handleOpenFiles}
-            title={t.subjects.details.filesTitle}
-          />
-          <SubjectLinkedSectionCard
             description={t.subjects.details.groupsDescription}
+            icon="users"
             onPress={handleOpenGroups}
             title={t.subjects.details.groupsTitle}
           />
-          <SubjectLinkedSectionCard
-            description={t.subjects.details.announcementsDescription}
-            disabled
-            title={t.subjects.details.announcementsTitle}
-          />
+          {access.status === 'member' ? (
+            <>
+              <SubjectLinkedSectionCard
+                description={t.subjects.details.chatDescription}
+                icon="chat"
+                onPress={handleOpenChat}
+                title={t.subjects.details.chatTitle}
+              />
+              <SubjectLinkedSectionCard
+                description={t.subjects.details.filesDescription}
+                icon="folder"
+                onPress={handleOpenFiles}
+                title={t.subjects.details.filesTitle}
+              />
+            </>
+          ) : null}
         </Stack>
+        {access.status === 'member' && access.group ? (
+          <GroupWhatsAppCard canLaunch groupId={access.group.id} />
+        ) : null}
+        {access.status === 'member' ? (
+          <SubjectLecturesSection subjectId={subject.id} />
+        ) : access.status === 'loading' ? null : access.status === 'error' ? (
+          <ErrorState message={t.subjects.locked.loadError} onRetry={() => void access.reload()} />
+        ) : (
+          <SubjectLockedCard membership={access.membership} onOpenGroups={handleOpenGroups} />
+        )}
       </Stack>
     </AppScreen>
   );

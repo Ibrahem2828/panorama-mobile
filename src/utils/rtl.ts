@@ -1,7 +1,7 @@
 import type { ViewStyle } from 'react-native';
 import { I18nManager } from 'react-native';
 
-type RtlTextAlign = 'left' | 'right' | 'center';
+type RtlTextAlign = 'auto' | 'left' | 'right' | 'center';
 
 /**
  * Reads the direction the native layer is actually laid out in, rather than the selected
@@ -25,18 +25,27 @@ export function configureRtl() {
   }
 }
 
-export function getRTLTextAlign(fallback: RtlTextAlign = 'right'): RtlTextAlign {
-  return getIsRTL() ? 'right' : fallback;
+const LRI = '\u2066';
+const PDI = '\u2069';
+
+/**
+ * Wraps LTR content (email, phone, URL, subject code, file name) in Unicode isolates so its
+ * digits, dots and `+` keep their order when it is embedded in an Arabic sentence.
+ */
+export function isolateLtr(value: string): string {
+  return value ? `${LRI}${value}${PDI}` : value;
 }
 
+/** Natural alignment: Arabic text aligns to the right and Latin text to the left, in either direction. */
+export function getRTLTextAlign(fallback: RtlTextAlign = 'auto'): RtlTextAlign {
+  return fallback;
+}
+
+/** Native RTL already mirrors rows, so the direction is returned unchanged. */
 export function getFlexDirection(
   direction: 'row' | 'row-reverse' = 'row',
 ): NonNullable<ViewStyle['flexDirection']> {
-  if (!getIsRTL()) {
-    return direction;
-  }
-
-  return direction === 'row' ? 'row-reverse' : 'row';
+  return direction;
 }
 
 type StartEndSpacingInput = {
@@ -52,14 +61,7 @@ export function getStartEndSpacing({
   paddingStart,
   paddingEnd,
 }: StartEndSpacingInput): ViewStyle {
-  const rtl = getIsRTL();
-
-  return {
-    marginLeft: rtl ? marginEnd : marginStart,
-    marginRight: rtl ? marginStart : marginEnd,
-    paddingLeft: rtl ? paddingEnd : paddingStart,
-    paddingRight: rtl ? paddingStart : paddingEnd,
-  };
+  return { marginStart, marginEnd, paddingStart, paddingEnd };
 }
 
 export const rtlConfig = {

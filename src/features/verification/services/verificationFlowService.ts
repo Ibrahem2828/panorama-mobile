@@ -46,7 +46,9 @@ export function toSafeVerificationErrorMessage(error: unknown, t: VerificationCa
   }
 
   if (normalizedError.code === 'VALIDATION_ERROR') {
-    return t.errors.validation;
+    // Only blame the photo when the API did; other validation failures (missing academic data,
+    // a request already under review) get the plain generic message.
+    return normalizedError.fieldErrors?.card_image ? t.errors.validation : t.errors.generic;
   }
 
   return normalizedError.message || t.errors.generic;
@@ -94,23 +96,37 @@ export function createVerificationFormData(
   return formData;
 }
 
+function toFraction(progress: { loaded: number; total: number }): number {
+  return progress.total > 0 ? Math.min(1, progress.loaded / progress.total) : 0;
+}
+
 export function submitStudentVerification(
   image: VerificationCardImage,
   profile: StudentProfile | null,
   authToken?: string | null,
+  onProgress?: (fraction: number) => void,
 ) {
   const formData = createVerificationFormData(image, profile);
 
-  return verificationService.submitVerification(formData, authToken);
+  return verificationService.submitVerification(
+    formData,
+    authToken,
+    onProgress ? (progress) => onProgress(toFraction(progress)) : undefined,
+  );
 }
 
 export async function resubmitStudentVerification(
   image: VerificationCardImage,
   profile: StudentProfile | null,
   authToken?: string | null,
+  onProgress?: (fraction: number) => void,
 ) {
   const formData = createVerificationFormData(image, profile);
-  const response = await verificationService.resubmitVerification(formData, authToken);
+  const response = await verificationService.resubmitVerification(
+    formData,
+    authToken,
+    onProgress ? (progress) => onProgress(toFraction(progress)) : undefined,
+  );
 
   if (isApiVerificationRecord(response)) {
     return response;

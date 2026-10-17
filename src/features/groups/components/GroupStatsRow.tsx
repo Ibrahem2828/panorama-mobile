@@ -1,33 +1,36 @@
+import { memo } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { AppBadge, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import { getEntityLabel } from '../services';
-import type { Group } from '../types';
+import type { Group, SubjectLabel } from '../types';
+import { isolateLtr } from '../../../utils/rtl';
 
 type GroupStatsRowProps = {
   group: Group;
+  subject?: SubjectLabel | null;
 };
 
-export function GroupStatsRow({ group }: GroupStatsRowProps) {
+function GroupStatsRowBase({ group, subject }: GroupStatsRowProps) {
   const { t } = useTranslation();
-  const subject = getEntityLabel(group.subject);
-  const academicYear = getEntityLabel(group.academic_year);
-  const semester = getEntityLabel(group.semester);
 
   return (
     <Stack direction="horizontal" gap="sm" style={styles.row} wrap>
       {typeof group.members_count === 'number' ? (
         <AppBadge label={t.groups.stats.members(group.members_count)} variant="neutral" />
       ) : null}
-      {subject ? <AppBadge label={t.groups.stats.subject(subject)} variant="brand" /> : null}
-      {academicYear ? (
-        <AppBadge label={t.groups.stats.academicYear(academicYear)} variant="info" />
+      {subject ? <AppBadge label={t.groups.stats.subject(subject.name)} variant="brand" /> : null}
+      {subject?.code ? (
+        <AppBadge label={t.groups.card.subjectCode(isolateLtr(subject.code))} variant="neutral" />
       ) : null}
-      {semester ? <AppBadge label={t.groups.stats.semester(semester)} variant="neutral" /> : null}
+      {group.has_whatsapp_channel === true ? (
+        <AppBadge label={t.groups.card.whatsAppAvailable} variant="success" />
+      ) : null}
     </Stack>
   );
 }
+
+export const GroupStatsRow = memo(GroupStatsRowBase);
 
 const styles = StyleSheet.create({
   row: {

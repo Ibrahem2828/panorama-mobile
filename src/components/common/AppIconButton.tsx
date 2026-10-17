@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
 import { Pressable, StyleSheet } from 'react-native';
 
-import { colors, layout, opacity, radius, shadows } from '../../theme';
+import { colors, layout, opacity, radius, shadows, useBrand } from '../../theme';
 
 type IconButtonVariant = 'ghost' | 'surface' | 'primary' | 'danger';
 type IconButtonSize = 'sm' | 'md' | 'lg';
@@ -64,6 +64,7 @@ export function AppIconButton({
   shape = 'square',
   style,
 }: AppIconButtonProps) {
+  const brand = useBrand();
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}
@@ -75,6 +76,9 @@ export function AppIconButton({
         styles.base,
         sizeStyles[size],
         variantStyles[variant],
+        variant === 'primary'
+          ? { backgroundColor: brand.primary, borderColor: brand.primary }
+          : null,
         shape === 'circle' ? styles.circle : styles.square,
         disabled ? styles.disabled : null,
         pressed && !disabled ? styles.pressed : null,

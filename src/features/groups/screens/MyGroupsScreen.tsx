@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { StyleSheet } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppHeader,
@@ -11,172 +10,216 @@ import {
   AppTextInput,
   EmptyState,
   ErrorState,
-  LoadingState,
-  SectionHeader,
+  SkeletonList,
   Stack,
 } from '../../../components';
-import { useTranslation, type TranslationCatalog } from '../../../i18n';
-import { formatTime } from '../../../utils/formatDateTime';
+import { useTranslation } from '../../../i18n';
 import { GroupsRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
-import { spacing } from '../../../theme';
+import { colors, layout, spacing, useBrand } from '../../../theme';
 import { GroupCard } from '../components';
-import { getGroupDescription, getGroupDisplayName } from '../services';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { getGroupSubjectId, matchesGroupSearch } from '../services';
 import { useGroupsStore } from '../store';
 import type { Group } from '../types';
 
 type MyGroupsScreenProps = NativeStackScreenProps<GroupsStackParamList, 'MyGroups'>;
 
-function matchesGroupSearch(
-  group: Group,
-  query: string,
-  groupsCatalog: TranslationCatalog['groups'],
-): boolean {
-  if (!query) {
-    return true;
-  }
-
-  const searchableText = [getGroupDisplayName(group, groupsCatalog), getGroupDescription(group)]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
-
-  return searchableText.includes(query.toLowerCase());
-}
-
 export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
-  const { t, locale } = useTranslation();
-  const [searchQuery, setSearchQuery] = useState('');
+  const { t } = useTranslation();
+  const brand = useBrand();
+  const [searchText, setSearchText] = useState('');
+  const search = useDebouncedValue(searchText.trim(), 250);
   const myGroups = useGroupsStore((state) => state.myGroups);
-  const isLoadingMyGroups = useGroupsStore((state) => state.isLoadingMyGroups);
+  const isLoading = useGroupsStore((state) => state.isLoadingMyGroups);
   const isRefreshing = useGroupsStore((state) => state.isRefreshing);
   const errorMessage = useGroupsStore((state) => state.errorMessage);
-  const lastLoadedAt = useGroupsStore((state) => state.lastLoadedAt);
+  const actionError = useGroupsStore((state) => state.actionError);
+  const successMessage = useGroupsStore((state) => state.successMessage);
+  const subjectLabels = useGroupsStore((state) => state.subjectLabels);
   const loadMyGroups = useGroupsStore((state) => state.loadMyGroups);
+  const loadSubjectLabels = useGroupsStore((state) => state.loadSubjectLabels);
   const refreshAllGroups = useGroupsStore((state) => state.refreshAllGroups);
   const setSelectedGroup = useGroupsStore((state) => state.setSelectedGroup);
-  const normalizedSearchQuery = searchQuery.trim();
-  const filteredGroups = useMemo(
-    () => myGroups.filter((group) => matchesGroupSearch(group, normalizedSearchQuery, t.groups)),
-    [myGroups, normalizedSearchQuery],
-  );
-  const showInitialLoading = isLoadingMyGroups && myGroups.length === 0;
-  const showInitialError = Boolean(errorMessage && myGroups.length === 0);
+  const clearError = useGroupsStore((state) => state.clearError);
 
   useEffect(() => {
     void loadMyGroups();
-  }, [loadMyGroups]);
+    void loadSubjectLabels();
+  }, [loadMyGroups, loadSubjectLabels]);
 
-  function handleRefresh() {
+  useEffect(() => clearError, [clearError]);
+
+  const filteredGroups = useMemo(
+    () =>
+      myGroups.filter((group) => {
+        const subjectKey = getGroupSubjectId(group);
+
+        return matchesGroupSearch(
+          group,
+          search,
+          t.groups,
+          subjectKey ? subjectLabels[subjectKey] : null,
+        );
+      }),
+    [myGroups, search, subjectLabels, t.groups],
+  );
+
+  const handleRefresh = useCallback(() => {
     void refreshAllGroups();
-  }
+  }, [refreshAllGroups]);
 
-  function handleGroupPress(group: Group) {
-    setSelectedGroup(group);
-    navigation.navigate(GroupsRoutes.GroupDetails, { groupId: group.id });
-  }
+  const handleGroupPress = useCallback(
+    (group: Group) => {
+      setSelectedGroup(group);
+      navigation.navigate(GroupsRoutes.GroupDetails, { groupId: group.id });
+    },
+    [navigation, setSelectedGroup],
+  );
 
-  if (showInitialLoading) {
-    return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.groups.mine.subtitle} title={t.groups.mine.title} />
-        <LoadingState message={t.groups.mine.loading} />
-      </AppScreen>
-    );
-  }
+  const renderItem = useCallback(
+    ({ item }: { item: Group }) => {
+      const subjectKey = getGroupSubjectId(item);
 
-  if (showInitialError) {
-    return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.groups.mine.subtitle} title={t.groups.mine.title} />
-        <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
-      </AppScreen>
-    );
-  }
+      return (
+        <GroupCard
+          group={item}
+          onPress={handleGroupPress}
+          subject={subjectKey ? subjectLabels[subjectKey] : null}
+        />
+      );
+    },
+    [handleGroupPress, subjectLabels],
+  );
+
+  const showInitialLoading = isLoading && myGroups.length === 0;
+  const showInitialError = Boolean(errorMessage && myGroups.length === 0 && !isLoading);
+
+  const listHeader = (
+    <Stack gap="sm" style={styles.listHeader}>
+      {actionError ? (
+        <AppText color="error" variant="bodySmall">
+          {actionError}
+        </AppText>
+      ) : null}
+      {successMessage ? (
+        <AppText color="success" variant="bodySmall">
+          {successMessage}
+        </AppText>
+      ) : null}
+      {errorMessage && myGroups.length > 0 ? (
+        <ErrorState message={errorMessage} onRetry={handleRefresh} />
+      ) : null}
+      {myGroups.length > 0 ? (
+        <AppText color="muted" variant="caption">
+          {t.groups.available2.resultsCount(filteredGroups.length)}
+        </AppText>
+      ) : null}
+    </Stack>
+  );
+
+  const listEmpty = showInitialLoading ? (
+    <SkeletonList />
+  ) : showInitialError ? (
+    <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
+  ) : myGroups.length === 0 ? (
+    <EmptyState
+      action={
+        <AppButton
+          onPress={() => navigation.navigate(GroupsRoutes.AvailableGroups)}
+          title={t.groups.emptyMine.action}
+          variant="outline"
+        />
+      }
+      illustrationLabel={t.groups.list.emptyIllustrationAlt}
+      artwork="groups"
+      message={t.groups.mine.emptyMessage}
+      title={t.groups.emptyMine.title}
+    />
+  ) : (
+    <EmptyState
+      action={
+        <AppButton
+          onPress={() => setSearchText('')}
+          title={t.common.searchClear}
+          variant="outline"
+        />
+      }
+      illustrationLabel={t.common.noSearchResultsAlt}
+      artwork="search"
+      message={t.common.searchNoResultsMessage}
+      title={t.common.searchNoResultsTitle}
+    />
+  );
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
-      <Stack gap="xl">
+    <AppScreen>
+      <View style={styles.top}>
         <AppHeader subtitle={t.groups.mine.subtitle} title={t.groups.mine.title} />
-
-        <SectionHeader
-          action={
-            <AppButton
-              loading={isRefreshing}
-              onPress={handleRefresh}
-              size="sm"
-              title={t.common.refresh}
-              variant="outline"
-            />
-          }
-          subtitle={t.groups.list.loadedCount(myGroups.length)}
-          title={t.groups.list.title}
-        />
-
         {myGroups.length > 0 ? (
           <AppTextInput
-            label={t.common.searchLocal}
-            onChangeText={setSearchQuery}
+            accessibilityLabel={t.groups.available2.searchLabel}
+            autoCapitalize="none"
+            autoCorrect={false}
+            onChangeText={setSearchText}
             placeholder={t.groups.list.searchPlaceholder}
-            value={searchQuery}
+            returnKeyType="search"
+            value={searchText}
           />
         ) : null}
+      </View>
 
-        {errorMessage ? (
-          <ErrorState message={errorMessage} onRetry={handleRefresh} />
-        ) : myGroups.length === 0 ? (
-          <EmptyState
-            action={
-              <AppButton
-                loading={isRefreshing}
-                onPress={handleRefresh}
-                title={t.common.retryVerify}
-                variant="outline"
-              />
-            }
-            message={t.groups.mine.emptyMessage}
-            title={t.groups.list.emptyTitle}
-            illustrationLabel={t.groups.list.emptyIllustrationAlt}
-            illustrationSource={images.emptyStates.groups}
+      <FlatList
+        contentContainerStyle={styles.listContent}
+        data={filteredGroups}
+        ItemSeparatorComponent={Separator}
+        keyboardShouldPersistTaps="handled"
+        keyExtractor={keyExtractor}
+        ListEmptyComponent={listEmpty}
+        ListHeaderComponent={listHeader}
+        refreshControl={
+          <RefreshControl
+            colors={[brand.primary]}
+            progressBackgroundColor={colors.background.elevated}
+            onRefresh={handleRefresh}
+            refreshing={isRefreshing}
+            tintColor={brand.primary}
           />
-        ) : filteredGroups.length === 0 ? (
-          <EmptyState
-            action={
-              <AppButton
-                onPress={() => setSearchQuery('')}
-                title={t.common.searchClear}
-                variant="outline"
-              />
-            }
-            illustrationLabel={t.common.noSearchResultsAlt}
-            illustrationSource={images.illustrations.search}
-            message={t.common.searchNoResultsMessage}
-            title={t.common.searchNoResultsTitle}
-          />
-        ) : (
-          <Stack gap="md">
-            {filteredGroups.map((group) => (
-              <GroupCard
-                group={group}
-                key={String(group.id)}
-                onPress={() => handleGroupPress(group)}
-              />
-            ))}
-          </Stack>
-        )}
-
-        {lastLoadedAt ? (
-          <AppText align="center" color="muted" variant="caption">
-            {t.common.lastUpdatedAt(formatTime(lastLoadedAt, locale) ?? '')}
-          </AppText>
-        ) : null}
-      </Stack>
+        }
+        removeClippedSubviews
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+        style={styles.list}
+      />
     </AppScreen>
   );
 }
 
+function keyExtractor(item: Group) {
+  return String(item.id);
+}
+
+function Separator() {
+  return <View style={styles.separator} />;
+}
+
 const styles = StyleSheet.create({
-  content: {
-    gap: spacing.xl,
+  top: {
+    gap: spacing.md,
+    paddingTop: layout.screenVerticalPadding,
+  },
+  list: {
+    flex: 1,
+  },
+  listContent: {
+    flexGrow: 1,
+    paddingBottom: layout.screenVerticalPadding,
+    paddingTop: spacing.md,
+  },
+  listHeader: {
+    marginBottom: spacing.md,
+  },
+  separator: {
+    height: spacing.md,
   },
 });

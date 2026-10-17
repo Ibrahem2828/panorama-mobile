@@ -17,9 +17,13 @@ type VerificationState = {
   verification: VerificationRecord | null;
   selectedCardImage: VerificationCardImage | null;
   hasLoadedVerification: boolean;
+  /** Loading the verification failed, so a missing record does not mean 'never submitted'. */
+  loadFailed: boolean;
   lastAuthUserId: string | number | null;
   isLoadingVerification: boolean;
   isSubmitting: boolean;
+  /** 0..1 while the card image is uploading. */
+  uploadProgress: number;
   errorMessage: string | null;
 
   loadVerification: (options?: VerificationLoadOptions) => Promise<void>;
@@ -41,14 +45,30 @@ function verificationCatalog() {
   return useLocaleStore.getState().t.verificationFlow;
 }
 
+/**
+ * The submit contract needs the academic fields next to the card image. After an app restart the
+ * verification screen can open before the profile store has been filled, so load it on demand.
+ */
+async function loadAcademicProfile() {
+  const store = useStudentProfileStore.getState();
+
+  if (!store.profile) {
+    await store.bootstrap({ force: true });
+  }
+
+  return useStudentProfileStore.getState().profile;
+}
+
 function getInitialVerificationState() {
   return {
     verification: null,
     selectedCardImage: null,
     hasLoadedVerification: false,
+    loadFailed: false,
     lastAuthUserId: null,
     isLoadingVerification: false,
     isSubmitting: false,
+    uploadProgress: 0,
     errorMessage: null,
   };
 }
@@ -89,8 +109,11 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
       return;
     }
 
+    const hadVerification = get().verification !== null;
+
     set({
       isLoadingVerification: true,
+      loadFailed: false,
       errorMessage: null,
       lastAuthUserId: userId,
     });
@@ -101,11 +124,13 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
       set({
         verification,
         hasLoadedVerification: true,
+        loadFailed: false,
         isLoadingVerification: false,
       });
     } catch (error) {
       set({
         hasLoadedVerification: true,
+        loadFailed: !hadVerification,
         isLoadingVerification: false,
         errorMessage: toSafeVerificationErrorMessage(error, verificationCatalog()),
       });
@@ -126,11 +151,17 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
 
       set({
         isSubmitting: true,
+        uploadProgress: 0,
         errorMessage: null,
       });
 
-      const profile = useStudentProfileStore.getState().profile;
-      const verification = await submitStudentVerification(image, profile, accessToken);
+      const profile = await loadAcademicProfile();
+      const verification = await submitStudentVerification(
+        image,
+        profile,
+        accessToken,
+        (uploadProgress) => set({ uploadProgress }),
+      );
 
       set({
         verification,
@@ -168,11 +199,17 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
 
       set({
         isSubmitting: true,
+        uploadProgress: 0,
         errorMessage: null,
       });
 
-      const profile = useStudentProfileStore.getState().profile;
-      const verification = await resubmitStudentVerification(image, profile, accessToken);
+      const profile = await loadAcademicProfile();
+      const verification = await resubmitStudentVerification(
+        image,
+        profile,
+        accessToken,
+        (uploadProgress) => set({ uploadProgress }),
+      );
 
       set({
         verification,

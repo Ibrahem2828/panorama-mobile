@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
-import { AppBadge, AppText, Stack } from '../../../components';
-import { colors, radius, spacing } from '../../../theme';
+import { AppText } from '../../../components';
+import { colors, radius, spacing, useBrand } from '../../../theme';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
 
 type StudentSetupStep = 1 | 2 | 3;
@@ -9,6 +9,8 @@ type StudentSetupStep = 1 | 2 | 3;
 type StudentSetupStepperProps = {
   currentStep: StudentSetupStep;
 };
+
+const TOTAL_STEPS = 3;
 
 const steps: {
   step: StudentSetupStep;
@@ -19,56 +21,48 @@ const steps: {
   { step: 3, key: 'verificationStatus' as const },
 ];
 
+/** Compact progress header: three segments plus "Step n of 3 - name" on one line. */
 export function StudentSetupStepper({ currentStep }: StudentSetupStepperProps) {
   const { t } = useTranslation();
-  return (
-    <Stack direction="horizontal" gap="sm" wrap>
-      {steps.map((item) => {
-        const isCurrent = item.step === currentStep;
-        const isDone = item.step < currentStep;
+  const brand = useBrand();
+  const current = steps.find((item) => item.step === currentStep) ?? steps[0]!;
+  const stepName = t.studentProfile.stepper[current.key] as string;
 
-        return (
+  return (
+    <View
+      accessibilityLabel={t.studentProfile.stepper.stepOf(currentStep, TOTAL_STEPS)}
+      accessibilityRole="progressbar"
+      style={styles.root}
+    >
+      <View style={styles.segments}>
+        {steps.map((item) => (
           <View
             key={item.step}
             style={[
-              styles.step,
-              isCurrent ? styles.currentStep : null,
-              isDone ? styles.doneStep : null,
+              styles.segment,
+              { backgroundColor: item.step <= currentStep ? brand.primary : colors.gray[200] },
             ]}
-          >
-            <AppBadge
-              label={String(item.step)}
-              variant={isDone ? 'success' : isCurrent ? 'brand' : 'neutral'}
-            />
-            <AppText color={isCurrent ? 'brand' : 'secondary'} variant="caption" weight="600">
-              {t.studentProfile.stepper[item.key]}
-            </AppText>
-          </View>
-        );
-      })}
-    </Stack>
+          />
+        ))}
+      </View>
+      <AppText color="secondary" variant="caption" weight="600">
+        {t.studentProfile.stepper.stepOf(currentStep, TOTAL_STEPS)} · {stepName}
+      </AppText>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  step: {
-    minHeight: 44,
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.border.default,
-    backgroundColor: colors.background.surface,
+  root: {
+    gap: spacing.xs,
   },
-  currentStep: {
-    borderColor: colors.brand.primary,
-    backgroundColor: colors.brand.primarySoft,
+  segments: {
+    flexDirection: 'row',
+    gap: spacing.xs,
   },
-  doneStep: {
-    borderColor: colors.semantic.success,
-    backgroundColor: colors.semantic.successSoft,
+  segment: {
+    flex: 1,
+    height: 6,
+    borderRadius: radius.full,
   },
 });

@@ -2,17 +2,17 @@ import { useEffect } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppCard,
   AppHeader,
   AppScreen,
   AppText,
+  Artwork,
+  BrandRefreshControl,
   ErrorState,
-  Illustration,
-  LoadingState,
   SectionHeader,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -29,28 +29,31 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
   const orders = usePrintingStore((state) => state.orders);
   const ordersCount = usePrintingStore((state) => state.ordersCount);
   const isLoadingOrders = usePrintingStore((state) => state.isLoadingOrders);
-  const errorMessage = usePrintingStore((state) => state.errorMessage);
+  const errorMessage = usePrintingStore((state) => state.ordersError);
   const loadMyOrders = usePrintingStore((state) => state.loadMyOrders);
 
   useEffect(() => {
-    void loadMyOrders();
+    // The home card always shows the newest order, whatever filter the orders list used.
+    void loadMyOrders('');
   }, [loadMyOrders]);
 
   const latestOrder = orders[0];
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
+    <AppScreen
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <BrandRefreshControl onRefresh={() => void loadMyOrders('')} refreshing={isLoadingOrders} />
+      }
+      scroll
+    >
       <Stack gap="xl">
         <AppHeader subtitle={t.printing.home.subtitle} title={t.printing.title} />
 
         <AppCard variant="elevated">
-          <Stack gap="lg">
-            <Illustration
-              accessibilityLabel={t.printing.home.illustrationAlt}
-              size="lg"
-              source={images.printing.hero}
-            />
-            <Stack gap="xs">
+          <Stack align="center" gap="lg">
+            <Artwork name="printing" size="md" />
+            <Stack gap="xs" style={styles.fullWidth}>
               <AppText variant="h2">{t.printing.home.heading}</AppText>
               <AppText color="secondary" variant="bodySmall">
                 {t.printing.home.description}
@@ -72,7 +75,9 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
 
         <PrintingFutureOptionsCard />
 
-        {errorMessage ? <ErrorState message={errorMessage} onRetry={loadMyOrders} /> : null}
+        {errorMessage ? (
+          <ErrorState message={errorMessage} onRetry={() => void loadMyOrders()} />
+        ) : null}
 
         <Stack gap="md">
           <SectionHeader
@@ -80,14 +85,12 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
             title={t.printing.home.latestOrder}
           />
           {isLoadingOrders && !latestOrder ? (
-            <LoadingState message={t.printing.home.loadingOrders} />
+            <SkeletonList count={1} />
           ) : latestOrder ? (
             <PrintOrderCard
               order={latestOrder}
-              onPress={() =>
-                navigation.navigate(PrintingRoutes.PrintOrderDetails, {
-                  orderId: latestOrder.id,
-                })
+              onPress={(order) =>
+                navigation.navigate(PrintingRoutes.PrintOrderDetails, { orderId: order.id })
               }
             />
           ) : (
@@ -104,6 +107,9 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
 }
 
 const styles = StyleSheet.create({
+  fullWidth: {
+    alignSelf: 'stretch',
+  },
   content: {
     gap: spacing.xl,
   },

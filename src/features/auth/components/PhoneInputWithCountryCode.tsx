@@ -1,11 +1,11 @@
-import { useRef, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { useMemo, useRef, useState } from 'react';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
-import { AppText } from '../../../components';
+import { AppText, Icon, OptionSheet } from '../../../components';
+import type { SelectOption } from '../../../components';
 import { FormField } from '../../../components/forms/FormField';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
-import { colors, layout, radius, spacing, typography } from '../../../theme';
-import { getFlexDirection } from '../../../utils/rtl';
+import { colors, inputThemeProps, layout, radius, spacing, typography } from '../../../theme';
 
 /** Dialling data only. The displayed name comes from the catalog, keyed by `id`. */
 type CountryCode = {
@@ -53,26 +53,39 @@ export function PhoneInputWithCountryCode({
   const [showPicker, setShowPicker] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
+  const options = useMemo<SelectOption[]>(
+    () =>
+      COUNTRIES.map((country) => ({
+        id: country.id,
+        label: `${country.flag}  ${t.auth.countries[country.id]}`,
+        description: country.code,
+      })),
+    [t],
+  );
+
   const localNumber = value.startsWith(selectedCountry.code)
     ? value.slice(selectedCountry.code.length)
     : value;
 
   function handleChangeLocal(text: string) {
     let digits = text.replace(/[^0-9]/g, '');
-    // If user pastes a full number including the country code, strip the duplicate prefix
+    // A pasted full number: drop the duplicate country prefix.
     const codeDigits = selectedCountry.code.replace(/\D/g, '');
-    if (digits.startsWith(codeDigits) && digits.length > codeDigits.length) {
+    if (digits.startsWith(codeDigits) && digits.length > codeDigits.length + 6) {
       digits = digits.slice(codeDigits.length);
     }
-    onChangeText(selectedCountry.code + digits);
+    // National trunk zero (09xx...) is not part of the international number.
+    digits = digits.replace(/^0+/u, '');
+    onChangeText(digits ? selectedCountry.code + digits : '');
   }
 
-  function handleSelectCountry(country: CountryCode) {
-    const digits = value.replace(/^\+\d{1,4}/, '');
+  function handleSelectCountry(id: string | number) {
+    const country = COUNTRIES.find((item) => item.id === id);
+    if (!country) return;
+    const digits = localNumber.replace(/\D/g, '');
     setSelectedCountry(country);
-    setShowPicker(false);
-    onChangeText(country.code + digits);
-    inputRef.current?.focus();
+    onChangeText(digits ? country.code + digits : '');
+    setTimeout(() => inputRef.current?.focus(), 150);
   }
 
   return (
@@ -85,91 +98,55 @@ export function PhoneInputWithCountryCode({
         ]}
       >
         <Pressable
-          onPress={() => setShowPicker(true)}
-          disabled={disabled}
-          style={styles.countryButton}
-          accessibilityLabel={t.auth.countryPicker.selectCountry}
+          accessibilityLabel={`${t.auth.countryPicker.selectCountry}: ${t.auth.countries[selectedCountry.id]}`}
           accessibilityRole="button"
+          disabled={disabled}
+          onPress={() => setShowPicker(true)}
+          style={styles.countryButton}
         >
           <AppText variant="body">{selectedCountry.flag}</AppText>
-          <AppText variant="body" weight="600" style={styles.codeText}>
+          <AppText style={styles.codeText} variant="bodySmall" weight="600">
             {selectedCountry.code}
           </AppText>
-          <AppText variant="caption" color="muted">
-            ▼
-          </AppText>
+          <Icon color={colors.text.muted} name="chevronDown" size={16} />
         </Pressable>
 
         <View style={styles.divider} />
 
         <TextInput
+          {...inputThemeProps}
           ref={inputRef}
-          value={localNumber}
-          onChangeText={handleChangeLocal}
+          autoComplete="tel"
           editable={!disabled}
           keyboardType="phone-pad"
-          textContentType="telephoneNumber"
+          onChangeText={handleChangeLocal}
           placeholder={placeholder ?? t.auth.fields.phonePlaceholder}
           placeholderTextColor={colors.text.muted}
           style={styles.input}
           textAlign="left"
+          textContentType="telephoneNumber"
+          value={localNumber}
         />
       </View>
 
-      <Modal
+      <OptionSheet
+        onClose={() => setShowPicker(false)}
+        onSelect={handleSelectCountry}
+        options={options}
+        searchThreshold={20}
+        selectedId={selectedCountry.id}
+        title={t.auth.countryPicker.selectCountry}
         visible={showPicker}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowPicker(false)}
-      >
-        <Pressable style={styles.modalOverlay} onPress={() => setShowPicker(false)}>
-          <Pressable style={styles.modalContent} onPress={() => {}}>
-            <View style={styles.modalHeader}>
-              <AppText variant="h3">{t.auth.countryPicker.selectCountry}</AppText>
-              <Pressable onPress={() => setShowPicker(false)} hitSlop={spacing.sm}>
-                <AppText color="brand" variant="button">
-                  {t.auth.countryPicker.close}
-                </AppText>
-              </Pressable>
-            </View>
-            <ScrollView style={styles.countryList}>
-              {COUNTRIES.map((country) => {
-                const isSelected = selectedCountry.code === country.code;
-                return (
-                  <Pressable
-                    key={country.code}
-                    style={[styles.countryItem, isSelected && styles.countryItemSelected]}
-                    onPress={() => handleSelectCountry(country)}
-                  >
-                    <AppText variant="body">{country.flag}</AppText>
-                    <AppText variant="body" weight="600" style={styles.countryCodeText}>
-                      {country.code}
-                    </AppText>
-                    <AppText variant="body" style={styles.countryName}>
-                      {t.auth.countries[country.id]}
-                    </AppText>
-                    {isSelected ? (
-                      <AppText variant="body" color="brand">
-                        ✓
-                      </AppText>
-                    ) : null}
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </Pressable>
-        </Pressable>
-      </Modal>
+      />
     </FormField>
   );
 }
 
 const styles = StyleSheet.create({
   inputWrapper: {
-    minHeight: layout.inputMinHeight + 4,
-    flexDirection: getFlexDirection('row'),
+    minHeight: layout.inputMinHeight,
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
     paddingHorizontal: spacing.md,
     borderWidth: 1,
     borderRadius: radius.input,
@@ -184,70 +161,26 @@ const styles = StyleSheet.create({
     opacity: 0.72,
   },
   countryButton: {
-    flexDirection: getFlexDirection('row'),
+    minHeight: layout.touchTargetMinSize,
+    flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
-    minWidth: 88,
-    minHeight: layout.touchTargetMinSize,
   },
   codeText: {
-    marginHorizontal: spacing.xxs,
+    writingDirection: 'ltr',
   },
   divider: {
     width: 1,
     height: 24,
+    marginHorizontal: spacing.md,
     backgroundColor: colors.border.default,
-    flexShrink: 0,
   },
   input: {
-    flex: 1,
     ...typography.variants.input,
-    color: colors.text.primary,
+    flex: 1,
+    minWidth: 0,
     padding: 0,
-    minHeight: layout.touchTargetMinSize - spacing.sm,
+    color: colors.text.primary,
     writingDirection: 'ltr',
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: colors.overlay,
-  },
-  modalContent: {
-    backgroundColor: colors.background.surface,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    maxHeight: '60%',
-    paddingBottom: spacing.xxxl + spacing.lg,
-  },
-  modalHeader: {
-    flexDirection: getFlexDirection('row'),
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.default,
-  },
-  countryList: {
-    paddingHorizontal: spacing.md,
-  },
-  countryItem: {
-    flexDirection: getFlexDirection('row'),
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.md,
-  },
-  countryItemSelected: {
-    backgroundColor: colors.brand.primarySoft,
-  },
-  countryCodeText: {
-    minWidth: 56,
-  },
-  countryName: {
-    flex: 1,
   },
 });

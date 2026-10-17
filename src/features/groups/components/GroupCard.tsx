@@ -1,93 +1,86 @@
-import { useRef } from 'react';
-import { Animated, Pressable, StyleSheet } from 'react-native';
+import { memo, useCallback } from 'react';
+import { Pressable, StyleSheet } from 'react-native';
 
-import { AppAvatar, AppBadge, AppCard, AppText, Stack } from '../../../components';
-import { useTranslation, type TranslationCatalog } from '../../../i18n';
-import { opacity } from '../../../theme';
-import { createPressScaleAnim } from '../../../utils/motion';
-import { getGroupDescription, getGroupDisplayName, getGroupImageUri } from '../services';
-import type { Group } from '../types';
+import { AppAvatar, AppButton, AppCard, AppText, Stack } from '../../../components';
+import { useTranslation } from '../../../i18n';
+import { colors, opacity } from '../../../theme';
+import { getGroupDisplayName, getGroupImageUri, resolveMembershipState } from '../services';
+import type { Group, Id, SubjectLabel } from '../types';
 import { GroupMembershipBadge } from './GroupMembershipBadge';
 import { GroupStatsRow } from './GroupStatsRow';
+import { isolateLtr } from '../../../utils/rtl';
 
 type GroupCardProps = {
   group: Group;
-  onPress?: () => void;
+  subject?: SubjectLabel | null;
+  /** In-flight join/leave for this group (disables the quick action). */
+  pendingAction?: 'join' | 'leave';
+  onPress?: (group: Group) => void;
+  /** When set, groups the student can still join show a quick "request to join" button. */
+  onJoin?: (groupId: Id) => void;
 };
 
-function getSendPermissionLabel(
-  permission: Group['send_messages_permission'],
-  t: TranslationCatalog['groups']['permissions'],
-) {
-  if (permission === 'all_members') {
-    return t.sendToAll;
-  }
-
-  if (permission === 'admins_only') {
-    return t.sendToAdmins;
-  }
-
-  return permission ? t.sendPermission : null;
-}
-
-export function GroupCard({ group, onPress }: GroupCardProps) {
+function GroupCardBase({ group, subject, pendingAction, onPress, onJoin }: GroupCardProps) {
   const { t } = useTranslation();
   const title = getGroupDisplayName(group, t.groups);
-  const description = getGroupDescription(group);
   const imageUri = getGroupImageUri(group) ?? undefined;
-  const sendPermissionLabel = getSendPermissionLabel(
-    group.send_messages_permission,
-    t.groups.permissions,
-  );
-  const hasWhatsAppLink = group.has_whatsapp_channel === true;
-
-  const { scale, onPressIn, onPressOut } = useRef(createPressScaleAnim()).current;
+  const membership = resolveMembershipState(group);
+  const handlePress = useCallback(() => onPress?.(group), [onPress, group]);
+  const handleJoin = useCallback(() => onJoin?.(group.id), [onJoin, group.id]);
+  // The subject name is shown on its own line only when it adds something to the group name.
+  const subjectLine =
+    subject && subject.name !== title
+      ? [subject.name, subject.code ? isolateLtr(subject.code) : null].filter(Boolean).join(' · ')
+      : subject?.code
+        ? isolateLtr(subject.code)
+        : null;
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      disabled={!onPress}
-      onPress={onPress}
-      onPressIn={onPress ? onPressIn : undefined}
-      onPressOut={onPress ? onPressOut : undefined}
-      style={({ pressed }) => [pressed && onPress ? styles.pressed : null]}
-    >
-      <Animated.View style={{ transform: [{ scale }] }}>
-        <AppCard variant="elevated">
-          <Stack gap="md">
-            <Stack direction="horizontal" gap="md" style={styles.header}>
-              <AppAvatar imageUri={imageUri} name={title} size="md" />
-              <Stack gap="xs" style={styles.titleBlock}>
-                <AppText variant="title">{title}</AppText>
-                {description ? (
-                  <AppText color="secondary" numberOfLines={2} variant="bodySmall">
-                    {description}
-                  </AppText>
-                ) : null}
-              </Stack>
-              <GroupMembershipBadge status={group.current_user_membership_status} />
-            </Stack>
-
-            <GroupStatsRow group={group} />
-
-            <Stack direction="horizontal" gap="sm" wrap>
-              {sendPermissionLabel ? <AppBadge label={sendPermissionLabel} variant="info" /> : null}
-              {group.current_user_group_role ? (
-                <AppBadge
-                  label={t.groups.stats.role(group.current_user_group_role)}
-                  variant="neutral"
-                />
-              ) : null}
-              {hasWhatsAppLink ? (
-                <AppBadge label={t.groups.stats.whatsApp} variant="success" />
+    <AppCard variant="elevated">
+      <Pressable
+        accessibilityLabel={t.groups.card.openGroup(title)}
+        accessibilityRole="button"
+        android_ripple={{ color: colors.ripple, foreground: true }}
+        disabled={!onPress}
+        onPress={handlePress}
+        style={({ pressed }) => [pressed ? styles.pressed : null]}
+      >
+        <Stack gap="md">
+          <Stack direction="horizontal" gap="md" style={styles.header}>
+            <AppAvatar icon="users" imageUri={imageUri} name={title} size="md" />
+            <Stack gap="xs" style={styles.titleBlock}>
+              <AppText numberOfLines={2} variant="title">
+                {title}
+              </AppText>
+              {subjectLine ? (
+                <AppText color="secondary" numberOfLines={1} variant="bodySmall">
+                  {subjectLine}
+                </AppText>
               ) : null}
             </Stack>
+            <GroupMembershipBadge status={group.current_user_membership_status} />
           </Stack>
-        </AppCard>
-      </Animated.View>
-    </Pressable>
+
+          <GroupStatsRow group={group} />
+        </Stack>
+      </Pressable>
+
+      {onJoin && membership.canRequestJoin ? (
+        <AppButton
+          fullWidth
+          loading={pendingAction === 'join'}
+          onPress={handleJoin}
+          size="sm"
+          style={styles.joinButton}
+          title={t.groups.card.joinShort}
+          variant="outline"
+        />
+      ) : null}
+    </AppCard>
   );
 }
+
+export const GroupCard = memo(GroupCardBase);
 
 const styles = StyleSheet.create({
   pressed: {
@@ -99,5 +92,8 @@ const styles = StyleSheet.create({
   titleBlock: {
     flex: 1,
     minWidth: 0,
+  },
+  joinButton: {
+    marginTop: 12,
   },
 });

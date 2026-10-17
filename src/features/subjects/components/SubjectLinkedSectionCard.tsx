@@ -1,19 +1,24 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { memo } from 'react';
+import { StyleSheet, View } from 'react-native';
 
-import { AppBadge, AppCard, AppText, Stack } from '../../../components';
-import { opacity } from '../../../theme';
+import type { IconName } from '../../../components';
+import { AppCard, AppText, Icon, IconTile } from '../../../components';
 import { useTranslation } from '../../../i18n';
+import { colors, opacity } from '../../../theme';
+import { getIsRTL } from '../../../utils/rtl';
 
 type SubjectLinkedSectionCardProps = {
   title: string;
   description: string;
+  icon?: IconName;
   disabled?: boolean;
   onPress?: () => void;
 };
 
-export function SubjectLinkedSectionCard({
+function SubjectLinkedSectionCardComponent({
   title,
   description,
+  icon = 'folder',
   disabled = false,
   onPress,
 }: SubjectLinkedSectionCardProps) {
@@ -21,38 +26,37 @@ export function SubjectLinkedSectionCard({
   const isDisabled = disabled || !onPress;
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ disabled: isDisabled }}
-      disabled={isDisabled}
-      onPress={onPress}
-      style={({ pressed }) => [
-        isDisabled ? styles.disabled : null,
-        pressed && !isDisabled ? styles.pressed : null,
-      ]}
+    <AppCard
+      accessibilityLabel={`${title}. ${description}`}
+      onPress={isDisabled ? undefined : onPress}
+      padding="md"
+      style={isDisabled ? styles.disabled : undefined}
     >
-      <AppCard variant="muted">
-        <Stack direction="horizontal" gap="md" style={styles.content}>
-          <Stack gap="xs" style={styles.textBlock}>
-            <AppText variant="title">{title}</AppText>
-            <AppText color="secondary" variant="bodySmall">
-              {description}
-            </AppText>
-          </Stack>
-          <AppBadge
-            label={isDisabled ? t.common.comingSoon : t.common.open}
-            variant={isDisabled ? 'neutral' : 'brand'}
-          />
-        </Stack>
-      </AppCard>
-    </Pressable>
+      <View style={styles.row}>
+        <IconTile icon={icon} />
+        <View style={styles.textBlock}>
+          <AppText variant="title">{title}</AppText>
+          <AppText color="secondary" variant="bodySmall">
+            {isDisabled ? t.common.comingSoon : description}
+          </AppText>
+        </View>
+        <Icon
+          color={colors.text.muted}
+          name={getIsRTL() ? 'chevronLeft' : 'chevronRight'}
+          size={20}
+        />
+      </View>
+    </AppCard>
   );
 }
 
+export const SubjectLinkedSectionCard = memo(SubjectLinkedSectionCardComponent);
+
 const styles = StyleSheet.create({
-  content: {
+  row: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 12,
   },
   textBlock: {
     flex: 1,
@@ -60,8 +64,5 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: opacity.disabled,
-  },
-  pressed: {
-    opacity: opacity.pressed,
   },
 });

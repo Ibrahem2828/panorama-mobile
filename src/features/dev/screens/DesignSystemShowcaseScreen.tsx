@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
   },
   identityRow: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.lg,
   },

@@ -10,6 +10,7 @@ const DATA_TARGET_KEYS: ReadonlyArray<readonly [string, string]> = [
   ['support_ticket_id', 'support'],
   ['group_id', 'group'],
   ['file_id', 'file'],
+  ['announcement_id', 'announcement'],
   ['verification_request_id', 'verification'],
 ];
 
@@ -38,50 +39,49 @@ function normalizeTargetType(targetType: string | null): string | null {
   return targetType?.trim().toLowerCase() || null;
 }
 
+/** Ids come from the server but end up in navigation params: keep only plain numeric ids. */
+function safeId(id: Id | null): Id | null {
+  if (id === null) {
+    return null;
+  }
+
+  const text = String(id).trim();
+
+  return /^\d{1,12}$/u.test(text) ? (typeof id === 'string' ? text : id) : null;
+}
+
 export function resolveNotificationRouteIntent(
   target: NotificationTarget,
-  labels: { support: string; announcement: string } = {
-    support: 'support',
-    announcement: 'announcement',
-  },
 ): NotificationRouteIntent {
   const targetType = normalizeTargetType(target.targetType);
+  const id = safeId(target.targetId);
 
   if (!targetType) {
     return { kind: 'none' };
   }
 
-  if ((targetType === 'printing' || targetType === 'print_order') && target.targetId !== null) {
-    return { kind: 'printingOrder', orderId: target.targetId };
+  if ((targetType === 'printing' || targetType === 'print_order') && id !== null) {
+    return { kind: 'printingOrder', orderId: id };
   }
 
-  if (targetType === 'group' && target.targetId !== null) {
-    return { kind: 'group', groupId: target.targetId };
+  if (targetType === 'group' && id !== null) {
+    return { kind: 'group', groupId: id };
   }
 
-  if (targetType === 'file' && target.targetId !== null) {
-    return { kind: 'file', fileId: target.targetId };
-  }
-
-  if (
-    (targetType === 'support' || targetType === 'support_ticket' || targetType === 'ticket') &&
-    target.targetId !== null
-  ) {
-    return { kind: 'supportTicket', ticketId: target.targetId };
+  if (targetType === 'file' && id !== null) {
+    return { kind: 'file', fileId: id };
   }
 
   if (targetType === 'support' || targetType === 'support_ticket' || targetType === 'ticket') {
-    return { kind: 'future', label: labels.support };
+    return id !== null ? { kind: 'supportTicket', ticketId: id } : { kind: 'supportList' };
+  }
+
+  if (targetType === 'announcement') {
+    return id !== null ? { kind: 'announcement', announcementId: id } : { kind: 'announcements' };
   }
 
   if (targetType === 'verification') {
     return { kind: 'verification' };
-  }
-
-  const futureLabel = targetType === 'announcement' ? labels.announcement : undefined;
-
-  if (futureLabel) {
-    return { kind: 'future', label: futureLabel };
   }
 
   return { kind: 'none' };

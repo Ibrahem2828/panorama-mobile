@@ -1,7 +1,9 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import { useAuthStore } from '../features/auth/store';
-import { bottomTabScreenOptions, tabLabels } from './config/tabOptions';
+import { PolicyGate } from '../features/policies';
+import { AppTabBar } from './AppTabBar';
+import { bottomTabScreenOptions } from './config/tabOptions';
 import { GroupsStackNavigator } from './stacks/GroupsStackNavigator';
 import { HomeStackNavigator } from './stacks/HomeStackNavigator';
 import { PrintingStackNavigator } from './stacks/PrintingStackNavigator';
@@ -17,36 +19,23 @@ export function AppTabsNavigator() {
   const isStudent = role === 'student';
 
   return (
-    <Tabs.Navigator initialRouteName={TabRoutes.Home} screenOptions={bottomTabScreenOptions}>
-      <Tabs.Screen
-        component={HomeStackNavigator}
-        name={TabRoutes.Home}
-        options={{ tabBarLabel: tabLabels[TabRoutes.Home] }}
-      />
-      {isStudent ? (
-        <>
-          <Tabs.Screen
-            component={SubjectsStackNavigator}
-            name={TabRoutes.Subjects}
-            options={{ tabBarLabel: tabLabels[TabRoutes.Subjects] }}
-          />
-          <Tabs.Screen
-            component={GroupsStackNavigator}
-            name={TabRoutes.Groups}
-            options={{ tabBarLabel: tabLabels[TabRoutes.Groups] }}
-          />
-        </>
-      ) : null}
-      <Tabs.Screen
-        component={PrintingStackNavigator}
-        name={TabRoutes.Printing}
-        options={{ tabBarLabel: tabLabels[TabRoutes.Printing] }}
-      />
-      <Tabs.Screen
-        component={ProfileStackNavigator}
-        name={TabRoutes.Profile}
-        options={{ tabBarLabel: tabLabels[TabRoutes.Profile] }}
-      />
-    </Tabs.Navigator>
+    <>
+      <Tabs.Navigator
+        initialRouteName={TabRoutes.Home}
+        screenOptions={bottomTabScreenOptions}
+        tabBar={(props) => <AppTabBar {...props} />}
+      >
+        <Tabs.Screen component={HomeStackNavigator} name={TabRoutes.Home} />
+        {isStudent ? (
+          <>
+            <Tabs.Screen component={SubjectsStackNavigator} name={TabRoutes.Subjects} />
+            <Tabs.Screen component={GroupsStackNavigator} name={TabRoutes.Groups} />
+          </>
+        ) : null}
+        <Tabs.Screen component={PrintingStackNavigator} name={TabRoutes.Printing} />
+        <Tabs.Screen component={ProfileStackNavigator} name={TabRoutes.Profile} />
+      </Tabs.Navigator>
+      <PolicyGate />
+    </>
   );
 }

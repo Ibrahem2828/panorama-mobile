@@ -34,6 +34,7 @@ export const endpoints = {
     facultiesForUniversity: (universityId: EndpointId) =>
       `${API_PREFIX}/universities/${universityId}/faculties/`,
     majorsForFaculty: (facultyId: EndpointId) => `${API_PREFIX}/faculties/${facultyId}/majors/`,
+    subjectsForFaculty: (facultyId: EndpointId) => `${API_PREFIX}/faculties/${facultyId}/subjects/`,
     subjectsForMajor: (majorId: EndpointId) => `${API_PREFIX}/majors/${majorId}/subjects/`,
   },
   verification: {
@@ -41,7 +42,16 @@ export const endpoints = {
     me: `${API_PREFIX}/verification/me/`,
     resubmit: `${API_PREFIX}/verification/resubmit/`,
   },
-  announcements: { list: `${API_PREFIX}/announcements/` },
+  search: `${API_PREFIX}/search/`,
+  policies: {
+    current: `${API_PREFIX}/policies/current/`,
+    status: `${API_PREFIX}/policies/status/`,
+    accept: `${API_PREFIX}/policies/accept/`,
+  },
+  announcements: {
+    list: `${API_PREFIX}/announcements/`,
+    detail: (announcementId: EndpointId) => `${API_PREFIX}/announcements/${announcementId}/`,
+  },
   groups: {
     available: `${API_PREFIX}/groups/available/`,
     my: `${API_PREFIX}/groups/my/`,
@@ -51,7 +61,9 @@ export const endpoints = {
     files: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/files/`,
     messages: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/messages/`,
     chatTicket: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/chat-ticket/`,
-    whatsappTicket: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/whatsapp-ticket/`,
+    whatsappLaunch: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/whatsapp-launch/`,
+    messageAttachmentTicket: (groupId: EndpointId, messageId: EndpointId) =>
+      `${API_PREFIX}/groups/${groupId}/messages/${messageId}/attachment-ticket/`,
   },
   files: {
     list: `${API_PREFIX}/files/`,
@@ -60,6 +72,8 @@ export const endpoints = {
   },
   printing: {
     quote: `${API_PREFIX}/printing/quote/`,
+    convert: `${API_PREFIX}/printing/convert/`,
+    convertDetail: (id: string) => `${API_PREFIX}/printing/convert/${id}/`,
     createOrder: `${API_PREFIX}/printing/orders/`,
     myOrders: `${API_PREFIX}/printing/orders/my/`,
     orderDetail: (orderId: EndpointId) => `${API_PREFIX}/printing/orders/my/${orderId}/`,
@@ -73,6 +87,7 @@ export const endpoints = {
     unreadCount: `${API_PREFIX}/notifications/unread-count/`,
     markRead: (notificationId: EndpointId) => `${API_PREFIX}/notifications/${notificationId}/read/`,
     readAll: `${API_PREFIX}/notifications/read-all/`,
+    preferences: `${API_PREFIX}/notifications/preferences/`,
     deviceTokens: `${API_PREFIX}/notifications/device-tokens/`,
     deviceTokenDetail: (tokenId: EndpointId) =>
       `${API_PREFIX}/notifications/device-tokens/${tokenId}/`,
@@ -85,6 +100,22 @@ export const endpoints = {
     attachmentTicket: (messageId: EndpointId) =>
       `${API_PREFIX}/support/messages/${messageId}/attachment-ticket/`,
   },
+  lectures: {
+    list: `${API_PREFIX}/lectures/`,
+    detail: (lectureId: EndpointId) => `${API_PREFIX}/lectures/${lectureId}/`,
+    processingStatus: (lectureId: EndpointId) =>
+      `${API_PREFIX}/lectures/${lectureId}/processing-status/`,
+    viewerSession: (lectureId: EndpointId) => `${API_PREFIX}/lectures/${lectureId}/viewer/session/`,
+    pageImage: (lectureId: EndpointId, page: number) =>
+      `${API_PREFIX}/lectures/${lectureId}/viewer/pages/${page}/`,
+    pageThumbnail: (lectureId: EndpointId, page: number) =>
+      `${API_PREFIX}/lectures/${lectureId}/viewer/pages/${page}/thumbnail/`,
+    pageText: (lectureId: EndpointId, page: number) =>
+      `${API_PREFIX}/lectures/${lectureId}/viewer/pages/${page}/text/`,
+    notes: (lectureId: EndpointId) => `${API_PREFIX}/lectures/${lectureId}/notes/`,
+    noteDetail: (lectureId: EndpointId, noteId: EndpointId) =>
+      `${API_PREFIX}/lectures/${lectureId}/notes/${noteId}/`,
+  },
   feedback: {
     submit: `${API_PREFIX}/feedback/`,
     prompt: `${API_PREFIX}/feedback/prompt/`,
@@ -92,5 +123,7 @@ export const endpoints = {
     mine: `${API_PREFIX}/feedback/mine/`,
     suggestions: `${API_PREFIX}/feedback/suggestions/`,
     vote: (feedbackId: EndpointId) => `${API_PREFIX}/feedback/${feedbackId}/vote/`,
+    privacyRequest: (feedbackId: EndpointId) =>
+      `${API_PREFIX}/feedback/${feedbackId}/privacy-request/`,
   },
 } as const;

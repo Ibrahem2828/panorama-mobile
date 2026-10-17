@@ -16,6 +16,7 @@ type PublicExtra = {
   dashboardUrl?: string;
   privacyUrl?: string;
   termsUrl?: string;
+  legalUrl?: string;
 };
 
 const extra = (Constants.expoConfig?.extra ?? {}) as PublicExtra;
@@ -48,6 +49,7 @@ export const env = {
   dashboardUrl: extra.dashboardUrl || '',
   privacyUrl: extra.privacyUrl || '',
   termsUrl: extra.termsUrl || '',
+  legalUrl: extra.legalUrl || '',
   isDevelopment: appEnv === 'development',
   isPreview: appEnv === 'preview',
   isProduction: appEnv === 'production',

@@ -6,7 +6,7 @@ import {
   type FileAccessTicket,
 } from '../../../api';
 import type { FileResource, FileViewerType, Id } from '../types';
-import type { TranslationCatalog } from '../../../i18n';
+import { useLocaleStore, type TranslationCatalog } from '../../../i18n';
 
 type FilesCatalog = TranslationCatalog['files'];
 
@@ -170,9 +170,21 @@ export function getFileUpdatedAt(file: FileResource): string | null {
   return toText(file.updated_at) ?? toText(file.created_at) ?? null;
 }
 
+/**
+ * Human label of a related entity. A bare id (number or numeric string, or an object with
+ * only an id) is never shown: it falls back to the localized "not specified" text.
+ */
 export function getEntityLabel(value: unknown): string | null {
-  if (typeof value === 'string' || typeof value === 'number') {
-    return String(value);
+  const unspecified = useLocaleStore.getState().t.common.notSpecified;
+
+  if (typeof value === 'number') {
+    return unspecified;
+  }
+
+  if (typeof value === 'string') {
+    const text = value.trim();
+
+    return text && !/^\d+$/u.test(text) ? text : unspecified;
   }
 
   if (!isRecord(value)) {
@@ -184,8 +196,7 @@ export function getEntityLabel(value: unknown): string | null {
     toText(value.title) ??
     toText(value.label) ??
     toText(value.code) ??
-    toText(value.id) ??
-    null
+    unspecified
   );
 }
 
@@ -231,6 +242,34 @@ export function toSafeFilesErrorMessage(error: unknown, t: FilesCatalog): string
 
 export async function loadFiles(authToken: string): Promise<PaginatedResult<FileResource>> {
   return normalizeFileList(await apiFilesService.listFiles(authToken));
+}
+
+export const FILES_PAGE_SIZE = 20;
+
+export type FilesPageParams = {
+  page: number;
+  search?: string;
+  subjectId?: Id;
+  printableOnly?: boolean;
+  ordering?: string;
+};
+
+/** One server-filtered page of the files the student may see. */
+export async function loadFilesPage(
+  authToken: string,
+  params: FilesPageParams,
+): Promise<PaginatedResult<FileResource>> {
+  return normalizeFileList(
+    await apiFilesService.listFiles(authToken, {
+      page: params.page,
+      pageSize: FILES_PAGE_SIZE,
+      search: params.search?.trim() || undefined,
+      ordering: params.ordering || undefined,
+      subject: params.subjectId,
+      isActive: true,
+      isPrintable: params.printableOnly ? true : undefined,
+    }),
+  );
 }
 
 export async function loadFileDetail(fileId: Id, authToken: string): Promise<FileResource> {

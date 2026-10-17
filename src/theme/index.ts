@@ -6,3 +6,16 @@ export { shadows } from './shadows';
 export { spacing } from './spacing';
 export { typography } from './typography';
 export { zIndex } from './zIndex';
+export { facultyPalettes, getFacultyPalette, resolveFacultyThemeKey } from './facultyTheme';
+export type { BrandPalette, FacultyThemeKey } from './facultyTheme';
+export { useBrand, useBrandStore } from './brandStore';
+export { fontFiles, fontFamilyForWeight } from './fonts';
+export {
+  isDarkScheme,
+  resolvedScheme,
+  themePreference,
+  THEME_PREFERENCES,
+  saveThemePreference,
+} from './colorScheme';
+export type { ResolvedScheme, ThemePreference } from './colorScheme';
+export { inputThemeProps } from './inputTheme';

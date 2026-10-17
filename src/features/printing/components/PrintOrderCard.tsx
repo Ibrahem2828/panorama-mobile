@@ -1,8 +1,9 @@
+import { memo, useCallback } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
 import { AppCard, AppText, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import { opacity } from '../../../theme';
+import { colors, opacity } from '../../../theme';
 import {
   formatPrintOrderDate,
   formatPrintOrderPrice,
@@ -17,10 +18,10 @@ import { PrintOrderStatusIcon } from './PrintOrderStatusIcon';
 
 type PrintOrderCardProps = {
   order: PrintOrder;
-  onPress?: () => void;
+  onPress?: (order: PrintOrder) => void;
 };
 
-export function PrintOrderCard({ order, onPress }: PrintOrderCardProps) {
+function PrintOrderCardComponent({ order, onPress }: PrintOrderCardProps) {
   const { t, locale } = useTranslation();
   const date = formatPrintOrderDate(order.created_at ?? order.submitted_at, locale);
   const price = formatPrintOrderPrice(order);
@@ -29,12 +30,16 @@ export function PrintOrderCard({ order, onPress }: PrintOrderCardProps) {
     t.printing,
     t.common.unknown,
   );
+  const title = getPrintOrderDisplayTitle(order, t.printing);
+  const handlePress = useCallback(() => onPress?.(order), [onPress, order]);
 
   return (
     <Pressable
+      accessibilityLabel={`${title}. ${statusPresentation.label}`}
       accessibilityRole="button"
+      android_ripple={{ color: colors.ripple, foreground: true }}
       disabled={!onPress}
-      onPress={onPress}
+      onPress={handlePress}
       style={({ pressed }) => [pressed && onPress ? styles.pressed : null]}
     >
       <AppCard variant="elevated">
@@ -42,7 +47,7 @@ export function PrintOrderCard({ order, onPress }: PrintOrderCardProps) {
           <Stack direction="horizontal" gap="md" style={styles.header}>
             <PrintOrderStatusIcon status={order.status} />
             <Stack gap="xs" style={styles.titleBlock}>
-              <AppText variant="title">{getPrintOrderDisplayTitle(order, t.printing)}</AppText>
+              <AppText variant="title">{title}</AppText>
               <AppText color="brand" variant="bodySmall" weight="600">
                 {statusPresentation.actionMessage}
               </AppText>
@@ -73,6 +78,8 @@ export function PrintOrderCard({ order, onPress }: PrintOrderCardProps) {
     </Pressable>
   );
 }
+
+export const PrintOrderCard = memo(PrintOrderCardComponent);
 
 const styles = StyleSheet.create({
   pressed: {

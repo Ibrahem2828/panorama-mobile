@@ -1,12 +1,15 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { AnnouncementDetailScreen, AnnouncementsListScreen } from '../../features/announcements';
 import { FileDetailsScreen } from '../../features/files/screens/FileDetailsScreen';
 import { FilesListScreen } from '../../features/files/screens/FilesListScreen';
 import { PdfViewerScreen } from '../../features/files/screens/PdfViewerScreen';
 import { HomeScreen } from '../../features/home/screens/HomeScreen';
+import { LectureViewerScreen } from '../../features/lectures/screens/LectureViewerScreen';
+import { LecturesListScreen } from '../../features/lectures/screens/LecturesListScreen';
 import { SearchScreen } from '../../features/search/screens/SearchScreen';
 import { hiddenStackScreenOptions } from '../config/screenOptions';
-import { HomeRoutes, SharedRoutes } from '../routes';
+import { HomeRoutes, LecturesRoutes, SharedRoutes } from '../routes';
 import type { HomeStackParamList } from '../types';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
@@ -15,10 +18,14 @@ export function HomeStackNavigator() {
   return (
     <Stack.Navigator initialRouteName={HomeRoutes.Home} screenOptions={hiddenStackScreenOptions}>
       <Stack.Screen component={HomeScreen} name={HomeRoutes.Home} />
+      <Stack.Screen component={AnnouncementsListScreen} name={HomeRoutes.AnnouncementsList} />
+      <Stack.Screen component={AnnouncementDetailScreen} name={HomeRoutes.AnnouncementDetail} />
       <Stack.Screen component={FilesListScreen} name={SharedRoutes.FilesList} />
       <Stack.Screen component={FileDetailsScreen} name={SharedRoutes.FileDetails} />
       <Stack.Screen component={PdfViewerScreen} name={SharedRoutes.PdfViewer} />
       <Stack.Screen component={SearchScreen} name={SharedRoutes.Search} />
+      <Stack.Screen component={LecturesListScreen} name={LecturesRoutes.LecturesList} />
+      <Stack.Screen component={LectureViewerScreen} name={LecturesRoutes.LectureViewer} />
     </Stack.Navigator>
   );
 }

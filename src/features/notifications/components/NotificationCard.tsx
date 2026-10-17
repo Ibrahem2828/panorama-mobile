@@ -1,114 +1,98 @@
-import { useRef } from 'react';
-import { Animated, Pressable, StyleSheet, View } from 'react-native';
+import { memo, useCallback } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
-import { colors, opacity, spacing } from '../../../theme';
-import { createPressScaleAnim } from '../../../utils/motion';
 import { useTranslation } from '../../../i18n';
+import { colors, opacity, radius, spacing, useBrand } from '../../../theme';
 import { formatRelativeDate } from '../../../utils/formatRelativeDate';
 import {
   getNotificationBody,
-  getNotificationTarget,
   getNotificationTitle,
+  isNotificationExpired,
   isNotificationUnread,
 } from '../services';
 import type { NotificationRecord } from '../types';
-import { NotificationMetaRow } from './NotificationMetaRow';
 import { NotificationStatusBadge } from './NotificationStatusBadge';
 import { NotificationTypeIcon } from './NotificationTypeIcon';
 
 type NotificationCardProps = {
   notification: NotificationRecord;
-  onPress?: () => void;
+  onPress: (notification: NotificationRecord) => void;
 };
 
-export function NotificationCard({ notification, onPress }: NotificationCardProps) {
+const DOT_SIZE = 10;
+
+function NotificationCardComponent({ notification, onPress }: NotificationCardProps) {
   const { t, locale } = useTranslation();
-  const title = getNotificationTitle(notification, t.notifications);
-  const body = getNotificationBody(notification);
+  const brand = useBrand();
+  const title = getNotificationTitle(notification, t.notifications, locale);
+  const body = getNotificationBody(notification, locale);
   const unread = isNotificationUnread(notification);
-  const target = getNotificationTarget(notification);
+  const expired = isNotificationExpired(notification);
   const date = formatRelativeDate(
     notification.created_at ?? notification.updated_at,
     t.relativeTime,
     locale,
   );
-
-  const { scale, onPressIn, onPressOut } = useRef(createPressScaleAnim()).current;
+  const handlePress = useCallback(() => onPress(notification), [notification, onPress]);
 
   return (
     <Pressable
+      accessibilityLabel={`${unread ? `${t.notifications.unread}. ` : ''}${title}`}
       accessibilityRole="button"
-      disabled={!onPress}
-      onPress={onPress}
-      onPressIn={onPress ? onPressIn : undefined}
-      onPressOut={onPress ? onPressOut : undefined}
-      style={({ pressed }) => [pressed && onPress ? styles.pressed : null]}
+      android_ripple={{ color: colors.ripple, foreground: true }}
+      onPress={handlePress}
+      style={({ pressed }) => [expired ? styles.expired : null, pressed ? styles.pressed : null]}
     >
-      <Animated.View style={{ transform: [{ scale }] }}>
-        <AppCard
-          style={unread ? styles.unreadCard : null}
-          variant={unread ? 'outlined' : 'default'}
-        >
-          <Stack gap="md">
-            <Stack direction="horizontal" gap="md" style={styles.header}>
-              <NotificationTypeIcon type={notification.type} />
-              <View style={[styles.unreadDot, unread ? styles.unreadDotActive : null]} />
-              <Stack gap="xs" style={styles.titleBlock}>
-                <AppText numberOfLines={2} variant="title">
-                  {title}
-                </AppText>
-                {body ? (
-                  <AppText color="secondary" numberOfLines={3} variant="bodySmall">
-                    {body}
-                  </AppText>
-                ) : (
-                  <AppText color="muted" variant="bodySmall">
-                    {t.notifications.noDetails}
-                  </AppText>
-                )}
-              </Stack>
-              <NotificationStatusBadge type={notification.type} />
+      <AppCard
+        style={unread ? { borderColor: brand.primary, borderWidth: 1.5 } : undefined}
+        variant="default"
+      >
+        <Stack gap="md">
+          <Stack direction="horizontal" gap="md" style={styles.header}>
+            <NotificationTypeIcon type={notification.type} />
+            <View
+              style={[
+                styles.dot,
+                { backgroundColor: unread ? brand.primary : colors.border.strong },
+              ]}
+            />
+            <Stack gap="xs" style={styles.titleBlock}>
+              <AppText numberOfLines={2} variant="title" weight={unread ? '700' : '600'}>
+                {title}
+              </AppText>
+              <AppText color={body ? 'secondary' : 'muted'} numberOfLines={3} variant="bodySmall">
+                {body ?? t.notifications.noDetails}
+              </AppText>
             </Stack>
-
-            <Stack direction="horizontal" gap="sm" wrap>
-              <AppBadge
-                label={unread ? t.notifications.unread : t.notifications.read}
-                variant={unread ? 'warning' : 'neutral'}
-              />
-              {date ? <AppBadge label={date} variant="info" /> : null}
-            </Stack>
-
-            <NotificationMetaRow label={t.notifications.targetLabel} value={target.targetType} />
+            <NotificationStatusBadge type={notification.type} />
           </Stack>
-        </AppCard>
-      </Animated.View>
+
+          <Stack direction="horizontal" gap="sm" wrap>
+            <AppBadge
+              label={unread ? t.notifications.unread : t.notifications.read}
+              variant={unread ? 'warning' : 'neutral'}
+            />
+            {expired ? <AppBadge label={t.notifications.expired} variant="error" /> : null}
+            {date ? <AppBadge label={date} variant="info" /> : null}
+          </Stack>
+        </Stack>
+      </AppCard>
     </Pressable>
   );
 }
 
+export const NotificationCard = memo(NotificationCardComponent);
+
 const styles = StyleSheet.create({
-  pressed: {
-    opacity: opacity.pressed,
-  },
-  unreadCard: {
-    borderColor: colors.brand.primary,
-  },
-  header: {
-    alignItems: 'flex-start',
-  },
-  titleBlock: {
-    flex: 1,
-    minWidth: 0,
-  },
-  unreadDot: {
-    width: 10,
-    height: 10,
+  pressed: { opacity: opacity.pressed },
+  expired: { opacity: 0.7 },
+  header: { alignItems: 'flex-start' },
+  titleBlock: { flex: 1, minWidth: 0 },
+  dot: {
+    width: DOT_SIZE,
+    height: DOT_SIZE,
     marginTop: spacing.sm,
-    borderRadius: 5,
-    backgroundColor: colors.border.strong,
-  },
-  unreadDotActive: {
-    backgroundColor: colors.brand.primary,
+    borderRadius: radius.full,
   },
 });
