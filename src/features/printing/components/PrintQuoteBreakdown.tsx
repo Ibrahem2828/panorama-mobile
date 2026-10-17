@@ -4,7 +4,7 @@ import { AppCard, AppText, Divider, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { formatDateTime } from '../../../utils/formatDateTime';
 import { radius, spacing, useBrand } from '../../../theme';
-import { formatMoneyAmount } from '../services';
+import { formatPrintMoney } from '../services';
 import type { PrintCartItem, PrintQuote } from '../types';
 import { usePrintOptionLabels } from './PrintItemOptions';
 
@@ -33,7 +33,7 @@ export function PrintQuoteBreakdown({ quote, items, names }: PrintQuoteBreakdown
   const brand = useBrand();
   const labels = usePrintOptionLabels();
   const money = (value: string | number, currency: string) =>
-    `${formatMoneyAmount(value) ?? value} ${currency}`;
+    formatPrintMoney(value, currency) ?? String(value);
   const calculatedAt = formatDateTime(quote.calculated_at, locale);
 
   return (

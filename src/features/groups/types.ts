@@ -49,4 +49,4 @@ export type GroupJoinResult = {
 export type SubjectLabel = { name: string; code: string | null };
 
 /** Result of tapping "open WhatsApp": the app opened, WhatsApp is missing, or the launch failed. */
-export type WhatsAppLaunchResult = 'opened' | 'not-installed' | 'failed';
+export type WhatsAppLaunchResult = 'opened' | 'not-installed' | 'unavailable' | 'failed';

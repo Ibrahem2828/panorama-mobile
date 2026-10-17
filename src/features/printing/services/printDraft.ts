@@ -10,6 +10,7 @@ import {
 } from '../../attachments/services/localFile';
 import type {
   PrintCartItem,
+  PrintCurrency,
   PrintDraft,
   PrintDraftValidation,
   PrintItemValidation,
@@ -50,8 +51,10 @@ export function newCartItem(source: PrintSource = null): PrintCartItem {
   return { key: `item-${Date.now().toString(36)}-${itemCounter}`, source, ...DEFAULT_ITEM_OPTIONS };
 }
 
-export function createEmptyDraft(): PrintDraft {
-  return { items: [newCartItem()], pickupLocationId: null, userNotes: '' };
+export const DEFAULT_PRINT_CURRENCY: PrintCurrency = 'SYP';
+
+export function createEmptyDraft(currency: PrintCurrency = DEFAULT_PRINT_CURRENCY): PrintDraft {
+  return { items: [newCartItem()], pickupLocationId: null, userNotes: '', currency };
 }
 
 export function validateItem(item: PrintCartItem): PrintItemValidation {
@@ -107,7 +110,7 @@ function itemFields(item: PrintCartItem) {
 type JsonItem = ReturnType<typeof itemFields> &
   ({ source_file: number | string } | { converted_upload: string });
 
-export type PrintQuoteJson = { items: JsonItem[] };
+export type PrintQuoteJson = { items: JsonItem[]; currency: PrintCurrency };
 export type PrintOrderJson = PrintQuoteJson & {
   user_notes?: string;
   pickup_location: number | string | null;
@@ -129,6 +132,7 @@ export function buildQuoteBody(draft: PrintDraft): PrintQuoteJson | FormData {
     )
   ) {
     return {
+      currency: draft.currency,
       items: draft.items.map((item) => {
         const { source } = item;
 
@@ -140,6 +144,8 @@ export function buildQuoteBody(draft: PrintDraft): PrintQuoteJson | FormData {
   }
 
   const form = new FormData();
+
+  form.append('currency', draft.currency);
 
   draft.items.forEach((item, index) => {
     const { source } = item;
@@ -195,7 +201,8 @@ function sourceSignature(source: PrintSource): string {
 
 /** Stable signature of everything that affects a quote, so a stale quote is detected. */
 export function draftSignature(draft: PrintDraft): string {
-  return JSON.stringify(
+  return JSON.stringify([
+    draft.currency,
     draft.items.map((item) => [
       sourceSignature(item.source),
       item.copies,
@@ -204,7 +211,7 @@ export function draftSignature(draft: PrintDraft): string {
       item.sides,
       item.binding,
     ]),
-  );
+  ]);
 }
 
 /** What an order idempotency key is scoped to: the quote signature plus order-level fields. */

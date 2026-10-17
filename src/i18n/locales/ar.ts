@@ -1846,6 +1846,7 @@ export const ar = {
       opened: 'تم فتح واتساب.',
       notInstalled: 'تعذر فتح واتساب. تأكد من تثبيت التطبيق على هاتفك ثم حاول مرة أخرى.',
       error: 'تعذر فتح واتساب الآن. حاول مرة أخرى بعد قليل.',
+      unavailable: 'لم تتم إضافة رابط مجموعة الواتساب بعد، سيظهر هنا عندما تضيفه الإدارة',
     },
 
     emptyMine: {
@@ -1943,6 +1944,9 @@ export const ar = {
       notesHelper: 'ملاحظات يراها موظف الطباعة. لا تكتب فيها معلومات شخصية حساسة.',
       notesPlaceholder: 'مثال: ترتيب محدد للصفحات',
       pricingNotice: 'تحسب بانوراما السعر النهائي بعد فحص الملف، ويظهر لك قبل تأكيد الطلب.',
+      currencyLabel: 'عملة السعر',
+      currencySyp: 'ل.س جديدة',
+      currencyUsd: 'دولار $',
       calculatePrice: 'احسب السعر',
       submit: 'تأكيد وإرسال الطلب',
       submitSuccess: 'تم إرسال طلب الطباعة.',
@@ -2111,6 +2115,7 @@ export const ar = {
       invalidCopies: 'اختر عدد نسخ بين 1 و99.',
       pricingUnavailable:
         'أسعار الطباعة غير مفعّلة بعد لهذه الخيارات. حاول لاحقًا أو تواصل مع الدعم.',
+      pricingUnavailableSwitchCurrency: 'يمكنك تجربة تغيير العملة.',
       bindingUnavailable: 'خدمة التجليد غير متاحة حاليًا. اختر «بدون تجليد» أو حاول لاحقًا.',
       noItems: 'أضف ملفًا واحدًا على الأقل.',
       uploadsTooLarge:

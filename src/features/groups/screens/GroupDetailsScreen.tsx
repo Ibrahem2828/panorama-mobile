@@ -142,7 +142,7 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
             pendingAction={pendingActions[String(activeGroup.id)]}
           />
 
-          {activeGroup.has_whatsapp_channel ? (
+          {membership.canOpenContent || activeGroup.has_whatsapp_channel ? (
             <GroupWhatsAppCard canLaunch={membership.canOpenContent} groupId={activeGroup.id} />
           ) : null}
 

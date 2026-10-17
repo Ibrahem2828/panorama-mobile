@@ -32,7 +32,13 @@ function uploadItem(size: number | null = 1000): PrintCartItem {
 }
 
 function draftOf(items: PrintCartItem[], overrides: Partial<PrintDraft> = {}): PrintDraft {
-  return { items, pickupLocationId: 3, userNotes: ' يرجى التدقيق ', ...overrides };
+  return {
+    items,
+    pickupLocationId: 3,
+    userNotes: ' يرجى التدقيق ',
+    currency: 'SYP',
+    ...overrides,
+  };
 }
 
 describe('validateUploadCandidate', () => {
@@ -129,6 +135,7 @@ describe('request bodies', () => {
     );
 
     expect(body).toEqual({
+      currency: 'SYP',
       items: [
         {
           source_file: 7,
@@ -211,5 +218,35 @@ describe('small helpers', () => {
     expect(uploadPercent(300, 200)).toBe(100);
     expect(uploadPercent(10, 0)).toBe(0);
     expect(uploadPercent(-5, 100)).toBe(0);
+  });
+});
+
+describe('currency', () => {
+  it('is included in the JSON quote and order bodies', () => {
+    const quote = buildQuoteBody(draftOf([libraryItem(1)], { currency: 'USD' })) as {
+      currency: string;
+    };
+    const order = buildOrderBody(draftOf([libraryItem(1)])) as { currency: string };
+
+    expect(quote.currency).toBe('USD');
+    expect(order.currency).toBe('SYP');
+  });
+
+  it('is included in multipart bodies', () => {
+    const form = buildOrderBody(draftOf([uploadItem()], { currency: 'USD' })) as FormData;
+    expect(form.get('currency')).toBe('USD');
+  });
+
+  it('changes the quote and order signatures', () => {
+    const a = draftOf([libraryItem(1)]);
+    const b = { ...a, currency: 'USD' as const };
+
+    expect(draftSignature(a)).not.toBe(draftSignature(b));
+    expect(orderSignature(a)).not.toBe(orderSignature(b));
+  });
+
+  it('defaults an empty draft to SYP', () => {
+    expect(createEmptyDraft().currency).toBe('SYP');
+    expect(createEmptyDraft('USD').currency).toBe('USD');
   });
 });

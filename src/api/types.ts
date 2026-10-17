@@ -315,7 +315,13 @@ export type PrintConversion = {
   expires_at: string;
 };
 
-export type PrintQuoteRequest = { items: CreatePrintOrderItemInput[] };
+export type PrintCurrency = 'SYP' | 'USD';
+
+export type PrintQuoteRequest = {
+  items: CreatePrintOrderItemInput[];
+  /** Optional; the server defaults to SYP. */
+  currency?: PrintCurrency;
+};
 export type PrintQuoteResponse = {
   total_price: string | number;
   currency: string;

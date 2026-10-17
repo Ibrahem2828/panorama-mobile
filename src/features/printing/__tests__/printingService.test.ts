@@ -52,8 +52,12 @@ describe('printing service helpers', () => {
     expect(formatMoneyAmount('1250.5')).toBe('1,250.5');
     expect(formatMoneyAmount(null)).toBeNull();
     expect(formatMoneyAmount('abc')).toBe('abc');
-    expect(formatPrintMoney('300', 'SYP')).toBe('300 SYP');
-    expect(formatPrintMoney('300', null)).toBe('300 SYP');
+    expect(formatPrintMoney('300', 'SYP')).toBe('300 ل.س');
+    expect(formatPrintMoney('300', null)).toBe('300 ل.س');
+    expect(formatPrintMoney('15000.00', 'SYP')).toBe('15,000 ل.س');
+    expect(formatPrintMoney('12.3', 'USD')).toBe('$12.30');
+    expect(formatPrintMoney(1234.5, 'USD')).toBe('$1,234.50');
+    expect(formatPrintMoney(null, 'USD')).toBeNull();
   });
 
   it('names an item by its library title, original name, or a generic uploaded label', () => {

@@ -1,3 +1,4 @@
+import { normalizeApiError } from '../../../api';
 import type { WhatsAppLaunchResult } from '../types';
 
 // Only the two WhatsApp app-link shapes the backend can issue are accepted; anything else is refused.
@@ -5,6 +6,30 @@ const APP_LINK = /^whatsapp:\/\/(chat\?code=[A-Za-z0-9]{10,40}|send\?phone=\d{6,
 
 export function parseWhatsAppAppLink(value: unknown): string | null {
   return typeof value === 'string' && APP_LINK.test(value) ? value : null;
+}
+
+/**
+ * The server answers 400 "WhatsApp channel is not available for this group." when the group has no
+ * channel yet. Matches on the status and that phrase only; nothing from the response is kept.
+ */
+export function isWhatsAppUnavailableError(error: unknown): boolean {
+  const normalized = normalizeApiError(error);
+
+  if (normalized.status !== 400) {
+    return false;
+  }
+
+  let rawText = '';
+
+  try {
+    rawText = JSON.stringify(normalized.raw ?? '');
+  } catch {
+    rawText = '';
+  }
+
+  return [normalized.message, normalized.technicalMessage ?? '', rawText].some((text) =>
+    /not available/iu.test(text),
+  );
 }
 
 type LaunchDeps = {
@@ -26,8 +51,8 @@ export async function launchGroupWhatsApp({
 
   try {
     link = parseWhatsAppAppLink(await requestAppUrl());
-  } catch {
-    return 'failed';
+  } catch (error) {
+    return isWhatsAppUnavailableError(error) ? 'unavailable' : 'failed';
   }
 
   if (!link) {

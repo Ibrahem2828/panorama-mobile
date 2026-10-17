@@ -1831,6 +1831,8 @@ export const en: TranslationCatalog = {
       notInstalled:
         'Could not open WhatsApp. Make sure the app is installed on your phone and try again.',
       error: 'Could not open WhatsApp right now. Please try again in a moment.',
+      unavailable:
+        'The WhatsApp group link has not been added yet. It will appear here once the administration adds it.',
     },
 
     emptyMine: {
@@ -1919,6 +1921,9 @@ export const en: TranslationCatalog = {
       notesPlaceholder: 'Example: a specific page order',
       pricingNotice:
         'Panorama calculates the final price after checking your file, and shows it before you confirm.',
+      currencyLabel: 'Price currency',
+      currencySyp: 'New SYP',
+      currencyUsd: 'US dollar $',
       calculatePrice: 'Calculate price',
       submit: 'Confirm and send order',
       submitSuccess: 'Your print order was sent.',
@@ -2084,6 +2089,7 @@ export const en: TranslationCatalog = {
       invalidCopies: 'Copies must be between 1 and 99.',
       pricingUnavailable:
         'Printing prices are not available for these options yet. Please try again later or contact support.',
+      pricingUnavailableSwitchCurrency: 'You can try switching the currency.',
       bindingUnavailable: 'Binding is currently unavailable. Choose no binding or try again later.',
       noItems: 'Add at least one file.',
       uploadsTooLarge:
