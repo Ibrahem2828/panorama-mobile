@@ -15,7 +15,7 @@ export const en: TranslationCatalog = {
     loading: 'Loading...',
     retry: 'Try again',
     error: 'Something went wrong',
-    comingSoon: 'Later',
+    comingSoon: 'Coming soon',
     back: 'Back',
     cancel: 'Cancel',
     save: 'Save',
@@ -35,39 +35,39 @@ export const en: TranslationCatalog = {
   },
 
   apiErrors: {
-    network: 'Could not reach the server. Check your internet connection.',
-    timeout: 'The request took longer than expected. Please try again.',
-    unauthorized: 'Your session has expired, or you need to sign in.',
+    network: 'Could not connect. Check your internet and try again.',
+    timeout: 'That took longer than expected. Please try again.',
+    unauthorized: 'Your session has ended. Sign in again to continue.',
     forbidden: 'You do not have permission to do this.',
-    notFound: 'The item you asked for does not exist.',
-    validation: 'The details you entered could not be validated.',
-    server: 'The server hit an error. Please try again later.',
-    rateLimited: 'Too many attempts. Please try again shortly.',
+    notFound: 'We could not find what you asked for.',
+    validation: 'Check the details you entered and try again.',
+    server: 'Something went wrong on our side. Please try again shortly.',
+    rateLimited: 'Too many attempts. Wait a moment and try again.',
     unknown: 'Something went wrong. Please try again.',
-    conflict: 'The request conflicts with the current state of the data. Refresh and try again.',
-    maintenance: 'The app is under maintenance right now. We will be back soon.',
-    updateRequired: 'You need to update the app to the latest version to continue.',
+    conflict: 'The data changed while your request was being processed. Refresh and try again.',
+    maintenance: 'Panorama is under maintenance right now. We will be back soon.',
+    updateRequired: 'Update the app to the latest version to continue.',
     idempotencyKeyReused:
-      'The request details changed after it was sent. Review them and submit again.',
+      'The details changed after the request was sent. Review them and submit again.',
     idempotencyInProgress:
-      'This request is already being processed. Wait a moment and check again.',
+      'Your request is already being processed. Wait a moment, then check the result.',
   },
 
   lifecycle: {
     maintenanceTitle: 'Under maintenance',
     maintenanceMessage:
-      'We are improving the service. The app will resume automatically when maintenance ends.',
+      'We are improving the service. The app will work again automatically when maintenance ends.',
     maintenanceEstimatedEnd: (time: string) => `Expected back: ${time}`,
     retry: 'Try again',
     checking: 'Checking service status...',
     stillDown: 'The service is still under maintenance.',
-    checkFailed: 'Could not check the service status. Check your connection and try again.',
+    checkFailed: 'Could not check the service status. Check your internet and try again.',
     updateTitle: 'Update required',
     updateMessage:
-      'This version of the app is no longer supported. Update it from the store to continue.',
+      'This version is no longer supported. Update Panorama from the store to continue.',
     updateAction: 'Update the app',
     updateOpenFailed:
-      'Could not open the store. Search for Panorama in your app store and update it.',
+      'Could not open the store. Search for “Panorama” in your app store and update it.',
   },
 
   relativeTime: {
@@ -79,7 +79,7 @@ export const en: TranslationCatalog = {
 
   connectivity: {
     offline:
-      'You are offline. Loaded data stays visible and the app retries when the connection returns.',
+      'You are offline. What you have already loaded stays visible, and everything updates when you reconnect.',
   },
 
   navigation: {
@@ -88,9 +88,9 @@ export const en: TranslationCatalog = {
     groups: 'Groups',
     printing: 'Printing',
     profile: 'Account',
-    preparingStart: 'Getting things ready...',
-    loadingSetup: 'Loading your setup details...',
-    studentSetup: 'Student setup',
+    preparingStart: 'Getting your account ready...',
+    loadingSetup: 'Loading your details...',
+    studentSetup: 'Student account setup',
   },
 
   otpInput: {
@@ -99,10 +99,9 @@ export const en: TranslationCatalog = {
   },
 
   placeholder: {
-    subtitle: 'Navigation scaffold',
-    description:
-      'This is a placeholder screen in the navigation scaffold. The real functionality comes later.',
-    note: 'There is no auth, API or real product logic on this screen.',
+    subtitle: 'Coming soon',
+    description: 'This page will be available soon.',
+    note: 'We are working on it for you.',
   },
 
   onboarding: {
@@ -118,25 +117,24 @@ export const en: TranslationCatalog = {
         imageLabel: 'Illustration of university life inside the Panorama app',
         title: 'Your whole university life in one place',
         description:
-          'Panorama brings your files, subjects, groups and university announcements into one easy experience.',
+          'Panorama brings your subjects, files, groups and university announcements together in one easy app.',
       },
       {
         imageLabel: 'Illustration of verifying a university account',
         title: 'Verify your university account securely',
         description:
-          'Upload your university card so your details can be confirmed and you get access to the right subjects and services.',
+          'Upload a photo of your university card so we can confirm your details and unlock the right subjects and services.',
       },
       {
         imageLabel: 'Illustration of subject groups',
         title: 'Join your subject groups',
         description:
-          'Follow the discussions, announcements and files tied to your subjects and your university.',
+          'Follow the discussions, announcements and files for your subjects and university.',
       },
       {
         imageLabel: 'Illustration of files and print orders',
         title: 'Files and printing in a few steps',
-        description:
-          'Open your university files, request printing, and track the order from the app.',
+        description: 'Open your subject files, order prints, and track your order in the app.',
       },
     ],
   },
@@ -150,9 +148,9 @@ export const en: TranslationCatalog = {
     send: 'Send',
     resend: 'Send again',
     emptyTitle: 'No messages yet',
-    emptyMessage: 'No messages yet. Start the discussion if you are allowed to send.',
+    emptyMessage: 'Messages will appear here. Start the discussion if sending is available to you.',
     emptyIllustrationAlt: 'Illustration showing no messages',
-    unnamedSender: 'User',
+    unnamedSender: 'Member',
     emptyMessageBody: 'Message with no text',
 
     membership: {
@@ -170,12 +168,12 @@ export const en: TranslationCatalog = {
       offline: 'Offline',
       note: 'New messages arrive automatically once you are back online.',
       offlineBanner:
-        'You are offline. You can read saved messages and updates resume automatically.',
+        'You are offline. You can read saved messages, and updates resume when you reconnect.',
     },
 
     today: 'Today',
     yesterday: 'Yesterday',
-    systemMessage: 'System message',
+    systemMessage: 'Message from Panorama',
     messagesLog: 'Chat messages',
     composerLabel: 'Message text',
     sending: 'Sending…',
@@ -202,7 +200,7 @@ export const en: TranslationCatalog = {
       viewerTitle: 'Attachment',
       loading: 'Preparing the attachment…',
       loadError: 'Could not show the attachment. Please try again.',
-      permissionDenied: 'Allow access to your photos to pick one.',
+      permissionDenied: 'Allow Panorama to access your photos so you can pick one.',
       pickError: 'Could not pick the photo. Please try again.',
       sizeLabel: (megabytes: string) => `${megabytes} MB`,
     },
@@ -225,38 +223,37 @@ export const en: TranslationCatalog = {
       blocked: 'You cannot send messages in this group right now.',
       readOnly: 'You can only read messages right now.',
       loading: 'Loading the group permissions.',
-      undetermined: 'Your send permission for this group cannot be determined right now.',
+      undetermined: 'We could not work out whether you can send in this group right now.',
     },
 
     errors: {
       network: 'Could not load messages. Check your connection and try again.',
-      unauthorized: 'Your session has expired. Please sign in again.',
+      unauthorized: 'Your session has ended. Sign in again to continue.',
       permission: 'You cannot send messages in this group right now.',
       send: 'Could not send the message. Please try again.',
       generic: 'Could not load messages. Please try again.',
-      websocket: 'The chat connection dropped. Reconnecting.',
+      websocket: 'The chat connection dropped. Trying to reconnect.',
       emptyMessage: 'Write a message before sending.',
-      longMessage: 'A message must not exceed 4000 characters.',
+      longMessage: 'Your message is too long. The limit is 4000 characters.',
       rateLimited: 'You sent many messages quickly. Wait a moment and try again.',
       sendNetwork: 'The message was not sent because of a weak connection. Tap to try again.',
-      attachmentType: 'Only PNG, JPG or WEBP photos can be attached.',
+      attachmentType: 'Supported photo formats: PNG, JPG and WEBP.',
       attachmentSize: 'The photo is too large. The maximum is 25 MB.',
       attachmentEmpty: 'The selected photo is empty. Pick another one.',
-      attachmentRejected: 'The attachment was not accepted. Try another photo.',
+      attachmentRejected: 'The attachment could not be accepted. Try another photo.',
     },
   },
 
   notifications: {
     title: 'Notifications',
-    subtitle: 'In-app notification centre',
+    subtitle: 'All your alerts in one place',
     loading: 'Loading notifications...',
     emptyTitle: 'No notifications',
-    emptyMessage:
-      'Updates about verification, groups, files and print orders will appear here when there are any.',
+    emptyMessage: 'Alerts about verification, groups, files and print orders will appear here.',
     emptyIllustrationAlt: 'Illustration showing no notifications',
     centerTitle: 'Notification centre',
-    hasUnread: 'You have unread notifications to follow up.',
-    allRead: 'All current notifications have been read.',
+    hasUnread: 'You have notifications you have not read yet.',
+    allRead: 'You have read all your notifications.',
     unreadBadge: (count: number) => `${count} unread`,
     noNew: 'Nothing new',
     markAllRead: 'Mark all as read',
@@ -271,13 +268,13 @@ export const en: TranslationCatalog = {
     filterAll: 'All',
     filterUnread: 'Unread',
     unreadEmptyTitle: 'No unread notifications',
-    unreadEmptyMessage: 'All your notifications are read.',
+    unreadEmptyMessage: 'You have read all your notifications.',
     dayToday: 'Today',
     dayYesterday: 'Yesterday',
     dayUnknown: 'Unknown date',
     expired: 'Expired',
-    expiredNotice: 'This notification has expired, so it no longer has a destination.',
-    expiredHidden: (count: number) => `${count} expired notifications are hidden.`,
+    expiredNotice: 'This notification has expired, so what it links to can no longer be opened.',
+    expiredHidden: (count: number) => `Hidden expired notifications: ${count}`,
     showExpired: 'Show expired',
     hideExpired: 'Hide expired',
     loadMore: 'Load more',
@@ -291,14 +288,13 @@ export const en: TranslationCatalog = {
       hide: 'Hide',
       inApp: 'In-app notifications',
       typesTitle: 'Types',
-      loadFailed: 'Could not load your preferences.',
+      loadFailed: 'Could not load your preferences. Please try again.',
       saveFailed: 'Could not save your preferences. Please try again.',
     },
 
     routeMessages: {
-      verification:
-        'The notification was opened. Verification routing is in place and completes as the access rules allow.',
-      none: 'The notification was opened; it has no linked target.',
+      verification: 'You can follow your verification status from the verification screen.',
+      none: 'This notification does not link to a page.',
     },
 
     types: {
@@ -328,7 +324,7 @@ export const en: TranslationCatalog = {
 
     errors: {
       network: 'Could not load notifications. Check your connection and try again.',
-      unauthorized: 'Your session has expired. Please sign in again.',
+      unauthorized: 'Your session has ended. Sign in again to continue.',
       permission: 'You do not have access to these notifications right now.',
       generic: 'Could not load notifications. Please try again.',
     },
@@ -336,14 +332,14 @@ export const en: TranslationCatalog = {
 
   subjects: {
     title: 'Subjects',
-    subtitle: 'Your subjects, based on your academic details',
+    subtitle: 'The subjects of your faculty',
     loading: 'Loading subjects...',
     listTitle: 'Subject list',
     listSubtitle:
-      'Academic filters come from your student profile: major, year and semester where available.',
+      'Subjects are shown for your year and semester by default. Use the filters to change that.',
     searchPlaceholder: 'Search by subject name or code',
     searchNote: (shown: number, total: number) =>
-      `Only loaded subjects are searched. Results: ${shown} of ${total}.`,
+      `Search covers the subjects shown. Results: ${shown} of ${total}.`,
     emptyTitle: 'No subjects',
     emptyMessage: 'No subjects are available right now.',
     emptyIllustrationAlt: 'Illustration showing no subjects',
@@ -358,7 +354,7 @@ export const en: TranslationCatalog = {
     general: 'General subject',
     resultsCount: (count: number) => `${count} subjects`,
     levelHint:
-      'Subjects are filtered to your year and semester by default. Choose “All” to browse any year or semester, for example retakes.',
+      'Subjects are shown for your year and semester by default. Choose “All” to browse any year or semester, for example retakes.',
     codeBadge: (code: string) => `Code ${code}`,
     filesCount: (count: number) => `${count} files`,
     groupsCount: (count: number) => `${count} groups`,
@@ -368,43 +364,41 @@ export const en: TranslationCatalog = {
 
     details: {
       subtitle: 'Subject details',
-      listSubtitle: 'Subject details from the list data',
+      listSubtitle: 'Subject details',
       loading: 'Loading subject details...',
       unavailableTitle: 'Subject unavailable',
       unavailableMessage: 'This subject could not be found.',
       academicYearLabel: 'Academic year',
       semesterLabel: 'Semester',
-      majorLabel: 'Major',
-      orderLabel: 'Display order',
-      linkedTitle: 'Related content',
+      majorLabel: 'Specialization',
+      orderLabel: 'Order',
+      linkedTitle: 'Subject content',
       filesTitle: 'Files',
-      filesDescription:
-        'Open the files available in the app. There is no documented per-subject filter at this stage.',
+      filesDescription: 'Browse the files and summaries available for this subject.',
       groupsTitle: 'Groups',
       groupsDescription:
-        'Open the available public groups. There is no documented per-subject link at this stage.',
+        'Join this subject’s groups and follow the discussion with your classmates.',
       announcementsTitle: 'Announcements',
-      announcementsDescription:
-        'There is no documented endpoint for subject announcements at this stage.',
+      announcementsDescription: 'There are no announcements for this subject right now.',
     },
 
     errors: {
       network: 'Could not load subjects. Check your connection and try again.',
-      unauthorized: 'Your session has expired. Please sign in again.',
+      unauthorized: 'Your session has ended. Sign in again to continue.',
       generic: 'Could not load subjects. Please try again.',
-      missingFaculty: 'Subjects cannot be loaded until your academic details are complete.',
+      missingFaculty: 'Complete your academic details first to see your subjects.',
     },
   },
 
   lectures: {
     title: 'Lectures',
-    subtitle: "Read your subjects' lectures inside the app, with your own private notes.",
+    subtitle: 'Read your subjects’ lectures inside the app, and add your own private notes.',
     listTitle: 'Lecture list',
     searchPlaceholder: 'Search by lecture or subject name',
     subjectFilterLabel: 'Filter by subject',
     allSubjects: 'All subjects',
     emptyTitle: 'No lectures yet',
-    emptyMessage: 'Published lectures for your major, year and semester will appear here.',
+    emptyMessage: 'Published lectures for your faculty’s subjects will appear here.',
     loading: 'Loading lectures...',
     totalCount: (count: number) => `Lectures: ${count}`,
     pagesCount: (count: number) => (count === 1 ? '1 page' : `${count} pages`),
@@ -419,9 +413,9 @@ export const en: TranslationCatalog = {
     },
     status: {
       uploaded: 'Uploaded',
-      queued: 'Queued',
-      scanning: 'Security scan',
-      converting: 'Converting',
+      queued: 'Waiting',
+      scanning: 'Scanning',
+      converting: 'Converting the file',
       extracting: 'Extracting text',
       rendering: 'Preparing pages',
       ready: 'Ready',
@@ -432,7 +426,7 @@ export const en: TranslationCatalog = {
     processing: {
       title: 'This lecture is being prepared',
       message:
-        'We are preparing the pages of this lecture for secure viewing. It will open automatically when it is ready.',
+        'We are preparing this lecture’s pages so you can read them safely. It opens automatically when it is ready.',
       step: (label: string) => `Current step: ${label}`,
       checkNow: 'Check now',
       autoCheck: 'We check automatically from time to time while this screen is open.',
@@ -440,10 +434,10 @@ export const en: TranslationCatalog = {
       failedMessage:
         'Something went wrong while preparing this lecture. Please try again later or contact support.',
       quarantinedTitle: 'This lecture is unavailable',
-      quarantinedMessage: 'This lecture has been stopped and cannot be viewed right now.',
+      quarantinedMessage: 'This lecture is unavailable right now.',
       unpublishedTitle: 'This lecture cannot be viewed',
       unpublishedMessage:
-        'This lecture is not published at the moment or is not linked to your subjects.',
+        'This lecture is not published right now, or is not linked to your subjects.',
     },
     detail: {
       unavailableTitle: 'Could not open the lecture',
@@ -463,12 +457,12 @@ export const en: TranslationCatalog = {
       zoomHint: 'Double-tap the page to zoom in or out.',
       showText: 'Show text',
       hideText: 'Show page',
-      textTitle: 'Text extracted from the page',
-      textEmpty: 'There is no extracted text for this page.',
+      textTitle: 'Page text',
+      textEmpty: 'There is no text for this page.',
       textLoading: 'Loading text...',
       textError: 'Could not load the page text.',
       loadingPage: 'Loading page...',
-      sessionStarting: 'Starting a secure viewing session...',
+      sessionStarting: 'Getting the page ready...',
       pageAlt: (title: string, page: number) => `${title} - page ${page}`,
       pageErrorTitle: 'Could not load the page',
       pageErrorMessage: 'Check your internet connection and try again.',
@@ -496,7 +490,7 @@ export const en: TranslationCatalog = {
       edit: 'Edit',
       delete: 'Delete',
       deleteTitle: 'Delete this note?',
-      deleteMessage: 'This note will be deleted and this cannot be undone.',
+      deleteMessage: 'This note will be permanently deleted.',
       deleteConfirm: 'Delete note',
       favorite: 'Add to favourites',
       unfavorite: 'Remove from favourites',
@@ -515,29 +509,31 @@ export const en: TranslationCatalog = {
       errorEmpty: 'Write the note text first.',
       errorTooLong: (max: number) => `A note can have at most ${max} characters.`,
       errorConflict:
-        'This note was changed somewhere else. We loaded the latest version; review it and try again.',
-      errorSave: 'Could not save the note. The list was restored.',
-      errorDelete: 'Could not delete the note. The list was restored.',
+        'This note was changed on another device. We loaded the latest version; review it and try again.',
+      errorSave: 'Could not save the note. Please try again.',
+      errorDelete: 'Could not delete the note. Please try again.',
     },
     errors: {
-      network: 'Could not reach the network. Check your internet connection and try again.',
-      timeout: 'The request took too long. Please try again.',
+      network: 'Could not connect. Check your internet and try again.',
+      timeout: 'That took too long. Please try again.',
       rateLimited: 'Too many requests right now. Wait a moment and try again.',
       featureDisabled: 'This service is temporarily unavailable.',
       unavailable: 'The service is temporarily unavailable. Please try again shortly.',
-      notFound: 'This content is unavailable or the viewing session has expired.',
+      notFound:
+        'This content is unavailable, or its viewing time has ended. Reopen it and try again.',
       forbidden: 'You do not have permission to view this content.',
-      unknown: 'Something unexpected happened. Please try again.',
+      unknown: 'Something went wrong. Please try again.',
     },
   },
 
   search: {
     title: 'Search',
-    subtitle: 'Search the content your account can reach',
+    subtitle: 'Search your subjects, groups and files',
     label: 'Search term',
     placeholder: 'A subject, group or file name',
     loading: 'Searching...',
-    partialResults: 'Results are partial because one search source did not respond. Try again.',
+    partialResults:
+      'Some results are missing because one section could not be searched. Try again.',
     filterLabel: 'Result type',
     filterAll: 'All',
     showMore: 'Show more',
@@ -549,8 +545,7 @@ export const en: TranslationCatalog = {
     announcementSubtitle: 'Announcement',
     fileInGroup: 'File in a group',
     startTitle: 'Start searching',
-    startMessage:
-      'Type at least two characters. Only results the backend allows for your account are shown.',
+    startMessage: 'Type at least two characters to start searching.',
     noResultsMessage: 'Try fewer words, or a different name.',
     resultsCount: (count: number) => (count === 1 ? '1 result' : `${count} results`),
     subjectsSection: 'Subjects',
@@ -562,14 +557,14 @@ export const en: TranslationCatalog = {
     untitledSubject: 'Unnamed subject',
     subjectSubtitle: 'Academic subject',
     untitledGroup: 'Unnamed group',
-    groupSubtitle: 'Academic group',
+    groupSubtitle: 'Study group',
     untitledFile: 'Untitled file',
     fileSubtitle: 'File available in the app',
 
     errors: {
-      network: 'Search failed because of the connection. Please try again.',
-      unauthorized: 'Your session has expired. Please sign in again.',
-      generic: 'The search could not be completed right now.',
+      network: 'Search failed. Check your internet and try again.',
+      unauthorized: 'Your session has ended. Sign in again to continue.',
+      generic: 'Could not complete the search. Please try again.',
     },
   },
 
@@ -578,29 +573,29 @@ export const en: TranslationCatalog = {
     setupSubtitle: 'Student setup',
     loading: 'Loading your academic profile...',
     cardSubtitle:
-      'Choose your academic details and link them to your student number before sending your card.',
+      'Choose your academic details and enter your student number before sending your card.',
     noAcademicDataTitle: 'No academic data',
     noAcademicDataMessage:
-      'Universities could not be loaded right now. Try again, or contact the university administration.',
+      'Could not load the list of universities. Try again, and contact support if it keeps happening.',
     studentNumberTitle: 'Student number',
     studentNumberHelper: 'Enter your student number exactly as it appears on your card.',
-    parseNumber: 'Parse number',
+    parseNumber: 'Read number',
     universityLabel: 'University',
     universityEmpty: 'No universities are available right now.',
     facultyLabel: 'Faculty',
     facultyEmpty: 'Choose a university first to see its faculties.',
-    majorLabel: 'Major (optional)',
+    majorLabel: 'Specialization (optional)',
     majorOptionalHint:
-      'Specialization starts in year 3. Leave it empty, or tap the selected option again to clear it.',
-    majorEmpty: 'Choose a faculty first to see its majors.',
+      'Specialization is optional and starts in year 3. Leave it empty, or tap the selected option again to clear it.',
+    majorEmpty: 'Choose a faculty first to see its specializations.',
     academicYearLabel: 'Academic year',
     academicYearEmpty: 'No academic years are available right now.',
     semesterLabel: 'Semester',
     semesterEmpty: 'No semesters are available right now.',
-    majorSubjectsTitle: 'Faculty subjects',
-    majorSubjectsLoading: 'Loading the faculty subjects...',
+    majorSubjectsTitle: 'Your faculty’s subjects',
+    majorSubjectsLoading: 'Loading your faculty’s subjects...',
     majorSubjectsLoaded: (count: number) =>
-      `${count} subjects are available in your faculty; you can browse any year or semester.`,
+      `Subjects in your faculty: ${count}. You can open subjects from any year or semester.`,
     majorSubjectsEmpty: 'No subjects are available for this faculty right now.',
     saveAndContinue: 'Save and continue to verification',
 
@@ -613,7 +608,7 @@ export const en: TranslationCatalog = {
     intro: {
       title: 'Complete your student profile',
       description:
-        'Your academic profile and student card verification must be complete before you can use the student services.',
+        'Complete your academic details and verify your university card to use Panorama’s services.',
     },
 
     stepper: {
@@ -624,8 +619,8 @@ export const en: TranslationCatalog = {
 
     numberPreview: {
       title: 'Student number preview',
-      hint: 'Enter your student number then press Parse number to see how it reads before saving.',
-      noDetails: 'The number was parsed, but the server returned no further details.',
+      hint: 'Enter your student number then tap “Read number” to see the details linked to it before saving.',
+      noDetails: 'We read the number, but there are no more details to show.',
       studentNumber: 'Student number',
       universityCode: 'University code',
       facultyCode: 'Faculty code',
@@ -635,15 +630,15 @@ export const en: TranslationCatalog = {
       faculty: 'Faculty',
       academicYear: 'Academic year',
       semester: 'Semester',
-      major: 'Major',
+      major: 'Specialization',
     },
 
     errors: {
-      network: 'Could not reach the server. Check your connection and try again.',
-      validation: 'Please check the academic details you entered.',
-      unauthorized: 'Your session has expired. Please sign in again.',
+      network: 'Could not connect. Check your internet and try again.',
+      validation: 'Check your academic details and try again.',
+      unauthorized: 'Your session has ended. Sign in again to continue.',
       generic: 'Could not complete the action. Please try again.',
-      missingFields: 'Complete every field in your academic profile before continuing.',
+      missingFields: 'Complete the required fields before continuing.',
       missingStudentNumber: 'Enter your student number first.',
     },
   },
@@ -651,42 +646,40 @@ export const en: TranslationCatalog = {
   verificationFlow: {
     submitTitle: 'Send your student card',
     resubmitTitle: 'Resend verification',
-    subtitle: 'Student setup',
+    subtitle: 'Student account setup',
     loading: 'Loading your verification status...',
     cardSubtitle:
-      'Upload a clear photo of your student card from your gallery. Verification is required to use the Panorama services.',
+      'Upload a clear photo of your university card from your gallery. Verification is required to use Panorama’s services.',
     whyTitle: 'Why verify?',
     whyDescription:
-      'Verification confirms you are a university student and opens access to groups, files, printing and support. After you send it, the administration reviews your request and the status appears on this screen.',
-    lockedNote:
-      'A new request cannot be sent while in this state. Follow the status page for updates.',
+      'Verification confirms you are a university student and unlocks groups, files, printing and support. After you send it, the administration reviews your request and you will find the result on the status screen.',
+    lockedNote: 'A new request cannot be sent right now. Check the status screen for updates.',
     trackStatus: 'Track verification status',
     submitRequest: 'Send verification request',
     resubmitRequest: 'Resend request',
     sentTitle: 'Request sent',
     sentHeading: 'Your verification request was sent',
-    sentMessage: 'Your verification request has been received and will be reviewed.',
+    sentMessage: 'We received your request. The administration will review it soon.',
     sentIllustrationAlt: 'Illustration showing the verification request was sent',
 
     status: {
       title: 'Verification status',
-      cardSubtitle: 'Follow the review of your student card, and only resend when asked.',
+      cardSubtitle: 'Follow the review of your card, and only resend when needed.',
       sendCard: 'Send your student card',
       resendUpdated: 'Send an updated photo',
       pendingNote:
-        'You will be notified when the review finishes. You can refresh the status later without resending.',
+        'We will let you know when the review is done. You can refresh the status later without resending.',
       refreshStatus: 'Refresh status',
-      approvedTitle: 'Verification approved',
-      approvedDescription: 'You can now enter the app and use all the student services.',
+      approvedTitle: 'Your account is verified',
+      approvedDescription: 'You can now enter the app and use all student services.',
       enterApp: 'Enter the app',
     },
 
     errors: {
-      network:
-        'Could not reach the server while checking your verification status. Please try again.',
-      unauthorized: 'Your session has expired. Please sign in again.',
+      network: 'Could not check your verification status. Check your internet and try again.',
+      unauthorized: 'Your session has ended. Sign in again to continue.',
       validation: 'Choose a clear photo of your student card.',
-      generic: 'Could not complete the verification request. Please try again.',
+      generic: 'Could not send your verification request. Please try again.',
       missingImage: 'Choose a clear photo of your student card before sending.',
     },
 
@@ -695,34 +688,33 @@ export const en: TranslationCatalog = {
       illustrationAlt: 'Illustration of the verification status',
       rejectionTitle: 'Reason or note',
       approvedLabel: 'Verified',
-      approvedDescription:
-        'Your verification request was accepted. You can now use the student services.',
+      approvedDescription: 'Your account is verified. You can now use student services.',
       pendingLabel: 'Under review',
       pendingDescription:
-        'Your request is being reviewed. There is no need to resend it unless you are explicitly asked to.',
+        'Your request is under review. There is no need to resend it unless we ask you to.',
       rejectedLabel: 'Rejected',
       rejectedDescription:
-        'Your verification request was rejected. Check the reason below, then send an updated, clear photo.',
+        'Your verification request was not accepted. Check the reason below, then send a clearer photo.',
       needsUpdateLabel: 'Needs an update',
       needsUpdateDescription:
-        'Your request needs a clearer photo or clearer details. Send an updated student card.',
+        'Your request needs a clearer photo or clearer details. Send an updated photo of your card.',
       notSubmittedLabel: 'Not sent',
       notSubmittedDescription:
-        'No verification request has been sent yet. Verification is required to reach groups, files and the student services.',
+        'You have not sent a verification request yet. Verification is required to reach groups, files and student services.',
     },
 
     imagePicker: {
       title: 'Student card photo',
       description:
-        'Choose a clear photo from your gallery showing the whole student card, with no glare or cropping. Make sure the name and student number are legible.',
+        'Choose a clear photo from your gallery showing your whole card, with no glare or cropping. Make sure the name and student number are easy to read.',
       guideAlt: 'Guide for photographing a student card',
       exampleAlt: (label: string) => `Example of a ${label} card`,
-      noImage: 'No photo chosen yet.',
+      noImage: 'You have not chosen a photo yet.',
       pick: 'Choose a photo',
       replace: 'Replace photo',
       remove: 'Remove photo',
-      permissionDenied: 'Allow the app to access your photos so you can choose your student card.',
-      invalidImage: 'No valid photo was chosen. Please try again.',
+      permissionDenied: 'Allow Panorama to access your photos so you can choose your card photo.',
+      invalidImage: 'This photo cannot be used. Choose another one.',
       exampleClear: 'clear',
       exampleBlurry: 'blurry',
       exampleCropped: 'cropped',
@@ -734,14 +726,14 @@ export const en: TranslationCatalog = {
     centerTitle: 'Your feedback shapes the next release',
     centerSubtitle: 'Ratings and suggestions',
     thanksTitle: 'Thank you for contributing',
-    thanksMessage: "Your feedback was recorded safely and will reach the Panorama team's board.",
+    thanksMessage: 'Your feedback reached the Panorama team. We appreciate your time.',
     thanksHeaderTitle: 'Help us improve',
     thanksHeaderSubtitle: 'Share your feedback',
     trackMine: 'Track my feedback',
     sendAnother: 'Send another',
-    privacyTitle: 'Structured, trackable feedback',
+    privacyTitle: 'Before you send',
     privacyNote:
-      'Never send passwords, verification codes or sensitive data. We use these notes to improve performance, interfaces and features.',
+      'Do not include passwords, verification codes or sensitive personal details. We use your feedback to improve the app.',
     kindLabel: 'Type of feedback',
     ratingLabel: 'Rating',
     ratingOf: (value: number) => `${value} out of 5`,
@@ -753,18 +745,18 @@ export const en: TranslationCatalog = {
     myFeedback: 'My feedback',
     publicSuggestions: 'Community suggestions',
     missingSuggestion: 'Enter a clear title and the details of your suggestion.',
-    missingDetails: 'Write details that help the Panorama team review this.',
+    missingDetails: 'Write details that help the Panorama team understand your feedback.',
     promptSuccess: 'Thank you for helping us improve Panorama.',
 
     kinds: {
       rating: 'General rating',
       ratingHint: 'Rate your experience with Panorama',
       suggestion: 'Suggestion',
-      suggestionHint: 'Share a practical improvement idea',
+      suggestionHint: 'Share an idea to improve the app',
       issue: 'Problem',
-      issueHint: 'Report a functional or visual defect',
+      issueHint: 'Tell us about something that is not working or looks wrong',
       complaint: 'Complaint',
-      complaintHint: 'Describe an experience that fell short',
+      complaintHint: 'Tell us about an experience that did not meet your expectations',
       praise: 'Praise',
       praiseHint: 'Tell us what you liked',
     },
@@ -802,10 +794,10 @@ export const en: TranslationCatalog = {
         requestDelete: 'Request deletion',
         deleteTitle: 'Request deletion of this feedback?',
         deleteMessage:
-          'We hide it now and record a deletion request for the team to review. This cannot be undone from the app.',
+          'We will hide it now and send a deletion request to the team to review. This cannot be undone from the app.',
         deleteConfirm: 'Yes, request deletion',
         deleteDone: 'Your deletion request was recorded.',
-        failed: 'Could not complete the privacy request. Please try again.',
+        failed: 'Could not complete your request. Please try again.',
         cancel: 'Cancel',
       },
       statusNew: 'New',
@@ -832,8 +824,8 @@ export const en: TranslationCatalog = {
 
     errors: {
       network: 'Could not send your feedback. Check your connection and try again.',
-      rateLimited: 'Several ratings were sent recently. Please try again later.',
-      generic: 'Could not send your feedback right now.',
+      rateLimited: 'You sent several submissions recently. Please try again later.',
+      generic: 'Could not send your feedback right now. Please try again.',
     },
   },
 
@@ -846,9 +838,9 @@ export const en: TranslationCatalog = {
   },
 
   environment: {
-    production: 'Production',
-    preview: 'Preview',
-    development: 'Development',
+    production: 'Official version',
+    preview: 'Test version',
+    development: 'Development version',
   },
 
   auth: {
@@ -862,7 +854,7 @@ export const en: TranslationCatalog = {
       email: 'Email',
       fullName: 'Full name',
       phone: 'Phone number',
-      phonePlaceholder: 'Enter your number without the country code',
+      phonePlaceholder: 'Phone number without the country code',
       studentNumber: 'Student number',
       password: 'Password',
       passwordPlaceholder: 'Enter your password',
@@ -877,7 +869,7 @@ export const en: TranslationCatalog = {
     login: {
       title: 'Sign in',
       tagline: 'Your subjects, groups, files and campus services in one place.',
-      cardSubtitle: 'You can use either your email or your phone number.',
+      cardSubtitle: 'Use your email or phone number.',
       submit: 'Sign in',
       createAccount: 'Create an account',
       forgotPassword: 'Forgot your password?',
@@ -887,32 +879,32 @@ export const en: TranslationCatalog = {
     accountType: {
       illustrationAlt: 'Create an account',
       title: 'Choose an account type',
-      description: 'A student account can be upgraded once the academic profile is verified.',
+      description: 'Choose the account type that suits you.',
       studentAlt: 'Student',
       studentTitle: 'Student account',
-      studentDescription: 'Access subjects, groups and academic files once verified.',
+      studentDescription: 'Access subjects, groups and study files once verified.',
       studentAction: 'Continue as a student',
       normalAlt: 'General user',
       normalTitle: 'General account',
-      normalDescription: 'For public services, printing and support, subject to permissions.',
+      normalDescription: 'For general services, printing and support.',
       normalAction: 'Continue as a general user',
     },
 
     registerStudent: {
       title: 'Create a student account',
-      subtitle: 'The verification code will be sent to your email.',
+      subtitle: 'We will send the verification code to your email.',
       cardTitle: 'Account details',
       cardSubtitle:
-        'After verification you will complete your academic profile and upload your university card.',
+        'After verification you will complete your academic details and upload a photo of your university card.',
       submit: 'Create account',
       haveAccount: 'Already have an account? Sign in',
     },
 
     registerNormal: {
       title: 'Create a general account',
-      subtitle: 'Verification is done by email.',
+      subtitle: 'We will send the verification code to your email.',
       cardTitle: 'Account details',
-      cardSubtitle: 'Public services are available according to system permissions.',
+      cardSubtitle: 'You can use the general services once your account is created.',
       submit: 'Create account',
     },
 
@@ -923,7 +915,7 @@ export const en: TranslationCatalog = {
       destinationEmail: 'email',
       destinationPhone: 'phone number',
       cardTitle: 'Verification code',
-      cardSubtitle: 'The code expires shortly and must not be shared with anyone.',
+      cardSubtitle: 'The code expires shortly. Do not share it with anyone.',
       submit: 'Confirm code',
       resend: 'Resend code',
       resendIn: (seconds: number) => `Resend in ${seconds}s`,
@@ -934,8 +926,7 @@ export const en: TranslationCatalog = {
 
     forgotPassword: {
       title: 'Reset your password',
-      subtitle:
-        'We will send a code to the email linked to the account, without revealing whether it exists.',
+      subtitle: 'If the email is registered with us, we will send it a reset code.',
       cardTitle: 'Email',
       cardSubtitle: 'Enter the email you use with Panorama.',
       submit: 'Send reset code',
@@ -943,8 +934,8 @@ export const en: TranslationCatalog = {
 
     resetPassword: {
       title: 'New password',
-      subtitle: 'Choose a strong password and do not reuse it on other services.',
-      cardTitle: 'Reset',
+      subtitle: 'Choose a strong password and do not use it for any other service.',
+      cardTitle: 'Reset your password',
       cardSubtitle: (identifier: string) => `Enter the code sent to ${identifier}.`,
       submit: 'Save password',
     },
@@ -967,29 +958,29 @@ export const en: TranslationCatalog = {
       emailInvalid: 'Enter a valid email address.',
       studentNumberRequired: 'Enter your student number.',
       phoneRequired: 'Enter your phone number.',
-      phoneFormat: 'Invalid phone number. It must start with a country code.',
+      phoneFormat: 'This phone number is not valid. Check the country and the number.',
       phoneDigitsOnly: 'The phone number may contain digits only.',
       phoneTooShort:
-        'Phone number is too short. It needs at least 8 digits after the country code.',
-      phoneTooLong: 'Phone number is too long.',
+        'The phone number is too short. It needs at least 8 digits after the country code.',
+      phoneTooLong: 'The phone number is too long.',
       passwordTooShort: 'Password must be at least 8 characters.',
-      passwordMismatch: 'Password confirmation does not match.',
+      passwordMismatch: 'The two passwords do not match.',
       otpInvalid: 'Enter a valid verification code.',
     },
 
     errors: {
-      network: 'Could not reach the server. Check your internet connection.',
+      network: 'Could not connect. Check your internet and try again.',
       registrationGeneric: 'Could not complete registration. Please try again.',
       passwordResetGeneric: 'Could not reset your password. Please try again.',
       rateLimited: 'Too many attempts.',
       rateLimitedRetryAfter: (seconds: number) => `Wait ${seconds} seconds and try again.`,
       otpInvalid: 'The verification code is incorrect or has expired.',
-      otpLocked: 'Too many wrong attempts. Request a new code.',
+      otpLocked: 'Too many incorrect attempts. Request a new code.',
       otpUnavailable:
         'We could not send the verification code right now. Try again shortly, and contact support if it keeps failing.',
       passwordResetRateLimited: 'Too many attempts. Try again later.',
-      invalidCredentials: 'Incorrect sign-in details.',
-      sessionExpired: 'Your session has expired. Please sign in again.',
+      invalidCredentials: 'Incorrect sign-in details. Check them and try again.',
+      sessionExpired: 'Your session has ended. Sign in again to continue.',
       forbidden: 'You do not have permission to do this.',
       generic: 'Could not complete the action. Please try again.',
     },
@@ -1036,7 +1027,7 @@ export const en: TranslationCatalog = {
       university: 'University',
       faculty: 'Faculty',
       verification: 'Verification',
-      note: 'Open the academic information screen for full details.',
+      note: 'Open “Academic information” for full details.',
       emailVerified: 'Email confirmed',
       emailUnverified: 'Email not confirmed',
       phoneVerified: 'Phone confirmed',
@@ -1045,60 +1036,60 @@ export const en: TranslationCatalog = {
 
     accountSection: {
       title: 'Account',
-      subtitle: 'Manage your details and account services',
+      subtitle: 'Your details and account services',
       editProfile: 'Edit profile',
-      editProfileSubtitle: 'Name and username only',
+      editProfileSubtitle: 'Name and username',
       academicInfo: 'Academic information',
-      academicInfoSubtitle: 'View university and verification details',
+      academicInfoSubtitle: 'Your university and verification details',
       settings: 'Settings',
-      settingsSubtitle: 'Security and legal information',
+      settingsSubtitle: 'Password, language and legal information',
     },
 
     servicesSection: {
       title: 'Services',
-      subtitle: 'Services available to students',
+      subtitle: 'Student services',
       printOrders: 'Print orders',
       printOrdersSubtitle: 'Track your print orders',
       notifications: 'Notifications',
-      notificationsSubtitle: 'Read your account notifications',
+      notificationsSubtitle: 'Read your notifications',
       support: 'Support',
-      supportSubtitle: 'Create and follow support tickets',
+      supportSubtitle: 'Send a problem and follow the reply',
       feedback: 'Your feedback',
       feedbackSubtitle: 'Rate the app and share suggestions',
     },
 
     legalSection: {
-      title: 'Legal',
-      subtitle: 'App information',
+      title: 'Legal information',
+      subtitle: 'Privacy and terms',
     },
 
     logout: {
       action: 'Log out',
       confirmTitle: 'Log out of Panorama?',
       confirmDescription:
-        'Your session tokens will be cleared from secure storage and you will return to the sign-in screen.',
+        'You will return to the sign-in screen, and you can sign back in at any time.',
       confirm: 'Confirm log out',
     },
 
     security: {
       title: 'Account and security',
-      description: 'Your password is managed by the server and is never stored in the app.',
+      description: 'You can change your account password at any time.',
       changePassword: 'Change password',
     },
 
     edit: {
       title: 'Edit profile',
-      subtitle: 'Edit the fields the server allows',
+      subtitle: 'Update your personal details',
       notice:
-        'Only your full name and username can be edited. Email, phone and role are shown for reference and are not sent with the update.',
+        'You can edit your full name and username only. Email, phone and account type are for display and cannot be changed here.',
       fullName: 'Full name',
       fullNamePlaceholder: 'Enter your full name',
       username: 'Username',
       usernamePlaceholder: 'Enter your username',
-      readOnlyTitle: 'Read-only fields',
+      readOnlyTitle: 'Display-only details',
       email: (value: string) => `Email: ${value}`,
       phone: (value: string) => `Phone: ${value}`,
-      role: (value: string) => `Role: ${value}`,
+      role: (value: string) => `Account type: ${value}`,
       save: 'Save changes',
       fullNameRequired: 'Enter your full name.',
       updateSuccess: 'Your profile has been updated.',
@@ -1106,30 +1097,30 @@ export const en: TranslationCatalog = {
 
     academic: {
       title: 'Academic information',
-      subtitle: 'Student details returned by the server',
+      subtitle: 'Your academic details',
       loading: 'Loading academic information...',
       university: 'University',
       faculty: 'Faculty',
-      major: 'Major',
+      major: 'Specialization',
       year: 'Year',
       semester: 'Semester',
       studentNumber: 'Student number',
       verifiedNote:
-        'Your account is verified. Sensitive academic fields are locked and cannot be edited here.',
+        'Your account is verified, so your core academic details cannot be edited here.',
       readOnlyNote:
-        'This screen is read-only. Academic details are edited in the student setup flow, following the server rules.',
-      privacyNote: 'The verification card image and its links are not shown here, for privacy.',
+        'This screen is view-only. If you need to change your academic details, contact support.',
+      privacyNote: 'Your card photo is not shown here, to protect your privacy.',
       incompleteTitle: 'Academic information is incomplete',
       incompleteMessage:
-        'No complete academic profile was found. Sign in again, or contact the administration if this persists.',
+        'We could not find a complete academic profile. Sign in again, and contact support if the problem continues.',
       cardVerified: 'Your university card has been verified.',
-      cardStatusFromServer: 'University card verification status as returned by the server.',
+      cardStatusFromServer: 'Verification status of your university card.',
       contactConfirmed: 'Contact details confirmed',
-      contactConfirmedDescription: 'A confirmed email or phone number is on the account.',
+      contactConfirmedDescription: 'Your account has a confirmed email or phone number.',
       contactUnconfirmed: 'Contact details not confirmed',
-      contactUnconfirmedDescription: 'The app shows the account status as the server returns it.',
-      accountNotLoaded: 'Account details not loaded',
-      accountNotLoadedDescription: 'Reload your profile to see the account status.',
+      contactUnconfirmedDescription: 'Your account has no confirmed email or phone number.',
+      accountNotLoaded: 'Could not show account details',
+      accountNotLoadedDescription: 'Reload the screen to see your account status.',
       confirmed: 'Confirmed',
       unconfirmed: 'Not confirmed',
     },
@@ -1138,18 +1129,18 @@ export const en: TranslationCatalog = {
       title: 'About Panorama',
       subtitle: 'App information',
       version: (value: string) => `Version ${value}`,
-      purposeTitle: 'What this app is for',
+      purposeTitle: 'About the app',
       purpose: [
-        'Panorama brings subjects, groups, files, printing, notifications and support together in one organised student experience.',
-        'It focuses on day-to-day academic services, while permissions and operational data stay under the server’s control.',
+        'Panorama is an Arabic app for students that brings your subjects, groups, files, printing, notifications and support together in one place.',
+        'We focus on what you need for your studies every day, and we keep your data private.',
         'We keep improving the app and adding new services for students.',
       ],
     },
 
     errors: {
       network: 'Could not load your account. Check your connection and try again.',
-      unauthorized: 'Your session has expired. Please sign in again.',
-      validation: 'Please check the profile details you entered.',
+      unauthorized: 'Your session has ended. Sign in again to continue.',
+      validation: 'Check your details and try again.',
       update: 'Could not update your profile. Please try again.',
     },
   },
@@ -1164,21 +1155,21 @@ export const en: TranslationCatalog = {
           title: 'The data we use',
           paragraphs: [
             'Panorama uses account details such as your name, username and contact methods to provide a clear and secure account experience.',
-            'Academic details, verification status and the student card image are used to confirm eligibility for academic services.',
+            'We use your academic details, verification status and card photo to confirm you are eligible for academic services.',
           ],
         },
         {
-          title: 'Services that use your data',
+          title: 'How we use your data in services',
           paragraphs: [
-            'The app may use file access, print orders, support tickets and notifications to deliver Panorama services and track their status.',
-            'User data is never sold. It is used only to run and operate the services and to make the experience clearer.',
+            'We may use file, print order, support ticket and notification data to provide your services and track their status.',
+            'We never sell user data. We use it only to provide and run the services and to improve the experience.',
           ],
         },
         {
-          title: 'Privacy inside the app',
+          title: 'Your privacy in the app',
           paragraphs: [
-            'The academic information screen does not display verification image links or sensitive files that are not needed.',
-            'Permissions and available data are decided by the server; the app shows only what the current user is allowed to see.',
+            'We do not show your card photo or any sensitive files on the app screens.',
+            'Each user sees only what is available to their account.',
           ],
         },
       ],
@@ -1192,22 +1183,22 @@ export const en: TranslationCatalog = {
         {
           title: 'Acceptable use',
           paragraphs: [
-            'Panorama is for responsible access to academic services, files, groups, printing and support.',
-            'Misusing files, groups or support tickets, or attempting to reach data belonging to another account, is not allowed.',
+            'Panorama gives you access to academic services, files, groups, printing and support. Please use it responsibly.',
+            'Misusing files, groups or support tickets, or trying to reach another account’s data, is not allowed.',
           ],
         },
         {
-          title: 'Permissions and the server',
+          title: 'Permissions and available services',
           paragraphs: [
-            'The server is the source of truth for permissions, verification status and the availability of files and services.',
-            'Available services may differ depending on account status, verification and academic details.',
+            'The services and files available to you depend on your account type, verification status and academic details.',
+            'The services available to you may change when these details change.',
           ],
         },
         {
           title: 'Responsibility',
           paragraphs: [
-            'You are responsible for keeping your password confidential and for reviewing print orders before submitting them.',
-            'Please give support accurate information so the team can resolve the issue.',
+            'You are responsible for keeping your password secret and for reviewing print orders before you send them.',
+            'When you contact support, give accurate information so the team can solve your problem.',
           ],
         },
       ],
@@ -1216,7 +1207,7 @@ export const en: TranslationCatalog = {
 
   announcements: {
     title: 'Announcements',
-    subtitle: 'The latest announcements addressed to you.',
+    subtitle: 'The latest announcements for you.',
     detailTitle: 'Announcement details',
     loading: 'Loading announcements...',
     loadingMore: 'Loading more...',
@@ -1236,14 +1227,14 @@ export const en: TranslationCatalog = {
     audience: 'Audience',
     audienceAll: 'Everyone',
     audienceStudents: 'Students',
-    audienceNormal: 'Regular users',
+    audienceNormal: 'Users',
     audienceVerified: 'Verified students',
     audienceAdmins: 'Administrators',
     audienceCustom: 'A specific audience',
     targetsTitle: 'Addressed to',
     targetUniversity: 'A specific university',
     targetFaculty: 'A specific faculty',
-    targetMajor: 'A specific major',
+    targetMajor: 'A specific specialization',
     targetYear: 'A specific academic year',
     targetSemester: 'A specific semester',
     createdBy: 'Published by',
@@ -1252,14 +1243,14 @@ export const en: TranslationCatalog = {
     notFoundMessage: 'This announcement may have expired or is no longer addressed to you.',
     errors: {
       network: 'Could not load announcements. Check your connection and try again.',
-      unauthorized: 'Your session has expired. Please sign in again.',
+      unauthorized: 'Your session has ended. Sign in again to continue.',
       generic: 'Could not load announcements. Please try again.',
     },
   },
 
   attachments: {
     attach: 'Attach an image',
-    hint: 'Supported images: PNG, JPG and WEBP, up to 25 MB.',
+    hint: 'Supported formats: PNG, JPG and WEBP, up to 25 MB.',
     remove: 'Remove attachment',
     selected: 'Selected attachment',
     uploading: (percent: number) => `Uploading ${percent}%`,
@@ -1269,18 +1260,17 @@ export const en: TranslationCatalog = {
     pickerFailed: 'Could not open the photo library. Please try again.',
     viewAttachment: 'View attachment',
     viewerTitle: 'Attachment',
-    viewerSubtitle: 'Protected view inside the app',
+    viewerSubtitle: 'Shown inside the app only',
   },
 
   policies: {
     title: 'Terms and policies updated',
-    description:
-      'The terms or the privacy policy were updated. Please review and accept them to continue.',
+    description: 'We updated the terms or the privacy policy. Review and accept them to continue.',
     terms: 'Terms and conditions',
     privacy: 'Privacy policy',
     version: (version: string) => `Version ${version}`,
     read: 'Read',
-    checkbox: 'I have read the current versions and I agree to them.',
+    checkbox: 'I have read the terms and privacy policy and I agree to them.',
     needCheckbox: 'Please confirm your agreement to continue.',
     accept: 'Agree and continue',
     accepting: 'Recording your agreement...',
@@ -1306,7 +1296,8 @@ export const en: TranslationCatalog = {
     greeting: {
       withName: (name: string) => `Hello, ${name}`,
       generic: 'Welcome to Panorama',
-      tagline: 'Your student dashboard — your whole university in one place',
+      tagline: 'Your whole university in one place',
+      heroImageAlt: 'Illustration of a student’s journey in Panorama',
       unread: (count: number) => `${count} new`,
       accountType: (role: string) => `Account type: ${role}`,
     },
@@ -1315,7 +1306,7 @@ export const en: TranslationCatalog = {
       title: 'Your academic summary',
       university: (value: string) => `University: ${value}`,
       faculty: (value: string) => `Faculty: ${value}`,
-      major: (value: string) => `Major: ${value}`,
+      major: (value: string) => `Specialization: ${value}`,
     },
 
     studentStatus: {
@@ -1331,17 +1322,17 @@ export const en: TranslationCatalog = {
       pendingDescription: 'Your verification request is being reviewed by the administration.',
       rejectedLabel: 'Rejected',
       rejectedDescription:
-        'Your verification request was rejected. Check the reason on the verification screen.',
+        'Your verification request was not accepted. See the reason on the verification screen.',
       needsUpdateLabel: 'Needs an update',
       needsUpdateDescription: 'Your verification request needs a clearer image or clearer details.',
       unknownLabel: 'Complete your academic details',
-      unknownDescription: 'Your verification status has not been confirmed yet.',
+      unknownDescription: 'We could not work out your verification status yet.',
     },
 
     announcements: {
       seeAll: 'See all',
       title: 'Announcements',
-      subtitle: 'The latest announcements for your account.',
+      subtitle: 'The latest announcements for you.',
       emptyTitle: 'No announcements',
       emptyMessage: 'Important announcements will appear here when there are any.',
       emptyIllustrationAlt: 'Illustration showing no announcements',
@@ -1351,23 +1342,23 @@ export const en: TranslationCatalog = {
 
     services: {
       title: 'Services',
-      subtitle: 'Quick shortcuts to the main student services.',
-      subjects: 'My subjects',
-      subjectsDescription: 'Go to your list of subjects.',
+      subtitle: 'Quick shortcuts to your main services.',
+      subjects: 'Subjects',
+      subjectsDescription: 'Browse your faculty’s subjects.',
       groups: 'Groups',
-      groupsDescription: 'Browse the groups and spaces linked to your studies.',
+      groupsDescription: 'Join your subjects’ groups and follow the discussion.',
       lectures: 'Lectures',
       lecturesDescription: 'Read your subject lectures in the app.',
       files: 'Files',
-      filesDescription: 'Open the files available to you inside the app.',
+      filesDescription: 'Open your subject files inside the app.',
       search: 'Search',
-      searchDescription: 'Search the subjects, groups and files your account can reach.',
+      searchDescription: 'Search subjects, groups and files.',
       printing: 'Printing',
       printingDescription: 'Request file printing and track your orders.',
       support: 'Support',
-      supportDescription: 'Open and follow technical support tickets.',
+      supportDescription: 'Send a problem and follow the reply.',
       notifications: 'Notifications',
-      notificationsDescription: 'Keep up with the alerts on your account.',
+      notificationsDescription: 'Keep up with important alerts.',
       profile: 'My account',
       profileDescription: 'Review your account details and settings.',
     },
@@ -1385,17 +1376,17 @@ export const en: TranslationCatalog = {
 
     errors: {
       network: 'Could not load the home screen. Check your connection and try again.',
-      unauthorized: 'Your session has expired. Please sign in again.',
+      unauthorized: 'Your session has ended. Sign in again to continue.',
       generic: 'Could not load the home screen. Please try again.',
     },
   },
 
   support: {
     title: 'Support',
-    subtitle: 'Student support tickets',
+    subtitle: 'Contact the support team',
     loading: 'Loading support tickets...',
     intro:
-      'Create a support ticket, attach an image that shows the problem, and follow the replies here.',
+      'Send us your problem, with an image if you can, and follow the support team’s replies here.',
     filterLabel: 'Filter by status',
     filterAll: 'All',
     filteredEmptyTitle: 'No tickets with this status',
@@ -1413,13 +1404,13 @@ export const en: TranslationCatalog = {
 
     create: {
       title: 'New support ticket',
-      subtitle: 'Send a problem to the support team',
+      subtitle: 'Send your problem to the support team',
       notice:
-        'Choose a category and describe the problem. You can attach an image to help the support team.',
+        'Choose a category and describe the problem. You can attach an image to help us understand it.',
       subjectLabel: 'Problem title',
       subjectPlaceholder: 'For example: cannot open a file',
       messageLabel: 'Problem details',
-      messagePlaceholder: 'Describe what will help the support team understand the problem',
+      messagePlaceholder: 'Describe the problem in detail',
       submit: 'Send ticket',
       categoryTitle: 'Ticket category',
       categoryNote: 'Pick the category closest to your issue so it reaches the right team.',
@@ -1432,23 +1423,23 @@ export const en: TranslationCatalog = {
       messagesTitle: 'Message history',
       messagesSubtitle: 'Messages on this ticket',
       noMessagesTitle: 'No further messages',
-      noMessagesMessage: 'Replies from the support team will appear here when there are any.',
+      noMessagesMessage: 'Replies from the support team will appear here.',
       addMessageTitle: 'Add a message',
-      addMessageSubtitle: 'Send an update to the support team',
+      addMessageSubtitle: 'Send more information to the support team',
       reload: 'Reload',
       notFoundTitle: 'Ticket unavailable',
-      notFoundMessage: 'This ticket could not be found locally. Try reloading.',
+      notFoundMessage: 'We could not find this ticket. Try reloading.',
       primaryMessage: 'Original message',
       staffSender: 'Support team',
       selfSender: 'You',
       replyLabel: 'Add a message',
-      replyPlaceholder: 'Write extra details for the support team',
+      replyPlaceholder: 'Write what you want to add',
       sendReply: 'Send message',
     },
 
     status: {
       open: 'Open',
-      waiting: 'Waiting',
+      waiting: 'Awaiting reply',
       inProgress: 'In progress',
       answered: 'Answered',
       resolved: 'Resolved',
@@ -1464,8 +1455,8 @@ export const en: TranslationCatalog = {
       files: 'Files',
       groups: 'Groups',
       other: 'Other',
-      custom: 'Custom category',
-      none: 'Uncategorised',
+      custom: 'Other category',
+      none: 'No category',
     },
 
     priority: {
@@ -1473,7 +1464,7 @@ export const en: TranslationCatalog = {
       medium: 'Medium',
       high: 'High',
       urgent: 'Urgent',
-      custom: 'Custom priority',
+      custom: 'Other priority',
       none: 'Not set',
     },
 
@@ -1492,15 +1483,15 @@ export const en: TranslationCatalog = {
 
     errors: {
       network: 'Could not load support tickets. Check your connection and try again.',
-      unauthorized: 'Your session has expired. Please sign in again.',
+      unauthorized: 'Your session has ended. Sign in again to continue.',
       permission: 'You do not have access to this ticket right now.',
-      generic: 'Could not complete the support action. Please try again.',
+      generic: 'Could not complete the support request. Please try again.',
     },
   },
 
   files: {
     title: 'Files',
-    subtitle: 'Files available to your account',
+    subtitle: 'Files for your subjects and groups',
     loading: 'Loading files...',
     listTitle: 'File list',
     loadedCount: (count: number) => `Files loaded: ${count}`,
@@ -1527,10 +1518,10 @@ export const en: TranslationCatalog = {
       public: 'Public',
       students: 'Students',
       verifiedStudents: 'Verified students',
-      byMajor: 'By major',
+      byMajor: 'By specialization',
       group: 'Group only',
-      staff: 'Staff',
-      custom: 'Custom access',
+      staff: 'Administration',
+      custom: 'Custom',
     },
 
     card: {
@@ -1542,7 +1533,7 @@ export const en: TranslationCatalog = {
       subtitle: 'File details',
       loading: 'Loading file details...',
       unavailableTitle: 'File unavailable',
-      unavailableMessage: 'Could not load this file.',
+      unavailableMessage: 'Could not load this file. Please try again.',
       openInApp: 'Open in the app',
       requestPrint: 'Request a print',
       noTicket: 'This file cannot be viewed right now.',
@@ -1551,9 +1542,9 @@ export const en: TranslationCatalog = {
       infoTitle: 'File information',
       infoSubtitle: 'The file details available to you.',
       type: 'Type',
-      extension: 'Extension',
+      extension: 'Format',
       size: 'Size',
-      visibility: 'Access',
+      visibility: 'Available to',
       group: 'Group',
       subject: 'Subject',
       createdAt: 'Created',
@@ -1564,28 +1555,26 @@ export const en: TranslationCatalog = {
       no: 'No',
       notPrintable: 'This file is not available for printing.',
       protectionNote:
-        'There is no download or share button. Files are protected and open inside the app only.',
-      inAppOnlyNote:
-        'This file opens inside the app only. There is no direct download for students.',
+        'Files are protected: they open inside the app only and cannot be downloaded or shared.',
+      inAppOnlyNote: 'This file opens inside the app only.',
     },
 
     viewer: {
       fallbackTitle: 'File viewer',
-      subtitle: 'Protected in-app viewing',
-      issuingTicket: 'Preparing the secure view...',
+      subtitle: 'Shown inside the app only',
+      issuingTicket: 'Getting the file ready...',
       loadError: 'Could not display the file. Please try again.',
       securityNote:
-        'The file opens inside the app only, and the app blocks screenshots while it is open where it can. There are no download or share buttons.',
+        'The file opens inside the app only and cannot be downloaded or shared. Screenshots may be blocked while it is open.',
       unavailableTitle: 'This file cannot be displayed',
       unavailableAlt: 'Illustration showing the file cannot be previewed',
-      protectedReadyTitle: 'Protected viewing is ready',
-      protectedReadyMessage: (id: string) =>
-        `Use "Open in the app" to issue a secure viewing ticket for file ${id}.`,
+      protectedReadyTitle: 'The file is ready to view',
+      protectedReadyMessage: (id: string) => `Tap “Open in the app” to view file ${id}.`,
     },
 
     groupFiles: {
       title: 'Group files',
-      subtitle: 'Group files available to members',
+      subtitle: 'Group files for members',
       loading: 'Loading group files...',
       backToGroup: 'Back to the group',
       listTitle: 'List',
@@ -1596,7 +1585,7 @@ export const en: TranslationCatalog = {
 
     errors: {
       network: 'Could not load files. Check your connection and try again.',
-      unauthorized: 'Your session has expired. Please sign in again.',
+      unauthorized: 'Your session has ended. Sign in again to continue.',
       permission: 'You do not have access to these files right now.',
       generic: 'Could not load files. Please try again.',
     },
@@ -1609,7 +1598,7 @@ export const en: TranslationCatalog = {
       orderingLabel: 'Sort by',
       newest: 'Newest',
       oldest: 'Oldest',
-      titleAsc: 'Title',
+      titleAsc: 'By title',
       largest: 'Largest',
       printableOnly: 'Printable only',
       filtersLabel: 'Filter files',
@@ -1626,17 +1615,16 @@ export const en: TranslationCatalog = {
 
     overview: {
       subtitle: 'Academic groups',
-      intro: 'Join the academic groups that match your university details.',
-      destinationsTitle: 'Where to go',
-      destinationsSubtitle: 'Follow your own groups, or browse the groups of your faculty.',
-      myGroupsDescription: 'Groups you are a member of, or have a pending request for.',
-      availableDescription:
-        'Groups you can request to join, based on your details and verification status.',
+      intro: 'Join your subjects’ groups and follow discussions and files with your classmates.',
+      destinationsTitle: 'Start here',
+      destinationsSubtitle: 'Follow your groups, or browse the groups available in your faculty.',
+      myGroupsDescription: 'Your groups and the join requests you sent.',
+      availableDescription: 'Groups you can request to join.',
     },
 
     mine: {
       title: 'My groups',
-      subtitle: 'Groups linked to your account',
+      subtitle: 'Groups you belong to',
       loading: 'Loading your groups...',
       emptyMessage: 'You have not joined any group yet.',
     },
@@ -1661,24 +1649,23 @@ export const en: TranslationCatalog = {
       loading: 'Loading group details...',
       backToGroups: 'Back to groups',
       unavailableTitle: 'Group unavailable',
-      unavailableMessage: 'Could not load this group.',
+      unavailableMessage: 'Could not load this group. Please try again.',
       join: 'Request to join',
       leave: 'Leave group',
       contentTitle: 'Group content',
       contentSubtitle: 'Chat and files for the members of this group.',
       chatTitle: 'Chat',
       chatDescription:
-        'Open the text chat inside the app. Your permission to send is shown in the chat screen, based on your membership and the server rules.',
-      openChat: 'Open chat in the app',
+        'Chat with your classmates inside the app. Whether you can send appears on the chat screen, based on your membership.',
+      openChat: 'Open chat',
       filesTitle: 'Group files',
-      filesDescription: 'Open this group’s files inside the app, with no direct download.',
+      filesDescription: 'Open this group’s files inside the app.',
       openFiles: 'Open group files',
       descriptionTitle: 'About this group',
       noDescription: 'No description is available for this group.',
-      openWhatsApp: 'Open the approved WhatsApp channel',
-      whatsAppNote:
-        'The WhatsApp link is never part of the group data. The app asks the server for temporary permission when you open it.',
-      whatsAppError: 'Could not open the WhatsApp link.',
+      openWhatsApp: 'Open the WhatsApp group',
+      whatsAppNote: 'The button opens the WhatsApp app directly, with no link shown.',
+      whatsAppError: 'Could not open WhatsApp. Please try again.',
     },
 
     stats: {
@@ -1704,7 +1691,7 @@ export const en: TranslationCatalog = {
       title: 'Permissions',
       allMembersCanSend: 'All members can send',
       adminsOnly: 'Only moderators can send',
-      groupDecides: 'The group decides who can send',
+      groupDecides: 'Group moderators decide who can send',
       sendToAll: 'Anyone can send',
       sendToAdmins: 'Moderators send',
       sendPermission: 'Send permission',
@@ -1721,8 +1708,8 @@ export const en: TranslationCatalog = {
     messages: {
       joinSuccess: 'Your join request has been sent.',
       leaveSuccess: 'You have left the group.',
-      joinError: 'Could not send the join request.',
-      leaveError: 'Could not leave the group.',
+      joinError: 'Could not send the join request. Please try again.',
+      leaveError: 'Could not leave the group. Please try again.',
     },
 
     available2: {
@@ -1744,7 +1731,7 @@ export const en: TranslationCatalog = {
 
     notices: {
       pending: 'Your request is being reviewed. You will be notified once it is approved.',
-      rejected: 'Your previous request was declined. You can send a new one.',
+      rejected: 'Your previous request was not accepted. You can send a new one.',
       blocked: 'You cannot join this group right now.',
       membersOnly: 'Chat, files and WhatsApp are available to group members only.',
     },
@@ -1761,7 +1748,7 @@ export const en: TranslationCatalog = {
       subtitle: 'Talk to your classmates on WhatsApp directly.',
       open: 'Open WhatsApp',
       opening: 'Opening...',
-      note: 'The button opens the WhatsApp app directly. No link is ever shown.',
+      note: 'The button opens the WhatsApp app directly, with no link shown.',
       opened: 'WhatsApp opened.',
       notInstalled:
         'Could not open WhatsApp. Make sure the app is installed on your phone and try again.',
@@ -1775,7 +1762,7 @@ export const en: TranslationCatalog = {
 
     errors: {
       network: 'Could not load groups. Check your connection and try again.',
-      unauthorized: 'Your session has expired. Please sign in again.',
+      unauthorized: 'Your session has ended. Sign in again to continue.',
       permission: 'You do not have access to these groups right now.',
       generic: 'Could not load groups. Please try again.',
     },
@@ -1788,7 +1775,7 @@ export const en: TranslationCatalog = {
       illustrationAlt: 'Illustration of the printing service',
       heading: 'Print your files with ease',
       description:
-        'Pick a file from your library or upload a photo from your phone, see the price before you confirm, then follow your order.',
+        'Pick a file from the available files or upload a photo from your phone, see the price before you confirm, then follow your order.',
       newOrder: 'New order',
       myOrders: 'My orders',
       latestOrder: 'Latest print order',
@@ -1799,7 +1786,7 @@ export const en: TranslationCatalog = {
 
     myOrders: {
       title: 'My orders',
-      subtitle: 'Track statuses',
+      subtitle: 'Track your orders',
       createOrder: 'Create order',
       emptyTitle: 'No print orders',
       emptyMessage: 'Create your first print order and it will appear here with its status.',
@@ -1827,11 +1814,11 @@ export const en: TranslationCatalog = {
       limitReached: (max: number) => `You reached the limit (${max} files per order).`,
       itemsCount: (count: number, max: number) => `${count} of ${max} files`,
       changeFile: 'Change file',
-      itemMissingFile: 'Choose a file for this item.',
+      itemMissingFile: 'Choose a file to print.',
       pickFromLibrary: 'From available files',
       pickFromDevice: 'Photo from your phone',
-      uploadHint: 'Supported images: PNG, JPG and WEBP, up to 25 MB each.',
-      uploadNote: 'We check the file before pricing. Uploaded files cannot be downloaded later.',
+      uploadHint: 'Supported formats: PNG, JPG and WEBP, up to 25 MB each.',
+      uploadNote: 'We check the file before pricing, and it cannot be downloaded later.',
       uploadSelected: 'File from your phone',
       uploadInvalidType: 'Unsupported file type. Choose a PNG, JPG or WEBP image.',
       uploadTooLarge: 'The file is larger than 25 MB.',
@@ -1841,7 +1828,7 @@ export const en: TranslationCatalog = {
       pickupLoadFailed: 'Could not load pickup points.',
       pickupNone: 'No pickup points are available right now.',
       notesLabel: 'Order notes',
-      notesHelper: 'Notes shown to the print staff. Do not include sensitive information.',
+      notesHelper: 'Notes the print staff will see. Do not include sensitive personal details.',
       notesPlaceholder: 'Example: a specific page order',
       pricingNotice:
         'Panorama calculates the final price after checking your file, and shows it before you confirm.',
@@ -1861,7 +1848,7 @@ export const en: TranslationCatalog = {
       noFiles: 'No printable files are available right now.',
       loadFailed: 'Could not load files.',
       selected: 'Selected',
-      fileLabel: 'File from the library',
+      fileLabel: 'File from available files',
       unnamedFile: (id: string) => `File #${id}`,
     },
 
@@ -1870,10 +1857,10 @@ export const en: TranslationCatalog = {
       orderTitle: 'Sending your order',
       percent: (value: number) => `${value}%`,
       bytes: (loaded: string, total: string) => `${loaded} of ${total}`,
-      processing: 'Upload finished, preparing your order...',
+      processing: 'Upload finished. Preparing your order...',
       cancel: 'Cancel',
-      cancelLabel: 'Cancel the current upload',
-      keepOpen: 'Please keep the app open until the upload finishes.',
+      cancelLabel: 'Cancel upload',
+      keepOpen: 'Keep the app open until the upload finishes.',
     },
 
     priceSummary: {
@@ -1881,7 +1868,8 @@ export const en: TranslationCatalog = {
       subtitle: 'Review the price and details before confirming',
       recalculate: 'Recalculate price',
       editOptions: 'Edit options',
-      empty: 'No price has been calculated yet. Go back and calculate the price first.',
+      empty:
+        'The price has not been calculated yet. Go back to the options and calculate it first.',
       back: 'Back to options',
       totalFiles: 'Files',
       totalCopies: 'Total copies',
@@ -1929,7 +1917,7 @@ export const en: TranslationCatalog = {
       statusIconAlt: 'Print order status icon',
       progressTitle: 'Order progress',
       timelineTitle: 'Status history',
-      timelineEmpty: 'No status history yet.',
+      timelineEmpty: 'No status updates yet.',
       timelineFrom: (from: string) => `From ${from}`,
       timelineCreated: 'Order created',
       pickupTitle: 'Pickup point',
@@ -1938,12 +1926,12 @@ export const en: TranslationCatalog = {
       itemPrice: 'File price',
       viewFile: 'View file',
       viewFileLabel: (name: string) => `View file: ${name}`,
-      autoRefresh: 'The status refreshes automatically.',
+      autoRefresh: 'The status updates automatically.',
     },
 
     itemViewer: {
       title: 'Order file',
-      subtitle: 'Protected view inside the app',
+      subtitle: 'Shown inside the app only',
     },
 
     copies: {
@@ -2009,15 +1997,14 @@ export const en: TranslationCatalog = {
       invalidCopies: 'Copies must be between 1 and 99.',
       noItems: 'Add at least one file.',
       uploadsTooLarge:
-        'The uploaded files are too large for one order (48 MB in total). Use library files or upload fewer files.',
+        'The files you uploaded are too large for one order (48 MB in total). Upload fewer files, or choose files from the available files.',
       quoteStale: 'The options changed after the price was calculated. Recalculate first.',
-      quoteMismatch:
-        'The number of price lines does not match the number of files. Recalculate the price.',
+      quoteMismatch: 'The files changed after the price was calculated. Recalculate the price.',
       network: 'Could not connect. Check your internet and try again.',
       tooLarge: 'The files are too large. Use fewer or smaller files and try again.',
-      unauthorized: 'Your session has expired. Please sign in.',
+      unauthorized: 'Your session has ended. Sign in again to continue.',
       forbidden: 'You do not have permission to use this service.',
-      generic: 'Could not complete the print operation.',
+      generic: 'Could not complete the print order. Please try again.',
       retry: 'Try again',
     },
   },
@@ -2028,37 +2015,37 @@ export const en: TranslationCatalog = {
 
     account: {
       title: 'Account and security',
-      subtitle: 'Security actions for the current account',
+      subtitle: 'Your account security',
       changePassword: 'Change password',
       deleteAccount: 'Delete account',
       deleteAccountDescription: 'Request permanent deletion of your account and data',
-      changePasswordDescription: 'Update your password through the server',
+      changePasswordDescription: 'Choose a new password for your account',
     },
 
     app: {
       title: 'App',
-      subtitle: 'App settings available in this release',
+      subtitle: 'App settings',
       notifications: 'Notifications',
-      notificationsDescription: 'Open the in-app notification centre',
+      notificationsDescription: 'Open the notification centre',
       darkMode: 'Dark mode',
-      darkModeDescription: 'Dark mode will be supported once its scope is confirmed',
+      darkModeDescription: 'Dark mode will arrive in a future update',
       version: 'App version',
       versionDescription: 'Current app version number',
-      environment: 'Environment',
-      environmentDescription: 'The environment this build points at',
+      environment: 'Version type',
+      environmentDescription: 'The version you are using',
     },
 
     language: {
       title: 'Language',
-      description: 'Choose the language of the app interface',
+      description: 'Choose the app language',
       arabic: 'العربية',
       english: 'English',
-      restartRequired: 'Language saved. Restart the app to finish switching the layout direction.',
+      restartRequired: 'Language saved. Restart the app to finish switching the screen direction.',
     },
 
     legal: {
-      title: 'Legal',
-      subtitle: 'Fixed legal information for this release',
+      title: 'Legal information',
+      subtitle: 'Privacy and terms',
       privacy: 'Privacy policy',
       terms: 'Terms and conditions',
       about: 'About Panorama',
@@ -2068,27 +2055,27 @@ export const en: TranslationCatalog = {
       title: 'Delete account',
       subtitle: 'Request deletion of your Panorama account and data',
       warning:
-        'Your account and data will be deleted after a grace period during which you can cancel the request. After that the account cannot be recovered.',
+        'Your account and data will be deleted after a grace period during which you can cancel the request. After it ends, the account cannot be recovered.',
       reasonLabel: 'Reason (optional)',
-      reasonPlaceholder: 'Tell us why you are leaving',
+      reasonPlaceholder: 'Tell us why you want to leave',
       request: 'Request account deletion',
       confirmTitle: 'Confirm account deletion',
       confirmMessage:
-        'Are you sure you want to request deletion? You can cancel during the grace period.',
+        'Do you really want to delete your account? You can cancel the request during the grace period.',
       confirmAction: 'Yes, delete my account',
       cancelAction: 'Go back',
-      pendingTitle: 'Deletion request pending',
+      pendingTitle: 'Deletion request in progress',
       pendingScheduled: (date: string) => `Final deletion date: ${date}`,
       cancelRequest: 'Cancel deletion request',
       cancelledNotice: 'The deletion request was cancelled. Your account is safe.',
-      requestedNotice: 'Your deletion request was received.',
+      requestedNotice: 'We received your account deletion request.',
       statusLoading: 'Checking your deletion request status...',
-      statusError: 'Could not load the deletion request status.',
-      unavailable: 'Account deletion requests are not available right now.',
+      statusError: 'Could not load the deletion request status. Please try again.',
+      unavailable: 'Account deletion cannot be requested right now.',
       requestedAt: (date: string) => `Requested: ${date}`,
       cancelledBefore:
         'Your earlier deletion request was cancelled. You can make a new one at any time.',
-      completedNote: 'The deletion of this account is complete.',
+      completedNote: 'This account has been deleted.',
       failed: 'Could not complete the operation. Please try again.',
       cancelConfirmTitle: 'Cancel the deletion request?',
       cancelConfirmMessage: 'Your account will stay as it is and will not be deleted.',
@@ -2100,8 +2087,8 @@ export const en: TranslationCatalog = {
 
     changePassword: {
       title: 'Change password',
-      subtitle: 'Change the password for this account',
-      note: 'Passwords are never stored beyond the current form draft, and are never written to logs.',
+      subtitle: 'Change your account password',
+      note: 'Choose a password of at least 8 characters, and do not use it for any other service.',
       current: 'Current password',
       new: 'New password',
       confirm: 'Confirm new password',
@@ -2115,8 +2102,8 @@ export const en: TranslationCatalog = {
 
     errors: {
       network: 'Could not change your password. Check your connection and try again.',
-      unauthorized: 'Your session has expired. Please sign in again.',
-      validation: 'Please check the password details you entered.',
+      unauthorized: 'Your session has ended. Sign in again to continue.',
+      validation: 'Check your password details and try again.',
       generic: 'Could not change your password. Please try again.',
     },
   },

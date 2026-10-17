@@ -15,7 +15,7 @@ type RootErrorBoundaryState = { error: Error | null };
  */
 const COPY = {
   ar: {
-    title: 'حدث خطأ غير متوقع',
+    title: 'حدث خطأ ما',
     message: 'تعذّر عرض هذه الشاشة. يمكنك المحاولة مرة أخرى، وإن تكرر الخطأ أعد تشغيل التطبيق.',
     retry: 'إعادة المحاولة',
   },
