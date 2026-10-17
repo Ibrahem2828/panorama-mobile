@@ -4,13 +4,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { AppBadge, AppText, Icon } from '../../../components';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { colors, radius, shadows, useBrand } from '../../../theme';
-import {
-  getEntityLabel,
-  getSubjectCode,
-  getSubjectDisplayName,
-  parseSubjectMeta,
-} from '../services';
+import { getSubjectCode, getSubjectDisplayName, parseSubjectMeta } from '../services';
 import type { Subject } from '../types';
+import { useSubjectLabels } from '../useSubjectLabels';
 
 type SubjectCardProps = {
   subject: Subject;
@@ -33,9 +29,10 @@ function SubjectCardComponent({ subject, onPress }: SubjectCardProps) {
   const title = getSubjectDisplayName(subject, t.subjects);
   const code = getSubjectCode(subject);
   const { credits, category, englishName } = parseSubjectMeta(subject);
-  const academicYear = getEntityLabel(subject.academic_year);
-  const semester = getEntityLabel(subject.semester);
-  const major = getEntityLabel(subject.major);
+  const labels = useSubjectLabels();
+  const academicYear = labels.year(subject.academic_year);
+  const semester = labels.semester(subject.semester);
+  const major = labels.major(subject.major);
   const countBadges = getCountBadges(subject, t);
 
   return (

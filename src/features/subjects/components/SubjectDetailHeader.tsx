@@ -5,13 +5,13 @@ import { AppText, Icon } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { radius, spacing, useBrand } from '../../../theme';
 import {
-  getEntityLabel,
   getSubjectCode,
   getSubjectDescription,
   getSubjectDisplayName,
   parseSubjectMeta,
 } from '../services';
 import type { Subject } from '../types';
+import { useSubjectLabels } from '../useSubjectLabels';
 
 type SubjectDetailHeaderProps = {
   subject: Subject;
@@ -20,27 +20,23 @@ type SubjectDetailHeaderProps = {
 export function SubjectDetailHeader({ subject }: SubjectDetailHeaderProps) {
   const { t } = useTranslation();
   const brand = useBrand();
+  const labels = useSubjectLabels();
   const title = getSubjectDisplayName(subject, t.subjects);
   const code = getSubjectCode(subject);
   const description = getSubjectDescription(subject);
   const { credits, category } = parseSubjectMeta(subject);
   const chips = [
     code ? t.subjects.codeBadge(code) : null,
-    getEntityLabel(subject.academic_year),
-    getEntityLabel(subject.semester),
-    getEntityLabel(subject.major),
+    labels.year(subject.academic_year),
+    labels.semester(subject.semester),
+    labels.major(subject.major),
     credits,
     category,
   ].filter((value): value is string => Boolean(value));
 
   return (
     <View style={styles.card}>
-      <LinearGradient
-        colors={[brand.deep, brand.primary]}
-        end={{ x: 1, y: 1 }}
-        start={{ x: 0, y: 0 }}
-        style={styles.body}
-      >
+      <View style={[styles.body, { backgroundColor: brand.primary }]}>
         <View style={styles.iconRow}>
           <View style={styles.iconBubble}>
             <Icon color="#FFFFFF" name="book" size={24} />
@@ -65,7 +61,7 @@ export function SubjectDetailHeader({ subject }: SubjectDetailHeaderProps) {
             ))}
           </View>
         ) : null}
-      </LinearGradient>
+      </View>
       <LinearGradient
         colors={brand.ribbon}
         end={{ x: 1, y: 0 }}
