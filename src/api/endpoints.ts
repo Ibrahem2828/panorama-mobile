@@ -42,6 +42,7 @@ export const endpoints = {
     me: `${API_PREFIX}/verification/me/`,
     resubmit: `${API_PREFIX}/verification/resubmit/`,
   },
+  search: `${API_PREFIX}/search/`,
   announcements: {
     list: `${API_PREFIX}/announcements/`,
     detail: (announcementId: EndpointId) => `${API_PREFIX}/announcements/${announcementId}/`,

@@ -37,6 +37,7 @@ export * as healthService from './services/health.service';
 export * as lifecycleService from './services/lifecycle.service';
 export * as notificationsService from './services/notifications.service';
 export * as printingService from './services/printing.service';
+export * as searchService from './services/search.service';
 export * as supportService from './services/support.service';
 export * as verificationService from './services/verification.service';
 export type { ApiErrorCode, FieldErrors, NormalizedApiError } from './errors';

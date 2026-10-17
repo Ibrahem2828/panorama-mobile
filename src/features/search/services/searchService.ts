@@ -3,20 +3,27 @@ import {
   filesService,
   groupsService,
   normalizeApiError,
+  searchService as api,
   type FileRecord,
   type GroupRecord,
   type SubjectRecord,
 } from '../../../api';
-import type { GlobalSearchResult, SearchResultItem } from '../types';
 import type { TranslationCatalog } from '../../../i18n';
+import type { GlobalSearchResult, SearchResultItem, SearchResultKind } from '../types';
+import { EMPTY_SEARCH_RESULT } from '../types';
+import { buildTypesParam, clampLimit, normalizeSearchResponse } from './searchModel';
 
 type SearchCatalog = TranslationCatalog['search'];
 
-type SearchInput = {
+export type SearchInput = {
   query: string;
   authToken: string;
   isStudent: boolean;
-  majorId?: string | number | null;
+  /** Subjects are faculty-level; the student's major is not needed to search them. */
+  facultyId?: string | number | null;
+  kinds?: readonly SearchResultKind[];
+  limit?: number;
+  signal?: AbortSignal;
 };
 
 function text(...values: unknown[]): string {
@@ -27,79 +34,80 @@ function text(...values: unknown[]): string {
   return '';
 }
 
-function normalizeSubject(record: SubjectRecord, t: SearchCatalog): SearchResultItem {
+function subjectItem(record: SubjectRecord): SearchResultItem {
   return {
     id: record.id,
     kind: 'subject',
-    title: text(record.name, record.title) || t.untitledSubject,
-    subtitle: text(record.code, record.description) || t.subjectSubtitle,
+    title: text(record.name, record.title),
+    subtitle: text(record.code, record.description),
   };
 }
 
-function normalizeGroup(record: GroupRecord, t: SearchCatalog): SearchResultItem {
+function groupItem(record: GroupRecord): SearchResultItem {
   return {
     id: record.id,
     kind: 'group',
-    title: text(record.name, record.title) || t.untitledGroup,
-    subtitle: text(record.description) || t.groupSubtitle,
+    title: text(record.name, record.title),
+    subtitle: text(record.description),
   };
 }
 
-function normalizeFile(record: FileRecord, t: SearchCatalog): SearchResultItem {
+function fileItem(record: FileRecord): SearchResultItem {
   return {
     id: record.id,
     kind: 'file',
-    title: text(record.title, record.name) || t.untitledFile,
-    subtitle: text(record.file_type, record.description) || t.fileSubtitle,
+    title: text(record.title, record.name),
+    subtitle: text(record.file_type, record.description),
   };
 }
 
-export async function runGlobalSearch(
-  input: SearchInput,
-  t: SearchCatalog,
-): Promise<GlobalSearchResult> {
-  const query = input.query.trim();
-  if (query.length < 2) {
-    return { subjects: [], groups: [], files: [], total: 0, partialFailure: false };
+/**
+ * The fallback when the unified search is unavailable: the same lookups stitched from the
+ * per-feature lists. Subjects come from the student's faculty, never from a major.
+ */
+async function runStitchedSearch(input: SearchInput, limit: number): Promise<GlobalSearchResult> {
+  const kinds = input.kinds?.length ? input.kinds : (['subject', 'group', 'file'] as const);
+  const wants = (kind: SearchResultKind) => kinds.includes(kind);
+  const params = { search: input.query, pageSize: limit };
+  const jobs: Array<Promise<{ kind: SearchResultKind; items: SearchResultItem[]; count: number }>> =
+    [];
+
+  if (wants('file')) {
+    jobs.push(
+      filesService.listFiles(input.authToken, params).then((r) => ({
+        kind: 'file' as const,
+        items: r.results.map(fileItem),
+        count: r.count,
+      })),
+    );
   }
 
-  const requests: Array<
-    Promise<{ kind: 'subjects' | 'groups' | 'files'; items: SearchResultItem[] }>
-  > = [
-    filesService.listFiles(input.authToken, { search: query, pageSize: 10 }).then((response) => ({
-      kind: 'files' as const,
-      items: response.results.map((record) => normalizeFile(record, t)),
-    })),
-  ];
+  if (input.isStudent && wants('group')) {
+    jobs.push(
+      groupsService.listAvailableGroups(input.authToken, params).then((r) => ({
+        kind: 'group' as const,
+        items: r.results.map(groupItem),
+        count: r.count,
+      })),
+    );
+  }
 
-  if (input.isStudent) {
-    requests.push(
-      groupsService
-        .listAvailableGroups(input.authToken, { search: query, pageSize: 10 })
-        .then((response) => ({
-          kind: 'groups' as const,
-          items: response.results.map((record) => normalizeGroup(record, t)),
+  if (input.isStudent && wants('subject') && input.facultyId != null) {
+    jobs.push(
+      academicService
+        .listSubjectsForFaculty(input.facultyId, params, input.authToken)
+        .then((r) => ({
+          kind: 'subject' as const,
+          items: r.results.map(subjectItem),
+          count: r.count,
         })),
     );
-    if (input.majorId != null) {
-      requests.push(
-        academicService
-          .listSubjectsForMajor(input.majorId, { search: query, pageSize: 10 }, input.authToken)
-          .then((response) => ({
-            kind: 'subjects' as const,
-            items: response.results.map((record) => normalizeSubject(record, t)),
-          })),
-      );
-    }
   }
 
-  const settled = await Promise.allSettled(requests);
+  const settled = await Promise.allSettled(jobs);
   const result: GlobalSearchResult = {
-    subjects: [],
-    groups: [],
-    files: [],
-    total: 0,
-    partialFailure: false,
+    ...EMPTY_SEARCH_RESULT,
+    counts: { ...EMPTY_SEARCH_RESULT.counts },
   };
 
   for (const entry of settled) {
@@ -107,16 +115,50 @@ export async function runGlobalSearch(
       result.partialFailure = true;
       continue;
     }
-    result[entry.value.kind] = entry.value.items;
-    result.total += entry.value.items.length;
+
+    const { kind, items, count } = entry.value;
+    const key = kind === 'subject' ? 'subjects' : kind === 'group' ? 'groups' : 'files';
+
+    result[key] = items;
+    result.counts[kind] = Math.max(count, items.length);
+    result.total += result.counts[kind];
   }
 
   if (result.partialFailure && result.total === 0) {
-    const firstFailure = settled.find((entry) => entry.status === 'rejected');
-    if (firstFailure?.status === 'rejected') throw firstFailure.reason;
+    const failure = settled.find((entry) => entry.status === 'rejected');
+
+    if (failure?.status === 'rejected') throw failure.reason;
   }
 
   return result;
+}
+
+function shouldFallBack(error: unknown): boolean {
+  const normalized = normalizeApiError(error);
+
+  // Connectivity and session problems would fail the fallback too; everything else (for
+  // example a search service that is down) is worth a second path.
+  return !['NETWORK_ERROR', 'TIMEOUT', 'UNAUTHORIZED', 'FORBIDDEN'].includes(normalized.code);
+}
+
+export async function runGlobalSearch(input: SearchInput): Promise<GlobalSearchResult> {
+  const limit = clampLimit(input.limit ?? 5);
+
+  try {
+    return normalizeSearchResponse(
+      await api.unifiedSearch(
+        { q: input.query, types: buildTypesParam(input.kinds ?? []), limit },
+        input.authToken,
+        input.signal,
+      ),
+    );
+  } catch (error) {
+    if (input.signal?.aborted || !shouldFallBack(error)) {
+      throw error;
+    }
+
+    return runStitchedSearch(input, limit);
+  }
 }
 
 export function toSafeSearchErrorMessage(error: unknown, t: SearchCatalog): string {
