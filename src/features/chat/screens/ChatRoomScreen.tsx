@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { KeyboardAvoidingView, StyleSheet, View } from 'react-native';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useKeyboardOverlap } from '../../../hooks/useKeyboardOverlap';
 
 import {
   AppButton,
@@ -34,6 +37,9 @@ function isSameId(left: string | number, right: string | number): boolean {
 }
 
 export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
+  const safeInsets = useSafeAreaInsets();
+  // The tab bar height already includes the bottom inset, which the keyboard also covers.
+  const keyboardOverlap = useKeyboardOverlap(useBottomTabBarHeight() - safeInsets.bottom);
   const { t } = useTranslation();
   const { groupId } = route.params;
   const groupKey = String(groupId);
@@ -205,9 +211,7 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
   return (
     <AppScreen horizontalPadding={false} style={styles.screen}>
       {header}
-      <KeyboardAvoidingView behavior="padding" style={styles.flex}>
-        {body}
-      </KeyboardAvoidingView>
+      <View style={[styles.flex, { paddingBottom: keyboardOverlap }]}>{body}</View>
       <ChatAttachmentViewer groupId={groupId} message={viewerMessage} onClose={handleCloseViewer} />
     </AppScreen>
   );
