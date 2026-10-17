@@ -1,8 +1,9 @@
 import type { StatusVariant } from '../../types/common';
+import type { LocalFile, UploadProblem } from '../attachments/services/localFile';
 
 export type Id = string | number;
 export type PrintColorMode = 'black_white' | 'color';
-// Wire values match the backend's PaperSizeEnum / SidesEnum exactly (see docs/api/openapi.json).
+// Wire values match the backend's PaperSizeEnum / SidesEnum exactly (see contracts/openapi.json).
 export type PrintPaperSize = 'A4' | 'A3' | 'A5';
 export type PrintSides = 'one_sided' | 'double_sided';
 export type PrintBinding = 'none' | 'staple' | 'spiral' | 'thermal';
@@ -31,6 +32,10 @@ export type PrintOrderItem = {
   id?: Id;
   source_file?: Id | Record<string, unknown> | null;
   source_file_title?: string | null;
+  has_uploaded_file?: boolean;
+  original_file_name?: string | null;
+  file_type?: string | null;
+  file_size?: number | null;
   copies: number;
   pages_count?: number | null;
   sheets_count?: number | null;
@@ -38,9 +43,19 @@ export type PrintOrderItem = {
   paper_size?: PrintPaperSize;
   sides?: PrintSides;
   binding?: PrintBinding;
+  unit_price?: string | number | null;
+  binding_price?: string | number | null;
   price?: string | number | null;
   created_at?: string;
   [key: string]: unknown;
+};
+
+export type PrintStatusHistoryEntry = {
+  id: Id;
+  old_status?: string | null;
+  new_status: string;
+  public_note?: string | null;
+  created_at: string;
 };
 
 export type PrintOrder = {
@@ -60,29 +75,49 @@ export type PrintOrder = {
   cancelled_at?: string | null;
   priority?: string | null;
   price_calculated_at?: string | null;
-  status_history?: Array<{
-    id: Id;
-    old_status?: string | null;
-    new_status: string;
-    public_note?: string | null;
-    created_at: string;
-  }>;
+  status_history?: PrintStatusHistoryEntry[];
   [key: string]: unknown;
 };
 
-export type PrintDraft = {
-  sourceFileId: Id | null;
-  sourceFileTitle: string | null;
+/** A file picked on the device (image library) and not yet uploaded. */
+export type PrintLocalFile = LocalFile;
+
+/** Where one item's file comes from: an existing library file, or a local upload. */
+export type PrintSource =
+  | { kind: 'library'; id: Id; title: string }
+  | { kind: 'upload'; file: PrintLocalFile }
+  | null;
+
+/** One file of the order with its own print options. `key` is a local identity only. */
+export type PrintCartItem = {
+  key: string;
+  source: PrintSource;
   copies: number;
   colorMode: PrintColorMode;
   paperSize: PrintPaperSize;
   sides: PrintSides;
   binding: PrintBinding;
+};
+
+export type PrintDraft = {
+  items: PrintCartItem[];
   pickupLocationId: Id | null;
   userNotes: string;
 };
 
-export type PrintDraftValidation = { sourceFileId?: string; copies?: string };
+export type PrintItemValidation = { source?: boolean; copies?: boolean };
+
+export type PrintDraftValidation = {
+  /** Index-aligned with `draft.items`. */
+  items: PrintItemValidation[];
+  /** No items, or more than the backend allows. */
+  count?: boolean;
+  /** The summed size of the uploads exceeds what one request may carry. */
+  uploadsTooLarge?: boolean;
+  valid: boolean;
+};
+
+export type { UploadProblem };
 
 export type PrintQuoteItem = {
   pages_count: number;
@@ -96,12 +131,38 @@ export type PrintQuoteItem = {
 export type PrintQuote = {
   total_price: string | number;
   currency: string;
-  calculated_at: string;
+  calculated_at?: string;
   items: PrintQuoteItem[];
+};
+
+/** A quote together with what it was computed for, so a stale one is never submitted. */
+export type PrintQuoteState = {
+  value: PrintQuote;
+  signature: string;
+  /** File names at quote time, index-aligned with `value.items`. */
+  names: string[];
+};
+
+export type PrintTransferPhase = 'quote' | 'order';
+
+export type PrintTransferState = {
+  phase: PrintTransferPhase;
+  loaded: number;
+  total: number;
 };
 
 export type PrintStatusPresentation = {
   label: string;
   actionMessage: string;
   variant: StatusVariant;
+};
+
+export type PrintProgressStepState = 'done' | 'current' | 'todo';
+
+export type PrintProgressStep = { status: PrintOrderStatus; state: PrintProgressStepState };
+
+export type PrintOrderProgress = {
+  steps: PrintProgressStep[];
+  /** Set when the order ended without being delivered. */
+  terminal: 'cancelled' | 'rejected' | null;
 };

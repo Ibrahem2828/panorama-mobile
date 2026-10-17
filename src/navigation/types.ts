@@ -27,7 +27,9 @@ export type LectureViewerParams = { lectureId: string | number; title?: string; 
 
 export type HomeStackParamList = {
   Home: undefined;
-  FilesList: undefined;
+  AnnouncementsList: undefined;
+  AnnouncementDetail: { announcementId: string | number };
+  FilesList: { subjectId?: string | number; subjectName?: string } | undefined;
   FileDetails: { fileId: string | number };
   PdfViewer: { fileId: string | number; title?: string };
   Search: { query?: string } | undefined;
@@ -59,6 +61,7 @@ export type PrintingStackParamList = {
   PrintPriceSummary: undefined;
   MyPrintOrders: undefined;
   PrintOrderDetails: { orderId: string | number };
+  PrintItemViewer: { itemId: string | number; title?: string };
 };
 
 export type ProfileStackParamList = {
@@ -72,6 +75,7 @@ export type ProfileStackParamList = {
   SupportTickets: undefined;
   CreateSupportTicket: undefined;
   TicketDetails: { ticketId: string | number };
+  SupportAttachment: { messageId: string | number; title?: string };
   PrivacyPolicy: undefined;
   Terms: undefined;
   About: undefined;
@@ -81,7 +85,7 @@ export type ProfileStackParamList = {
 };
 
 export type SharedStackParamList = {
-  FilesList: undefined;
+  FilesList: { subjectId?: string | number; subjectName?: string } | undefined;
   FileDetails: { fileId: string | number };
   PdfViewer: { fileId: string | number; title?: string };
   GroupFiles: { groupId: string | number };

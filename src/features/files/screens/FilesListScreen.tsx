@@ -1,177 +1,283 @@
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { StyleSheet } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { images } from '../../../assets/images';
 import {
   AppButton,
   AppHeader,
+  AppIconButton,
   AppScreen,
   AppText,
   AppTextInput,
+  ChoiceChips,
   EmptyState,
   ErrorState,
+  Icon,
   LoadingState,
-  SectionHeader,
   Stack,
 } from '../../../components';
-import { useTranslation, type TranslationCatalog } from '../../../i18n';
-import { formatTime } from '../../../utils/formatDateTime';
+import { useTranslation } from '../../../i18n';
 import { SharedRoutes } from '../../../navigation/routes';
 import type { HomeStackParamList } from '../../../navigation/types';
-import { spacing } from '../../../theme';
+import { layout, spacing, useBrand } from '../../../theme';
 import { FileCard } from '../components';
-import { getFileDescription, getFileDisplayTitle, getFileExtension } from '../services';
 import { useFilesStore } from '../store';
-import type { FileResource } from '../types';
+import type { FileResource, FilesListQuery, FilesOrdering } from '../types';
 
 type FilesListScreenProps = NativeStackScreenProps<HomeStackParamList, 'FilesList'>;
-type FilesCatalog = TranslationCatalog['files'];
 
-function matchesSearch(file: FileResource, query: string, filesCatalog: FilesCatalog): boolean {
-  if (!query) {
-    return true;
-  }
+const SEARCH_DEBOUNCE_MS = 350;
 
-  const searchableText = [
-    getFileDisplayTitle(file, filesCatalog),
-    getFileDescription(file),
-    getFileExtension(file),
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
+type FileRowProps = { file: FileResource; onPress: (file: FileResource) => void };
 
-  return searchableText.includes(query.toLowerCase());
+const FileRow = memo(function FileRow({ file, onPress }: FileRowProps) {
+  return <FileCard file={file} onPress={() => onPress(file)} />;
+});
+
+function keyExtractor(file: FileResource) {
+  return String(file.id);
 }
 
-export function FilesListScreen({ navigation }: FilesListScreenProps) {
-  const { t, locale } = useTranslation();
-  const files = useFilesStore((state) => state.files);
-  const isLoadingFiles = useFilesStore((state) => state.isLoadingFiles);
-  const isRefreshing = useFilesStore((state) => state.isRefreshing);
-  const errorMessage = useFilesStore((state) => state.errorMessage);
-  const lastLoadedAt = useFilesStore((state) => state.lastLoadedAt);
-  const loadFiles = useFilesStore((state) => state.loadFiles);
-  const refreshFiles = useFilesStore((state) => state.refreshFiles);
+function Separator() {
+  return <View style={styles.separator} />;
+}
+
+export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
+  const { t } = useTranslation();
+  const brand = useBrand();
+  const subjectId = route.params?.subjectId;
+  const subjectName = route.params?.subjectName;
+  const list = useFilesStore((state) => state.list);
+  const listCount = useFilesStore((state) => state.listCount);
+  const nextPage = useFilesStore((state) => state.listNextPage);
+  const hasLoaded = useFilesStore((state) => state.hasLoadedList);
+  const isLoading = useFilesStore((state) => state.isLoadingList);
+  const isLoadingMore = useFilesStore((state) => state.isLoadingMoreList);
+  const isRefreshing = useFilesStore((state) => state.isRefreshingList);
+  const listError = useFilesStore((state) => state.listError);
+  const loadMoreError = useFilesStore((state) => state.loadMoreError);
+  const loadList = useFilesStore((state) => state.loadList);
+  const refreshList = useFilesStore((state) => state.refreshList);
+  const loadMoreList = useFilesStore((state) => state.loadMoreList);
   const setSelectedFile = useFilesStore((state) => state.setSelectedFile);
-  const [searchQuery, setSearchQuery] = useState('');
-  const normalizedSearchQuery = searchQuery.trim();
-  const visibleFiles = useMemo(
-    () => files.filter((file) => matchesSearch(file, normalizedSearchQuery, t.files)),
-    [files, normalizedSearchQuery, t.files],
-  );
-  const showInitialLoading = isLoadingFiles && files.length === 0;
-  const showInitialError = Boolean(errorMessage && files.length === 0);
+  const [searchText, setSearchText] = useState('');
+  const [search, setSearch] = useState('');
+  const [ordering, setOrdering] = useState<FilesOrdering>('');
+  const [printableOnly, setPrintableOnly] = useState(false);
 
   useEffect(() => {
-    void loadFiles();
-  }, [loadFiles]);
+    const timer = setTimeout(() => setSearch(searchText.trim()), SEARCH_DEBOUNCE_MS);
 
-  function handleRefresh() {
-    void refreshFiles();
-  }
+    return () => clearTimeout(timer);
+  }, [searchText]);
 
-  function handleFilePress(file: FileResource) {
-    setSelectedFile(file);
-    navigation.navigate(SharedRoutes.FileDetails, { fileId: file.id });
-  }
+  const query = useMemo<FilesListQuery>(
+    () => ({ search, subjectId, ordering, printableOnly }),
+    [ordering, printableOnly, search, subjectId],
+  );
 
-  if (showInitialLoading) {
+  useEffect(() => {
+    void loadList(query);
+  }, [loadList, query]);
+
+  const handleOpen = useCallback(
+    (file: FileResource) => {
+      setSelectedFile(file);
+      navigation.navigate(SharedRoutes.FileDetails, { fileId: file.id });
+    },
+    [navigation, setSelectedFile],
+  );
+  const handleRefresh = useCallback(() => void refreshList(), [refreshList]);
+  const handleEndReached = useCallback(() => void loadMoreList(), [loadMoreList]);
+  const handleClearSubject = useCallback(
+    () => navigation.setParams({ subjectId: undefined, subjectName: undefined }),
+    [navigation],
+  );
+  const handleClearFilters = useCallback(() => {
+    setSearchText('');
+    setSearch('');
+    setOrdering('');
+    setPrintableOnly(false);
+  }, []);
+  const renderItem = useCallback(
+    ({ item }: { item: FileResource }) => <FileRow file={item} onPress={handleOpen} />,
+    [handleOpen],
+  );
+  const orderingOptions = useMemo(
+    () => [
+      { value: '' as FilesOrdering, label: t.files.list.newest },
+      { value: 'created_at' as FilesOrdering, label: t.files.list.oldest },
+      { value: 'title' as FilesOrdering, label: t.files.list.titleAsc },
+      { value: '-file_size' as FilesOrdering, label: t.files.list.largest },
+    ],
+    [t],
+  );
+  const printableOptions = useMemo(
+    () => [
+      { value: 'all', label: t.files.list.all },
+      { value: 'printable', label: t.files.list.printableOnly },
+    ],
+    [t],
+  );
+  const hasFilters = Boolean(search || ordering || printableOnly);
+
+  const header = (
+    <Stack gap="lg" style={styles.header}>
+      <AppHeader
+        subtitle={hasLoaded ? t.files.list.total(listCount) : t.files.subtitle}
+        title={t.files.title}
+      />
+      <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
+      <AppTextInput
+        autoCorrect={false}
+        onChangeText={setSearchText}
+        placeholder={t.files.searchPlaceholder}
+        returnKeyType="search"
+        value={searchText}
+      />
+      {subjectId !== undefined ? (
+        <Stack align="center" direction="horizontal" gap="sm" wrap>
+          <AppText color="brand" variant="bodySmall" weight="700">
+            {t.files.list.subjectFilter(subjectName ?? t.files.list.subjectFallback)}
+          </AppText>
+          <AppIconButton
+            accessibilityLabel={t.files.list.clearSubject}
+            icon={<Icon name="close" size={18} />}
+            onPress={handleClearSubject}
+            size="sm"
+            variant="ghost"
+          />
+        </Stack>
+      ) : null}
+      <ChoiceChips
+        label={t.files.list.orderingLabel}
+        onChange={setOrdering}
+        options={orderingOptions}
+        value={ordering}
+      />
+      <ChoiceChips
+        hideLabel
+        label={t.files.list.filtersLabel}
+        onChange={(value) => setPrintableOnly(value === 'printable')}
+        options={printableOptions}
+        value={printableOnly ? 'printable' : 'all'}
+      />
+    </Stack>
+  );
+
+  if (isLoading && !hasLoaded) {
     return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.files.subtitle} title={t.files.title} />
+      <AppScreen contentContainerStyle={styles.centerContent} scroll>
+        {header}
         <LoadingState message={t.files.loading} />
       </AppScreen>
     );
   }
 
-  if (showInitialError) {
+  if (listError && !hasLoaded) {
     return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.files.subtitle} title={t.files.title} />
-        <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
+      <AppScreen contentContainerStyle={styles.centerContent} scroll>
+        {header}
+        <ErrorState message={listError} onRetry={() => void loadList(query)} />
       </AppScreen>
     );
   }
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
-      <Stack gap="xl">
-        <AppHeader subtitle={t.files.subtitle} title={t.files.title} />
-
-        <SectionHeader
-          action={
-            <AppButton
-              loading={isRefreshing}
-              onPress={handleRefresh}
-              size="sm"
-              title={t.common.refresh}
-              variant="outline"
+    <AppScreen horizontalPadding={false}>
+      <FlatList
+        ItemSeparatorComponent={Separator}
+        ListEmptyComponent={
+          isLoading ? (
+            <LoadingState message={t.files.loading} />
+          ) : listError ? (
+            <ErrorState message={listError} onRetry={() => void loadList(query)} />
+          ) : hasFilters || subjectId !== undefined ? (
+            <EmptyState
+              action={
+                <AppButton
+                  onPress={handleClearFilters}
+                  title={t.common.searchClear}
+                  variant="outline"
+                />
+              }
+              illustrationLabel={t.common.noSearchResultsAlt}
+              illustrationSource={images.illustrations.search}
+              message={t.common.searchNoResultsMessage}
+              title={t.common.searchNoResultsTitle}
             />
-          }
-          subtitle={t.files.loadedCount(files.length)}
-          title={t.files.listTitle}
-        />
-
-        <AppTextInput
-          label={t.common.searchLocal}
-          onChangeText={setSearchQuery}
-          placeholder={t.files.searchPlaceholder}
-          value={searchQuery}
-        />
-
-        {errorMessage ? (
-          <ErrorState message={errorMessage} onRetry={handleRefresh} />
-        ) : files.length === 0 ? (
-          <EmptyState
-            action={
+          ) : (
+            <EmptyState
+              action={
+                <AppButton onPress={handleRefresh} title={t.common.refresh} variant="outline" />
+              }
+              illustrationLabel={t.files.emptyIllustrationAlt}
+              illustrationSource={images.emptyStates.files}
+              message={t.files.emptyMessage}
+              title={t.files.emptyTitle}
+            />
+          )
+        }
+        ListFooterComponent={
+          <View style={styles.footer}>
+            {isLoadingMore ? <ActivityIndicator color={brand.primary} /> : null}
+            {loadMoreError ? (
+              <Stack align="center" gap="sm">
+                <AppText align="center" color="error" variant="bodySmall">
+                  {loadMoreError}
+                </AppText>
+                <AppButton
+                  onPress={handleEndReached}
+                  size="sm"
+                  title={t.common.retry}
+                  variant="outline"
+                />
+              </Stack>
+            ) : null}
+            {!isLoadingMore && !loadMoreError && nextPage !== null ? (
               <AppButton
-                loading={isRefreshing}
-                onPress={handleRefresh}
-                title={t.common.retryVerify}
+                onPress={handleEndReached}
+                size="sm"
+                title={t.files.list.loadMore}
                 variant="outline"
               />
-            }
-            message={t.files.emptyMessage}
-            title={t.files.emptyTitle}
-            illustrationLabel={t.files.emptyIllustrationAlt}
-            illustrationSource={images.emptyStates.files}
+            ) : null}
+          </View>
+        }
+        ListHeaderComponent={header}
+        contentContainerStyle={styles.listContent}
+        data={list}
+        initialNumToRender={8}
+        keyExtractor={keyExtractor}
+        keyboardShouldPersistTaps="handled"
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.4}
+        refreshControl={
+          <RefreshControl
+            colors={[brand.primary]}
+            onRefresh={handleRefresh}
+            refreshing={isRefreshing}
+            tintColor={brand.primary}
           />
-        ) : visibleFiles.length === 0 ? (
-          <EmptyState
-            action={
-              <AppButton
-                onPress={() => setSearchQuery('')}
-                title={t.common.searchClear}
-                variant="outline"
-              />
-            }
-            illustrationLabel={t.common.noSearchResultsAlt}
-            illustrationSource={images.illustrations.search}
-            message={t.common.searchNoResultsMessage}
-            title={t.common.searchNoResultsTitle}
-          />
-        ) : (
-          <Stack gap="md">
-            {visibleFiles.map((file) => (
-              <FileCard file={file} key={String(file.id)} onPress={() => handleFilePress(file)} />
-            ))}
-          </Stack>
-        )}
-
-        {lastLoadedAt ? (
-          <AppText align="center" color="muted" variant="caption">
-            {t.common.lastUpdatedAt(formatTime(lastLoadedAt, locale) ?? '')}
-          </AppText>
-        ) : null}
-      </Stack>
+        }
+        removeClippedSubviews
+        renderItem={renderItem}
+        windowSize={7}
+      />
     </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    gap: spacing.xl,
+  centerContent: { gap: spacing.xl },
+  header: { marginBottom: spacing.lg },
+  listContent: {
+    paddingHorizontal: layout.screenHorizontalPadding,
+    paddingTop: layout.screenVerticalPadding,
+    paddingBottom: layout.screenVerticalPadding,
+    flexGrow: 1,
   },
+  separator: { height: spacing.md },
+  footer: { paddingVertical: spacing.lg, alignItems: 'center', minHeight: spacing.xxl },
 });

@@ -5,21 +5,14 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { navigationRef } from '../../../navigation/navigationRef';
-import {
-  GroupsRoutes,
-  PrintingRoutes,
-  ProfileRoutes,
-  RootRoutes,
-  SharedRoutes,
-  TabRoutes,
-} from '../../../navigation/routes';
+import { ProfileRoutes, RootRoutes, TabRoutes } from '../../../navigation/routes';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { logger } from '../../../utils/logger';
 import { useAuthStore } from '../../auth/store';
 import {
+  navigateToNotificationIntent,
   registerDeviceToken,
-  resolveNotificationRouteIntent,
-  resolveTargetFromData,
+  resolveNotificationIntent,
 } from '../services';
 
 Notifications.setNotificationHandler({
@@ -80,41 +73,11 @@ function openNotificationsScreen(): void {
 function openNotificationTarget(data: Record<string, unknown> | null | undefined): void {
   if (!navigationRef.isReady()) return;
 
-  const intent = resolveNotificationRouteIntent(resolveTargetFromData(data));
+  const deepLink = typeof data?.deep_link === 'string' ? data.deep_link : undefined;
+  const intent = resolveNotificationIntent({ deep_link: deepLink, data: data ?? null });
 
-  switch (intent.kind) {
-    case 'printingOrder':
-      navigationRef.navigate(RootRoutes.App, {
-        screen: TabRoutes.Printing,
-        params: {
-          screen: PrintingRoutes.PrintOrderDetails,
-          params: { orderId: intent.orderId },
-        },
-      });
-      return;
-    case 'group':
-      navigationRef.navigate(RootRoutes.App, {
-        screen: TabRoutes.Groups,
-        params: { screen: GroupsRoutes.GroupDetails, params: { groupId: intent.groupId } },
-      });
-      return;
-    case 'file':
-      navigationRef.navigate(RootRoutes.App, {
-        screen: TabRoutes.Home,
-        params: { screen: SharedRoutes.FileDetails, params: { fileId: intent.fileId } },
-      });
-      return;
-    case 'supportTicket':
-      navigationRef.navigate(RootRoutes.App, {
-        screen: TabRoutes.Profile,
-        params: { screen: ProfileRoutes.TicketDetails, params: { ticketId: intent.ticketId } },
-      });
-      return;
-    default:
-      // Verification lives in the setup flow, which is unreachable once the student is
-      // verified, so unresolved targets fall back to the list rather than a dead route.
-      openNotificationsScreen();
-  }
+  // Unresolved targets fall back to the list rather than a dead route.
+  if (!navigateToNotificationIntent(intent)) openNotificationsScreen();
 }
 
 export function PushNotificationsProvider() {

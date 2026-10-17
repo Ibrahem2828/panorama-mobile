@@ -163,11 +163,20 @@ export function FileDetailsScreen() {
             title={t.files.details.openInApp}
           />
           <AppButton
+            disabled={activeFile.is_printable === false}
             onPress={() => handleRequestPrint(activeFile)}
             title={t.files.details.requestPrint}
             variant="outline"
           />
         </Stack>
+
+        {activeFile.is_printable === false ? (
+          <AppCard variant="muted">
+            <AppText color="secondary" variant="bodySmall">
+              {t.files.details.notPrintable}
+            </AppText>
+          </AppCard>
+        ) : null}
 
         {!canPreview ? (
           <AppCard variant="muted">
@@ -201,6 +210,16 @@ export function FileDetailsScreen() {
               <FileMetaRow
                 label={t.files.details.size}
                 value={formatFileSize(getFileSize(activeFile), t.files)}
+              />
+              <FileMetaRow
+                label={t.files.details.pages}
+                value={
+                  typeof activeFile.pages_count === 'number' ? String(activeFile.pages_count) : null
+                }
+              />
+              <FileMetaRow
+                label={t.files.details.printable}
+                value={activeFile.is_printable === false ? t.files.details.no : t.files.details.yes}
               />
               <FileMetaRow
                 label={t.files.details.visibility}

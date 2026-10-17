@@ -2,12 +2,15 @@ import {
   normalizeApiError,
   runIdempotentAction,
   supportService as apiSupportService,
+  type FileAccessTicket,
   type PaginatedResult,
+  type UploadOptions,
   type SupportTicket as ApiSupportTicket,
   type SupportTicketMessage as ApiSupportTicketMessage,
 } from '../../../api';
 import type { TranslationCatalog } from '../../../i18n';
 import type { StatusVariant } from '../../../types/common';
+import { appendLocalFile, localFileSignature } from '../../attachments/services/localFile';
 import type {
   AddSupportTicketMessageInput,
   CreateSupportTicketInput,
@@ -63,6 +66,8 @@ function normalizeMessage(message: ApiSupportTicketMessage): SupportTicketMessag
         ? message.sender
         : null,
     sender_name: toNullableText(message.sender_name),
+    has_attachment: message.has_attachment === true,
+    attachment_preview_endpoint: toNullableText(message.attachment_preview_endpoint),
     is_staff_reply:
       typeof message.is_staff_reply === 'boolean' ? message.is_staff_reply : undefined,
     created_at: toText(message.created_at),
@@ -114,6 +119,7 @@ export function getSupportTicketStatusLabel(
     case 'open':
       return t.status.open;
     case 'pending':
+    case 'waiting_user':
       return t.status.waiting;
     case 'in_progress':
       return t.status.inProgress;
@@ -135,6 +141,7 @@ export function getSupportTicketStatusVariant(status?: SupportTicketStatus): Sta
     case 'open':
       return 'info';
     case 'pending':
+    case 'waiting_user':
       return 'warning';
     case 'in_progress':
       return 'brand';
@@ -182,6 +189,7 @@ export function getSupportPriorityLabel(
   switch (priority) {
     case 'low':
       return t.priority.low;
+    case 'normal':
     case 'medium':
       return t.priority.medium;
     case 'high':
@@ -240,19 +248,79 @@ export function toSafeSupportErrorMessage(error: unknown, t: SupportCatalog): st
   return normalizedError.message || t.errors.generic;
 }
 
+/** JSON for a text-only ticket, multipart (field `attachment`) when an image is attached. */
+export function buildCreateTicketBody(input: CreateSupportTicketInput) {
+  const fields = {
+    category: input.category,
+    subject: input.subject.trim(),
+    message: input.message.trim(),
+  };
+
+  if (!input.attachment) {
+    return fields;
+  }
+
+  const form = new FormData();
+
+  Object.entries(fields).forEach(([key, value]) => form.append(key, value));
+  appendLocalFile(form, 'attachment', input.attachment);
+
+  return form;
+}
+
+export function buildReplyBody(input: AddSupportTicketMessageInput) {
+  const fields = { message: input.message.trim() };
+
+  if (!input.attachment) {
+    return fields;
+  }
+
+  const form = new FormData();
+
+  form.append('message', fields.message);
+  appendLocalFile(form, 'attachment', input.attachment);
+
+  return form;
+}
+
 export async function createSupportTicket(
   input: CreateSupportTicketInput,
   authToken: string,
+  options?: UploadOptions,
 ): Promise<SupportTicket> {
-  return runIdempotentAction('support:create-ticket', input, async (idempotencyKey) =>
-    normalizeTicket(await apiSupportService.createSupportTicket(input, authToken, idempotencyKey)),
+  // The key is scoped to the content (not the multipart body), so a retry re-uses it.
+  const scope = [
+    input.category,
+    input.subject,
+    input.message,
+    localFileSignature(input.attachment),
+  ];
+
+  return runIdempotentAction('support:create-ticket', scope, async (idempotencyKey) =>
+    normalizeTicket(
+      await apiSupportService.createSupportTicket(
+        buildCreateTicketBody(input) as never,
+        authToken,
+        idempotencyKey,
+        options,
+      ),
+    ),
   );
 }
 
+export const SUPPORT_TICKETS_PAGE_SIZE = 15;
+
 export async function loadMySupportTickets(
   authToken: string,
+  params: { page?: number; status?: string } = {},
 ): Promise<PaginatedResult<SupportTicket>> {
-  return normalizeList(await apiSupportService.listMySupportTickets(authToken));
+  return normalizeList(
+    await apiSupportService.listMySupportTickets(authToken, {
+      page: params.page ?? 1,
+      pageSize: SUPPORT_TICKETS_PAGE_SIZE,
+      status: params.status,
+    }),
+  );
 }
 
 export async function loadSupportTicketDetail(
@@ -266,8 +334,29 @@ export async function addSupportTicketMessage(
   ticketId: Id,
   input: AddSupportTicketMessageInput,
   authToken: string,
+  options?: UploadOptions,
 ): Promise<void> {
-  await runIdempotentAction(`support:reply:${String(ticketId)}`, input, (idempotencyKey) =>
-    apiSupportService.addSupportTicketMessage(ticketId, input, authToken, idempotencyKey),
+  const scope = [input.message, localFileSignature(input.attachment)];
+
+  await runIdempotentAction(`support:reply:${String(ticketId)}`, scope, (idempotencyKey) =>
+    apiSupportService.addSupportTicketMessage(
+      ticketId,
+      buildReplyBody(input) as never,
+      authToken,
+      idempotencyKey,
+      options,
+    ),
   );
+}
+
+export async function requestSupportAttachmentTicket(
+  messageId: Id,
+  authToken: string,
+): Promise<FileAccessTicket> {
+  return apiSupportService.requestSupportAttachmentTicket(messageId, authToken);
+}
+
+/** Whether a user pressing "cancel" (not the network) ended the upload. */
+export function isUploadCancelled(error: unknown, signal?: AbortSignal): boolean {
+  return Boolean(signal?.aborted) && normalizeApiError(error).code === 'TIMEOUT';
 }

@@ -6,6 +6,7 @@ import { AppHeader, AppScreen, AppText, Stack } from '../../../components';
 import { env } from '../../../config/env';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { ProfileRoutes } from '../../../navigation/routes';
+import { openLegalPage } from '../../profile/services';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { LanguageSelector, SettingsOptionRow, SettingsSection } from '../components';
@@ -28,6 +29,13 @@ function getEnvironmentLabel(t: TranslationCatalog): string {
 export function SettingsScreen({ navigation }: SettingsScreenProps) {
   const { t } = useTranslation();
   const environmentLabel = getEnvironmentLabel(t);
+
+  async function openLegalOrScreen(kind: 'privacy' | 'terms') {
+    // The standalone page is the authoritative text; the built-in summary is the fallback.
+    if (!(await openLegalPage(kind))) {
+      navigation.navigate(kind === 'privacy' ? ProfileRoutes.PrivacyPolicy : ProfileRoutes.Terms);
+    }
+  }
 
   return (
     <AppScreen contentContainerStyle={styles.content} scroll>
@@ -82,11 +90,11 @@ export function SettingsScreen({ navigation }: SettingsScreenProps) {
 
         <SettingsSection subtitle={t.settings.legal.subtitle} title={t.settings.legal.title}>
           <SettingsOptionRow
-            onPress={() => navigation.navigate(ProfileRoutes.PrivacyPolicy)}
+            onPress={() => openLegalOrScreen('privacy')}
             title={t.settings.legal.privacy}
           />
           <SettingsOptionRow
-            onPress={() => navigation.navigate(ProfileRoutes.Terms)}
+            onPress={() => openLegalOrScreen('terms')}
             title={t.settings.legal.terms}
           />
           <SettingsOptionRow

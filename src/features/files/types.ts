@@ -48,3 +48,13 @@ export type ProtectedFileTicket = {
   expires_at: string;
   download_allowed: false;
 };
+
+export type FilesOrdering = '' | 'created_at' | 'title' | '-file_size';
+
+/** What the files screen asks the server for; the empty query lists everything the student may see. */
+export type FilesListQuery = {
+  search?: string;
+  subjectId?: Id;
+  printableOnly?: boolean;
+  ordering?: FilesOrdering;
+};

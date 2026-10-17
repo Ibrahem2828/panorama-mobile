@@ -354,6 +354,21 @@ export type NotificationRecord = ApiEntity & {
   data?: Record<string, unknown> | null;
   created_at?: string;
   updated_at?: string;
+  title_ar?: string | null;
+  title_en?: string | null;
+  body_ar?: string | null;
+  body_en?: string | null;
+  /** App path chosen by the backend; validated before it is ever followed. */
+  deep_link?: string | null;
+  related_object_type?: string | null;
+  related_object_id?: string | null;
+  expires_at?: string | null;
+};
+
+export type NotificationPreferences = {
+  in_app_enabled: boolean;
+  push_enabled: boolean;
+  disabled_types: string[];
 };
 
 export type AnnouncementRecord = ApiEntity & {
@@ -366,6 +381,17 @@ export type AnnouncementRecord = ApiEntity & {
   end_date?: string | null;
   is_active?: boolean;
   type?: string;
+  image?: string | null;
+  link?: string | null;
+  starts_at?: string | null;
+  ends_at?: string | null;
+  target_user_type?: string | null;
+  target_university?: number | null;
+  target_faculty?: number | null;
+  target_major?: number | null;
+  target_academic_year?: number | null;
+  target_semester?: number | null;
+  created_by_name?: string | null;
 };
 
 export type SubjectRecord = ApiEntity & {

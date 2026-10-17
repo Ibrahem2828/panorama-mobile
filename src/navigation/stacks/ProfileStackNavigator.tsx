@@ -17,6 +17,7 @@ import { ChangePasswordScreen } from '../../features/settings/screens/ChangePass
 import { SettingsScreen } from '../../features/settings/screens/SettingsScreen';
 import { CreateSupportTicketScreen } from '../../features/support/screens/CreateSupportTicketScreen';
 import { SupportTicketsScreen } from '../../features/support/screens/SupportTicketsScreen';
+import { SupportAttachmentScreen } from '../../features/support/screens/SupportAttachmentScreen';
 import { TicketDetailsScreen } from '../../features/support/screens/TicketDetailsScreen';
 import { hiddenStackScreenOptions } from '../config/screenOptions';
 import { ProfileRoutes } from '../routes';
@@ -43,6 +44,7 @@ export function ProfileStackNavigator() {
         name={ProfileRoutes.CreateSupportTicket}
       />
       <Stack.Screen component={TicketDetailsScreen} name={ProfileRoutes.TicketDetails} />
+      <Stack.Screen component={SupportAttachmentScreen} name={ProfileRoutes.SupportAttachment} />
       <Stack.Screen component={PrivacyPolicyScreen} name={ProfileRoutes.PrivacyPolicy} />
       <Stack.Screen component={TermsScreen} name={ProfileRoutes.Terms} />
       <Stack.Screen component={AboutScreen} name={ProfileRoutes.About} />

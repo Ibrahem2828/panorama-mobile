@@ -24,6 +24,7 @@ export {
 } from './idempotency';
 export { registerLifecycleHandler, reportLifecycleError } from './lifecycleBridge';
 export { buildQueryString, toPaginationQuery } from './pagination';
+export type { UploadOptions, UploadProgress } from './uploadTransport';
 export { buildApiUrl, buildDefaultApiUrl, buildRequestHeaders } from './request';
 export { isApiError, isApiResponseEnvelope, isApiSuccess } from './response';
 export * as accountService from './services/account.service';
@@ -35,7 +36,9 @@ export * as groupsService from './services/groups.service';
 export * as healthService from './services/health.service';
 export * as lifecycleService from './services/lifecycle.service';
 export * as notificationsService from './services/notifications.service';
+export * as policiesService from './services/policies.service';
 export * as printingService from './services/printing.service';
+export * as searchService from './services/search.service';
 export * as supportService from './services/support.service';
 export * as verificationService from './services/verification.service';
 export type { ApiErrorCode, FieldErrors, NormalizedApiError } from './errors';

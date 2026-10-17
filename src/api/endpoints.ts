@@ -42,7 +42,15 @@ export const endpoints = {
     me: `${API_PREFIX}/verification/me/`,
     resubmit: `${API_PREFIX}/verification/resubmit/`,
   },
-  announcements: { list: `${API_PREFIX}/announcements/` },
+  search: `${API_PREFIX}/search/`,
+  policies: {
+    status: `${API_PREFIX}/policies/status/`,
+    accept: `${API_PREFIX}/policies/accept/`,
+  },
+  announcements: {
+    list: `${API_PREFIX}/announcements/`,
+    detail: (announcementId: EndpointId) => `${API_PREFIX}/announcements/${announcementId}/`,
+  },
   groups: {
     available: `${API_PREFIX}/groups/available/`,
     my: `${API_PREFIX}/groups/my/`,
@@ -76,6 +84,7 @@ export const endpoints = {
     unreadCount: `${API_PREFIX}/notifications/unread-count/`,
     markRead: (notificationId: EndpointId) => `${API_PREFIX}/notifications/${notificationId}/read/`,
     readAll: `${API_PREFIX}/notifications/read-all/`,
+    preferences: `${API_PREFIX}/notifications/preferences/`,
     deviceTokens: `${API_PREFIX}/notifications/device-tokens/`,
     deviceTokenDetail: (tokenId: EndpointId) =>
       `${API_PREFIX}/notifications/device-tokens/${tokenId}/`,
@@ -111,5 +120,7 @@ export const endpoints = {
     mine: `${API_PREFIX}/feedback/mine/`,
     suggestions: `${API_PREFIX}/feedback/suggestions/`,
     vote: (feedbackId: EndpointId) => `${API_PREFIX}/feedback/${feedbackId}/vote/`,
+    privacyRequest: (feedbackId: EndpointId) =>
+      `${API_PREFIX}/feedback/${feedbackId}/privacy-request/`,
   },
 } as const;

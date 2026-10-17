@@ -16,6 +16,7 @@ import {
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import type { ProfileStackParamList } from '../../../navigation/types';
+import { ProfileRoutes } from '../../../navigation/routes';
 import { spacing } from '../../../theme';
 import { SupportMessageBubble, SupportMessageInput, SupportTicketSummaryCard } from '../components';
 import { canReplyToSupportTicket } from '../services';
@@ -37,6 +38,10 @@ export function TicketDetailsScreen({ navigation, route }: TicketDetailsScreenPr
   const successMessage = useSupportStore((state) => state.successMessage);
   const loadTicketDetail = useSupportStore((state) => state.loadTicketDetail);
   const addMessage = useSupportStore((state) => state.addMessage);
+  const replyAttachment = useSupportStore((state) => state.replyAttachment);
+  const uploadPercent = useSupportStore((state) => state.uploadPercent);
+  const setReplyAttachment = useSupportStore((state) => state.setReplyAttachment);
+  const cancelUpload = useSupportStore((state) => state.cancelUpload);
   const setReplyMessage = useSupportStore((state) => state.setReplyMessage);
   const clearMessages = useSupportStore((state) => state.clearMessages);
   const requestFeedbackPrompt = useFeedbackStore((state) => state.requestPrompt);
@@ -116,6 +121,13 @@ export function TicketDetailsScreen({ navigation, route }: TicketDetailsScreenPr
                     <SupportMessageBubble
                       key={String(message.id ?? `${activeTicket.id}-${index}`)}
                       message={message}
+                      onViewAttachment={(entry) =>
+                        entry.id !== undefined &&
+                        navigation.navigate(ProfileRoutes.SupportAttachment, {
+                          messageId: entry.id,
+                          title: t.support.details.primaryMessage,
+                        })
+                      }
                     />
                   ))}
                 </Stack>
@@ -134,8 +146,12 @@ export function TicketDetailsScreen({ navigation, route }: TicketDetailsScreenPr
               />
               {canReply ? (
                 <SupportMessageInput
+                  attachment={replyAttachment}
                   error={validation.replyMessage}
                   loading={isSendingMessage}
+                  onCancelUpload={cancelUpload}
+                  onChangeAttachment={setReplyAttachment}
+                  uploadPercent={uploadPercent}
                   onChangeText={setReplyMessage}
                   onSubmit={handleSendMessage}
                   value={replyMessage}

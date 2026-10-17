@@ -91,14 +91,32 @@ export async function submitFeedback(
   );
 }
 
-export function loadMyFeedback(authToken: string): Promise<PaginatedResult<FeedbackRecord>> {
-  return apiClient.get(endpoints.feedback.mine, { authToken });
+export function loadMyFeedback(
+  authToken: string,
+  page = 1,
+): Promise<PaginatedResult<FeedbackRecord>> {
+  return apiClient.get(endpoints.feedback.mine, { authToken, query: { page } });
 }
 
 export function loadPublicSuggestions(
   authToken: string,
+  page = 1,
 ): Promise<PaginatedResult<PublicSuggestion>> {
-  return apiClient.get(endpoints.feedback.suggestions, { authToken });
+  return apiClient.get(endpoints.feedback.suggestions, { authToken, query: { page } });
+}
+
+export type FeedbackPrivacyAction = 'hide' | 'delete';
+
+/** Hide an entry from the public list, or ask the team to delete it. */
+export function requestFeedbackPrivacy(
+  feedbackId: number,
+  action: FeedbackPrivacyAction,
+  authToken: string,
+) {
+  return apiClient.post<
+    { id: number; is_hidden: boolean; deletion_requested: boolean },
+    { action: FeedbackPrivacyAction }
+  >(endpoints.feedback.privacyRequest(feedbackId), { action }, { authToken });
 }
 
 export function toggleSuggestionVote(feedbackId: number, authToken: string) {

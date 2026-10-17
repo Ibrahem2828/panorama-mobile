@@ -32,6 +32,8 @@ export const TabRoutes = {
 
 export const HomeRoutes = {
   Home: 'Home',
+  AnnouncementsList: 'AnnouncementsList',
+  AnnouncementDetail: 'AnnouncementDetail',
 } as const;
 
 export const SubjectsRoutes = {
@@ -59,6 +61,7 @@ export const PrintingRoutes = {
   PrintPriceSummary: 'PrintPriceSummary',
   MyPrintOrders: 'MyPrintOrders',
   PrintOrderDetails: 'PrintOrderDetails',
+  PrintItemViewer: 'PrintItemViewer',
 } as const;
 
 export const ProfileRoutes = {
@@ -72,6 +75,7 @@ export const ProfileRoutes = {
   SupportTickets: 'SupportTickets',
   CreateSupportTicket: 'CreateSupportTicket',
   TicketDetails: 'TicketDetails',
+  SupportAttachment: 'SupportAttachment',
   PrivacyPolicy: 'PrivacyPolicy',
   Terms: 'Terms',
   About: 'About',

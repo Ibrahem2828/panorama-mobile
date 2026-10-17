@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { AnnouncementDetailScreen, AnnouncementsListScreen } from '../../features/announcements';
 import { FileDetailsScreen } from '../../features/files/screens/FileDetailsScreen';
 import { FilesListScreen } from '../../features/files/screens/FilesListScreen';
 import { PdfViewerScreen } from '../../features/files/screens/PdfViewerScreen';
@@ -17,6 +18,8 @@ export function HomeStackNavigator() {
   return (
     <Stack.Navigator initialRouteName={HomeRoutes.Home} screenOptions={hiddenStackScreenOptions}>
       <Stack.Screen component={HomeScreen} name={HomeRoutes.Home} />
+      <Stack.Screen component={AnnouncementsListScreen} name={HomeRoutes.AnnouncementsList} />
+      <Stack.Screen component={AnnouncementDetailScreen} name={HomeRoutes.AnnouncementDetail} />
       <Stack.Screen component={FilesListScreen} name={SharedRoutes.FilesList} />
       <Stack.Screen component={FileDetailsScreen} name={SharedRoutes.FileDetails} />
       <Stack.Screen component={PdfViewerScreen} name={SharedRoutes.PdfViewer} />

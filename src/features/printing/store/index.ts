@@ -1,1 +1,1 @@
-export { usePrintingStore } from './printingStore';
+export { isQuoteFresh, usePrintingStore } from './printingStore';

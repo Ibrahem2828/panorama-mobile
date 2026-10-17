@@ -233,6 +233,34 @@ export async function loadFiles(authToken: string): Promise<PaginatedResult<File
   return normalizeFileList(await apiFilesService.listFiles(authToken));
 }
 
+export const FILES_PAGE_SIZE = 20;
+
+export type FilesPageParams = {
+  page: number;
+  search?: string;
+  subjectId?: Id;
+  printableOnly?: boolean;
+  ordering?: string;
+};
+
+/** One server-filtered page of the files the student may see. */
+export async function loadFilesPage(
+  authToken: string,
+  params: FilesPageParams,
+): Promise<PaginatedResult<FileResource>> {
+  return normalizeFileList(
+    await apiFilesService.listFiles(authToken, {
+      page: params.page,
+      pageSize: FILES_PAGE_SIZE,
+      search: params.search?.trim() || undefined,
+      ordering: params.ordering || undefined,
+      subject: params.subjectId,
+      isActive: true,
+      isPrintable: params.printableOnly ? true : undefined,
+    }),
+  );
+}
+
 export async function loadFileDetail(fileId: Id, authToken: string): Promise<FileResource> {
   return normalizeFile(await apiFilesService.getFileDetail(fileId, authToken));
 }

@@ -29,11 +29,12 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
   const orders = usePrintingStore((state) => state.orders);
   const ordersCount = usePrintingStore((state) => state.ordersCount);
   const isLoadingOrders = usePrintingStore((state) => state.isLoadingOrders);
-  const errorMessage = usePrintingStore((state) => state.errorMessage);
+  const errorMessage = usePrintingStore((state) => state.ordersError);
   const loadMyOrders = usePrintingStore((state) => state.loadMyOrders);
 
   useEffect(() => {
-    void loadMyOrders();
+    // The home card always shows the newest order, whatever filter the orders list used.
+    void loadMyOrders('');
   }, [loadMyOrders]);
 
   const latestOrder = orders[0];
@@ -72,7 +73,9 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
 
         <PrintingFutureOptionsCard />
 
-        {errorMessage ? <ErrorState message={errorMessage} onRetry={loadMyOrders} /> : null}
+        {errorMessage ? (
+          <ErrorState message={errorMessage} onRetry={() => void loadMyOrders()} />
+        ) : null}
 
         <Stack gap="md">
           <SectionHeader
@@ -84,10 +87,8 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
           ) : latestOrder ? (
             <PrintOrderCard
               order={latestOrder}
-              onPress={() =>
-                navigation.navigate(PrintingRoutes.PrintOrderDetails, {
-                  orderId: latestOrder.id,
-                })
+              onPress={(order) =>
+                navigation.navigate(PrintingRoutes.PrintOrderDetails, { orderId: order.id })
               }
             />
           ) : (

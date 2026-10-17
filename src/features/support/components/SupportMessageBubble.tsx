@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-import { AppCard, AppText, Stack } from '../../../components';
+import { AppButton, AppCard, AppText, Icon, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { formatDateTime } from '../../../utils/formatDateTime';
 import { colors, useBrand } from '../../../theme';
@@ -9,9 +9,10 @@ import type { SupportTicketMessage } from '../types';
 
 type SupportMessageBubbleProps = {
   message: SupportTicketMessage;
+  onViewAttachment?: (message: SupportTicketMessage) => void;
 };
 
-export function SupportMessageBubble({ message }: SupportMessageBubbleProps) {
+export function SupportMessageBubble({ message, onViewAttachment }: SupportMessageBubbleProps) {
   const { t, locale } = useTranslation();
   const brand = useBrand();
   const isStaff = isSupportStaffMessage(message);
@@ -31,6 +32,15 @@ export function SupportMessageBubble({ message }: SupportMessageBubbleProps) {
         <AppText color="secondary" variant="bodySmall">
           {getSupportMessageText(message, t.support)}
         </AppText>
+        {message.has_attachment && message.id !== undefined && onViewAttachment ? (
+          <AppButton
+            leftIcon={<Icon color={brand.primary} name="paperclip" size={16} />}
+            onPress={() => onViewAttachment(message)}
+            size="sm"
+            title={t.attachments.viewAttachment}
+            variant="outline"
+          />
+        ) : null}
         {date ? (
           <AppText color="muted" variant="caption">
             {date}

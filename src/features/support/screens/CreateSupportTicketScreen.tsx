@@ -16,6 +16,7 @@ import { useTranslation } from '../../../i18n';
 import { ProfileRoutes } from '../../../navigation/routes';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
+import { AttachmentPicker } from '../../attachments';
 import { SupportCategorySelector } from '../components';
 import { useSupportStore } from '../store';
 
@@ -33,6 +34,9 @@ export function CreateSupportTicketScreen({ navigation }: CreateSupportTicketScr
   const setCategory = useSupportStore((state) => state.setCategory);
   const setSubject = useSupportStore((state) => state.setSubject);
   const setMessage = useSupportStore((state) => state.setMessage);
+  const setAttachment = useSupportStore((state) => state.setAttachment);
+  const uploadPercent = useSupportStore((state) => state.uploadPercent);
+  const cancelUpload = useSupportStore((state) => state.cancelUpload);
   const createTicket = useSupportStore((state) => state.createTicket);
   const resetCreateDraft = useSupportStore((state) => state.resetCreateDraft);
   const clearMessages = useSupportStore((state) => state.clearMessages);
@@ -90,6 +94,13 @@ export function CreateSupportTicketScreen({ navigation }: CreateSupportTicketScr
           value={createDraft.message}
         />
 
+        <AttachmentPicker
+          disabled={isCreating}
+          file={createDraft.attachment}
+          onChange={setAttachment}
+          uploadPercent={isCreating ? uploadPercent : null}
+        />
+
         {errorMessage ? <ErrorState kind="server" message={errorMessage} /> : null}
 
         <Stack gap="sm">
@@ -101,7 +112,16 @@ export function CreateSupportTicketScreen({ navigation }: CreateSupportTicketScr
             }}
             title={t.support.create.submit}
           />
-          <AppButton fullWidth onPress={handleCancel} title={t.common.cancel} variant="outline" />
+          {isCreating && uploadPercent !== null ? (
+            <AppButton
+              fullWidth
+              onPress={cancelUpload}
+              title={t.support.cancelUpload}
+              variant="outline"
+            />
+          ) : (
+            <AppButton fullWidth onPress={handleCancel} title={t.common.cancel} variant="outline" />
+          )}
         </Stack>
       </Stack>
     </AppScreen>
