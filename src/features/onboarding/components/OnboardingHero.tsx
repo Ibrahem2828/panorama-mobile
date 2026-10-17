@@ -31,7 +31,7 @@ const FACULTY_ORDER = [
 const STAGE = 264;
 const CORE = 128;
 const CHIP = 56;
-const FACULTY_LOGO = 44;
+const FACULTY_LOGO = 38;
 
 /**
  * Brand-coloured illustration built from the icon set: a soft disc, a solid core with the
@@ -158,17 +158,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
+  // The logos are transparent cut-outs, so they sit directly on the page: no circle, border or box.
   facultyLogo: {
-    width: FACULTY_LOGO,
+    width: FACULTY_LOGO * 1.3,
     height: FACULTY_LOGO,
-    overflow: 'hidden',
-    borderRadius: FACULTY_LOGO / 2,
-    borderWidth: 1,
-    borderColor: colors.border.default,
-    backgroundColor: colors.background.surface,
   },
   facultyImage: {
-    width: FACULTY_LOGO,
+    width: FACULTY_LOGO * 1.3,
     height: FACULTY_LOGO,
   },
 });

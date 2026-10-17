@@ -216,6 +216,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       versionCode: 210,
       adaptiveIcon: {
         foregroundImage: './src/assets/app/adaptive-icon.png',
+        monochromeImage: './src/assets/app/adaptive-icon-monochrome.png',
         backgroundColor: '#FFFFFF',
       },
       permissions: ['POST_NOTIFICATIONS'],

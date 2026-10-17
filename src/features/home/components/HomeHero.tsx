@@ -2,7 +2,7 @@ import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, Icon } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import { colors, radius, useBrand } from '../../../theme';
+import { colors, radius, shadows, useBrand } from '../../../theme';
 
 type HomeHeroProps = {
   displayName?: string | null;
@@ -17,6 +17,10 @@ function firstName(name?: string | null) {
   return name?.trim().split(/\s+/u)[0] ?? null;
 }
 
+/**
+ * Light hero: the faculty logo is a transparent cut-out, so it sits straight on the soft faculty tint
+ * with no box behind it. Colour comes from the student's faculty through `useBrand()`.
+ */
 export function HomeHero({
   displayName,
   facultyName,
@@ -30,23 +34,28 @@ export function HomeHero({
   const name = firstName(displayName);
 
   return (
-    <View style={[styles.hero, { backgroundColor: brand.primary }]}>
-      <View pointerEvents="none" style={styles.circleLarge} />
-      <View pointerEvents="none" style={styles.circleSmall} />
+    <View style={[styles.hero, { backgroundColor: brand.primarySoft }]}>
+      <View
+        pointerEvents="none"
+        style={[styles.circleLarge, { backgroundColor: brand.ribbon[0] }]}
+      />
+      <View
+        pointerEvents="none"
+        style={[styles.circleSmall, { backgroundColor: brand.ribbon[1] }]}
+      />
+
       <View style={styles.topRow}>
-        <View style={styles.logoBadge}>
-          <Image
-            accessibilityIgnoresInvertColors
-            resizeMode="contain"
-            source={brand.logo}
-            style={styles.logo}
-          />
-        </View>
+        <Image
+          accessibilityIgnoresInvertColors
+          resizeMode="contain"
+          source={brand.logo}
+          style={styles.logo}
+        />
         <View style={styles.textBlock}>
-          <AppText style={styles.greeting} variant="caption" weight="600">
+          <AppText color="secondary" variant="caption" weight="600">
             {t.home.hero.welcome}
           </AppText>
-          <AppText numberOfLines={1} style={styles.name} variant="h3">
+          <AppText numberOfLines={1} variant="h3">
             {name ?? t.home.hero.guest}
           </AppText>
         </View>
@@ -56,7 +65,7 @@ export function HomeHero({
           onPress={onOpenNotifications}
           style={styles.bell}
         >
-          <Icon color="#FFFFFF" name="bell" size={22} />
+          <Icon color={brand.primary} name="bell" size={22} />
           {unreadCount > 0 ? (
             <View style={[styles.dot, { backgroundColor: brand.accent }]}>
               <AppText style={styles.dotText} variant="caption" weight="700">
@@ -71,15 +80,20 @@ export function HomeHero({
         <View style={styles.chips}>
           {facultyName ? (
             <View style={styles.chip}>
-              <Icon color="#FFFFFF" name="cap" size={14} />
-              <AppText numberOfLines={1} style={styles.chipText} variant="caption" weight="600">
+              <Icon color={brand.primary} name="cap" size={14} />
+              <AppText
+                numberOfLines={1}
+                style={{ color: brand.primary }}
+                variant="caption"
+                weight="700"
+              >
                 {facultyName}
               </AppText>
             </View>
           ) : null}
           {levelLabel ? (
             <View style={styles.chip}>
-              <AppText numberOfLines={1} style={styles.chipText} variant="caption" weight="600">
+              <AppText color="secondary" numberOfLines={1} variant="caption" weight="600">
                 {levelLabel}
               </AppText>
             </View>
@@ -93,7 +107,7 @@ export function HomeHero({
         onPress={onOpenSearch}
         style={styles.search}
       >
-        <Icon color={colors.text.muted} name="search" size={20} />
+        <Icon color={brand.primary} name="search" size={20} />
         <AppText color="muted" variant="bodySmall">
           {t.home.hero.searchPlaceholder}
         </AppText>
@@ -105,56 +119,47 @@ export function HomeHero({
 const styles = StyleSheet.create({
   circleLarge: {
     position: 'absolute',
-    top: -70,
-    end: -60,
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    top: -90,
+    end: -70,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    opacity: 0.22,
   },
   circleSmall: {
     position: 'absolute',
-    bottom: -50,
-    start: -40,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    bottom: -70,
+    start: -50,
+    width: 170,
+    height: 170,
+    borderRadius: 85,
+    opacity: 0.12,
   },
   hero: {
     overflow: 'hidden',
-    gap: 16,
+    gap: 14,
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 18,
     paddingBottom: 22,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
   },
-  topRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  logoBadge: {
-    width: 56,
-    height: 48,
-    borderRadius: radius.lg,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logo: { width: 48, height: 38 },
+  topRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  logo: { width: 112, height: 88 },
   textBlock: { flex: 1, minWidth: 0 },
-  greeting: { color: 'rgba(255,255,255,0.78)' },
-  name: { color: '#FFFFFF' },
   bell: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: '#FFFFFF',
+    ...shadows.sm,
   },
   dot: {
     position: 'absolute',
-    top: 2,
-    end: 2,
+    top: 0,
+    end: 0,
     minWidth: 18,
     height: 18,
     paddingHorizontal: 4,
@@ -172,16 +177,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: radius.full,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.85)',
   },
-  chipText: { color: '#FFFFFF' },
   search: {
-    minHeight: 48,
+    minHeight: 50,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     paddingHorizontal: 16,
     borderRadius: radius.xl,
     backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: colors.border.default,
+    ...shadows.xs,
   },
 });
