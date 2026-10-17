@@ -59,7 +59,6 @@ function getQuickActions(
     { key: 'groups', title: t.groups, description: t.groupsDescription },
     { key: 'files', title: t.files, description: t.filesDescription },
     { key: 'lectures', title: t.lectures, description: t.lecturesDescription },
-    { key: 'search', title: t.search, description: t.searchDescription },
     { key: 'printing', title: t.printing, description: t.printingDescription },
     { key: 'support', title: t.support, description: t.supportDescription },
     {

@@ -1,4 +1,3 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, Icon } from '../../../components';
@@ -31,12 +30,9 @@ export function HomeHero({
   const name = firstName(displayName);
 
   return (
-    <LinearGradient
-      colors={[brand.deep, brand.primary]}
-      end={{ x: 1, y: 1 }}
-      start={{ x: 0, y: 0 }}
-      style={styles.hero}
-    >
+    <View style={[styles.hero, { backgroundColor: brand.primary }]}>
+      <View pointerEvents="none" style={styles.circleLarge} />
+      <View pointerEvents="none" style={styles.circleSmall} />
       <View style={styles.topRow}>
         <View style={styles.logoBadge}>
           <Image
@@ -102,12 +98,31 @@ export function HomeHero({
           {t.home.hero.searchPlaceholder}
         </AppText>
       </Pressable>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  circleLarge: {
+    position: 'absolute',
+    top: -70,
+    end: -60,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+  },
+  circleSmall: {
+    position: 'absolute',
+    bottom: -50,
+    start: -40,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
   hero: {
+    overflow: 'hidden',
     gap: 16,
     paddingHorizontal: 20,
     paddingTop: 20,

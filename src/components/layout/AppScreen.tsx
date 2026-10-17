@@ -1,7 +1,7 @@
 import type { ReactElement, ReactNode } from 'react';
 import type { RefreshControlProps, StyleProp, ViewStyle } from 'react-native';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, layout } from '../../theme';
 
@@ -30,13 +30,16 @@ export function AppScreen({
   style,
   contentContainerStyle,
 }: AppScreenProps) {
-  const Container = safeArea ? SafeAreaView : View;
+  // Plain View + inset padding: the safe-area-context SafeAreaView measured to zero height inside the tab navigator.
+  const insets = useSafeAreaInsets();
+  const Container = View;
+  const insetStyle = { paddingTop: safeArea ? insets.top : 0 };
   const widthStyle =
     maxContentWidth === false ? styles.fill : [styles.capped, { maxWidth: maxContentWidth }];
 
   if (scroll) {
     return (
-      <Container style={[styles.root, { backgroundColor }, style]}>
+      <Container style={[styles.root, { backgroundColor }, insetStyle, style]}>
         <ScrollView
           contentContainerStyle={[
             styles.scrollContent,
@@ -53,7 +56,7 @@ export function AppScreen({
   }
 
   return (
-    <Container style={[styles.root, { backgroundColor }, style]}>
+    <Container style={[styles.root, { backgroundColor }, insetStyle, style]}>
       <View style={[styles.inner, horizontalPadding ? styles.horizontalPadding : null, widthStyle]}>
         {children}
       </View>
