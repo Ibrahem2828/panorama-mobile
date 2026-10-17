@@ -30,6 +30,8 @@ type GroupsState = {
   isLoadingAvailable: boolean;
   isLoadingMoreAvailable: boolean;
   isLoadingMyGroups: boolean;
+  /** The last my-groups load failed (so an empty list does not mean 'not a member'). */
+  myGroupsLoadFailed: boolean;
   isLoadingDetail: boolean;
   isRefreshing: boolean;
   isSubmittingMembership: boolean;
@@ -131,6 +133,7 @@ const initialGroupsState = {
   isLoadingAvailable: false,
   isLoadingMoreAvailable: false,
   isLoadingMyGroups: false,
+  myGroupsLoadFailed: false,
   isLoadingDetail: false,
   isRefreshing: false,
   isSubmittingMembership: false,
@@ -352,10 +355,15 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
 
       try {
         await reloadMyGroups(accessToken);
-        set({ isLoadingMyGroups: false, lastLoadedAt: new Date().toISOString() });
+        set({
+          isLoadingMyGroups: false,
+          myGroupsLoadFailed: false,
+          lastLoadedAt: new Date().toISOString(),
+        });
       } catch (error) {
         set({
           isLoadingMyGroups: false,
+          myGroupsLoadFailed: true,
           errorMessage: toSafeGroupsErrorMessage(error, groupsCatalog()),
         });
       }
@@ -466,7 +474,13 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
           applyStatus(groupId, result.status);
         }
 
-        set({ successMessage: groupsCatalog().messages.joinSuccess });
+        const approved = (result.status ?? optimistic) === 'approved';
+
+        set({
+          successMessage: approved
+            ? groupsCatalog().messages.joinApproved
+            : groupsCatalog().messages.joinSuccess,
+        });
         void useFeedbackStore.getState().requestPrompt({
           context: 'group',
           actionKey: 'group.joined',

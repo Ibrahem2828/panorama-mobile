@@ -372,6 +372,8 @@ export const en: TranslationCatalog = {
         'You are blocked from this subject’s group, so lectures and files are unavailable. Contact support if this is a mistake.',
       left: 'You left this subject’s group. Join again to unlock lectures and files.',
       rejoin: 'Send a new join request',
+      loadError:
+        'We could not check your membership in the subject group. Check your connection and try again.',
     },
     general: 'General subject',
     resultsCount: (count: number) => `${count} subjects`,
@@ -1778,6 +1780,7 @@ export const en: TranslationCatalog = {
 
     messages: {
       joinSuccess: 'Your join request has been sent.',
+      joinApproved: 'You have joined the group.',
       leaveSuccess: 'You have left the group.',
       joinError: 'Could not send the join request. Please try again.',
       leaveError: 'Could not leave the group. Please try again.',

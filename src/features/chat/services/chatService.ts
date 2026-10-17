@@ -5,6 +5,7 @@ import {
 } from '../../../api';
 import { isTrustedBackendUrl } from '../../../utils/trustedUrl';
 import type { TranslationCatalog } from '../../../i18n';
+import { resolveMembershipState } from '../../groups/services/membership';
 import { buildMessageFormData } from '../logic/attachments';
 import { mergeChatMessages, normalizeChatMessage } from '../logic/messages';
 import type { ChatAttachment, ChatMessage, ChatSendPermission, Id } from '../types';
@@ -15,8 +16,6 @@ type ChatCatalog = TranslationCatalog['chat'];
 export const MESSAGES_PAGE_SIZE = 30;
 
 const ADMIN_ROLES = new Set(['admin', 'group_admin', 'moderator', 'it_support']);
-const APPROVED_MEMBERSHIP_STATUSES = new Set(['approved', 'member']);
-const BLOCKED_MEMBERSHIP_STATUSES = new Set(['blocked', 'rejected', 'left', 'none', 'pending']);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -38,21 +37,25 @@ function readMembership(group: Record<string, unknown>) {
   const status = toText(group.current_user_membership_status)?.toLowerCase();
   const role = toText(group.current_user_group_role)?.toLowerCase() ?? null;
 
-  return { status, role, isAdmin: isAdminRole(role) };
+  // Membership itself is decided by groups/services/membership.ts (single source of truth).
+  const membership = resolveMembershipState({
+    current_user_membership_status: status,
+    current_user_group_role: role,
+  });
+
+  return { status, role, isAdmin: isAdminRole(role), membership };
 }
 
 /**
- * Only approved members (or staff roles) may open a group's chat. A loaded group with no
- * membership status is someone who never joined, so it is NOT a member.
+ * Only approved members may open a group's chat (same rule as the group screens). A loaded group
+ * with no membership status and no member role is someone who never joined.
  */
 export function canOpenGroupChat(group: unknown): boolean {
   if (!isRecord(group)) {
     return false;
   }
 
-  const { status, isAdmin } = readMembership(group);
-
-  return isAdmin || Boolean(status && APPROVED_MEMBERSHIP_STATUSES.has(status));
+  return readMembership(group).membership.canOpenContent;
 }
 
 export function canSendMessageToGroup(
@@ -68,19 +71,15 @@ export function canSendMessageToGroup(
     return { allowed: false, reason: t.permission.undetermined, permission: 'unknown' };
   }
 
-  const { status, isAdmin } = readMembership(group);
+  const { isAdmin, membership } = readMembership(group);
   const sendPermission = toText(group.send_messages_permission)?.toLowerCase();
-  const isApprovedMember = isAdmin || Boolean(status && APPROVED_MEMBERSHIP_STATUSES.has(status));
+  const isApprovedMember = membership.canOpenContent;
 
-  if (!status && !isAdmin) {
-    return { allowed: false, reason: t.permission.membersOnly, permission: 'not_member' };
-  }
-
-  if (status && BLOCKED_MEMBERSHIP_STATUSES.has(status) && !isAdmin) {
+  if (!isApprovedMember) {
     return {
       allowed: false,
       reason: t.permission.membersOnly,
-      permission: status === 'blocked' ? 'blocked' : 'not_member',
+      permission: membership.kind === 'blocked' ? 'blocked' : 'not_member',
     };
   }
 

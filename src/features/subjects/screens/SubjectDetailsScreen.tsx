@@ -66,6 +66,7 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
   function handleRetry() {
     didAttemptReload.current = true;
     void refreshSubjects();
+    void access.reload();
   }
 
   function handleOpenGroups() {
@@ -158,7 +159,9 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
         ) : null}
         {access.status === 'member' ? (
           <SubjectLecturesSection subjectId={subject.id} />
-        ) : access.status === 'loading' ? null : (
+        ) : access.status === 'loading' ? null : access.status === 'error' ? (
+          <ErrorState message={t.subjects.locked.loadError} onRetry={() => void access.reload()} />
+        ) : (
           <SubjectLockedCard membership={access.membership} onOpenGroups={handleOpenGroups} />
         )}
       </Stack>
