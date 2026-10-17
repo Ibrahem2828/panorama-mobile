@@ -180,7 +180,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
   };
 
-  return withWhatsAppPackageVisibility(
-    withAndroidCleartextTraffic(expoConfig, { enabled: allowDevelopmentCleartext }),
+  return withDefaultRtl(
+    withWhatsAppPackageVisibility(
+      withAndroidCleartextTraffic(expoConfig, { enabled: allowDevelopmentCleartext }),
+    ),
   );
 };
