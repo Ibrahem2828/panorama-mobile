@@ -98,5 +98,7 @@ export const endpoints = {
     mine: `${API_PREFIX}/feedback/mine/`,
     suggestions: `${API_PREFIX}/feedback/suggestions/`,
     vote: (feedbackId: EndpointId) => `${API_PREFIX}/feedback/${feedbackId}/vote/`,
+    privacyRequest: (feedbackId: EndpointId) =>
+      `${API_PREFIX}/feedback/${feedbackId}/privacy-request/`,
   },
 } as const;
