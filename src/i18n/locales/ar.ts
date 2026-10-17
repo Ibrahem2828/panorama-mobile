@@ -108,9 +108,17 @@ export const ar = {
     studentSetup: 'إعداد حساب الطالب',
   },
 
+  forms: {
+    close: 'إغلاق',
+    searchPlaceholder: 'ابحث...',
+    noResults: 'لا توجد نتائج مطابقة.',
+    noOptions: 'لا توجد خيارات متاحة حاليًا.',
+  },
+
   otpInput: {
     digitLabel: (index: number, total: number) => `الرقم ${index} من ${total}`,
     verified: 'تم التحقق بنجاح',
+    inputLabel: (total: number) => `رمز التحقق المكوّن من ${total} أرقام`,
   },
 
   placeholder: {
@@ -601,14 +609,22 @@ export const ar = {
       'تعذر تحميل قائمة الجامعات الآن. حاول مرة أخرى، وإن استمرت المشكلة تواصل مع الدعم.',
     studentNumberTitle: 'الرقم الجامعي',
     studentNumberHelper: 'أدخل رقمك الجامعي كما يظهر على بطاقتك.',
+    studentNumberPlaceholder: '2150094',
+    academicSectionTitle: 'بياناتك الدراسية',
+    universityPlaceholder: 'اختر الجامعة',
+    facultyPlaceholder: 'اختر الكلية',
+    facultyNone: 'لا توجد كليات متاحة لهذه الجامعة حاليًا.',
+    academicYearPlaceholder: 'اختر السنة الدراسية',
+    semesterPlaceholder: 'اختر الفصل الدراسي',
+    majorNone: 'بدون تخصص',
+    majorNoneAvailable: 'لا توجد اختصاصات لهذه الكلية. هذا الحقل اختياري.',
     parseNumber: 'قراءة الرقم',
     universityLabel: 'الجامعة',
     universityEmpty: 'لا توجد جامعات متاحة حاليًا.',
     facultyLabel: 'الكلية',
     facultyEmpty: 'اختر الجامعة أولًا لتظهر الكليات.',
     majorLabel: 'الاختصاص (اختياري)',
-    majorOptionalHint:
-      'الاختصاص اختياري ويبدأ من السنة الثالثة. يمكنك تركه فارغًا، أو إلغاء اختياره بالضغط عليه مرة أخرى.',
+    majorOptionalHint: 'اختياري، ويبدأ الاختصاص عادةً من السنة الثالثة.',
     majorEmpty: 'اختر الكلية أولًا لتظهر الاختصاصات.',
     academicYearLabel: 'السنة الدراسية',
     academicYearEmpty: 'لا توجد سنوات دراسية متاحة حاليًا.',
@@ -625,6 +641,7 @@ export const ar = {
       emptyText: 'لا توجد خيارات متاحة حاليًا.',
       loading: 'جارٍ تحميل الخيارات...',
       selected: 'محدد',
+      placeholder: 'اختر',
     },
 
     intro: {
@@ -636,11 +653,12 @@ export const ar = {
       academicProfile: 'الملف الأكاديمي',
       studentCard: 'بطاقة الطالب',
       verificationStatus: 'حالة التوثيق',
+      stepOf: (current: number, total: number) => `الخطوة ${current} من ${total}`,
     },
 
     numberPreview: {
-      title: 'معاينة الرقم الجامعي',
-      hint: 'أدخل رقمك الجامعي ثم اضغط «قراءة الرقم» لترى البيانات المرتبطة به قبل الحفظ.',
+      title: 'تعرّفنا على بياناتك',
+      hint: 'اكتب رقمك الجامعي ثم اضغط «قراءة الرقم» لنتعرّف على كليتك وسنتك الدراسية.',
       noDetails: 'قرأنا الرقم، لكن لا توجد تفاصيل إضافية لعرضها.',
       studentNumber: 'الرقم الجامعي',
       universityCode: 'رمز الجامعة',
@@ -720,22 +738,37 @@ export const ar = {
         'لم ترسل طلب توثيق بعد. التوثيق مطلوب للوصول إلى المجموعات والملفات وخدمات الطلاب.',
     },
 
+    timeline: {
+      label: 'مراحل التوثيق',
+      submitted: 'تم إرسال الطلب',
+      submittedPending: 'أرسل صورة بطاقتك لنبدأ',
+      review: 'قيد المراجعة',
+      reviewCurrent: 'تراجع الإدارة بطاقتك الآن',
+      reviewUpcoming: 'تراجع الإدارة بطاقتك بعد الإرسال',
+      approved: 'تم التوثيق',
+      needsUpdate: 'بحاجة إلى صورة محدّثة',
+      decisionUpcoming: 'ستصلك النتيجة هنا',
+    },
+
     imagePicker: {
       title: 'صورة بطاقة الطالب',
       description:
         'اختر من المعرض صورة واضحة تظهر فيها بطاقتك كاملة دون انعكاس أو قص، مع وضوح الاسم والرقم الجامعي.',
-      guideAlt: 'دليل تصوير بطاقة الطالب',
-      exampleAlt: (label: string) => `مثال: بطاقة ${label}`,
-      noImage: 'لم تختر صورة بعد.',
-      pick: 'اختيار صورة',
+      pick: 'اختر صورة من المعرض',
+      pickHint: 'بطاقتك كاملة وبوضوح',
+      previewAlt: 'صورة بطاقتك الجامعية المختارة',
+      uploading: (percent: number) => `جارٍ رفع الصورة ${percent}%`,
+      tipsTitle: 'لتتم الموافقة بسرعة',
+      goodWhole: 'البطاقة ظاهرة كاملة داخل الصورة',
+      goodReadable: 'الاسم والرقم الجامعي واضحان',
+      goodLight: 'إضاءة جيدة بدون انعكاس',
+      badCropped: 'صورة مقصوصة أو ناقصة',
+      badBlurry: 'صورة مهتزة أو غير واضحة',
+      badGlare: 'صورة مظلمة أو عليها انعكاس',
       replace: 'استبدال الصورة',
       remove: 'إزالة الصورة',
       permissionDenied: 'اسمح للتطبيق بالوصول إلى الصور لتختار صورة بطاقتك.',
       invalidImage: 'تعذر استخدام هذه الصورة. اختر صورة أخرى.',
-      exampleClear: 'واضحة',
-      exampleBlurry: 'غير واضحة',
-      exampleCropped: 'مقصوصة',
-      exampleDark: 'مظلمة',
     },
   },
 
@@ -873,7 +906,7 @@ export const ar = {
       email: 'البريد الإلكتروني',
       fullName: 'الاسم الكامل',
       phone: 'رقم الهاتف',
-      phonePlaceholder: 'رقم الجوال بدون مفتاح الدولة',
+      phonePlaceholder: '9XX XXX XXX',
       studentNumber: 'الرقم الجامعي',
       password: 'كلمة المرور',
       passwordPlaceholder: 'أدخل كلمة المرور',
@@ -883,6 +916,10 @@ export const ar = {
       show: 'إظهار',
       hide: 'إخفاء',
       otpCode: 'رمز التحقق',
+      emailPlaceholder: 'name@example.com',
+      studentNumberHelper: 'كما يظهر على بطاقتك الجامعية.',
+      passwordHint: 'ثمانية أحرف على الأقل.',
+      passwordConfirmPlaceholder: 'أعد كتابة كلمة المرور',
     },
 
     login: {
@@ -893,6 +930,9 @@ export const ar = {
       createAccount: 'إنشاء حساب جديد',
       forgotPassword: 'نسيت كلمة المرور؟',
       missingCredentials: 'أدخل بريدك أو رقم هاتفك مع كلمة المرور.',
+      identifierRequired: 'أدخل بريدك أو رقم هاتفك.',
+      passwordRequired: 'أدخل كلمة المرور.',
+      noAccount: 'ليس لديك حساب بعد؟',
     },
 
     accountType: {
@@ -936,7 +976,7 @@ export const ar = {
       cardSubtitle: 'الرمز صالح لمدة قصيرة، ولا تشاركه مع أي شخص.',
       submit: 'تأكيد الرمز',
       resend: 'إعادة إرسال الرمز',
-      resendIn: (seconds: number) => `إعادة الإرسال بعد ${seconds} ث`,
+      resendIn: (time: string) => `يمكنك إعادة الإرسال بعد ${time}`,
       spamHint:
         'لم يصلك الرمز؟ تفقّد مجلد الرسائل غير المرغوب فيها (Spam)، ثم أعد الإرسال بعد انتهاء المؤقت.',
       wrongEmail: 'البريد غير صحيح؟ ارجع وصحّحه',
@@ -956,6 +996,18 @@ export const ar = {
       cardTitle: 'إعادة تعيين كلمة المرور',
       cardSubtitle: (identifier: string) => `أدخل الرمز المرسل إلى ${identifier}.`,
       submit: 'حفظ كلمة المرور',
+      newPassword: 'كلمة المرور الجديدة',
+    },
+
+    consent: {
+      loading: 'جارٍ تجهيز الموافقات...',
+      loadFailed: 'تعذر تحميل الشروط والسياسات. أعد المحاولة للمتابعة.',
+      termsPrefix: 'قرأت ووافقت على ',
+      privacyPrefix: 'قرأت ووافقت على ',
+      terms: 'الشروط والأحكام',
+      privacy: 'سياسة الخصوصية',
+      termsRequired: 'يجب الموافقة على الشروط والأحكام للمتابعة.',
+      privacyRequired: 'يجب الموافقة على سياسة الخصوصية للمتابعة.',
     },
 
     bootstrap: {

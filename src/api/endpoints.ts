@@ -44,6 +44,7 @@ export const endpoints = {
   },
   search: `${API_PREFIX}/search/`,
   policies: {
+    current: `${API_PREFIX}/policies/current/`,
     status: `${API_PREFIX}/policies/status/`,
     accept: `${API_PREFIX}/policies/accept/`,
   },

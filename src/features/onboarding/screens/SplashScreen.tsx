@@ -2,13 +2,17 @@ import { StyleSheet } from 'react-native';
 
 import { images } from '../../../assets/images';
 import { AppScreen, AppText, Illustration, Stack } from '../../../components';
-import { spacing } from '../../../theme';
+import { colors, spacing } from '../../../theme';
 import { useTranslation } from '../../../i18n';
 
 export function SplashScreen() {
   const { t } = useTranslation();
   return (
-    <AppScreen contentContainerStyle={styles.content} safeArea>
+    <AppScreen
+      backgroundColor={colors.background.surface}
+      contentContainerStyle={styles.content}
+      safeArea
+    >
       <Stack gap="xl" style={styles.center}>
         <Illustration
           accessibilityLabel={t.auth.logoAlt}

@@ -1,130 +1,134 @@
 import { StyleSheet, View } from 'react-native';
 
-import { AppCard, AppText, Stack } from '../../../components';
-import { colors, spacing } from '../../../theme';
+import { AppText, Icon } from '../../../components';
+import type { IconName } from '../../../components';
+import { colors, radius, spacing } from '../../../theme';
 import type { AcademicOption, ParsedStudentNumber } from '../types';
-import { useTranslation, type TranslationCatalog } from '../../../i18n';
+import { useTranslation } from '../../../i18n';
 
 type StudentNumberPreviewCardProps = {
   parsedStudentNumber: ParsedStudentNumber | null;
 };
 
-type PreviewRow = {
+type DetectedRow = {
+  key: string;
+  icon: IconName;
   label: string;
   value: string;
 };
 
 function valueToText(value: AcademicOption | string | number | null | undefined): string | null {
-  if (!value) {
-    return null;
-  }
+  if (value === null || value === undefined || value === '') return null;
+  if (typeof value === 'string' || typeof value === 'number') return String(value);
 
-  if (typeof value === 'string' || typeof value === 'number') {
-    return String(value);
-  }
-
-  return value.name;
+  return value.name || null;
 }
 
-function toRow(label: string, value: string | number | null | undefined): PreviewRow | null {
-  if (value === null || value === undefined || value === '') {
-    return null;
-  }
+/** Only what a student cares about: university, faculty, year, semester, specialization. */
+export function getDetectedRows(
+  parsed: ParsedStudentNumber,
+  labels: {
+    university: string;
+    faculty: string;
+    academicYear: string;
+    semester: string;
+    major: string;
+  },
+): DetectedRow[] {
+  const entries: [string, IconName, string, string | null][] = [
+    ['university', 'building', labels.university, valueToText(parsed.university)],
+    ['faculty', 'cap', labels.faculty, valueToText(parsed.faculty)],
+    [
+      'academicYear',
+      'book',
+      labels.academicYear,
+      valueToText(parsed.academic_year ?? parsed.academicYear),
+    ],
+    ['semester', 'clock', labels.semester, valueToText(parsed.semester)],
+    ['major', 'star', labels.major, valueToText(parsed.major)],
+  ];
 
-  return {
-    label,
-    value: String(value),
-  };
+  return entries
+    .filter((entry): entry is [string, IconName, string, string] => entry[3] !== null)
+    .map(([key, icon, label, value]) => ({ key, icon, label, value }));
 }
 
-function getPreviewRows(
-  parsedStudentNumber: ParsedStudentNumber,
-  t: TranslationCatalog,
-): PreviewRow[] {
-  return [
-    toRow(
-      t.studentProfile.numberPreview.studentNumber,
-      parsedStudentNumber.student_number ?? parsedStudentNumber.studentNumber,
-    ),
-    toRow(
-      t.studentProfile.numberPreview.universityCode,
-      parsedStudentNumber.university_code ?? parsedStudentNumber.universityCode,
-    ),
-    toRow(
-      t.studentProfile.numberPreview.facultyCode,
-      parsedStudentNumber.faculty_code ?? parsedStudentNumber.facultyCode,
-    ),
-    toRow(
-      t.studentProfile.numberPreview.yearCode,
-      parsedStudentNumber.year_code ?? parsedStudentNumber.yearCode,
-    ),
-    toRow(
-      t.studentProfile.numberPreview.serial,
-      parsedStudentNumber.sequence_number ?? parsedStudentNumber.sequenceNumber,
-    ),
-    toRow(t.studentProfile.numberPreview.university, valueToText(parsedStudentNumber.university)),
-    toRow(t.studentProfile.numberPreview.faculty, valueToText(parsedStudentNumber.faculty)),
-    toRow(
-      t.studentProfile.numberPreview.academicYear,
-      valueToText(parsedStudentNumber.academic_year ?? parsedStudentNumber.academicYear),
-    ),
-    toRow(t.studentProfile.numberPreview.semester, valueToText(parsedStudentNumber.semester)),
-    toRow(t.studentProfile.numberPreview.major, valueToText(parsedStudentNumber.major)),
-  ].filter((row): row is PreviewRow => row !== null);
-}
-
+/** Result of reading the student number: a calm success card listing what was detected. */
 export function StudentNumberPreviewCard({ parsedStudentNumber }: StudentNumberPreviewCardProps) {
   const { t } = useTranslation();
+
   if (!parsedStudentNumber) {
     return (
-      <AppCard padding="md" variant="muted">
-        <AppText align="center" color="secondary" variant="bodySmall">
+      <View style={styles.hint}>
+        <Icon color={colors.text.muted} name="info" size={18} />
+        <AppText color="secondary" style={styles.hintText} variant="bodySmall">
           {t.studentProfile.numberPreview.hint}
         </AppText>
-      </AppCard>
+      </View>
     );
   }
 
-  const rows = getPreviewRows(parsedStudentNumber, t);
+  const rows = getDetectedRows(parsedStudentNumber, t.studentProfile.numberPreview);
 
   return (
-    <AppCard padding="md" variant="outlined">
-      <Stack gap="md">
-        <AppText variant="title">{t.studentProfile.numberPreview.title}</AppText>
-        {rows.length === 0 ? (
-          <AppText color="secondary" variant="bodySmall">
-            {t.studentProfile.numberPreview.noDetails}
-          </AppText>
-        ) : (
-          <Stack gap="sm">
-            {rows.map((row) => (
-              <View key={row.label} style={styles.row}>
-                <AppText color="secondary" variant="bodySmall">
-                  {row.label}
-                </AppText>
-                <AppText style={styles.valueText} variant="bodySmall" weight="600">
-                  {row.value}
-                </AppText>
-              </View>
-            ))}
-          </Stack>
-        )}
-      </Stack>
-    </AppCard>
+    <View style={styles.card}>
+      <View style={styles.header}>
+        <Icon color={colors.semantic.success} name="checkCircle" size={22} />
+        <AppText style={styles.headerText} variant="subtitle" weight="600">
+          {t.studentProfile.numberPreview.title}
+        </AppText>
+      </View>
+      {rows.length === 0 ? (
+        <AppText color="secondary" variant="bodySmall">
+          {t.studentProfile.numberPreview.noDetails}
+        </AppText>
+      ) : (
+        rows.map((row) => (
+          <View key={row.key} style={styles.row}>
+            <Icon color={colors.semantic.success} name={row.icon} size={18} />
+            <AppText color="secondary" variant="bodySmall">
+              {row.label}
+            </AppText>
+            <AppText numberOfLines={2} style={styles.value} variant="bodySmall" weight="600">
+              {row.value}
+            </AppText>
+          </View>
+        ))
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  hint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  hintText: {
+    flex: 1,
+  },
+  card: {
+    gap: spacing.sm,
+    padding: spacing.lg,
+    borderRadius: radius.lg,
+    backgroundColor: colors.semantic.successSoft,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  headerText: {
+    flex: 1,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-    paddingBottom: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border.default,
+    gap: spacing.sm,
+    minHeight: 28,
   },
-  valueText: {
+  value: {
     flex: 1,
   },
 });

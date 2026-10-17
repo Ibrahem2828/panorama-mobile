@@ -51,6 +51,9 @@ export type RegisterStudentRequest = {
   password_confirm: string;
   student_number?: string;
   otp_channel?: OtpChannel;
+  /** Versions of the terms / privacy policy the user ticked (sent only when one is published). */
+  accept_terms_version?: string;
+  accept_privacy_version?: string;
 };
 
 export type RegisterNormalRequest = Omit<RegisterStudentRequest, 'student_number'>;

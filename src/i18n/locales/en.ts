@@ -93,9 +93,17 @@ export const en: TranslationCatalog = {
     studentSetup: 'Student account setup',
   },
 
+  forms: {
+    close: 'Close',
+    searchPlaceholder: 'Search...',
+    noResults: 'No matching results.',
+    noOptions: 'No options are available right now.',
+  },
+
   otpInput: {
     digitLabel: (index: number, total: number) => `Digit ${index} of ${total}`,
     verified: 'Verified',
+    inputLabel: (total: number) => `${total}-digit verification code`,
   },
 
   placeholder: {
@@ -579,14 +587,22 @@ export const en: TranslationCatalog = {
       'Could not load the list of universities. Try again, and contact support if it keeps happening.',
     studentNumberTitle: 'Student number',
     studentNumberHelper: 'Enter your student number exactly as it appears on your card.',
+    studentNumberPlaceholder: '2150094',
+    academicSectionTitle: 'Your study details',
+    universityPlaceholder: 'Choose your university',
+    facultyPlaceholder: 'Choose your faculty',
+    facultyNone: 'No faculties are available for this university yet.',
+    academicYearPlaceholder: 'Choose your academic year',
+    semesterPlaceholder: 'Choose your semester',
+    majorNone: 'No specialization',
+    majorNoneAvailable: 'This faculty has no specializations. This field is optional.',
     parseNumber: 'Read number',
     universityLabel: 'University',
     universityEmpty: 'No universities are available right now.',
     facultyLabel: 'Faculty',
     facultyEmpty: 'Choose a university first to see its faculties.',
     majorLabel: 'Specialization (optional)',
-    majorOptionalHint:
-      'Specialization is optional and starts in year 3. Leave it empty, or tap the selected option again to clear it.',
+    majorOptionalHint: 'Optional. Specializations usually start in year 3.',
     majorEmpty: 'Choose a faculty first to see its specializations.',
     academicYearLabel: 'Academic year',
     academicYearEmpty: 'No academic years are available right now.',
@@ -603,6 +619,7 @@ export const en: TranslationCatalog = {
       emptyText: 'No options are available right now.',
       loading: 'Loading options...',
       selected: 'Selected',
+      placeholder: 'Choose',
     },
 
     intro: {
@@ -615,11 +632,12 @@ export const en: TranslationCatalog = {
       academicProfile: 'Academic profile',
       studentCard: 'Student card',
       verificationStatus: 'Verification status',
+      stepOf: (current: number, total: number) => `Step ${current} of ${total}`,
     },
 
     numberPreview: {
-      title: 'Student number preview',
-      hint: 'Enter your student number then tap “Read number” to see the details linked to it before saving.',
+      title: 'We recognized your details',
+      hint: 'Type your student number then tap “Read number” to see your faculty and year.',
       noDetails: 'We read the number, but there are no more details to show.',
       studentNumber: 'Student number',
       universityCode: 'University code',
@@ -703,22 +721,37 @@ export const en: TranslationCatalog = {
         'You have not sent a verification request yet. Verification is required to reach groups, files and student services.',
     },
 
+    timeline: {
+      label: 'Verification stages',
+      submitted: 'Request sent',
+      submittedPending: 'Send your card photo to start',
+      review: 'Under review',
+      reviewCurrent: 'The team is reviewing your card now',
+      reviewUpcoming: 'The team reviews your card after you send it',
+      approved: 'Verified',
+      needsUpdate: 'An updated photo is needed',
+      decisionUpcoming: 'The result will show up here',
+    },
+
     imagePicker: {
       title: 'Student card photo',
       description:
         'Choose a clear photo from your gallery showing your whole card, with no glare or cropping. Make sure the name and student number are easy to read.',
-      guideAlt: 'Guide for photographing a student card',
-      exampleAlt: (label: string) => `Example of a ${label} card`,
-      noImage: 'You have not chosen a photo yet.',
-      pick: 'Choose a photo',
+      pick: 'Choose a photo from your gallery',
+      pickHint: 'Your whole card, clearly visible',
+      previewAlt: 'The student card photo you chose',
+      uploading: (percent: number) => `Uploading photo ${percent}%`,
+      tipsTitle: 'For a quick approval',
+      goodWhole: 'The whole card is inside the photo',
+      goodReadable: 'The name and student number are readable',
+      goodLight: 'Good light with no glare',
+      badCropped: 'Cropped or incomplete photo',
+      badBlurry: 'Shaky or blurry photo',
+      badGlare: 'Dark photo or glare on the card',
       replace: 'Replace photo',
       remove: 'Remove photo',
       permissionDenied: 'Allow Panorama to access your photos so you can choose your card photo.',
       invalidImage: 'This photo cannot be used. Choose another one.',
-      exampleClear: 'clear',
-      exampleBlurry: 'blurry',
-      exampleCropped: 'cropped',
-      exampleDark: 'dark',
     },
   },
 
@@ -854,7 +887,7 @@ export const en: TranslationCatalog = {
       email: 'Email',
       fullName: 'Full name',
       phone: 'Phone number',
-      phonePlaceholder: 'Phone number without the country code',
+      phonePlaceholder: '9XX XXX XXX',
       studentNumber: 'Student number',
       password: 'Password',
       passwordPlaceholder: 'Enter your password',
@@ -864,6 +897,10 @@ export const en: TranslationCatalog = {
       show: 'Show',
       hide: 'Hide',
       otpCode: 'Verification code',
+      emailPlaceholder: 'name@example.com',
+      studentNumberHelper: 'As shown on your student card.',
+      passwordHint: 'At least 8 characters.',
+      passwordConfirmPlaceholder: 'Type the password again',
     },
 
     login: {
@@ -874,6 +911,9 @@ export const en: TranslationCatalog = {
       createAccount: 'Create an account',
       forgotPassword: 'Forgot your password?',
       missingCredentials: 'Enter your email or phone number and your password.',
+      identifierRequired: 'Enter your email or phone number.',
+      passwordRequired: 'Enter your password.',
+      noAccount: 'Do not have an account yet?',
     },
 
     accountType: {
@@ -918,7 +958,7 @@ export const en: TranslationCatalog = {
       cardSubtitle: 'The code expires shortly. Do not share it with anyone.',
       submit: 'Confirm code',
       resend: 'Resend code',
-      resendIn: (seconds: number) => `Resend in ${seconds}s`,
+      resendIn: (time: string) => `You can resend in ${time}`,
       spamHint:
         'Did not receive it? Check your spam or junk folder, then resend after the timer ends.',
       wrongEmail: 'Wrong email? Go back',
@@ -938,6 +978,18 @@ export const en: TranslationCatalog = {
       cardTitle: 'Reset your password',
       cardSubtitle: (identifier: string) => `Enter the code sent to ${identifier}.`,
       submit: 'Save password',
+      newPassword: 'New password',
+    },
+
+    consent: {
+      loading: 'Preparing consents...',
+      loadFailed: 'Could not load the terms and policies. Try again to continue.',
+      termsPrefix: 'I have read and agree to the ',
+      privacyPrefix: 'I have read and agree to the ',
+      terms: 'Terms and Conditions',
+      privacy: 'Privacy Policy',
+      termsRequired: 'You must accept the Terms and Conditions to continue.',
+      privacyRequired: 'You must accept the Privacy Policy to continue.',
     },
 
     bootstrap: {

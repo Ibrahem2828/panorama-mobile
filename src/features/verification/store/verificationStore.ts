@@ -20,6 +20,8 @@ type VerificationState = {
   lastAuthUserId: string | number | null;
   isLoadingVerification: boolean;
   isSubmitting: boolean;
+  /** 0..1 while the card image is uploading. */
+  uploadProgress: number;
   errorMessage: string | null;
 
   loadVerification: (options?: VerificationLoadOptions) => Promise<void>;
@@ -49,6 +51,7 @@ function getInitialVerificationState() {
     lastAuthUserId: null,
     isLoadingVerification: false,
     isSubmitting: false,
+    uploadProgress: 0,
     errorMessage: null,
   };
 }
@@ -126,11 +129,17 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
 
       set({
         isSubmitting: true,
+        uploadProgress: 0,
         errorMessage: null,
       });
 
       const profile = useStudentProfileStore.getState().profile;
-      const verification = await submitStudentVerification(image, profile, accessToken);
+      const verification = await submitStudentVerification(
+        image,
+        profile,
+        accessToken,
+        (uploadProgress) => set({ uploadProgress }),
+      );
 
       set({
         verification,
@@ -168,11 +177,17 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
 
       set({
         isSubmitting: true,
+        uploadProgress: 0,
         errorMessage: null,
       });
 
       const profile = useStudentProfileStore.getState().profile;
-      const verification = await resubmitStudentVerification(image, profile, accessToken);
+      const verification = await resubmitStudentVerification(
+        image,
+        profile,
+        accessToken,
+        (uploadProgress) => set({ uploadProgress }),
+      );
 
       set({
         verification,

@@ -1,69 +1,78 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import {
-  Animated,
-  Easing,
-  Image,
-  Pressable,
-  StyleSheet,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import { Animated, Easing, PanResponder, Pressable, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { images } from '../../../assets/images';
-import { AppButton, AppScreen, AppText, Stack } from '../../../components';
+import { AppButton, AppText, Stack } from '../../../components';
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
-import { colors, radius, spacing, useBrand } from '../../../theme';
-import { markOnboardingSeen } from '../services';
+import { colors, layout, spacing } from '../../../theme';
+import { getIsRTL } from '../../../utils/rtl';
 import { useTranslation } from '../../../i18n';
+import { OnboardingHero } from '../components/OnboardingHero';
+import type { OnboardingScene } from '../components/OnboardingHero';
+import { PageIndicator } from '../components/PageIndicator';
+import { markOnboardingSeen } from '../services';
 
 type OnboardingScreenProps = NativeStackScreenProps<PublicStackParamList, 'Onboarding'>;
 
-// Images only; the copy for each slide comes from the catalog at the same index.
-const SLIDE_IMAGES = [
-  images.brand.logoFullAr,
-  images.onboarding.verification,
-  images.onboarding.groups,
-  images.onboarding.filesPrinting,
-] as const;
+// Scenes only; the copy for each slide comes from the catalog at the same index.
+const SCENES: readonly OnboardingScene[] = ['logo', 'verification', 'groups', 'files'];
+const SWIPE_DISTANCE = 48;
 
 export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
   const { t } = useTranslation();
-  const brand = useBrand();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isCompleting, setIsCompleting] = useState(false);
-  const { width } = useWindowDimensions();
   const slides = t.onboarding.slides;
+  const slideCount = slides.length;
   const activeSlide = slides[activeIndex] ?? slides[0]!;
-  const activeImage = SLIDE_IMAGES[activeIndex] ?? SLIDE_IMAGES[0];
-  const isFinalSlide = activeIndex === slides.length - 1;
-  const imageWidth = useMemo(() => Math.min(Math.max(width - spacing.xxl * 2, 220), 320), [width]);
+  const isFinalSlide = activeIndex === slideCount - 1;
+  const direction = useRef(1);
 
-  // Subtle slide entrance + cross-fade animation (React Native Animated only)
-  const slideOpacity = useRef(new Animated.Value(1)).current;
-  const slideTranslate = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
+  const shift = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Reset and animate on slide change for smooth transition
-    slideOpacity.setValue(0.65);
-    slideTranslate.setValue(10);
-
+    opacity.setValue(0);
+    shift.setValue(direction.current * 28);
     Animated.parallel([
-      Animated.timing(slideOpacity, {
+      Animated.timing(opacity, {
         toValue: 1,
-        duration: 220,
+        duration: 260,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
-      Animated.timing(slideTranslate, {
+      Animated.timing(shift, {
         toValue: 0,
-        duration: 220,
+        duration: 260,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
     ]).start();
-  }, [activeIndex]);
+  }, [activeIndex, opacity, shift]);
+
+  function go(delta: 1 | -1) {
+    direction.current = delta;
+    setActiveIndex((index) => Math.min(Math.max(index + delta, 0), slideCount - 1));
+  }
+
+  // Swipe: dragging towards the reading start goes forward, like paging a book.
+  const goRef = useRef(go);
+  goRef.current = go;
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, gesture) =>
+          Math.abs(gesture.dx) > 16 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.5,
+        onPanResponderRelease: (_, gesture) => {
+          if (Math.abs(gesture.dx) < SWIPE_DISTANCE) return;
+          const towardsStart = getIsRTL() ? gesture.dx > 0 : gesture.dx < 0;
+          goRef.current(towardsStart ? 1 : -1);
+        },
+      }),
+    [],
+  );
 
   async function completeOnboarding() {
     setIsCompleting(true);
@@ -81,56 +90,19 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
       void completeOnboarding();
       return;
     }
-
-    setActiveIndex((currentIndex) => Math.min(currentIndex + 1, slides.length - 1));
+    go(1);
   }
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
-      <Stack gap="xl" style={styles.root}>
-        <View style={styles.skipRow}>
-          <Pressable
-            accessibilityLabel={t.onboarding.skipLabel}
-            accessibilityRole="button"
-            disabled={isCompleting}
-            onPress={() => {
-              void completeOnboarding();
-            }}
-            style={({ pressed }) => [styles.skipButton, pressed ? styles.pressed : null]}
-          >
-            <AppText color="brand" variant="button">
-              {t.onboarding.skip}
-            </AppText>
-          </Pressable>
-        </View>
-
-        <Animated.View
-          style={[
-            styles.illustrationFrame,
-            {
-              opacity: slideOpacity,
-              transform: [{ translateX: slideTranslate }],
-            },
-          ]}
-        >
-          <Image
-            accessibilityIgnoresInvertColors
-            accessibilityLabel={activeSlide.imageLabel}
-            resizeMode="contain"
-            source={activeImage}
-            style={[styles.illustration, { width: imageWidth }]}
-          />
+    <SafeAreaView style={styles.root}>
+      <View style={styles.body} {...panResponder.panHandlers}>
+        <Animated.View style={[styles.hero, { opacity, transform: [{ translateX: shift }] }]}>
+          <View accessibilityLabel={activeSlide.imageLabel} accessible>
+            <OnboardingHero scene={SCENES[activeIndex] ?? 'logo'} />
+          </View>
         </Animated.View>
 
-        <Animated.View
-          style={[
-            styles.textBlock,
-            {
-              opacity: slideOpacity,
-              transform: [{ translateX: slideTranslate }],
-            },
-          ]}
-        >
+        <Animated.View style={[styles.copy, { opacity, transform: [{ translateX: shift }] }]}>
           <AppText align="center" variant="h1">
             {activeSlide.title}
           </AppText>
@@ -138,92 +110,77 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
             {activeSlide.description}
           </AppText>
         </Animated.View>
+      </View>
 
-        <View accessibilityLabel={t.onboarding.paginationLabel} style={styles.pagination}>
-          {slides.map((slide, index) => (
-            <View
-              key={slide.title}
-              style={[
-                styles.dot,
-                index === activeIndex
-                  ? [styles.dotActive, { backgroundColor: brand.primary }]
-                  : null,
-              ]}
-            />
-          ))}
+      <Stack gap="md" style={styles.bottom}>
+        <PageIndicator
+          accessibilityLabel={t.onboarding.paginationLabel}
+          activeIndex={activeIndex}
+          count={slideCount}
+        />
+        <AppButton
+          fullWidth
+          loading={isCompleting}
+          onPress={handleNext}
+          size="lg"
+          title={isFinalSlide ? t.onboarding.start : t.onboarding.next}
+        />
+        <View style={styles.skipSlot}>
+          {isFinalSlide ? null : (
+            <Pressable
+              accessibilityLabel={t.onboarding.skipLabel}
+              accessibilityRole="button"
+              disabled={isCompleting}
+              onPress={() => void completeOnboarding()}
+              style={({ pressed }) => [styles.skip, pressed ? styles.pressed : null]}
+            >
+              <AppText color="secondary" variant="button">
+                {t.onboarding.skip}
+              </AppText>
+            </Pressable>
+          )}
         </View>
-
-        <Stack direction="horizontal" gap="md" style={styles.actions}>
-          <AppButton
-            disabled={activeIndex === 0 || isCompleting}
-            onPress={() => setActiveIndex((currentIndex) => Math.max(currentIndex - 1, 0))}
-            title={t.onboarding.previous}
-            variant="ghost"
-          />
-          <AppButton
-            fullWidth
-            loading={isCompleting}
-            onPress={handleNext}
-            style={styles.primaryAction}
-            title={isFinalSlide ? t.onboarding.start : t.onboarding.next}
-          />
-        </Stack>
       </Stack>
-    </AppScreen>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    flexGrow: 1,
-    justifyContent: 'center',
-  },
+  // White, not off-white: the logo artwork has a white background and must not show a box.
   root: {
     flex: 1,
+    backgroundColor: colors.background.surface,
+  },
+  body: {
+    flex: 1,
     justifyContent: 'center',
+    gap: spacing.xl,
+    paddingHorizontal: layout.screenHorizontalPadding,
   },
-  skipRow: {
-    alignItems: 'flex-start',
-  },
-  skipButton: {
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.button,
-  },
-  pressed: {
-    opacity: 0.72,
-  },
-  illustrationFrame: {
-    minHeight: 260,
+  hero: {
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  illustration: {
-    height: 260,
-  },
-  textBlock: {
+  copy: {
+    gap: spacing.md,
+    paddingHorizontal: spacing.sm,
     minHeight: 150,
   },
-  pagination: {
-    flexDirection: 'row',
-    alignSelf: 'center',
-    gap: spacing.sm,
+  bottom: {
+    paddingHorizontal: layout.screenHorizontalPadding,
+    paddingBottom: spacing.md,
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.border.default,
-  },
-  dotActive: {
-    width: 24,
-    backgroundColor: colors.brand.primary,
-  },
-  actions: {
+  skipSlot: {
+    minHeight: 48,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  primaryAction: {
-    flex: 1,
+  skip: {
+    minHeight: 48,
+    minWidth: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pressed: {
+    opacity: 0.6,
   },
 });
