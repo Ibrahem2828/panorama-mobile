@@ -9,6 +9,7 @@ export { apiClient } from './client';
 export { endpoints, API_PREFIX } from './endpoints';
 export {
   ApiClientError,
+  containsArabic,
   createApiError,
   getApiErrorMessage,
   normalizeApiError,

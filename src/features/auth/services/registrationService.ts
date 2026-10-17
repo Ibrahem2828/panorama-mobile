@@ -1,4 +1,4 @@
-import { authService, normalizeApiError } from '../../../api';
+import { authService, containsArabic, normalizeApiError } from '../../../api';
 import type { AuthErrorMessages } from '../types';
 import { localizeOtpError } from './otpErrors';
 import type {
@@ -25,9 +25,10 @@ export function toSafeRegistrationErrorMessage(
   }
   if (normalized.fieldErrors) {
     const first = Object.values(normalized.fieldErrors).flat()[0];
-    if (first) return first;
+    // Only server copy that is already Arabic is shown; English text is never surfaced.
+    if (first && containsArabic(first)) return first;
   }
-  return normalized.message || messages.registrationGeneric;
+  return containsArabic(normalized.message) ? normalized.message : messages.registrationGeneric;
 }
 
 export function registerStudentAccount(input: RegisterStudentRequest): Promise<RegisterResponse> {

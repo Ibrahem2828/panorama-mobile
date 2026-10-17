@@ -90,8 +90,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({
         ...unauthenticatedState,
         isBootstrapping: false,
-        errorMessage:
-          error instanceof Error && error.message ? error.message : sessionExpiredMessage(),
+        errorMessage: toSafeAuthErrorMessage(error) || sessionExpiredMessage(),
       });
     }
   },

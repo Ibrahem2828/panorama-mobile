@@ -187,8 +187,22 @@ function extractBackendMessage(responseBody: unknown): string | undefined {
   return message || undefined;
 }
 
-function resolveUserMessage(code: ApiErrorCode, backendMessage?: string): string {
-  if (!backendMessage) {
+const ARABIC_CHARACTERS = new RegExp(
+  '[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFE]',
+);
+
+/** True when the text contains at least one Arabic letter (server copy we may show as is). */
+export function containsArabic(text: string | undefined | null): boolean {
+  return typeof text === 'string' && ARABIC_CHARACTERS.test(text);
+}
+
+/**
+ * A backend message is shown only when it is already Arabic; any other text (typically
+ * English framework strings) is replaced by the localized default for the error code.
+ * The raw text stays available as `technicalMessage`.
+ */
+export function resolveUserMessage(code: ApiErrorCode, backendMessage?: string): string {
+  if (!backendMessage || !containsArabic(backendMessage)) {
     return defaultMessageFor(code);
   }
 
@@ -240,7 +254,7 @@ export function createApiError(input: {
   return new ApiClientError({
     code,
     status: input.status,
-    message: input.message || defaultMessageFor(code),
+    message: resolveUserMessage(code, input.message?.trim()),
     technicalMessage: input.technicalMessage,
     requestId: input.requestId,
     fieldErrors: input.fieldErrors,

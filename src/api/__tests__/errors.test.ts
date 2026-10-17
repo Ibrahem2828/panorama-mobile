@@ -3,7 +3,7 @@ jest.mock('expo-constants', () => ({
   default: { expoConfig: { extra: { apiBaseUrl: 'https://api.example.com' } } },
 }));
 
-import { normalizeHttpError } from '../errors';
+import { containsArabic, createApiError, normalizeHttpError, resolveUserMessage } from '../errors';
 
 describe('backend error code mapping', () => {
   it('maps 503 MAINTENANCE_MODE and keeps the maintenance details', () => {
@@ -81,5 +81,49 @@ describe('backend error code mapping', () => {
       code: 'RATE_LIMITED',
       retryAfterSeconds: 7,
     });
+  });
+});
+
+describe('user message resolution', () => {
+  it('replaces an English backend message with the localized default for the code', () => {
+    const error = normalizeHttpError({
+      status: 400,
+      responseBody: { success: false, message: 'Validation error', errors: { email: ['bad'] } },
+    });
+
+    expect(error.code).toBe('VALIDATION_ERROR');
+    expect(error.message).not.toBe('Validation error');
+    expect(containsArabic(error.message)).toBe(true);
+    expect(error.technicalMessage).toBe('Validation error');
+    expect(error.fieldErrors).toEqual({ email: ['bad'] });
+  });
+
+  it('keeps a backend message that is already Arabic', () => {
+    const error = normalizeHttpError({
+      status: 404,
+      responseBody: { success: false, message: 'المجموعة غير موجودة' },
+    });
+
+    expect(error.message).toBe('المجموعة غير موجودة');
+  });
+
+  it('uses the default when there is no message and never an English one', () => {
+    expect(resolveUserMessage('SERVER_ERROR', undefined)).toBe(
+      resolveUserMessage('SERVER_ERROR', 'Internal'),
+    );
+    expect(containsArabic(resolveUserMessage('NETWORK_ERROR', 'Network down'))).toBe(true);
+  });
+
+  it('applies the same rule to errors created locally', () => {
+    expect(createApiError({ status: 500, message: 'Oops' }).message).toBe(
+      resolveUserMessage('SERVER_ERROR'),
+    );
+    expect(createApiError({ status: 500, message: 'خطأ ما' }).message).toBe('خطأ ما');
+  });
+
+  it('detects Arabic characters', () => {
+    expect(containsArabic('Hello')).toBe(false);
+    expect(containsArabic('Hello مرحبا')).toBe(true);
+    expect(containsArabic(undefined)).toBe(false);
   });
 });
