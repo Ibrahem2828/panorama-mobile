@@ -104,7 +104,8 @@ function itemFields(item: PrintCartItem) {
   };
 }
 
-type JsonItem = ReturnType<typeof itemFields> & { source_file: number | string };
+type JsonItem = ReturnType<typeof itemFields> &
+  ({ source_file: number | string } | { converted_upload: string });
 
 export type PrintQuoteJson = { items: JsonItem[] };
 export type PrintOrderJson = PrintQuoteJson & {
@@ -122,12 +123,19 @@ export function buildQuoteBody(draft: PrintDraft): PrintQuoteJson | FormData {
     throw new Error('missing source');
   }
 
-  if (draft.items.every((item) => item.source?.kind === 'library')) {
+  if (
+    draft.items.every(
+      (item) => item.source?.kind === 'library' || item.source?.kind === 'converted',
+    )
+  ) {
     return {
-      items: draft.items.map((item) => ({
-        source_file: (item.source as { id: number | string }).id,
-        ...itemFields(item),
-      })),
+      items: draft.items.map((item) => {
+        const { source } = item;
+
+        return source?.kind === 'converted'
+          ? { converted_upload: source.id, ...itemFields(item) }
+          : { source_file: (source as { id: number | string }).id, ...itemFields(item) };
+      }),
     };
   }
 
@@ -140,6 +148,8 @@ export function buildQuoteBody(draft: PrintDraft): PrintQuoteJson | FormData {
       appendLocalFile(form, `items[${index}]uploaded_file`, source.file);
     } else if (source?.kind === 'library') {
       form.append(`items[${index}]source_file`, String(source.id));
+    } else if (source?.kind === 'converted') {
+      form.append(`items[${index}]converted_upload`, source.id);
     }
 
     Object.entries(itemFields(item)).forEach(([key, value]) => {
@@ -174,8 +184,12 @@ function sourceSignature(source: PrintSource): string {
     return '-';
   }
 
-  return source.kind === 'library'
-    ? `lib:${source.id}`
+  if (source.kind === 'library') {
+    return `lib:${source.id}`;
+  }
+
+  return source.kind === 'converted'
+    ? `cv:${source.id}`
     : `up:${source.file.uri}:${source.file.size ?? 0}`;
 }
 
@@ -203,7 +217,11 @@ export function sourceName(source: PrintSource): string | null {
     return null;
   }
 
-  return source.kind === 'library' ? source.title : source.file.name;
+  if (source.kind === 'library') {
+    return source.title;
+  }
+
+  return source.kind === 'converted' ? source.name : source.file.name;
 }
 
 /** Whether a request body carries a local file that has to be uploaded. */

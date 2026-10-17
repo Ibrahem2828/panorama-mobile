@@ -7,6 +7,7 @@ import type {
   CreatePrintOrderRequest,
   EmptyResponse,
   FileAccessTicket,
+  PrintConversion,
   PrintOrder,
   PrintPickupLocation,
   PrintQuoteRequest,
@@ -44,6 +45,23 @@ export function quotePrintOrder(
     request,
     uploadRequestOptions(authToken, options),
   );
+}
+/** Uploads a Word/PowerPoint file; the server converts it to PDF (it may answer `pending` for slow files). */
+export function convertPrintDocument(
+  form: FormData,
+  authToken: string,
+  options?: PrintUploadOptions,
+) {
+  return apiClient.post<PrintConversion, FormData>(
+    endpoints.printing.convert,
+    form,
+    uploadRequestOptions(authToken, options),
+  );
+}
+export function getPrintConversion(conversionId: string, authToken: string) {
+  return apiClient.get<PrintConversion>(endpoints.printing.convertDetail(conversionId), {
+    authToken,
+  });
 }
 export function listPickupLocations(authToken: string) {
   return apiClient.get<PrintPickupLocation[]>(endpoints.printing.pickupLocations, { authToken });

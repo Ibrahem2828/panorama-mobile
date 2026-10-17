@@ -20,7 +20,20 @@ export const UPLOAD_MIME_TYPES = [
   'image/webp',
 ] as const;
 
+/** Word/PowerPoint files are not printable as-is; the server converts them to PDF first. */
+export const CONVERTIBLE_EXTENSIONS = ['doc', 'docx', 'ppt', 'pptx'] as const;
+export const CONVERTIBLE_MIME_TYPES = [
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+] as const;
+
 const MIME_BY_EXTENSION: Record<string, string> = {
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ppt: 'application/vnd.ms-powerpoint',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   pdf: 'application/pdf',
   png: 'image/png',
   jpg: 'image/jpeg',
@@ -32,6 +45,31 @@ export function fileExtension(name: string): string {
   const index = name.lastIndexOf('.');
 
   return index < 0 ? '' : name.slice(index + 1).toLowerCase();
+}
+
+export function isConvertibleDocument(name: string): boolean {
+  return (CONVERTIBLE_EXTENSIONS as readonly string[]).includes(fileExtension(name));
+}
+
+/** Same size rules as uploads; the type must be a Word/PowerPoint extension. */
+export function validateConvertibleCandidate(
+  file: Pick<LocalFile, 'name' | 'size'>,
+): UploadProblem | null {
+  if (!isConvertibleDocument(file.name)) {
+    return 'type';
+  }
+
+  if (file.size !== null) {
+    if (file.size <= 0) {
+      return 'empty';
+    }
+
+    if (file.size > MAX_UPLOAD_BYTES) {
+      return 'size';
+    }
+  }
+
+  return null;
 }
 
 /** Returns what is wrong with a candidate upload, or null when it satisfies the policy. */
@@ -77,9 +115,9 @@ export function toLocalFile(asset: {
   const extensionFromMime = Object.entries(MIME_BY_EXTENSION).find(
     ([, mime]) => mime === asset.mimeType?.toLowerCase(),
   )?.[0];
-  const hasKnownExtension = (UPLOAD_EXTENSIONS as readonly string[]).includes(
-    fileExtension(rawName),
-  );
+  const hasKnownExtension =
+    (UPLOAD_EXTENSIONS as readonly string[]).includes(fileExtension(rawName)) ||
+    isConvertibleDocument(rawName);
   const name = hasKnownExtension
     ? rawName
     : `${rawName || `photo-${Date.now().toString(36)}`}.${extensionFromMime ?? 'jpg'}`;

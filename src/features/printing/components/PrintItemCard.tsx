@@ -8,6 +8,8 @@ import { formatFileSize } from '../../files/services';
 import type { FileResource } from '../../files/types';
 import { getFileDisplayTitle } from '../../files/services';
 import { useAuthStore } from '../../auth/store';
+import { isConvertibleDocument } from '../../attachments/services/localFile';
+import { convertOfficeDocument } from '../services/printingService';
 import { pickPrintDocument, pickPrintImage } from '../services/imagePicker';
 import type { PrintCartItem, PrintItemValidation, PrintSource, UploadProblem } from '../types';
 import { PrintCopiesStepper } from './PrintCopiesStepper';
@@ -40,8 +42,11 @@ function PrintItemCardComponent({
   const [libraryOpen, setLibraryOpen] = useState(false);
   // General accounts print their own uploads only; students can also pick subject files they may open.
   const isStudent = useAuthStore((state) => state.user?.role?.toLowerCase() === 'student');
-  const [pickerProblem, setPickerProblem] = useState<UploadProblem | 'error' | null>(null);
+  const [pickerProblem, setPickerProblem] = useState<UploadProblem | 'error' | 'convert' | null>(
+    null,
+  );
   const [isPicking, setIsPicking] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
 
   const setSource = useCallback(
     (source: PrintSource) => onChange(item.key, { source }),
@@ -60,7 +65,23 @@ function PrintItemCardComponent({
 
     setIsPicking(false);
 
-    if (result.status === 'picked') {
+    if (result.status === 'picked' && isConvertibleDocument(result.file.name)) {
+      // Word/PowerPoint cannot be printed directly: the server turns the file into a PDF first.
+      setIsConverting(true);
+
+      try {
+        const converted = await convertOfficeDocument(
+          result.file,
+          useAuthStore.getState().accessToken ?? '',
+        );
+
+        setSource({ kind: 'converted', ...converted });
+      } catch {
+        setPickerProblem('convert');
+      } finally {
+        setIsConverting(false);
+      }
+    } else if (result.status === 'picked') {
       setSource({ kind: 'upload', file: result.file });
     } else if (result.status === 'invalid') {
       setPickerProblem(result.problem);
@@ -83,7 +104,9 @@ function PrintItemCardComponent({
           ? t.printing.create.uploadEmpty
           : pickerProblem === 'error'
             ? t.printing.create.uploadPickerFailed
-            : null;
+            : pickerProblem === 'convert'
+              ? t.printing.create.convertFailed
+              : null;
   const { source } = item;
 
   return (
@@ -124,11 +147,22 @@ function PrintItemCardComponent({
               <AppText color="muted" variant="caption">
                 {source.kind === 'upload'
                   ? t.printing.create.uploadSelected
-                  : t.printing.library.fileLabel}
+                  : source.kind === 'converted'
+                    ? t.printing.create.convertedLabel
+                    : t.printing.library.fileLabel}
               </AppText>
               <AppText numberOfLines={2} variant="bodySmall" weight="600">
-                {source.kind === 'library' ? source.title : source.file.name}
+                {source.kind === 'library'
+                  ? source.title
+                  : source.kind === 'converted'
+                    ? source.name
+                    : source.file.name}
               </AppText>
+              {source.kind === 'converted' && source.pages ? (
+                <AppText color="muted" variant="caption">
+                  {t.printing.create.convertedPages(source.pages)}
+                </AppText>
+              ) : null}
               {source.kind === 'upload' && source.file.size !== null ? (
                 <AppText color="muted" variant="caption">
                   {formatFileSize(source.file.size, t.files)}
@@ -164,13 +198,18 @@ function PrintItemCardComponent({
               />
               <AppButton
                 leftIcon={<Icon color={brand.primary} name="file" size={18} />}
-                loading={isPicking}
+                loading={isPicking || isConverting}
                 onPress={() => void handlePickFromDevice(pickPrintDocument)}
                 size="sm"
                 title={t.printing.create.pickPdf}
                 variant="outline"
               />
             </Stack>
+            {isConverting ? (
+              <AppText color="secondary" variant="bodySmall">
+                {t.printing.create.converting}
+              </AppText>
+            ) : null}
             <AppText color="muted" variant="caption">
               {isStudent ? t.printing.create.uploadHint : t.printing.create.uploadHintGeneral}
             </AppText>

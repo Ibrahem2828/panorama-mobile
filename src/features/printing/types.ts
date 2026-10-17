@@ -86,6 +86,8 @@ export type PrintLocalFile = LocalFile;
 export type PrintSource =
   | { kind: 'library'; id: Id; title: string }
   | { kind: 'upload'; file: PrintLocalFile }
+  /** A Word/PowerPoint file the server already converted to PDF; `id` is the conversion reference. */
+  | { kind: 'converted'; id: string; name: string; pages: number | null }
   | null;
 
 /** One file of the order with its own print options. `key` is a local identity only. */

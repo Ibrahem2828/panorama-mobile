@@ -1,16 +1,22 @@
 import * as DocumentPicker from 'expo-document-picker';
 
 import type { PickImageResult } from './imagePicker';
-import { toLocalFile, validateUploadCandidate } from './localFile';
+import {
+  CONVERTIBLE_MIME_TYPES,
+  isConvertibleDocument,
+  toLocalFile,
+  validateConvertibleCandidate,
+  validateUploadCandidate,
+} from './localFile';
 
 /**
- * Lets the user pick a PDF (or an image) from the device's files. The system file picker needs no
+ * Lets the user pick a PDF, an image or a Word/PowerPoint file from the device's files. The system file picker needs no
  * storage permission; the type and size rules the server enforces are checked before uploading.
  */
 export async function pickDocument(): Promise<PickImageResult> {
   try {
     const result = await DocumentPicker.getDocumentAsync({
-      type: ['application/pdf', 'image/*'],
+      type: ['application/pdf', 'image/*', ...CONVERTIBLE_MIME_TYPES],
       multiple: false,
       copyToCacheDirectory: true,
     });
@@ -31,7 +37,9 @@ export async function pickDocument(): Promise<PickImageResult> {
       fileSize: asset.size ?? null,
       mimeType: asset.mimeType ?? null,
     });
-    const problem = validateUploadCandidate(file);
+    const problem = isConvertibleDocument(file.name)
+      ? validateConvertibleCandidate(file)
+      : validateUploadCandidate(file);
 
     return problem ? { status: 'invalid', problem } : { status: 'picked', file };
   } catch {

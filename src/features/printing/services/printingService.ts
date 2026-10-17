@@ -12,11 +12,13 @@ import type { Locale, TranslationCatalog } from '../../../i18n';
 import type {
   Id,
   PrintDraft,
+  PrintLocalFile,
   PrintOrder,
   PrintPickupLocation,
   PrintQuote,
   PrintStatusPresentation,
 } from '../types';
+import { appendLocalFile } from '../../attachments/services/localFile';
 import { buildOrderBody, buildQuoteBody, orderSignature } from './printDraft';
 
 type PrintingCatalog = TranslationCatalog['printing'];
@@ -202,6 +204,37 @@ export async function calculatePrintQuote(
   const body = buildQuoteBody(draft);
 
   return api.quotePrintOrder(body as PrintQuoteRequest | FormData, token, options);
+}
+const CONVERSION_POLL_MS = 2500;
+const CONVERSION_MAX_WAIT_MS = 3 * 60 * 1000;
+
+/** Uploads a Word/PowerPoint file and waits until the server has converted it to PDF. */
+export async function convertOfficeDocument(
+  file: PrintLocalFile,
+  token: string,
+  options?: PrintTransferOptions,
+): Promise<{ id: string; name: string; pages: number | null }> {
+  const form = new FormData();
+
+  appendLocalFile(form, 'file', file);
+
+  let conversion = await api.convertPrintDocument(form, token, options);
+  const deadline = Date.now() + CONVERSION_MAX_WAIT_MS;
+
+  while (conversion.status === 'pending') {
+    if (Date.now() > deadline) {
+      throw new Error('conversion timed out');
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, CONVERSION_POLL_MS));
+    conversion = await api.getPrintConversion(conversion.id, token);
+  }
+
+  if (conversion.status !== 'ready') {
+    throw new Error('conversion failed');
+  }
+
+  return { id: conversion.id, name: file.name, pages: conversion.pages_count };
 }
 export async function loadPickupLocations(token: string): Promise<PrintPickupLocation[]> {
   const response: unknown = await api.listPickupLocations(token);

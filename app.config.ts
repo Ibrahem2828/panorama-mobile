@@ -120,6 +120,25 @@ const withReleaseSigning: ConfigPlugin = (config) => {
 //  - no cloud/adb backups or device-to-device extraction of app data (tokens, cached profile),
 //  - HTTPS only with the system trust store (user-installed CAs are never trusted),
 //  - no debuggable flag outside development builds.
+// Certificate pinning for the API host. The pins are SPKI hashes of long-lived CA ROOTS, never of the leaf or of an
+// intermediate: Let's Encrypt rotates leaf certificates every ~60 days and intermediates every few years, so pinning
+// those would lock users out of the app after a routine renewal. Android checks the pins against every certificate in
+// the validated chain, so any chain that ends in one of these roots passes (including LE's cross-signed chains).
+// The roots cover the CAs an ACME proxy (Traefik/Caddy/Coolify) can use: Let's Encrypt, ZeroSSL and Google Trust
+// Services. A certificate from any other CA, or from a user-installed or malicious CA, is rejected.
+// Safety net: pinning stops being enforced after PIN_EXPIRATION, so a forgotten pin set can never brick the app for
+// good. Review this list and the date at every release (docs/BUILD_ANDROID_APK.md, "Certificate pinning").
+const PIN_EXPIRATION = '2027-12-31';
+const API_PINS: ReadonlyArray<readonly [string, string]> = [
+  ['C5+lpZ7tcVwmwQIMcRtPbsQtWLABXhQzejna0wHFr8M=', "ISRG Root X1 (Let's Encrypt)"],
+  ['diGVwiVYbubAI3RW4hB9xU8e/CH2GnkuvVFZE8zmgzI=', "ISRG Root X2 (Let's Encrypt)"],
+  ['x4QzPSC810K5/cMjb05Qm4k3Bw5zBn4lTdO/nEW/Td4=', 'USERTrust RSA (ZeroSSL)'],
+  ['ICGRfpgmOUXIWcQ/HXPLQTkFPEFPoDyjvH7ohhQpjzs=', 'USERTrust ECC (ZeroSSL)'],
+  ['hxqRlPTu1bMS/0DITB1SSu0vd4u/8l8TjPgfaAp63Gc=', 'GTS Root R1 (Google Trust Services)'],
+  ['QXnt2YHvdHR3tJYmQIr0Paosp6t/nggsEGD4QJZ3Q0g=', 'GTS Root R3 (Google Trust Services)'],
+  ['mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=', 'GTS Root R4 (Google Trust Services)'],
+];
+
 const SECURITY_XML = {
   networkSecurityConfig: `<?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
@@ -133,6 +152,9 @@ const SECURITY_XML = {
     <trust-anchors>
       <certificates src="system" />
     </trust-anchors>
+    <pin-set expiration="${PIN_EXPIRATION}">
+${API_PINS.map(([digest, label]) => `      <pin digest="SHA-256">${digest}</pin> <!-- ${label} -->`).join('\n')}
+    </pin-set>
   </domain-config>
 </network-security-config>
 `,
@@ -232,7 +254,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: 'Panorama',
     slug: 'panorama-mobile',
-    version: '2.2.0',
+    version: '2.3.0',
     orientation: 'portrait',
     scheme: 'panorama',
     icon: './src/assets/app/icon.png',
@@ -294,7 +316,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: {
       ...config.android,
       package: 'com.panorama.student',
-      versionCode: 220,
+      versionCode: 230,
       adaptiveIcon: {
         foregroundImage: './src/assets/app/adaptive-icon.png',
         monochromeImage: './src/assets/app/adaptive-icon-monochrome.png',

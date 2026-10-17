@@ -296,12 +296,23 @@ export type PrintSides = 'one_sided' | 'double_sided';
 export type PrintBinding = 'none' | 'staple' | 'spiral' | 'thermal';
 
 export type CreatePrintOrderItemInput = {
-  source_file: EntityId;
+  source_file?: EntityId;
+  /** Reference to a Word/PowerPoint upload already converted to PDF by the server. */
+  converted_upload?: string;
   copies: number;
   color_mode: PrintColorMode;
   paper_size: PrintPaperSize;
   sides: PrintSides;
   binding: PrintBinding;
+};
+
+/** A Word/PowerPoint upload converted to PDF on the server (`status` is `pending` until the worker is done). */
+export type PrintConversion = {
+  id: string;
+  status: 'pending' | 'ready' | 'failed';
+  filename: string;
+  pages_count: number | null;
+  expires_at: string;
 };
 
 export type PrintQuoteRequest = { items: CreatePrintOrderItemInput[] };
