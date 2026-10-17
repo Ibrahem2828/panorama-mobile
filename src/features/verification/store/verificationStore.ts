@@ -43,6 +43,20 @@ function verificationCatalog() {
   return useLocaleStore.getState().t.verificationFlow;
 }
 
+/**
+ * The submit contract needs the academic fields next to the card image. After an app restart the
+ * verification screen can open before the profile store has been filled, so load it on demand.
+ */
+async function loadAcademicProfile() {
+  const store = useStudentProfileStore.getState();
+
+  if (!store.profile) {
+    await store.bootstrap({ force: true });
+  }
+
+  return useStudentProfileStore.getState().profile;
+}
+
 function getInitialVerificationState() {
   return {
     verification: null,
@@ -133,7 +147,7 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
         errorMessage: null,
       });
 
-      const profile = useStudentProfileStore.getState().profile;
+      const profile = await loadAcademicProfile();
       const verification = await submitStudentVerification(
         image,
         profile,
@@ -181,7 +195,7 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
         errorMessage: null,
       });
 
-      const profile = useStudentProfileStore.getState().profile;
+      const profile = await loadAcademicProfile();
       const verification = await resubmitStudentVerification(
         image,
         profile,
