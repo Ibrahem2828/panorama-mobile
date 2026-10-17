@@ -2,7 +2,6 @@ import { useCallback, useEffect } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppHeader,
@@ -10,7 +9,7 @@ import {
   AppText,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -77,7 +76,6 @@ export function AnnouncementsListScreen({ navigation }: Props) {
         subtitle={hasLoaded ? t.announcements.total(total) : t.announcements.subtitle}
         title={t.announcements.title}
       />
-      <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
     </Stack>
   );
 
@@ -85,7 +83,7 @@ export function AnnouncementsListScreen({ navigation }: Props) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         {header}
-        <LoadingState message={t.announcements.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }
@@ -114,7 +112,7 @@ export function AnnouncementsListScreen({ navigation }: Props) {
               />
             }
             illustrationLabel={t.announcements.emptyIllustrationAlt}
-            illustrationSource={images.emptyStates.announcements}
+            artwork="announcements"
             message={t.announcements.emptyMessage}
             title={t.announcements.emptyTitle}
           />

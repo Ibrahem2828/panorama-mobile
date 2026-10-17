@@ -77,19 +77,11 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
     [leaveGroup],
   );
 
-  const backButton = (
-    <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
-  );
-
   if (!activeGroup) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         <Stack gap="lg">
-          <AppHeader
-            leftAction={backButton}
-            subtitle={t.groups.details.subtitle}
-            title={t.groups.title}
-          />
+          <AppHeader subtitle={t.groups.details.subtitle} title={t.groups.title} />
           {isLoadingDetail ? (
             <LoadingState message={t.groups.details.loading} />
           ) : (
@@ -124,11 +116,7 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
         showsVerticalScrollIndicator={false}
       >
         <Stack gap="xl">
-          <AppHeader
-            leftAction={backButton}
-            subtitle={t.groups.details.subtitle}
-            title={t.groups.title}
-          />
+          <AppHeader subtitle={t.groups.details.subtitle} title={t.groups.title} />
 
           <GroupDetailHeader group={activeGroup} subject={subject} />
 

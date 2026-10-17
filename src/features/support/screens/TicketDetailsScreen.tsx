@@ -89,7 +89,6 @@ export function TicketDetailsScreen({ navigation, route }: TicketDetailsScreenPr
         <Stack gap="md">
           <AppHeader subtitle={t.support.details.subtitle} title={t.support.details.title} />
           <Stack direction="horizontal" gap="sm" wrap>
-            <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
             <AppButton onPress={handleRefresh} title={t.common.refresh} variant="outline" />
           </Stack>
         </Stack>

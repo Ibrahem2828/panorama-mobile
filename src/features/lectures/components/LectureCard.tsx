@@ -35,6 +35,7 @@ function LectureCardBase({ lecture, onPress, compact = false }: Props) {
     <Pressable
       accessibilityLabel={t.lectures.openLecture(title)}
       accessibilityRole="button"
+      android_ripple={{ color: 'rgba(16, 24, 40, 0.08)', foreground: true }}
       onPress={() => onPress(lecture)}
       style={({ pressed }) => (pressed ? styles.pressed : null)}
     >

@@ -4,7 +4,6 @@ import { StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 import {
-  AppButton,
   AppCard,
   AppHeader,
   AppScreen,
@@ -99,8 +98,7 @@ export function ProtectedPreview({
   return (
     <AppScreen horizontalPadding={false} safeArea style={styles.screen}>
       <View style={styles.header}>
-        <AppHeader subtitle={subtitle} title={title} />
-        <AppButton onPress={onBack} title={t.common.back} variant="ghost" />
+        <AppHeader onBack={onBack} showBack subtitle={subtitle} title={title} />
       </View>
 
       {isLoading ? <LoadingState message={t.files.viewer.issuingTicket} /> : null}

@@ -122,7 +122,6 @@ export function FeedbackCenterScreen({ navigation }: Props) {
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <AppHeader subtitle={t.feedback.centerSubtitle} title={t.feedback.centerTitle} />
-        <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
 
         <AppCard variant="muted">
           <Stack gap="xs">

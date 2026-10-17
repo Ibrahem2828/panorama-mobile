@@ -6,7 +6,7 @@ export const radius = {
   xl: 16,
   xxl: 24,
   full: 999,
-  card: 12,
+  card: 16,
   button: 10,
   input: 10,
   avatar: 999,

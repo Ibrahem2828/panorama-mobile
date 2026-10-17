@@ -4,12 +4,13 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
 import {
-  AppButton,
   AppHeader,
   AppScreen,
+  BrandRefreshControl,
   ErrorState,
-  LoadingState,
   SectionHeader,
+  Skeleton,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { GroupsRoutes, SharedRoutes, TabRoutes } from '../../../navigation/routes';
@@ -84,8 +85,9 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
   if (!subject && isBusy) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.subjects.details.subtitle} title={t.subjects.title} />
-        <LoadingState message={t.subjects.details.loading} />
+        <AppHeader title={t.subjects.title} />
+        <Skeleton height={180} borderRadius={24} />
+        <SkeletonList count={2} />
       </AppScreen>
     );
   }
@@ -94,17 +96,7 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         <Stack gap="lg">
-          <AppHeader
-            leftAction={
-              <AppButton
-                onPress={() => navigation.goBack()}
-                title={t.common.back}
-                variant="ghost"
-              />
-            }
-            subtitle={t.subjects.details.subtitle}
-            title={t.subjects.title}
-          />
+          <AppHeader subtitle={t.subjects.details.subtitle} title={t.subjects.title} />
           <ErrorState
             message={errorMessage ?? t.subjects.details.unavailableMessage}
             onRetry={handleRetry}
@@ -116,29 +108,29 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
   }
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
+    <AppScreen
+      contentContainerStyle={styles.content}
+      refreshControl={<BrandRefreshControl onRefresh={handleRetry} refreshing={isRefreshing} />}
+      scroll
+    >
       <Stack gap="xl">
-        <AppHeader
-          leftAction={
-            <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
-          }
-          subtitle={t.subjects.details.listSubtitle}
-          title={t.subjects.title}
-        />
+        <AppHeader subtitle={t.subjects.details.listSubtitle} title={t.subjects.title} />
 
         <SubjectDetailHeader subject={subject} />
 
         <Stack gap="md">
           <SectionHeader title={t.subjects.details.linkedTitle} />
           <SubjectLinkedSectionCard
-            description={t.subjects.details.filesDescription}
-            onPress={handleOpenFiles}
-            title={t.subjects.details.filesTitle}
-          />
-          <SubjectLinkedSectionCard
             description={t.subjects.details.groupsDescription}
+            icon="users"
             onPress={handleOpenGroups}
             title={t.subjects.details.groupsTitle}
+          />
+          <SubjectLinkedSectionCard
+            description={t.subjects.details.filesDescription}
+            icon="folder"
+            onPress={handleOpenFiles}
+            title={t.subjects.details.filesTitle}
           />
         </Stack>
         <SubjectLecturesSection subjectId={subject.id} />

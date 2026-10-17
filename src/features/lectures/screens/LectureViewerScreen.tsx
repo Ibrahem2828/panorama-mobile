@@ -17,7 +17,6 @@ import { useTranslation } from '../../../i18n';
 import type { HomeStackParamList } from '../../../navigation/types';
 import { colors, spacing, useBrand } from '../../../theme';
 import { getIsRTL } from '../../../utils/rtl';
-import { BackButton } from '../components/BackButton';
 import { JumpToPageModal } from '../components/JumpToPageModal';
 import { LectureProcessingView } from '../components/LectureProcessingView';
 import { NotesSheet } from '../components/NotesSheet';
@@ -47,7 +46,7 @@ export function LectureViewerScreen({ navigation, route }: Props) {
 
   return (
     <AppScreen contentContainerStyle={styles.statusContent} scroll>
-      <AppHeader leftAction={<BackButton onPress={goBack} />} title={title} />
+      <AppHeader onBack={goBack} showBack title={title} />
       {lecture ? (
         <LectureProcessingView lecture={lecture} onReady={reload} />
       ) : isLoading ? (
@@ -126,7 +125,8 @@ function ViewerBody({ lecture, title, initialPage, onBack }: BodyProps) {
     <AppScreen backgroundColor={colors.background.surface} horizontalPadding={false}>
       <View style={styles.topBar}>
         <AppHeader
-          leftAction={<BackButton onPress={onBack} />}
+          onBack={onBack}
+          showBack
           rightAction={
             <AppIconButton
               accessibilityLabel={

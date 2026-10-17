@@ -1,3 +1,4 @@
+import { memo, useCallback } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
@@ -15,19 +16,21 @@ import { SupportTicketStatusBadge } from './SupportTicketStatusBadge';
 
 type SupportTicketCardProps = {
   ticket: SupportTicket;
-  onPress?: () => void;
+  onPress?: (ticket: SupportTicket) => void;
 };
 
-export function SupportTicketCard({ ticket, onPress }: SupportTicketCardProps) {
+function SupportTicketCardComponent({ ticket, onPress }: SupportTicketCardProps) {
   const { t, locale } = useTranslation();
   const preview = getSupportTicketPreview(ticket);
   const date = formatDateTime(ticket.created_at ?? ticket.updated_at, locale);
+  const handlePress = useCallback(() => onPress?.(ticket), [onPress, ticket]);
 
   return (
     <Pressable
       accessibilityRole="button"
+      android_ripple={{ color: 'rgba(16, 24, 40, 0.08)', foreground: true }}
       disabled={!onPress}
-      onPress={onPress}
+      onPress={handlePress}
       style={({ pressed }) => [pressed && onPress ? styles.pressed : null]}
     >
       <AppCard variant="elevated">
@@ -61,6 +64,8 @@ export function SupportTicketCard({ ticket, onPress }: SupportTicketCardProps) {
     </Pressable>
   );
 }
+
+export const SupportTicketCard = memo(SupportTicketCardComponent);
 
 const styles = StyleSheet.create({
   pressed: {

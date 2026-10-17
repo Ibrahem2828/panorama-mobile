@@ -1,9 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 
-import { AppText, Stack } from '../../../components';
+import { AppText, Icon, ListRow } from '../../../components';
 import { LOCALES, useTranslation, type Locale } from '../../../i18n';
 import { colors, radius, spacing, useBrand } from '../../../theme';
-import { SettingsOptionRow } from './SettingsOptionRow';
 
 export function LanguageSelector() {
   const { t, locale, setLocale, needsRestartForDirection } = useTranslation();
@@ -15,15 +14,20 @@ export function LanguageSelector() {
   };
 
   return (
-    <Stack gap="sm">
-      {LOCALES.map((option) => (
-        <SettingsOptionRow
-          badgeVariant={option === locale ? 'success' : 'neutral'}
-          key={option}
-          onPress={option === locale ? undefined : () => void setLocale(option)}
-          title={labels[option]}
-          value={option === locale ? '✓' : undefined}
-        />
+    <View>
+      {LOCALES.map((option, index) => (
+        <View key={option}>
+          {index > 0 ? <View style={styles.divider} /> : null}
+          <ListRow
+            icon="language"
+            onPress={option === locale ? undefined : () => void setLocale(option)}
+            title={labels[option]}
+            tone={option === locale ? 'brand' : 'neutral'}
+            trailing={
+              option === locale ? <Icon color={brand.primary} name="check" size={20} /> : undefined
+            }
+          />
+        </View>
       ))}
 
       {needsRestartForDirection ? (
@@ -33,13 +37,18 @@ export function LanguageSelector() {
           </AppText>
         </View>
       ) : null}
-    </Stack>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginHorizontal: spacing.md,
+    backgroundColor: colors.gray[200],
+  },
   notice: {
-    backgroundColor: colors.brand.primarySoft,
+    margin: spacing.md,
     borderRadius: radius.md,
     padding: spacing.md,
   },

@@ -10,7 +10,7 @@ import {
   AppTextInput,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -18,7 +18,6 @@ import { LecturesRoutes } from '../../../navigation/routes';
 import type { HomeStackParamList } from '../../../navigation/types';
 import { getFlexDirection } from '../../../utils/rtl';
 import { spacing, useBrand } from '../../../theme';
-import { BackButton } from '../components/BackButton';
 import { FilterChip } from '../components/FilterChip';
 import { LectureCard } from '../components/LectureCard';
 import { filterLectures, uniqueSubjects } from '../logic';
@@ -76,21 +75,13 @@ export function LecturesListScreen({ navigation, route }: Props) {
     setSubject('');
   }, []);
 
-  const header = (
-    <AppHeader
-      leftAction={
-        navigation.canGoBack() ? <BackButton onPress={() => navigation.goBack()} /> : undefined
-      }
-      subtitle={t.lectures.subtitle}
-      title={t.lectures.title}
-    />
-  );
+  const header = <AppHeader subtitle={t.lectures.subtitle} title={t.lectures.title} />;
 
   if (isLoading && lastLoadedAt === null) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         {header}
-        <LoadingState message={t.lectures.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }

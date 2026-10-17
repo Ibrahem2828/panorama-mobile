@@ -3,7 +3,6 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
 import {
-  AppButton,
   AppCard,
   AppHeader,
   AppScreen,
@@ -47,7 +46,7 @@ function getVerificationStatusVariant(status?: string | null) {
   }
 }
 
-export function AcademicInfoScreen({ navigation }: AcademicInfoScreenProps) {
+export function AcademicInfoScreen(_props: AcademicInfoScreenProps) {
   const { t } = useTranslation();
   const profile = useStudentProfileStore((state) => state.profile);
   const isBootstrapping = useStudentProfileStore((state) => state.isBootstrapping);
@@ -77,7 +76,6 @@ export function AcademicInfoScreen({ navigation }: AcademicInfoScreenProps) {
       <Stack gap="xl">
         <Stack gap="md">
           <AppHeader subtitle={t.profile.academic.subtitle} title={t.profile.academic.title} />
-          <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
         </Stack>
 
         {showLoading ? <LoadingState message={t.profile.academic.loading} /> : null}

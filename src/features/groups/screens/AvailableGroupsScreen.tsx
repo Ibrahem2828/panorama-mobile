@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppCard,
@@ -12,7 +11,7 @@ import {
   AppTextInput,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -180,7 +179,7 @@ export function AvailableGroupsScreen({ navigation, route }: AvailableGroupsScre
   );
 
   const listEmpty = showInitialLoading ? (
-    <LoadingState message={t.groups.available.loading} />
+    <SkeletonList />
   ) : showInitialError ? (
     <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
   ) : hasFilters ? (
@@ -193,7 +192,7 @@ export function AvailableGroupsScreen({ navigation, route }: AvailableGroupsScre
         />
       }
       illustrationLabel={t.common.noSearchResultsAlt}
-      illustrationSource={images.illustrations.search}
+      artwork="search"
       message={t.common.searchNoResultsMessage}
       title={t.common.searchNoResultsTitle}
     />
@@ -201,7 +200,7 @@ export function AvailableGroupsScreen({ navigation, route }: AvailableGroupsScre
     <EmptyState
       action={<AppButton onPress={handleRefresh} title={t.common.refresh} variant="outline" />}
       illustrationLabel={t.groups.list.emptyIllustrationAlt}
-      illustrationSource={images.emptyStates.groups}
+      artwork="groups"
       message={t.groups.available.emptyMessage}
       title={t.groups.list.emptyTitle}
     />
@@ -228,19 +227,7 @@ export function AvailableGroupsScreen({ navigation, route }: AvailableGroupsScre
   return (
     <AppScreen>
       <View style={styles.top}>
-        <AppHeader
-          leftAction={
-            navigation.canGoBack() ? (
-              <AppButton
-                onPress={() => navigation.goBack()}
-                title={t.common.back}
-                variant="ghost"
-              />
-            ) : undefined
-          }
-          subtitle={t.groups.available.subtitle}
-          title={t.groups.available.title}
-        />
+        <AppHeader subtitle={t.groups.available.subtitle} title={t.groups.available.title} />
         <AppTextInput
           accessibilityLabel={t.groups.available2.searchLabel}
           autoCapitalize="none"

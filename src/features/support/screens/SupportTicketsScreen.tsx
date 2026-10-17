@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppCard,
@@ -12,7 +11,7 @@ import {
   ChoiceChips,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -75,9 +74,7 @@ export function SupportTicketsScreen({ navigation }: SupportTicketsScreenProps) 
     [navigation, setSelectedTicket],
   );
   const renderItem = useCallback(
-    ({ item }: { item: SupportTicket }) => (
-      <SupportTicketCard onPress={() => handleOpen(item)} ticket={item} />
-    ),
+    ({ item }: { item: SupportTicket }) => <SupportTicketCard onPress={handleOpen} ticket={item} />,
     [handleOpen],
   );
   const filterOptions = useMemo(
@@ -125,7 +122,7 @@ export function SupportTicketsScreen({ navigation }: SupportTicketsScreenProps) 
     return (
       <AppScreen contentContainerStyle={styles.centerContent} scroll>
         {header}
-        <LoadingState message={t.support.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }
@@ -145,7 +142,7 @@ export function SupportTicketsScreen({ navigation }: SupportTicketsScreenProps) 
         ItemSeparatorComponent={Separator}
         ListEmptyComponent={
           isLoadingTickets ? (
-            <LoadingState message={t.support.loading} />
+            <SkeletonList />
           ) : statusFilter ? (
             <EmptyState
               action={
@@ -168,7 +165,7 @@ export function SupportTicketsScreen({ navigation }: SupportTicketsScreenProps) 
                 />
               }
               illustrationLabel={t.support.emptyIllustrationAlt}
-              illustrationSource={images.emptyStates.supportTickets}
+              artwork="support"
               message={t.support.emptyMessage}
               title={t.support.emptyTitle}
             />

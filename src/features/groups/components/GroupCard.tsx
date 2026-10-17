@@ -37,6 +37,7 @@ function GroupCardBase({ group, subject, pendingAction, onPress, onJoin }: Group
       <Pressable
         accessibilityLabel={t.groups.card.openGroup(title)}
         accessibilityRole="button"
+        android_ripple={{ color: 'rgba(16, 24, 40, 0.08)', foreground: true }}
         disabled={!onPress}
         onPress={handlePress}
         style={({ pressed }) => [pressed ? styles.pressed : null]}

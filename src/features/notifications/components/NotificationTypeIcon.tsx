@@ -1,58 +1,24 @@
-import { Image, StyleSheet, View } from 'react-native';
+import { memo } from 'react';
 
-import { images } from '../../../assets/images';
-import { colors } from '../../../theme';
-import type { NotificationType } from '../types';
+import { IconTile } from '../../../components';
 import { useTranslation } from '../../../i18n';
+import type { NotificationType } from '../types';
+import { getNotificationVisual } from './notificationVisual';
 
 type NotificationTypeIconProps = {
   type?: NotificationType;
 };
 
-function getNotificationImage(type?: NotificationType) {
-  switch (type) {
-    case 'verification':
-      return images.notifications.verification;
-    case 'printing':
-      return images.notifications.printing;
-    case 'support':
-      return images.notifications.support;
-    case 'group':
-      return images.notifications.group;
-    case 'announcement':
-    case 'file':
-    case 'system':
-    default:
-      return images.notifications.announcement;
-  }
-}
-
-export function NotificationTypeIcon({ type }: NotificationTypeIconProps) {
+function NotificationTypeIconComponent({ type }: NotificationTypeIconProps) {
   const { t } = useTranslation();
+  const visual = getNotificationVisual(type);
   return (
-    <View style={styles.container}>
-      <Image
-        accessibilityIgnoresInvertColors
-        accessibilityLabel={t.notifications.typeIconAlt}
-        resizeMode="contain"
-        source={getNotificationImage(type)}
-        style={styles.image}
-      />
-    </View>
+    <IconTile
+      accessibilityLabel={t.notifications.typeIconAlt}
+      icon={visual.icon}
+      tone={visual.tone}
+    />
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    width: 48,
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 12,
-    backgroundColor: colors.background.muted,
-  },
-  image: {
-    width: '80%',
-    height: '80%',
-  },
-});
+export const NotificationTypeIcon = memo(NotificationTypeIconComponent);

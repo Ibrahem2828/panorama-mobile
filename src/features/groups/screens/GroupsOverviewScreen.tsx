@@ -1,22 +1,27 @@
 import { useEffect } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Pressable, StyleSheet } from 'react-native';
+import { memo, useCallback } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import {
   AppBadge,
-  AppButton,
   AppCard,
   AppHeader,
   AppScreen,
   AppText,
+  BrandRefreshControl,
   ErrorState,
+  Icon,
+  IconTile,
   SectionHeader,
   Stack,
+  type IconName,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { GroupsRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
-import { opacity, spacing } from '../../../theme';
+import { colors, spacing } from '../../../theme';
+import { getIsRTL } from '../../../utils/rtl';
 import { useGroupsStore } from '../store';
 
 type GroupsOverviewScreenProps = NativeStackScreenProps<GroupsStackParamList, 'GroupsOverview'>;
@@ -25,35 +30,35 @@ type OverviewCardProps = {
   title: string;
   description: string;
   count: number;
+  icon: IconName;
   onPress: () => void;
 };
 
-function OverviewCard({ title, description, count, onPress }: OverviewCardProps) {
-  const { t } = useTranslation();
-
+function OverviewCardComponent({ title, description, count, icon, onPress }: OverviewCardProps) {
   return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({ pressed }) => [pressed ? styles.pressed : null]}
-    >
-      <AppCard variant="elevated">
-        <Stack gap="md">
-          <Stack direction="horizontal" gap="md" style={styles.cardHeader}>
-            <Stack gap="xs" style={styles.cardText}>
-              <AppText variant="title">{title}</AppText>
-              <AppText color="secondary" variant="bodySmall">
-                {description}
-              </AppText>
-            </Stack>
-            <AppBadge label={String(count)} variant="brand" />
-          </Stack>
-          <AppButton onPress={onPress} title={t.common.open} variant="outline" />
-        </Stack>
-      </AppCard>
-    </Pressable>
+    <AppCard accessibilityLabel={title} onPress={onPress} variant="elevated">
+      <View style={styles.cardRow}>
+        <IconTile icon={icon} size="lg" />
+        <View style={styles.cardText}>
+          <AppText variant="title">{title}</AppText>
+          <AppText color="secondary" variant="bodySmall">
+            {description}
+          </AppText>
+        </View>
+        <View style={styles.cardEnd}>
+          <AppBadge label={String(count)} variant="brand" />
+          <Icon
+            color={colors.text.muted}
+            name={getIsRTL() ? 'chevronLeft' : 'chevronRight'}
+            size={18}
+          />
+        </View>
+      </View>
+    </AppCard>
   );
 }
+
+const OverviewCard = memo(OverviewCardComponent);
 
 export function GroupsOverviewScreen({ navigation }: GroupsOverviewScreenProps) {
   const { t } = useTranslation();
@@ -74,12 +79,21 @@ export function GroupsOverviewScreen({ navigation }: GroupsOverviewScreenProps) 
     void loadMyGroups();
   }, [loadAvailableGroups, loadMyGroups]);
 
-  function handleRefresh() {
+  const handleRefresh = useCallback(() => {
     void refreshAllGroups();
-  }
+  }, [refreshAllGroups]);
+  const openMyGroups = useCallback(() => navigation.navigate(GroupsRoutes.MyGroups), [navigation]);
+  const openAvailable = useCallback(
+    () => navigation.navigate(GroupsRoutes.AvailableGroups),
+    [navigation],
+  );
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
+    <AppScreen
+      contentContainerStyle={styles.content}
+      refreshControl={<BrandRefreshControl onRefresh={handleRefresh} refreshing={isRefreshing} />}
+      scroll
+    >
       <Stack gap="xl">
         <AppHeader subtitle={t.groups.overview.subtitle} title={t.groups.title} />
 
@@ -90,15 +104,6 @@ export function GroupsOverviewScreen({ navigation }: GroupsOverviewScreenProps) 
         </AppCard>
 
         <SectionHeader
-          action={
-            <AppButton
-              loading={isRefreshing}
-              onPress={handleRefresh}
-              size="sm"
-              title={t.common.refresh}
-              variant="outline"
-            />
-          }
           subtitle={t.groups.overview.destinationsSubtitle}
           title={t.groups.overview.destinationsTitle}
         />
@@ -109,13 +114,15 @@ export function GroupsOverviewScreen({ navigation }: GroupsOverviewScreenProps) 
           <OverviewCard
             count={resolvedMyGroupsCount}
             description={t.groups.overview.myGroupsDescription}
-            onPress={() => navigation.navigate(GroupsRoutes.MyGroups)}
+            icon="users"
+            onPress={openMyGroups}
             title={t.groups.mine.title}
           />
           <OverviewCard
             count={resolvedAvailableCount}
             description={t.groups.overview.availableDescription}
-            onPress={() => navigation.navigate(GroupsRoutes.AvailableGroups)}
+            icon="search"
+            onPress={openAvailable}
             title={t.groups.available.title}
           />
         </Stack>
@@ -128,15 +135,17 @@ const styles = StyleSheet.create({
   content: {
     gap: spacing.xl,
   },
-  cardHeader: {
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+  cardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
   },
   cardText: {
     flex: 1,
     minWidth: 0,
   },
-  pressed: {
-    opacity: opacity.pressed,
+  cardEnd: {
+    alignItems: 'center',
+    gap: spacing.sm,
   },
 });

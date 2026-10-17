@@ -27,7 +27,7 @@ type Props = NativeStackScreenProps<HomeStackParamList, 'AnnouncementDetail'>;
 
 const IMAGE_HEIGHT = 200;
 
-export function AnnouncementDetailScreen({ navigation, route }: Props) {
+export function AnnouncementDetailScreen({ route }: Props) {
   const { t, locale } = useTranslation();
   const { announcementId } = route.params;
   const key = String(announcementId);
@@ -48,13 +48,9 @@ export function AnnouncementDetailScreen({ navigation, route }: Props) {
     void loadDetail(announcementId);
   }, [announcementId, hydrateReadIds, loadDetail, markRead]);
 
-  const back = (
-    <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
-  );
   const header = (
     <Stack gap="md">
       <AppHeader title={announcement?.title ?? t.announcements.detailTitle} />
-      {back}
     </Stack>
   );
 

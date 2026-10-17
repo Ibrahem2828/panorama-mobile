@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppHeader,
@@ -11,7 +10,7 @@ import {
   AppTextInput,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -120,7 +119,7 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
   );
 
   const listEmpty = showInitialLoading ? (
-    <LoadingState message={t.groups.mine.loading} />
+    <SkeletonList />
   ) : showInitialError ? (
     <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
   ) : myGroups.length === 0 ? (
@@ -133,7 +132,7 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
         />
       }
       illustrationLabel={t.groups.list.emptyIllustrationAlt}
-      illustrationSource={images.emptyStates.groups}
+      artwork="groups"
       message={t.groups.mine.emptyMessage}
       title={t.groups.emptyMine.title}
     />
@@ -147,7 +146,7 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
         />
       }
       illustrationLabel={t.common.noSearchResultsAlt}
-      illustrationSource={images.illustrations.search}
+      artwork="search"
       message={t.common.searchNoResultsMessage}
       title={t.common.searchNoResultsTitle}
     />
@@ -156,19 +155,7 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
   return (
     <AppScreen>
       <View style={styles.top}>
-        <AppHeader
-          leftAction={
-            navigation.canGoBack() ? (
-              <AppButton
-                onPress={() => navigation.goBack()}
-                title={t.common.back}
-                variant="ghost"
-              />
-            ) : undefined
-          }
-          subtitle={t.groups.mine.subtitle}
-          title={t.groups.mine.title}
-        />
+        <AppHeader subtitle={t.groups.mine.subtitle} title={t.groups.mine.title} />
         {myGroups.length > 0 ? (
           <AppTextInput
             accessibilityLabel={t.groups.available2.searchLabel}

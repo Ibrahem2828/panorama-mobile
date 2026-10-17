@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppHeader,
@@ -11,7 +10,7 @@ import {
   AppTextInput,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   SectionHeader,
   Stack,
 } from '../../../components';
@@ -77,7 +76,7 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         <AppHeader subtitle={t.files.groupFiles.subtitle} title={t.files.groupFiles.title} />
-        <LoadingState message={t.files.groupFiles.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }
@@ -139,7 +138,7 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
             message={t.files.groupFiles.emptyMessage}
             title={t.files.emptyTitle}
             illustrationLabel={t.files.emptyIllustrationAlt}
-            illustrationSource={images.emptyStates.files}
+            artwork="files"
           />
         ) : filteredGroupFiles.length === 0 ? (
           <EmptyState
@@ -151,7 +150,7 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
               />
             }
             illustrationLabel={t.common.noSearchResultsAlt}
-            illustrationSource={images.illustrations.search}
+            artwork="search"
             message={t.common.searchNoResultsMessage}
             title={t.common.searchNoResultsTitle}
           />

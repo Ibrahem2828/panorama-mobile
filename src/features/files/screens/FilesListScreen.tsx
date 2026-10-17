@@ -2,7 +2,6 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppHeader,
@@ -14,7 +13,7 @@ import {
   EmptyState,
   ErrorState,
   Icon,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -128,7 +127,6 @@ export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
         subtitle={hasLoaded ? t.files.list.total(listCount) : t.files.subtitle}
         title={t.files.title}
       />
-      <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
       <AppTextInput
         autoCorrect={false}
         onChangeText={setSearchText}
@@ -170,7 +168,7 @@ export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
     return (
       <AppScreen contentContainerStyle={styles.centerContent} scroll>
         {header}
-        <LoadingState message={t.files.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }
@@ -190,7 +188,7 @@ export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
         ItemSeparatorComponent={Separator}
         ListEmptyComponent={
           isLoading ? (
-            <LoadingState message={t.files.loading} />
+            <SkeletonList />
           ) : listError ? (
             <ErrorState message={listError} onRetry={() => void loadList(query)} />
           ) : hasFilters || subjectId !== undefined ? (
@@ -203,7 +201,7 @@ export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
                 />
               }
               illustrationLabel={t.common.noSearchResultsAlt}
-              illustrationSource={images.illustrations.search}
+              artwork="search"
               message={t.common.searchNoResultsMessage}
               title={t.common.searchNoResultsTitle}
             />
@@ -213,7 +211,7 @@ export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
                 <AppButton onPress={handleRefresh} title={t.common.refresh} variant="outline" />
               }
               illustrationLabel={t.files.emptyIllustrationAlt}
-              illustrationSource={images.emptyStates.files}
+              artwork="files"
               message={t.files.emptyMessage}
               title={t.files.emptyTitle}
             />

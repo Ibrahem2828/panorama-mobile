@@ -10,7 +10,7 @@ import { getLegalUrl, openLegalPage } from '../services';
 
 type PrivacyPolicyScreenProps = NativeStackScreenProps<ProfileStackParamList, 'PrivacyPolicy'>;
 
-export function PrivacyPolicyScreen({ navigation }: PrivacyPolicyScreenProps) {
+export function PrivacyPolicyScreen(_props: PrivacyPolicyScreenProps) {
   const { t } = useTranslation();
 
   return (
@@ -18,7 +18,6 @@ export function PrivacyPolicyScreen({ navigation }: PrivacyPolicyScreenProps) {
       <Stack gap="xl">
         <Stack gap="md">
           <AppHeader subtitle={t.legal.privacy.subtitle} title={t.legal.privacy.title} />
-          <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
         </Stack>
 
         {t.legal.privacy.sections.map((block) => (

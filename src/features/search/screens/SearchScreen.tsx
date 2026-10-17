@@ -254,7 +254,6 @@ export function SearchScreen({ navigation, route }: Props) {
   const header = (
     <Stack gap="lg" style={styles.header}>
       <AppHeader subtitle={t.search.subtitle} title={t.search.title} />
-      <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
       <AppTextInput
         autoCapitalize="none"
         autoCorrect={false}

@@ -1,4 +1,3 @@
-import { images } from '../../../assets/images';
 import { EmptyState } from '../../../components';
 import { useTranslation } from '../../../i18n';
 
@@ -9,7 +8,7 @@ export function ChatEmptyState() {
       message={t.chat.emptyMessage}
       title={t.chat.emptyTitle}
       illustrationLabel={t.chat.emptyIllustrationAlt}
-      illustrationSource={images.emptyStates.chat}
+      artwork="chat"
     />
   );
 }

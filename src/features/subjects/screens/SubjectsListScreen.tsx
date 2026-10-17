@@ -2,15 +2,15 @@ import { useCallback, useEffect, useMemo } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { FlatList, StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppHeader,
   AppScreen,
   AppText,
+  BrandRefreshControl,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { SubjectsRoutes } from '../../../navigation/routes';
@@ -99,7 +99,7 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         <AppHeader subtitle={t.subjects.subtitle} title={t.subjects.title} />
-        <LoadingState message={t.subjects.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }
@@ -135,7 +135,7 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
         )
       }
       illustrationLabel={search ? t.common.noSearchResultsAlt : t.subjects.emptyIllustrationAlt}
-      illustrationSource={search ? images.illustrations.search : images.emptyStates.subjects}
+      artwork={search ? 'search' : 'subjects'}
       message={search ? t.common.searchNoResultsMessage : t.subjects.emptyMessage}
       title={search ? t.common.searchNoResultsTitle : t.subjects.emptyTitle}
     />
@@ -160,8 +160,7 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
         keyExtractor={keyExtractor}
         keyboardShouldPersistTaps="handled"
         maxToRenderPerBatch={10}
-        onRefresh={handleRefresh}
-        refreshing={isRefreshing}
+        refreshControl={<BrandRefreshControl onRefresh={handleRefresh} refreshing={isRefreshing} />}
         removeClippedSubviews
         renderItem={renderItem}
         windowSize={7}

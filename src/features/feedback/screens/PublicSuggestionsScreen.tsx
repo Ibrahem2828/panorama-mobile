@@ -10,7 +10,7 @@ import {
   AppText,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -144,7 +144,6 @@ export function PublicSuggestionsScreen({ navigation }: Props) {
   const header = (
     <Stack gap="lg" style={styles.header}>
       <AppHeader subtitle={t.feedback.publicList.subtitle} title={t.feedback.publicList.title} />
-      <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
       {error && items.length > 0 ? (
         <AppText color="error" variant="bodySmall">
           {error}
@@ -157,7 +156,7 @@ export function PublicSuggestionsScreen({ navigation }: Props) {
     return (
       <AppScreen contentContainerStyle={styles.centerContent} scroll>
         {header}
-        <LoadingState message={t.feedback.publicList.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }

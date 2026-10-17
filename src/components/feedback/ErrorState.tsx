@@ -3,9 +3,9 @@ import type { ImageSourcePropType } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { StyleSheet, View } from 'react-native';
 
-import { images } from '../../assets/images';
-import { colors, spacing } from '../../theme';
+import { spacing } from '../../theme';
 import { AppButton, AppText } from '../common';
+import type { ArtworkKey } from '../media';
 import { StateIllustration } from '../media';
 import { useTranslation } from '../../i18n';
 
@@ -17,6 +17,7 @@ type ErrorStateProps = {
   retryLabel?: string;
   onRetry?: () => void;
   icon?: ReactNode;
+  artwork?: ArtworkKey;
   illustrationSource?: ImageSourcePropType;
   illustrationLabel?: string;
   kind?: ErrorStateKind;
@@ -29,6 +30,7 @@ export function ErrorState({
   retryLabel,
   onRetry,
   icon,
+  artwork,
   illustrationSource,
   illustrationLabel,
   kind = 'server',
@@ -37,23 +39,23 @@ export function ErrorState({
   const { t } = useTranslation();
   const resolvedTitle = title ?? t.common.errorTitle;
   const resolvedRetryLabel = retryLabel ?? t.common.retry;
-  const resolvedIllustration =
-    illustrationSource ??
-    (kind === 'network' ? images.illustrations.search : images.illustrations.warning);
+  const resolvedArtwork: ArtworkKey | undefined =
+    artwork ?? (illustrationSource || icon ? undefined : kind === 'network' ? 'network' : 'error');
 
   return (
     <View style={[styles.container, style]}>
-      {resolvedIllustration ? (
+      {resolvedArtwork || illustrationSource ? (
         <StateIllustration
           accessibilityLabel={illustrationLabel ?? resolvedTitle}
+          artwork={resolvedArtwork}
           compact
-          source={resolvedIllustration}
+          source={illustrationSource}
         />
       ) : (
         icon
       )}
       <View style={styles.textBlock}>
-        <AppText align="center" color="error" variant="title">
+        <AppText align="center" variant="title">
           {resolvedTitle}
         </AppText>
         {message ? (
@@ -75,11 +77,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.md,
     paddingVertical: spacing.xl,
-    paddingHorizontal: spacing.md,
-    borderRadius: 12,
-    backgroundColor: colors.semantic.errorSoft,
+    paddingHorizontal: spacing.lg,
   },
   textBlock: {
     gap: spacing.xs,
+    maxWidth: 360,
   },
 });

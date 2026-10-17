@@ -1,8 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-import { images } from '../../../assets/images';
-import { AppCard, AppText, Illustration, Stack } from '../../../components';
-import { useTranslation } from '../../../i18n';
+import { AppCard, AppText, Artwork, Stack } from '../../../components';
 import { spacing } from '../../../theme';
 
 type FileViewerFallbackProps = {
@@ -11,15 +9,10 @@ type FileViewerFallbackProps = {
 };
 
 export function FileViewerFallback({ title, message }: FileViewerFallbackProps) {
-  const { t } = useTranslation();
   return (
     <AppCard style={styles.card} variant="muted">
       <Stack align="center" gap="sm">
-        <Illustration
-          accessibilityLabel={t.files.viewer.unavailableAlt}
-          size="lg"
-          source={images.files.previewError}
-        />
+        <Artwork name="previewError" size="md" />
         <AppText align="center" variant="title">
           {title}
         </AppText>

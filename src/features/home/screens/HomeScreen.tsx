@@ -1,18 +1,18 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Animated, StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppScreen,
   AppText,
+  BrandRefreshControl,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
   type IconName,
 } from '../../../components';
@@ -39,7 +39,7 @@ import {
   HomeHero,
   HomeSectionHeader,
   QuickActionTile,
-  StudentStatusCard,
+  StudentStatusBanner,
 } from '../components';
 import { useHomeStore } from '../store';
 import type { HomeQuickAction, HomeQuickActionKey } from '../types';
@@ -82,6 +82,7 @@ export function HomeScreen() {
   const announcements = useHomeStore((state) => state.announcements);
   const unreadNotificationsCount = useHomeStore((state) => state.unreadNotificationsCount);
   const isLoading = useHomeStore((state) => state.isLoading);
+  const isRefreshing = useHomeStore((state) => state.isRefreshing);
   const errorMessage = useHomeStore((state) => state.errorMessage);
   const lastLoadedAt = useHomeStore((state) => state.lastLoadedAt);
   const loadHome = useHomeStore((state) => state.loadHome);
@@ -115,41 +116,67 @@ export function HomeScreen() {
     }
   }, [showInitialLoading, showInitialError]);
 
-  function handleQuickActionPress(key: HomeQuickActionKey) {
-    switch (key) {
-      case 'subjects':
-        navigation.navigate(TabRoutes.Subjects, { screen: SubjectsRoutes.SubjectsList });
-        break;
-      case 'groups':
-        navigation.navigate(TabRoutes.Groups, { screen: GroupsRoutes.GroupsOverview });
-        break;
-      case 'printing':
-        navigation.navigate(TabRoutes.Printing, { screen: PrintingRoutes.PrintHome });
-        break;
-      case 'support':
-        navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.SupportTickets });
-        break;
-      case 'notifications':
-        navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.Notifications });
-        break;
-      case 'profile':
-        navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.ProfileHome });
-        break;
-      case 'files':
-        navigation.navigate(SharedRoutes.FilesList);
-        break;
-      case 'lectures':
-        navigation.navigate(TabRoutes.Subjects, { screen: LecturesRoutes.LecturesList });
-        break;
-      case 'search':
-        navigation.navigate(SharedRoutes.Search);
-        break;
-    }
-  }
+  const handleQuickActionPress = useCallback(
+    (key: HomeQuickActionKey) => {
+      switch (key) {
+        case 'subjects':
+          navigation.navigate(TabRoutes.Subjects, { screen: SubjectsRoutes.SubjectsList });
+          break;
+        case 'groups':
+          navigation.navigate(TabRoutes.Groups, { screen: GroupsRoutes.GroupsOverview });
+          break;
+        case 'printing':
+          navigation.navigate(TabRoutes.Printing, { screen: PrintingRoutes.PrintHome });
+          break;
+        case 'support':
+          navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.SupportTickets });
+          break;
+        case 'notifications':
+          navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.Notifications });
+          break;
+        case 'profile':
+          navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.ProfileHome });
+          break;
+        case 'files':
+          navigation.navigate(SharedRoutes.FilesList);
+          break;
+        case 'lectures':
+          navigation.navigate(TabRoutes.Subjects, { screen: LecturesRoutes.LecturesList });
+          break;
+        case 'search':
+          navigation.navigate(SharedRoutes.Search);
+          break;
+      }
+    },
+    [navigation],
+  );
 
-  function handleRefresh() {
+  const handleRefresh = useCallback(() => {
     void refreshHome();
-  }
+  }, [refreshHome]);
+
+  const handleOpenAnnouncement = useCallback(
+    (id: string | number) =>
+      navigation.navigate(HomeRoutes.AnnouncementDetail, { announcementId: id }),
+    [navigation],
+  );
+
+  const handleOpenStatus = useCallback(
+    () => navigation.navigate(TabRoutes.Profile, { screen: ProfileRoutes.AcademicInfo }),
+    [navigation],
+  );
+
+  const handleOpenNotifications = useCallback(
+    () => handleQuickActionPress('notifications'),
+    [handleQuickActionPress],
+  );
+  const handleOpenSearch = useCallback(
+    () => handleQuickActionPress('search'),
+    [handleQuickActionPress],
+  );
+  const refreshControl = (
+    <BrandRefreshControl onRefresh={handleRefresh} refreshing={isRefreshing} />
+  );
 
   const facultyName = profile?.faculty?.name ?? null;
   const yearName = profile?.academic_year?.name ?? profile?.academicYear?.name ?? null;
@@ -161,18 +188,24 @@ export function HomeScreen() {
       displayName={displayName}
       facultyName={isStudent ? facultyName : null}
       levelLabel={isStudent ? levelLabel : null}
-      onOpenNotifications={() => handleQuickActionPress('notifications')}
-      onOpenSearch={() => handleQuickActionPress('search')}
+      onOpenNotifications={handleOpenNotifications}
+      onOpenSearch={handleOpenSearch}
       unreadCount={unreadNotificationsCount}
     />
   );
 
   if (showInitialLoading) {
     return (
-      <AppScreen contentContainerStyle={styles.scrollContent} horizontalPadding={false} scroll>
+      <AppScreen
+        contentContainerStyle={styles.scrollContent}
+        horizontalPadding={false}
+        maxContentWidth={false}
+        refreshControl={refreshControl}
+        scroll
+      >
         {hero}
         <View style={styles.body}>
-          <LoadingState message={t.home.loading} />
+          <SkeletonList count={3} />
         </View>
       </AppScreen>
     );
@@ -180,7 +213,13 @@ export function HomeScreen() {
 
   if (showInitialError) {
     return (
-      <AppScreen contentContainerStyle={styles.scrollContent} horizontalPadding={false} scroll>
+      <AppScreen
+        contentContainerStyle={styles.scrollContent}
+        horizontalPadding={false}
+        maxContentWidth={false}
+        refreshControl={refreshControl}
+        scroll
+      >
         {hero}
         <View style={styles.body}>
           <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
@@ -190,13 +229,20 @@ export function HomeScreen() {
   }
 
   return (
-    <AppScreen contentContainerStyle={styles.scrollContent} horizontalPadding={false} scroll>
+    <AppScreen
+      contentContainerStyle={styles.scrollContent}
+      horizontalPadding={false}
+      maxContentWidth={false}
+      refreshControl={refreshControl}
+      scroll
+    >
       {hero}
       <View style={styles.body}>
         {isStudent ? (
-          <StudentStatusCard
+          <StudentStatusBanner
             hasProfileState={hasProfileState}
             hasVerificationState={hasVerificationState}
+            onPress={handleOpenStatus}
             profileComplete={profileComplete}
             verificationStatus={verificationStatus}
           />
@@ -216,9 +262,10 @@ export function HomeScreen() {
                   <QuickActionTile
                     badge={action.badge}
                     icon={TILE_ICONS[action.key]}
+                    actionKey={action.key}
                     key={action.key}
                     label={action.title}
-                    onPress={() => handleQuickActionPress(action.key)}
+                    onPress={handleQuickActionPress}
                   />
                 ))}
               </View>
@@ -242,14 +289,18 @@ export function HomeScreen() {
               ) : announcements.length === 0 ? (
                 <EmptyState
                   illustrationLabel={t.home.announcements.emptyIllustrationAlt}
-                  illustrationSource={images.emptyStates.announcements}
+                  artwork="announcements"
                   message={t.home.announcements.emptyMessage}
                   title={t.home.announcements.emptyTitle}
                 />
               ) : (
                 <Stack gap="md">
                   {announcements.slice(0, 5).map((announcement) => (
-                    <AnnouncementCard announcement={announcement} key={String(announcement.id)} />
+                    <AnnouncementCard
+                      announcement={announcement}
+                      key={String(announcement.id)}
+                      onPress={handleOpenAnnouncement}
+                    />
                   ))}
                 </Stack>
               )}

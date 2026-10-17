@@ -11,7 +11,6 @@ import {
   AppScreen,
   AppText,
   ErrorState,
-  Illustration,
   LoadingState,
   SectionHeader,
   Stack,
@@ -22,9 +21,9 @@ import type { PrintingStackParamList } from '../../../navigation/types';
 import { layout, spacing, useBrand } from '../../../theme';
 import {
   PrintOrderStatusBadge,
+  PrintOrderStatusIcon,
   PrintStatusProgress,
   PrintStatusTimeline,
-  getPrintOrderStatusImage,
   usePrintOptionLabels,
 } from '../components';
 import {
@@ -117,16 +116,11 @@ export function PrintOrderDetailsScreen({ navigation, route }: Props) {
     });
   }
 
-  const back = (
-    <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
-  );
-
   if (!activeOrder) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         <Stack gap="md">
           <AppHeader subtitle={t.printing.details.subtitle} title={t.printing.title} />
-          {back}
         </Stack>
         {detailError ? (
           <ErrorState
@@ -175,17 +169,12 @@ export function PrintOrderDetailsScreen({ navigation, route }: Props) {
               subtitle={t.printing.details.subtitle}
               title={t.printing.order.fallbackTitle(String(activeOrder.id))}
             />
-            {back}
           </Stack>
 
           <AppCard variant="elevated">
             <Stack gap="md">
               <Stack align="center" direction="horizontal" gap="md">
-                <Illustration
-                  accessibilityLabel={t.printing.details.statusIllustrationAlt}
-                  size="md"
-                  source={getPrintOrderStatusImage(activeOrder.status)}
-                />
+                <PrintOrderStatusIcon size="md" status={activeOrder.status} />
                 <Stack gap="xs" style={styles.statusText}>
                   <AppText color="brand" variant="title">
                     {presentation.actionMessage}
