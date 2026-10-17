@@ -7,6 +7,7 @@ import { colors, radius, shadows, useBrand } from '../../../theme';
 import { getSubjectCode, getSubjectDisplayName, parseSubjectMeta } from '../services';
 import type { Subject } from '../types';
 import { useSubjectLabels } from '../useSubjectLabels';
+import { getIsRTL, isolateLtr } from '../../../utils/rtl';
 
 type SubjectCardProps = {
   subject: Subject;
@@ -63,7 +64,7 @@ function SubjectCardComponent({ subject, onPress }: SubjectCardProps) {
           {code ? (
             <View style={[styles.codeBox, { backgroundColor: brand.primarySoft }]}>
               <AppText style={{ color: brand.primary }} variant="caption" weight="700">
-                {code}
+                {isolateLtr(code)}
               </AppText>
             </View>
           ) : null}
@@ -107,7 +108,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   titleBlock: { flex: 1, minWidth: 0, gap: 2 },
-  ltr: { writingDirection: 'ltr', textAlign: 'left' },
+  // Latin text keeps its own order but stays on the same edge as the Arabic title.
+  ltr: { writingDirection: 'ltr', textAlign: getIsRTL() ? 'right' : 'left' },
   codeBox: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.full },
   badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
 });

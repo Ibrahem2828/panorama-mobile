@@ -17,6 +17,7 @@ import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { getProfileRoleLabel } from '../services';
 import { useProfileStore } from '../store';
+import { isolateLtr } from '../../../utils/rtl';
 
 type EditProfileScreenProps = NativeStackScreenProps<ProfileStackParamList, 'EditProfile'>;
 
@@ -98,10 +99,12 @@ export function EditProfileScreen({ navigation }: EditProfileScreenProps) {
           <Stack gap="sm">
             <AppText variant="title">{t.profile.edit.readOnlyTitle}</AppText>
             <AppText color="secondary" variant="bodySmall">
-              {t.profile.edit.email(user?.email ?? t.common.notAvailable)}
+              {t.profile.edit.email(user?.email ? isolateLtr(user.email) : t.common.notAvailable)}
             </AppText>
             <AppText color="secondary" variant="bodySmall">
-              {t.profile.edit.phone(user?.phone_number ?? t.common.notAvailable)}
+              {t.profile.edit.phone(
+                user?.phone_number ? isolateLtr(user.phone_number) : t.common.notAvailable,
+              )}
             </AppText>
             <AppText color="secondary" variant="bodySmall">
               {t.profile.edit.role(getProfileRoleLabel(user?.role, t.profile))}

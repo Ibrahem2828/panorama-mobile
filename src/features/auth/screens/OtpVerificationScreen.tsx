@@ -15,6 +15,7 @@ import {
   verifyRegistrationOtp,
 } from '../services';
 import { validateOtpCode } from '../utils/authFormValidation';
+import { isolateLtr } from '../../../utils/rtl';
 
 type Props = NativeStackScreenProps<PublicStackParamList, 'OtpVerification'>;
 const RESEND_SECONDS = 60;
@@ -94,7 +95,7 @@ export function OtpVerificationScreen({ navigation, route }: Props) {
         />
       }
       onBack={() => navigation.goBack()}
-      subtitle={t.auth.otp.sentTo(destinationLabel, identifier)}
+      subtitle={t.auth.otp.sentTo(destinationLabel, isolateLtr(identifier))}
       title={t.auth.otp.title}
     >
       <View style={styles.center}>

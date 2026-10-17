@@ -12,6 +12,7 @@ import {
 } from '../services';
 import type { Subject } from '../types';
 import { useSubjectLabels } from '../useSubjectLabels';
+import { isolateLtr } from '../../../utils/rtl';
 
 type SubjectDetailHeaderProps = {
   subject: Subject;
@@ -28,7 +29,7 @@ export function SubjectDetailHeader({ subject }: SubjectDetailHeaderProps) {
   const description = getSubjectDescription(subject);
   const { credits, category } = parseSubjectMeta(subject);
   const chips = [
-    code ? t.subjects.codeBadge(code) : null,
+    code ? t.subjects.codeBadge(isolateLtr(code)) : null,
     labels.year(subject.academic_year),
     labels.semester(subject.semester),
     labels.major(subject.major),

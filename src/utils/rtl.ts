@@ -25,6 +25,17 @@ export function configureRtl() {
   }
 }
 
+const LRI = '\u2066';
+const PDI = '\u2069';
+
+/**
+ * Wraps LTR content (email, phone, URL, subject code, file name) in Unicode isolates so its
+ * digits, dots and `+` keep their order when it is embedded in an Arabic sentence.
+ */
+export function isolateLtr(value: string): string {
+  return value ? `${LRI}${value}${PDI}` : value;
+}
+
 /** Natural alignment: Arabic text aligns to the right and Latin text to the left, in either direction. */
 export function getRTLTextAlign(fallback: RtlTextAlign = 'auto'): RtlTextAlign {
   return fallback;

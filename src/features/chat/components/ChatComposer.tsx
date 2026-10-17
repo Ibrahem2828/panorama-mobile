@@ -14,7 +14,7 @@ import {
   useBrand,
 } from '../../../theme';
 import { useTranslation } from '../../../i18n';
-import { getIsRTL } from '../../../utils/rtl';
+import { getIsRTL, isolateLtr } from '../../../utils/rtl';
 import { toChatAttachment, validateChatAttachment } from '../logic/attachments';
 import type { SendResult } from '../store/chatStore';
 import { MAX_MESSAGE_LENGTH, type ChatAttachment } from '../types';
@@ -155,7 +155,7 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
           />
           <View style={styles.attachmentInfo}>
             <AppText numberOfLines={1} variant="label">
-              {attachment.name}
+              {isolateLtr(attachment.name)}
             </AppText>
             {attachment.size > 0 ? (
               <AppText color="muted" variant="caption">

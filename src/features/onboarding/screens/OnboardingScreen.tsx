@@ -35,7 +35,8 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
 
   useEffect(() => {
     opacity.setValue(0);
-    shift.setValue(direction.current * 28);
+    // translateX is physical: forward enters from the left under RTL.
+    shift.setValue(direction.current * 28 * (getIsRTL() ? -1 : 1));
     Animated.parallel([
       Animated.timing(opacity, {
         toValue: 1,

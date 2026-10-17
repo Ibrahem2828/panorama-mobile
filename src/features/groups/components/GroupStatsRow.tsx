@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native';
 import { AppBadge, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import type { Group, SubjectLabel } from '../types';
+import { isolateLtr } from '../../../utils/rtl';
 
 type GroupStatsRowProps = {
   group: Group;
@@ -20,7 +21,7 @@ function GroupStatsRowBase({ group, subject }: GroupStatsRowProps) {
       ) : null}
       {subject ? <AppBadge label={t.groups.stats.subject(subject.name)} variant="brand" /> : null}
       {subject?.code ? (
-        <AppBadge label={t.groups.card.subjectCode(subject.code)} variant="neutral" />
+        <AppBadge label={t.groups.card.subjectCode(isolateLtr(subject.code))} variant="neutral" />
       ) : null}
       {group.has_whatsapp_channel === true ? (
         <AppBadge label={t.groups.card.whatsAppAvailable} variant="success" />

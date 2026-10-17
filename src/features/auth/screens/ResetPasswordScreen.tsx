@@ -14,6 +14,7 @@ import {
   toSafePasswordResetErrorMessage,
 } from '../services';
 import { validateOtpCode, validatePasswordPair } from '../utils/authFormValidation';
+import { isolateLtr } from '../../../utils/rtl';
 
 type Props = NativeStackScreenProps<PublicStackParamList, 'ResetPassword'>;
 const RESEND_SECONDS = 60;
@@ -82,7 +83,7 @@ export function ResetPasswordScreen({ navigation, route }: Props) {
         />
       }
       onBack={() => navigation.goBack()}
-      subtitle={t.auth.resetPassword.cardSubtitle(identifier)}
+      subtitle={t.auth.resetPassword.cardSubtitle(isolateLtr(identifier))}
       title={t.auth.resetPassword.title}
     >
       {serverError ? <FormAlert message={serverError} /> : null}

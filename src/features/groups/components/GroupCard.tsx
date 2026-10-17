@@ -8,6 +8,7 @@ import { getGroupDisplayName, getGroupImageUri, resolveMembershipState } from '.
 import type { Group, Id, SubjectLabel } from '../types';
 import { GroupMembershipBadge } from './GroupMembershipBadge';
 import { GroupStatsRow } from './GroupStatsRow';
+import { isolateLtr } from '../../../utils/rtl';
 
 type GroupCardProps = {
   group: Group;
@@ -29,8 +30,10 @@ function GroupCardBase({ group, subject, pendingAction, onPress, onJoin }: Group
   // The subject name is shown on its own line only when it adds something to the group name.
   const subjectLine =
     subject && subject.name !== title
-      ? [subject.name, subject.code].filter(Boolean).join(' · ')
-      : (subject?.code ?? null);
+      ? [subject.name, subject.code ? isolateLtr(subject.code) : null].filter(Boolean).join(' · ')
+      : subject?.code
+        ? isolateLtr(subject.code)
+        : null;
 
   return (
     <AppCard variant="elevated">
