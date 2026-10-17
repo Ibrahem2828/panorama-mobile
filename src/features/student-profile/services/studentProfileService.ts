@@ -17,6 +17,7 @@ import type {
   StudentProfileUpdateInput,
 } from '../types';
 import type { TranslationCatalog } from '../../../i18n';
+import { normalizeStudentProfile } from './normalizeProfile';
 
 const ACADEMIC_PAGE_SIZE = 500;
 
@@ -157,9 +158,11 @@ export async function countSubjectsForFaculty(
 
 export async function getMyStudentProfile(authToken?: string | null) {
   try {
-    return await apiClient.get<StudentProfile>(endpoints.students.profile, {
-      authToken,
-    });
+    return normalizeStudentProfile(
+      await apiClient.get<StudentProfile>(endpoints.students.profile, {
+        authToken,
+      }),
+    );
   } catch (error) {
     if (isNotFound(error)) {
       return null;
@@ -169,14 +172,16 @@ export async function getMyStudentProfile(authToken?: string | null) {
   }
 }
 
-export function updateMyStudentProfile(
+export async function updateMyStudentProfile(
   input: StudentProfileUpdateInput,
   authToken?: string | null,
 ) {
-  return apiClient.patch<StudentProfile, StudentProfileUpdateInput>(
-    endpoints.students.profile,
-    input,
-    { authToken },
+  return normalizeStudentProfile(
+    await apiClient.patch<StudentProfile, StudentProfileUpdateInput>(
+      endpoints.students.profile,
+      input,
+      { authToken },
+    ),
   );
 }
 
