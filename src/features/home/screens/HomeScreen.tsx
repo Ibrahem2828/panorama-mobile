@@ -82,7 +82,6 @@ export function HomeScreen() {
   const announcements = useHomeStore((state) => state.announcements);
   const unreadNotificationsCount = useHomeStore((state) => state.unreadNotificationsCount);
   const isLoading = useHomeStore((state) => state.isLoading);
-  const isRefreshing = useHomeStore((state) => state.isRefreshing);
   const errorMessage = useHomeStore((state) => state.errorMessage);
   const lastLoadedAt = useHomeStore((state) => state.lastLoadedAt);
   const loadHome = useHomeStore((state) => state.loadHome);
