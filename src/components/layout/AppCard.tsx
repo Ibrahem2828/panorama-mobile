@@ -72,7 +72,7 @@ export function AppCard({
       <Pressable
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="button"
-        android_ripple={{ color: 'rgba(16, 24, 40, 0.08)' }}
+        android_ripple={{ color: 'rgba(16, 24, 40, 0.08)', foreground: true }}
         onPress={onPress}
         style={({ pressed }) => [cardStyle, pressed ? styles.pressed : null]}
       >

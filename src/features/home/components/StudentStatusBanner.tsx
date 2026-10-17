@@ -35,7 +35,7 @@ function StudentStatusBannerComponent({ onPress, ...status }: StudentStatusBanne
     <Pressable
       accessibilityLabel={`${view.label}. ${view.description}`}
       accessibilityRole="button"
-      android_ripple={{ color: 'rgba(16, 24, 40, 0.08)' }}
+      android_ripple={{ color: 'rgba(16, 24, 40, 0.08)', foreground: true }}
       onPress={onPress}
       style={({ pressed }) => [styles.banner, pressed ? styles.pressed : null]}
     >

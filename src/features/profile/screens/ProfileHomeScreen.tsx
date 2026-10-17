@@ -102,7 +102,10 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
         {isLoadingProfile && !user ? <LoadingState message={t.profile.loadingAccount} /> : null}
         {profileError ? <ErrorState message={profileError} onRetry={loadProfile} /> : null}
 
-        <ProfileSummaryCard user={user} />
+        <ProfileSummaryCard
+          facultyName={isStudent ? (studentProfile?.faculty?.name ?? null) : null}
+          user={user}
+        />
 
         {isStudent ? (
           <AcademicInfoCard
@@ -142,6 +145,7 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.EditProfile)}
             subtitle={t.profile.accountSection.editProfileSubtitle}
+            icon="user"
             title={t.profile.accountSection.editProfile}
           />
           {isStudent ? (
@@ -150,12 +154,14 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
               badgeVariant={cardVerificationSummary.variant}
               onPress={() => navigation.navigate(ProfileRoutes.AcademicInfo)}
               subtitle={t.profile.accountSection.academicInfoSubtitle}
+              icon="cap"
               title={t.profile.accountSection.academicInfo}
             />
           ) : null}
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.Settings)}
             subtitle={t.profile.accountSection.settingsSubtitle}
+            icon="settings"
             title={t.profile.accountSection.settings}
           />
         </ProfileActionSection>
@@ -167,21 +173,25 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
           <ProfileActionItem
             onPress={handlePrintingPress}
             subtitle={t.profile.servicesSection.printOrdersSubtitle}
+            icon="printer"
             title={t.profile.servicesSection.printOrders}
           />
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.Notifications)}
             subtitle={t.profile.servicesSection.notificationsSubtitle}
+            icon="bell"
             title={t.profile.servicesSection.notifications}
           />
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.SupportTickets)}
             subtitle={t.profile.servicesSection.supportSubtitle}
+            icon="help"
             title={t.profile.servicesSection.support}
           />
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.FeedbackCenter)}
             subtitle={t.profile.servicesSection.feedbackSubtitle}
+            icon="chat"
             title={t.profile.servicesSection.feedback}
           />
         </ProfileActionSection>
@@ -192,14 +202,17 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
         >
           <ProfileActionItem
             onPress={() => openLegalOrScreen('privacy')}
+            icon="lock"
             title={t.legal.privacy.title}
           />
           <ProfileActionItem
             onPress={() => openLegalOrScreen('terms')}
+            icon="file"
             title={t.legal.terms.title}
           />
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.About)}
+            icon="info"
             title={t.profile.about.title}
           />
         </ProfileActionSection>

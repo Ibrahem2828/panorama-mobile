@@ -26,6 +26,7 @@ export function SupportTicketCard({ ticket, onPress }: SupportTicketCardProps) {
   return (
     <Pressable
       accessibilityRole="button"
+      android_ripple={{ color: 'rgba(16, 24, 40, 0.08)', foreground: true }}
       disabled={!onPress}
       onPress={onPress}
       style={({ pressed }) => [pressed && onPress ? styles.pressed : null]}

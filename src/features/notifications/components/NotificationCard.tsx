@@ -40,6 +40,7 @@ function NotificationCardComponent({ notification, onPress }: NotificationCardPr
     <Pressable
       accessibilityLabel={`${unread ? `${t.notifications.unread}. ` : ''}${title}`}
       accessibilityRole="button"
+      android_ripple={{ color: 'rgba(16, 24, 40, 0.08)', foreground: true }}
       onPress={handlePress}
       style={({ pressed }) => [expired ? styles.expired : null, pressed ? styles.pressed : null]}
     >

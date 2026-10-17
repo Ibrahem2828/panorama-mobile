@@ -53,7 +53,7 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
         <AppCard variant="elevated">
           <Stack align="center" gap="lg">
             <Artwork name="printing" size="md" />
-            <Stack gap="xs" style={{ alignSelf: 'stretch' }}>
+            <Stack gap="xs" style={styles.fullWidth}>
               <AppText variant="h2">{t.printing.home.heading}</AppText>
               <AppText color="secondary" variant="bodySmall">
                 {t.printing.home.description}
@@ -107,6 +107,9 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
 }
 
 const styles = StyleSheet.create({
+  fullWidth: {
+    alignSelf: 'stretch',
+  },
   content: {
     gap: spacing.xl,
   },

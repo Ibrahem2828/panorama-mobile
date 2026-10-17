@@ -1,5 +1,5 @@
 import { memo, useCallback } from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet } from 'react-native';
 
 import { AppBadge, AppCard, AppText, IconTile, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -33,6 +33,7 @@ function AnnouncementListItemComponent({ item, isUnread, onPress }: Announcement
       accessibilityHint={isUnread ? t.announcements.newBadge : undefined}
       accessibilityLabel={t.announcements.openDetails(title)}
       accessibilityRole="button"
+      android_ripple={{ color: 'rgba(16, 24, 40, 0.08)', foreground: true }}
       onPress={handlePress}
       style={({ pressed }) => (pressed ? styles.pressed : null)}
     >

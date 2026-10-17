@@ -39,7 +39,7 @@ export function AppAvatar({
       {imageUri ? (
         <Image source={{ uri: imageUri }} style={[styles.image, containerStyle]} />
       ) : (
-        <AppText align="center" color="brand" variant="label" weight="700">
+        <AppText align="center" color="brand" variant={size === 'xl' ? 'h3' : 'label'} weight="700">
           {getInitials(name)}
         </AppText>
       )}

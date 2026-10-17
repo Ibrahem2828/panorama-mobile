@@ -46,11 +46,14 @@ export function SettingsScreen({ navigation }: SettingsScreenProps) {
           <SettingsOptionRow
             description={t.settings.account.changePasswordDescription}
             onPress={() => navigation.navigate(ProfileRoutes.ChangePassword)}
+            icon="lock"
             title={t.settings.account.changePassword}
           />
           <SettingsOptionRow
             description={t.settings.account.deleteAccountDescription}
             onPress={() => navigation.navigate(ProfileRoutes.DeleteAccount)}
+            icon="trash"
+            tone="error"
             title={t.settings.account.deleteAccount}
           />
         </SettingsSection>
@@ -66,23 +69,27 @@ export function SettingsScreen({ navigation }: SettingsScreenProps) {
           <SettingsOptionRow
             description={t.settings.app.notificationsDescription}
             onPress={() => navigation.navigate(ProfileRoutes.Notifications)}
+            icon="bell"
             title={t.settings.app.notifications}
           />
           <SettingsOptionRow
             description={t.settings.app.darkModeDescription}
             disabled
+            icon="eye"
             title={t.settings.app.darkMode}
             value={t.common.comingSoon}
           />
           <SettingsOptionRow
             description={t.settings.app.versionDescription}
             disabled
+            icon="tag"
             title={t.settings.app.version}
             value={APP_VERSION}
           />
           <SettingsOptionRow
             description={t.settings.app.environmentDescription}
             disabled
+            icon="settings"
             title={t.settings.app.environment}
             value={environmentLabel}
           />
@@ -91,14 +98,17 @@ export function SettingsScreen({ navigation }: SettingsScreenProps) {
         <SettingsSection subtitle={t.settings.legal.subtitle} title={t.settings.legal.title}>
           <SettingsOptionRow
             onPress={() => openLegalOrScreen('privacy')}
+            icon="shield"
             title={t.settings.legal.privacy}
           />
           <SettingsOptionRow
             onPress={() => openLegalOrScreen('terms')}
+            icon="file"
             title={t.settings.legal.terms}
           />
           <SettingsOptionRow
             onPress={() => navigation.navigate(ProfileRoutes.About)}
+            icon="info"
             title={t.settings.legal.about}
           />
         </SettingsSection>
