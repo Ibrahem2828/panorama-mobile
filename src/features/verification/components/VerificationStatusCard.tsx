@@ -1,8 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
-import { AppBadge, AppCard, AppText, Illustration, Stack } from '../../../components';
-import { colors, spacing } from '../../../theme';
+import { AppBadge, AppText, Icon } from '../../../components';
+import type { IconName } from '../../../components';
+import { colors, radius, spacing } from '../../../theme';
 import type { StatusVariant } from '../../../types/common';
 import { getVerificationRejectionReason, getVerificationStatus } from '../services';
 import type { VerificationRecord } from '../types';
@@ -16,6 +16,9 @@ type VerificationStatusView = {
   label: string;
   description: string;
   variant: StatusVariant;
+  icon: IconName;
+  tint: string;
+  soft: string;
 };
 
 function getStatusView(
@@ -30,24 +33,36 @@ function getStatusView(
         label: t.approvedLabel,
         description: t.approvedDescription,
         variant: 'success',
+        icon: 'shield',
+        tint: colors.semantic.success,
+        soft: colors.semantic.successSoft,
       };
     case 'pending':
       return {
         label: t.pendingLabel,
         description: t.pendingDescription,
         variant: 'warning',
+        icon: 'clock',
+        tint: colors.semantic.warning,
+        soft: colors.semantic.warningSoft,
       };
     case 'rejected':
       return {
         label: t.rejectedLabel,
         description: t.rejectedDescription,
         variant: 'error',
+        icon: 'xCircle',
+        tint: colors.semantic.error,
+        soft: colors.semantic.errorSoft,
       };
     case 'needs_update':
       return {
         label: t.needsUpdateLabel,
         description: t.needsUpdateDescription,
         variant: 'warning',
+        icon: 'alert',
+        tint: colors.semantic.warning,
+        soft: colors.semantic.warningSoft,
       };
     case 'none':
     default:
@@ -55,72 +70,62 @@ function getStatusView(
         label: t.notSubmittedLabel,
         description: t.notSubmittedDescription,
         variant: 'neutral',
+        icon: 'idCard',
+        tint: colors.text.secondary,
+        soft: colors.background.muted,
       };
   }
 }
 
+/** Status hero: a coloured icon badge, the status label and a plain-language description. */
 export function VerificationStatusCard({ verification }: VerificationStatusCardProps) {
   const { t } = useTranslation();
   const statusView = getStatusView(verification, t.verificationFlow.statusCard);
   const rejectionReason = getVerificationRejectionReason(verification);
-  const status = getVerificationStatus(verification);
-  const illustration =
-    status === 'approved'
-      ? images.verification.approved
-      : status === 'pending'
-        ? images.verification.pending
-        : status === 'rejected' || status === 'needs_update'
-          ? images.verification.rejected
-          : images.verification.studentCardGuide;
 
   return (
-    <AppCard padding="lg" variant="default">
-      <Stack gap="md">
-        <Illustration
-          accessibilityLabel={t.verificationFlow.statusCard.illustrationAlt}
-          size="lg"
-          source={illustration}
-        />
+    <View style={[styles.card, { backgroundColor: statusView.soft }]}>
+      <View style={[styles.badge, { backgroundColor: statusView.tint }]}>
+        <Icon color={colors.text.inverse} name={statusView.icon} size={32} />
+      </View>
+      <AppBadge label={statusView.label} size="md" variant={statusView.variant} />
+      <AppText align="center" color="secondary" variant="body">
+        {statusView.description}
+      </AppText>
 
-        <View style={styles.header}>
-          <AppText variant="title">{t.verificationFlow.statusCard.title}</AppText>
-          <AppBadge label={statusView.label} size="md" variant={statusView.variant} />
+      {rejectionReason ? (
+        <View style={styles.reasonBox}>
+          <AppText color="error" variant="bodySmall" weight="600">
+            {t.verificationFlow.statusCard.rejectionTitle}
+          </AppText>
+          <AppText color="secondary" variant="bodySmall">
+            {rejectionReason}
+          </AppText>
         </View>
-
-        <AppText color="secondary" variant="body">
-          {statusView.description}
-        </AppText>
-
-        {rejectionReason ? (
-          <View style={styles.reasonBox}>
-            <Stack gap="xs">
-              <AppText color="error" variant="bodySmall" weight="600">
-                {t.verificationFlow.statusCard.rejectionTitle}
-              </AppText>
-              <AppText color="secondary" variant="bodySmall">
-                {rejectionReason}
-              </AppText>
-            </Stack>
-          </View>
-        ) : null}
-      </Stack>
-    </AppCard>
+      ) : null}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
+  card: {
     alignItems: 'center',
-    justifyContent: 'space-between',
     gap: spacing.md,
-    paddingBottom: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border.default,
+    padding: spacing.xl,
+    borderRadius: radius.xl,
+  },
+  badge: {
+    width: 72,
+    height: 72,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.full,
   },
   reasonBox: {
+    alignSelf: 'stretch',
+    gap: spacing.xs,
     padding: spacing.md,
-    borderRadius: 8,
-    backgroundColor: colors.background.muted,
+    borderRadius: radius.md,
+    backgroundColor: colors.background.surface,
   },
 });

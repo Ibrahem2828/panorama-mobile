@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet } from 'react-native';
 
-import { AppButton, AppScreen, AppText, AppTextInput, Stack } from '../../../components';
+import { AppButton, AppTextInput } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
-import { spacing } from '../../../theme';
-import { AuthFormCard } from '../components';
+import { AuthScreen } from '../components';
 import { requestPasswordResetCode, toSafePasswordResetErrorMessage } from '../services';
 import { isValidEmail } from '../utils/authFormValidation';
 
@@ -35,54 +33,38 @@ export function ForgotPasswordScreen({ navigation }: Props) {
   }
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardAvoid}
-      >
-        <Stack gap="lg">
-          <Stack gap="xs">
-            <AppText variant="h1">{t.auth.forgotPassword.title}</AppText>
-            <AppText color="secondary">{t.auth.forgotPassword.subtitle}</AppText>
-          </Stack>
-          <AuthFormCard
-            subtitle={t.auth.forgotPassword.cardSubtitle}
-            title={t.auth.forgotPassword.cardTitle}
-          >
-            <Stack gap="md">
-              <AppTextInput
-                autoCapitalize="none"
-                disabled={isSubmitting}
-                error={errorMessage ?? undefined}
-                keyboardType="email-address"
-                label={t.auth.fields.email}
-                onChangeText={(value) => {
-                  setEmail(value);
-                  setErrorMessage(null);
-                }}
-                value={email}
-              />
-              <AppButton
-                disabled={isSubmitting}
-                fullWidth
-                loading={isSubmitting}
-                onPress={() => void handleSubmit()}
-                title={t.auth.forgotPassword.submit}
-              />
-            </Stack>
-          </AuthFormCard>
-          <Pressable onPress={() => navigation.navigate(PublicRoutes.Login)}>
-            <AppText align="center" color="brand">
-              {t.auth.backToLogin}
-            </AppText>
-          </Pressable>
-        </Stack>
-      </KeyboardAvoidingView>
-    </AppScreen>
+    <AuthScreen
+      footer={
+        <AppButton
+          disabled={isSubmitting}
+          fullWidth
+          loading={isSubmitting}
+          onPress={() => void handleSubmit()}
+          size="lg"
+          title={t.auth.forgotPassword.submit}
+        />
+      }
+      onBack={() => navigation.goBack()}
+      subtitle={t.auth.forgotPassword.subtitle}
+      title={t.auth.forgotPassword.title}
+    >
+      <AppTextInput
+        autoCapitalize="none"
+        autoComplete="email"
+        autoCorrect={false}
+        disabled={isSubmitting}
+        error={errorMessage ?? undefined}
+        helperText={t.auth.forgotPassword.cardSubtitle}
+        keyboardType="email-address"
+        label={t.auth.fields.email}
+        onChangeText={(value) => {
+          setEmail(value);
+          setErrorMessage(null);
+        }}
+        placeholder={t.auth.fields.emailPlaceholder}
+        textContentType="emailAddress"
+        value={email}
+      />
+    </AuthScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  content: { justifyContent: 'center', gap: spacing.xl },
-  keyboardAvoid: { flex: 1 },
-});

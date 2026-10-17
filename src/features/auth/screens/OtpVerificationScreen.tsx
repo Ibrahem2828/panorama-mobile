@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { AppButton, AppScreen, AppText, Stack } from '../../../components';
-import { OtpCodeInput } from '../../../components/forms/OtpCodeInput';
+import { AppButton, AppText, Icon, OtpCodeInput, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
-import { spacing } from '../../../theme';
-import { AuthFormCard } from '../components';
+import { radius, spacing, useBrand } from '../../../theme';
+import { AuthScreen } from '../components';
+import { formatCountdown, useResendCountdown } from '../hooks/useResendCountdown';
 import {
   sendRegistrationOtp,
   toSafeRegistrationErrorMessage,
@@ -21,41 +21,38 @@ const RESEND_SECONDS = 60;
 
 export function OtpVerificationScreen({ navigation, route }: Props) {
   const { t } = useTranslation();
+  const brand = useBrand();
   const { identifier, channel } = route.params;
   const [code, setCode] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [remainingSeconds, setRemainingSeconds] = useState(RESEND_SECONDS);
+  const { remaining, restart } = useResendCountdown(RESEND_SECONDS);
 
-  useEffect(() => {
-    if (remainingSeconds <= 0) return;
-    const timer = setInterval(() => setRemainingSeconds((value) => Math.max(0, value - 1)), 1000);
-    return () => clearInterval(timer);
-  }, [remainingSeconds]);
-
-  async function handleVerify() {
-    const validationError = validateOtpCode(code, t.auth.validation);
+  async function verify(value: string) {
+    if (isSubmitting) return;
+    const validationError = validateOtpCode(value, t.auth.validation);
     if (validationError) return setErrorMessage(validationError);
     setIsSubmitting(true);
     setErrorMessage(null);
     try {
-      await verifyRegistrationOtp({ identifier, channel, code: code.trim() });
+      await verifyRegistrationOtp({ identifier, channel, code: value.trim() });
       navigation.reset({ index: 0, routes: [{ name: PublicRoutes.Login }] });
     } catch (error) {
       setErrorMessage(toSafeRegistrationErrorMessage(error, t.auth.errors));
+      setCode('');
     } finally {
       setIsSubmitting(false);
     }
   }
 
   async function handleResend() {
-    if (remainingSeconds > 0) return;
+    if (remaining > 0 || isResending) return;
     setIsResending(true);
     setErrorMessage(null);
     try {
       await sendRegistrationOtp({ identifier, channel });
-      setRemainingSeconds(RESEND_SECONDS);
+      restart();
     } catch (error) {
       setErrorMessage(toSafeRegistrationErrorMessage(error, t.auth.errors));
     } finally {
@@ -67,70 +64,85 @@ export function OtpVerificationScreen({ navigation, route }: Props) {
     channel === 'email' ? t.auth.otp.destinationEmail : t.auth.otp.destinationPhone;
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardAvoid}
-      >
-        <Stack gap="lg">
-          <Stack gap="xs">
-            <AppText variant="h1">{t.auth.otp.title}</AppText>
-            <AppText color="secondary" variant="body">
-              {t.auth.otp.sentTo(destinationLabel, identifier)}
-            </AppText>
-          </Stack>
-          <AuthFormCard subtitle={t.auth.otp.cardSubtitle} title={t.auth.otp.cardTitle}>
-            <Stack gap="md">
-              <OtpCodeInput
-                disabled={isSubmitting}
-                error={errorMessage ?? undefined}
-                onChange={(value: string) => {
-                  setCode(value);
-                  setErrorMessage(null);
-                }}
-                value={code}
-              />
-              <AppButton
-                disabled={isSubmitting}
-                fullWidth
-                loading={isSubmitting}
-                onPress={() => void handleVerify()}
-                title={t.auth.otp.submit}
-              />
-              <AppButton
-                disabled={isSubmitting || isResending || remainingSeconds > 0}
-                fullWidth
-                loading={isResending}
-                onPress={() => void handleResend()}
-                title={
-                  remainingSeconds > 0 ? t.auth.otp.resendIn(remainingSeconds) : t.auth.otp.resend
-                }
-                variant="outline"
-              />
-            </Stack>
-          </AuthFormCard>
+    <AuthScreen
+      after={
+        <Stack align="center" gap="xs">
           {channel === 'email' ? (
             <AppText align="center" color="muted" variant="caption">
               {t.auth.otp.spamHint}
             </AppText>
           ) : null}
-          <Pressable onPress={() => navigation.goBack()}>
-            <AppText align="center" color="brand">
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => navigation.goBack()}
+            style={styles.link}
+          >
+            <AppText color="brand" variant="button">
               {t.auth.otp.wrongEmail}
             </AppText>
           </Pressable>
-          <Pressable onPress={() => navigation.navigate(PublicRoutes.Login)}>
-            <AppText align="center" color="brand">
-              {t.auth.backToLogin}
-            </AppText>
-          </Pressable>
         </Stack>
-      </KeyboardAvoidingView>
-    </AppScreen>
+      }
+      footer={
+        <AppButton
+          disabled={isSubmitting || code.length < 6}
+          fullWidth
+          loading={isSubmitting}
+          onPress={() => void verify(code)}
+          size="lg"
+          title={t.auth.otp.submit}
+        />
+      }
+      onBack={() => navigation.goBack()}
+      subtitle={t.auth.otp.sentTo(destinationLabel, identifier)}
+      title={t.auth.otp.title}
+    >
+      <View style={styles.center}>
+        <View style={[styles.badge, { backgroundColor: brand.primarySoft }]}>
+          <Icon color={brand.primary} name="mail" size={28} />
+        </View>
+      </View>
+      <AppText align="center" color="secondary" variant="bodySmall">
+        {t.auth.otp.cardSubtitle}
+      </AppText>
+      <OtpCodeInput
+        disabled={isSubmitting}
+        error={errorMessage}
+        onChange={(value: string) => {
+          setCode(value);
+          setErrorMessage(null);
+        }}
+        onComplete={(value) => void verify(value)}
+        value={code}
+      />
+      <View style={styles.center}>
+        {remaining > 0 ? (
+          <AppText color="muted" variant="bodySmall">
+            {t.auth.otp.resendIn(formatCountdown(remaining))}
+          </AppText>
+        ) : (
+          <AppButton
+            disabled={isSubmitting || isResending}
+            loading={isResending}
+            onPress={() => void handleResend()}
+            size="sm"
+            title={t.auth.otp.resend}
+            variant="outline"
+          />
+        )}
+      </View>
+    </AuthScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { justifyContent: 'center', gap: spacing.xl },
-  keyboardAvoid: { flex: 1 },
+  center: { alignItems: 'center' },
+  link: { minHeight: 44, justifyContent: 'center', paddingHorizontal: spacing.sm },
+  badge: {
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.full,
+  },
 });

@@ -1,22 +1,31 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
-import { AppText, AppTextInput } from '../../../components';
+import { AppTextInput, Icon } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import { spacing } from '../../../theme';
+import { colors } from '../../../theme';
 
 type PasswordInputProps = {
   value: string;
   onChangeText: (value: string) => void;
   error?: string;
   disabled?: boolean;
+  label?: string;
+  placeholder?: string;
+  helperText?: string;
+  autoComplete?: 'password' | 'new-password' | 'current-password';
 };
 
+/** Password field with an eye icon that shows or hides the text. */
 export function PasswordInput({
   value,
   onChangeText,
   error,
   disabled = false,
+  label,
+  placeholder,
+  helperText,
+  autoComplete = 'password',
 }: PasswordInputProps) {
   const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
@@ -24,24 +33,25 @@ export function PasswordInput({
   return (
     <AppTextInput
       autoCapitalize="none"
+      autoComplete={autoComplete}
       autoCorrect={false}
       disabled={disabled}
       error={error}
-      label={t.auth.fields.password}
+      helperText={helperText}
+      label={label ?? t.auth.fields.password}
       onChangeText={onChangeText}
-      placeholder={t.auth.fields.passwordPlaceholder}
+      placeholder={placeholder ?? t.auth.fields.passwordPlaceholder}
       rightIcon={
         <Pressable
           accessibilityLabel={isVisible ? t.auth.fields.hidePassword : t.auth.fields.showPassword}
           accessibilityRole="button"
+          accessibilityState={{ checked: isVisible }}
           disabled={disabled}
-          hitSlop={spacing.sm}
-          onPress={() => setIsVisible((currentValue) => !currentValue)}
+          hitSlop={12}
+          onPress={() => setIsVisible((current) => !current)}
           style={styles.toggle}
         >
-          <AppText color="brand" variant="caption">
-            {isVisible ? t.auth.fields.hide : t.auth.fields.show}
-          </AppText>
+          <Icon color={colors.text.secondary} name={isVisible ? 'eyeOff' : 'eye'} size={22} />
         </Pressable>
       }
       secureTextEntry={!isVisible}
@@ -53,7 +63,9 @@ export function PasswordInput({
 
 const styles = StyleSheet.create({
   toggle: {
-    minWidth: 44,
+    width: 32,
+    height: 44,
     alignItems: 'center',
+    justifyContent: 'center',
   },
 });

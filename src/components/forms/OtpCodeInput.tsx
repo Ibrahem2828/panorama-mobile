@@ -1,12 +1,12 @@
-import { useRef, useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
-import type { NativeSyntheticEvent, TextInputKeyPressEventData } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
-import { AppText } from '../common';
-import { colors, radius, spacing, typography, useBrand } from '../../theme';
 import { useTranslation } from '../../i18n';
+import { colors, radius, spacing, typography, useBrand } from '../../theme';
+import { AppText } from '../common';
+import { OTP_LENGTH, activeOtpIndex, isOtpComplete, otpBoxes, sanitizeOtp } from './otpInput';
 
-interface OtpCodeInputProps {
+type OtpCodeInputProps = {
   value: string;
   onChange: (code: string) => void;
   onComplete?: (code: string) => void;
@@ -16,10 +16,13 @@ interface OtpCodeInputProps {
   success?: boolean;
   length?: number;
   autoFocus?: boolean;
-}
+};
 
-const OTP_LENGTH = 6;
-
+/**
+ * Six visual boxes over one real input. A single input gives the OS everything it needs for
+ * paste, long-press paste and SMS/clipboard autofill, while the boxes just render the digits
+ * (so "auto-advance" is automatic and backspace always removes the last digit).
+ */
 export function OtpCodeInput({
   value,
   onChange,
@@ -33,138 +36,80 @@ export function OtpCodeInput({
 }: OtpCodeInputProps) {
   const { t } = useTranslation();
   const brand = useBrand();
-  const inputsRef = useRef<Array<TextInput | null>>([]);
-  const [focusedIndex, setFocusedIndex] = useState(0);
+  const inputRef = useRef<TextInput>(null);
+  const [focused, setFocused] = useState(false);
+  const isDisabled = disabled || loading || success;
+  const boxes = otpBoxes(value, length);
+  const active = activeOtpIndex(value, length);
 
-  const normalizedValue = (value || '').slice(0, length).padEnd(length, '');
-
-  const focusInput = (index: number) => {
-    if (index >= 0 && index < length && inputsRef.current[index]) {
-      inputsRef.current[index]?.focus();
-      setFocusedIndex(index);
+  useEffect(() => {
+    if (autoFocus && !isDisabled) {
+      const timer = setTimeout(() => inputRef.current?.focus(), 250);
+      return () => clearTimeout(timer);
     }
-  };
+    return undefined;
+    // Focus once on mount.
+  }, []);
 
-  const handleChangeText = (text: string, index: number) => {
-    if (disabled || loading) return;
-
-    const digit = text.replace(/[^0-9]/g, '').slice(-1);
-
-    const newValueArr = normalizedValue.split('');
-    newValueArr[index] = digit;
-
-    const newValue = newValueArr.join('').slice(0, length);
-    onChange(newValue);
-
-    if (digit && index < length - 1) {
-      focusInput(index + 1);
-    } else if (digit && index === length - 1 && newValue.replace(/\s/g, '').length === length) {
-      onComplete?.(newValue);
-    }
-  };
-
-  const handleKeyPress = (e: NativeSyntheticEvent<TextInputKeyPressEventData>, index: number) => {
-    if (disabled || loading) return;
-
-    if (e.nativeEvent.key === 'Backspace') {
-      if (normalizedValue[index]) {
-        const newValueArr = normalizedValue.split('');
-        newValueArr[index] = '';
-        onChange(newValueArr.join(''));
-      } else if (index > 0) {
-        const prevIndex = index - 1;
-        const newValueArr = normalizedValue.split('');
-        newValueArr[prevIndex] = '';
-        onChange(newValueArr.join(''));
-        focusInput(prevIndex);
-      }
-    }
-  };
-
-  const handleFocus = (index: number) => {
-    setFocusedIndex(index);
-  };
-
-  const handlePaste = (pasted: string, index: number) => {
-    if (disabled || loading) return;
-
-    const digits = pasted.replace(/[^0-9]/g, '').slice(0, length);
-    if (!digits) return;
-
-    const newValueArr = normalizedValue.split('');
-    for (let i = 0; i < digits.length; i++) {
-      if (index + i < length) {
-        newValueArr[index + i] = digits[i] || '';
-      }
-    }
-
-    const newValue = newValueArr.join('');
-    onChange(newValue);
-
-    const nextFocus = Math.min(index + digits.length, length - 1);
-    if (digits.length > 1 || index < length - 1) {
-      setTimeout(() => focusInput(nextFocus), 10);
-    }
-
-    if (newValue.replace(/\s/g, '').length === length) {
-      onComplete?.(newValue);
-    }
-  };
-
-  const isDisabled = disabled || loading;
+  function handleChange(text: string) {
+    const next = sanitizeOtp(text, length);
+    onChange(next);
+    if (isOtpComplete(next, length)) onComplete?.(next);
+  }
 
   return (
     <View style={styles.wrapper}>
-      <View style={styles.container}>
-        {Array.from({ length }).map((_, index) => {
-          const char = normalizedValue[index] || '';
-          const isFocused = focusedIndex === index && !isDisabled && !success;
-
+      <Pressable
+        accessibilityLabel={t.otpInput.inputLabel(length)}
+        accessibilityRole="none"
+        disabled={isDisabled}
+        onPress={() => inputRef.current?.focus()}
+        style={styles.container}
+      >
+        {boxes.map((char, index) => {
+          const isActive = focused && !isDisabled && index === active;
           return (
-            <TextInput
+            <View
               key={index}
-              ref={(ref) => {
-                inputsRef.current[index] = ref;
-              }}
-              accessibilityLabel={t.otpInput.digitLabel(index + 1, length)}
               style={[
                 styles.box,
-                isFocused && styles.boxFocused,
-                isFocused && { borderColor: brand.primary },
-                !!error && styles.boxError,
-                success && styles.boxSuccess,
-                isDisabled && !success && styles.boxDisabled,
+                char ? { borderColor: brand.primary } : null,
+                isActive ? [styles.boxActive, { borderColor: brand.primary }] : null,
+                error ? styles.boxError : null,
+                success ? styles.boxSuccess : null,
+                isDisabled && !success ? styles.boxDisabled : null,
               ]}
-              value={char}
-              onChangeText={(text) => {
-                if (text.length > 1) {
-                  handlePaste(text, index);
-                } else {
-                  handleChangeText(text, index);
-                }
-              }}
-              onKeyPress={(e) => handleKeyPress(e, index)}
-              onFocus={() => handleFocus(index)}
-              keyboardType="number-pad"
-              maxLength={1}
-              editable={!isDisabled && !success}
-              selectTextOnFocus
-              caretHidden
-              textAlign="center"
-              autoFocus={autoFocus && index === 0}
-            />
+            >
+              <AppText style={styles.char} variant="h2">
+                {char}
+              </AppText>
+            </View>
           );
         })}
-      </View>
+        <TextInput
+          ref={inputRef}
+          autoComplete="sms-otp"
+          caretHidden
+          editable={!isDisabled}
+          keyboardType="number-pad"
+          maxLength={length * 2}
+          onBlur={() => setFocused(false)}
+          onChangeText={handleChange}
+          onFocus={() => setFocused(true)}
+          style={styles.hiddenInput}
+          textContentType="oneTimeCode"
+          value={value}
+        />
+      </Pressable>
 
       {error ? (
-        <AppText color="error" variant="caption" style={styles.feedback}>
+        <AppText align="center" color="error" variant="caption">
           {error}
         </AppText>
       ) : null}
 
       {success ? (
-        <AppText color="success" variant="caption" style={styles.feedback}>
+        <AppText align="center" color="success" variant="caption">
           {t.otpInput.verified}
         </AppText>
       ) : null}
@@ -172,7 +117,8 @@ export function OtpCodeInput({
   );
 }
 
-const BOX_SIZE = 48;
+const BOX_WIDTH = 46;
+const BOX_HEIGHT = 56;
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -180,26 +126,24 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   container: {
+    // Digits always read left to right.
+    direction: 'ltr',
     flexDirection: 'row',
     justifyContent: 'center',
     gap: spacing.sm,
-    direction: 'ltr',
   },
   box: {
-    width: BOX_SIZE,
-    height: BOX_SIZE,
+    width: BOX_WIDTH,
+    height: BOX_HEIGHT,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1.5,
+    borderRadius: radius.lg,
     borderColor: colors.border.default,
-    borderRadius: radius.input,
     backgroundColor: colors.background.surface,
-    fontSize: typography.size.xl,
-    fontWeight: typography.weight.semibold,
-    color: colors.text.primary,
-    textAlign: 'center',
-    padding: 0,
   },
-  boxFocused: {
-    borderColor: colors.brand.primary,
+  boxActive: {
+    borderWidth: 2,
     backgroundColor: colors.background.primary,
   },
   boxError: {
@@ -213,7 +157,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.muted,
     opacity: 0.6,
   },
-  feedback: {
+  char: {
+    fontSize: typography.size.xl,
+    lineHeight: 30,
     textAlign: 'center',
+  },
+  hiddenInput: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0,
+    color: 'transparent',
   },
 });

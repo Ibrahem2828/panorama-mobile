@@ -1,24 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
-  AppCard,
-  AppHeader,
-  AppScreen,
   AppText,
   ErrorState,
+  FormAlert,
+  FormScreen,
+  Icon,
   LoadingState,
   Stack,
-  SuccessState,
 } from '../../../components';
 import { StudentSetupRoutes } from '../../../navigation/routes';
 import type { StudentSetupStackParamList } from '../../../navigation/types';
-import { spacing } from '../../../theme';
-import { StudentSetupStepper } from '../../student-profile/components';
+import { colors, radius, spacing, useBrand } from '../../../theme';
+import { SetupHeader } from '../../student-profile/components';
 import { VerificationCardImagePicker, VerificationStatusCard } from '../components';
 import {
   canResubmitVerification,
@@ -35,6 +33,7 @@ type SubmitVerificationNavigation = NativeStackNavigationProp<
 
 export function SubmitVerificationScreen() {
   const { t } = useTranslation();
+  const brand = useBrand();
   const [submitSucceeded, setSubmitSucceeded] = useState(false);
   const navigation = useNavigation<SubmitVerificationNavigation>();
   const verification = useVerificationStore((state) => state.verification);
@@ -42,6 +41,7 @@ export function SubmitVerificationScreen() {
   const hasLoadedVerification = useVerificationStore((state) => state.hasLoadedVerification);
   const isLoadingVerification = useVerificationStore((state) => state.isLoadingVerification);
   const isSubmitting = useVerificationStore((state) => state.isSubmitting);
+  const uploadProgress = useVerificationStore((state) => state.uploadProgress);
   const errorMessage = useVerificationStore((state) => state.errorMessage);
   const loadVerification = useVerificationStore((state) => state.loadVerification);
   const setSelectedCardImage = useVerificationStore((state) => state.setSelectedCardImage);
@@ -69,138 +69,157 @@ export function SubmitVerificationScreen() {
     }
   }
 
+  const title = shouldResubmit ? t.verificationFlow.resubmitTitle : t.verificationFlow.submitTitle;
+  const goBack = () => navigation.goBack();
+
   if (isLoadingVerification && !hasLoadedVerification) {
     return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.verificationFlow.subtitle} title={t.verificationFlow.submitTitle} />
-        <StudentSetupStepper currentStep={2} />
+      <FormScreen>
+        <SetupHeader step={2} subtitle={t.verificationFlow.cardSubtitle} title={title} />
         <LoadingState message={t.verificationFlow.loading} />
-      </AppScreen>
+      </FormScreen>
     );
   }
 
   if (submitSucceeded) {
     return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.verificationFlow.subtitle} title={t.verificationFlow.sentTitle} />
-        <StudentSetupStepper currentStep={2} />
-        <SuccessState
-          action={
-            <AppButton
-              fullWidth
-              onPress={() => navigation.replace(StudentSetupRoutes.VerificationStatus)}
-              title={t.verificationFlow.trackStatus}
-            />
-          }
-          illustrationLabel={t.verificationFlow.sentIllustrationAlt}
-          illustrationSource={images.illustrations.success}
-          message={t.verificationFlow.sentMessage}
-          title={t.verificationFlow.sentHeading}
-        />
-      </AppScreen>
+      <FormScreen
+        footer={
+          <AppButton
+            fullWidth
+            onPress={() => navigation.replace(StudentSetupRoutes.VerificationStatus)}
+            size="lg"
+            title={t.verificationFlow.trackStatus}
+          />
+        }
+      >
+        <SetupHeader step={2} title={t.verificationFlow.sentTitle} />
+        <View style={styles.success}>
+          <View style={[styles.successBadge, { backgroundColor: colors.semantic.success }]}>
+            <Icon color={colors.text.inverse} name="check" size={44} strokeWidth={2.5} />
+          </View>
+          <AppText align="center" variant="h2">
+            {t.verificationFlow.sentHeading}
+          </AppText>
+          <AppText align="center" color="secondary" variant="body">
+            {t.verificationFlow.sentMessage}
+          </AppText>
+        </View>
+      </FormScreen>
     );
   }
 
   if (errorMessage && !hasLoadedVerification) {
     return (
-      <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader subtitle={t.verificationFlow.subtitle} title={t.verificationFlow.submitTitle} />
-        <StudentSetupStepper currentStep={2} />
+      <FormScreen>
+        <SetupHeader step={2} subtitle={t.verificationFlow.cardSubtitle} title={title} />
         <ErrorState
           message={errorMessage}
           onRetry={() => {
             void loadVerification({ force: true });
           }}
         />
-      </AppScreen>
+      </FormScreen>
+    );
+  }
+
+  if (isReadOnlyStatus) {
+    return (
+      <FormScreen
+        footer={
+          <AppButton
+            fullWidth
+            onPress={() => navigation.replace(StudentSetupRoutes.VerificationStatus)}
+            size="lg"
+            title={t.verificationFlow.trackStatus}
+          />
+        }
+      >
+        <SetupHeader
+          onBack={goBack}
+          step={2}
+          subtitle={t.verificationFlow.cardSubtitle}
+          title={title}
+        />
+        <VerificationStatusCard verification={verification} />
+        <AppText align="center" color="secondary" variant="bodySmall">
+          {t.verificationFlow.lockedNote}
+        </AppText>
+      </FormScreen>
     );
   }
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardAvoid}
-      >
-        <Stack gap="xl">
-          <Stack gap="md">
-            <AppHeader
-              leftAction={
-                <AppButton
-                  onPress={() => navigation.goBack()}
-                  title={t.common.back}
-                  variant="ghost"
-                />
-              }
-              subtitle={t.verificationFlow.cardSubtitle}
-              title={
-                shouldResubmit ? t.verificationFlow.resubmitTitle : t.verificationFlow.submitTitle
-              }
-            />
-            <StudentSetupStepper currentStep={2} />
-          </Stack>
+    <FormScreen
+      footer={
+        <>
+          {errorMessage ? <FormAlert message={errorMessage} /> : null}
+          <AppButton
+            disabled={!selectedCardImage || isSubmitting}
+            fullWidth
+            loading={isSubmitting}
+            onPress={handleSubmit}
+            size="lg"
+            title={
+              shouldResubmit ? t.verificationFlow.resubmitRequest : t.verificationFlow.submitRequest
+            }
+          />
+        </>
+      }
+    >
+      <SetupHeader
+        onBack={goBack}
+        step={2}
+        subtitle={t.verificationFlow.cardSubtitle}
+        title={title}
+      />
 
-          <AppCard padding="md" variant="muted">
-            <Stack gap="xs">
-              <AppText variant="title">{t.verificationFlow.whyTitle}</AppText>
-              <AppText color="secondary" variant="bodySmall">
-                {t.verificationFlow.whyDescription}
-              </AppText>
-            </Stack>
-          </AppCard>
+      {verification && shouldResubmit ? (
+        <VerificationStatusCard verification={verification} />
+      ) : null}
 
-          {verification ? <VerificationStatusCard verification={verification} /> : null}
+      <VerificationCardImagePicker
+        disabled={isSubmitting}
+        isUploading={isSubmitting}
+        onChange={setSelectedCardImage}
+        progress={uploadProgress}
+        selectedImage={selectedCardImage}
+      />
 
-          {isReadOnlyStatus ? (
-            <Stack gap="md">
-              <AppText color="secondary" variant="bodySmall">
-                {t.verificationFlow.lockedNote}
-              </AppText>
-              <AppButton
-                fullWidth
-                onPress={() => navigation.replace(StudentSetupRoutes.VerificationStatus)}
-                title={t.verificationFlow.trackStatus}
-                variant="outline"
-              />
-            </Stack>
-          ) : (
-            <Stack gap="lg">
-              <VerificationCardImagePicker
-                disabled={isSubmitting}
-                onChange={setSelectedCardImage}
-                selectedImage={selectedCardImage}
-              />
-
-              {errorMessage ? (
-                <AppText color="error" variant="bodySmall">
-                  {errorMessage}
-                </AppText>
-              ) : null}
-
-              <AppButton
-                disabled={!selectedCardImage || isSubmitting}
-                fullWidth
-                loading={isSubmitting}
-                onPress={handleSubmit}
-                title={
-                  shouldResubmit
-                    ? t.verificationFlow.resubmitRequest
-                    : t.verificationFlow.submitRequest
-                }
-              />
-            </Stack>
-          )}
+      <View style={styles.why}>
+        <Icon color={brand.primary} name="shield" size={22} />
+        <Stack gap="xs" style={styles.whyText}>
+          <AppText variant="subtitle" weight="600">
+            {t.verificationFlow.whyTitle}
+          </AppText>
+          <AppText color="secondary" variant="bodySmall">
+            {t.verificationFlow.whyDescription}
+          </AppText>
         </Stack>
-      </KeyboardAvoidingView>
-    </AppScreen>
+      </View>
+    </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    gap: spacing.xl,
+  success: {
+    alignItems: 'center',
+    gap: spacing.lg,
+    paddingVertical: spacing.xxl,
   },
-  keyboardAvoid: {
+  successBadge: {
+    width: 96,
+    height: 96,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.full,
+  },
+  why: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+  },
+  whyText: {
     flex: 1,
   },
 });

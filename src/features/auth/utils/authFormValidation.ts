@@ -64,3 +64,51 @@ export function validateOtpCode(code: string, messages: Messages): string | null
 
   return null;
 }
+
+export type RegistrationField =
+  | 'fullName'
+  | 'email'
+  | 'phone'
+  | 'studentNumber'
+  | 'password'
+  | 'passwordConfirm';
+
+export type RegistrationFieldErrors = Partial<Record<RegistrationField, string>>;
+
+type RegistrationValues = {
+  fullName: string;
+  email: string;
+  phone: string;
+  studentNumber?: string;
+  password: string;
+  passwordConfirm: string;
+};
+
+/**
+ * Field-by-field validation for the registration forms, so each message sits under its own
+ * input. Pass `requireStudentNumber` for the student form.
+ */
+export function validateRegistrationFields(
+  values: RegistrationValues,
+  messages: Messages,
+  options: { requireStudentNumber?: boolean } = {},
+): RegistrationFieldErrors {
+  const errors: RegistrationFieldErrors = {};
+
+  if (!values.fullName.trim()) errors.fullName = messages.fullNameRequired;
+  if (!isValidEmail(values.email)) errors.email = messages.emailInvalid;
+
+  const phoneError = validatePhoneNumber(normalizePhoneNumber(values.phone), messages);
+  if (phoneError) errors.phone = phoneError;
+
+  if (options.requireStudentNumber && !(values.studentNumber ?? '').trim()) {
+    errors.studentNumber = messages.studentNumberRequired;
+  }
+
+  if (values.password.length < 8) errors.password = messages.passwordTooShort;
+  else if (values.password !== values.passwordConfirm) {
+    errors.passwordConfirm = messages.passwordMismatch;
+  }
+
+  return errors;
+}
