@@ -15,7 +15,7 @@ import {
 import { useTranslation } from '../../../i18n';
 import { PrintingRoutes } from '../../../navigation/routes';
 import type { PrintingStackParamList } from '../../../navigation/types';
-import { layout, spacing, useBrand } from '../../../theme';
+import { colors, layout, spacing, useBrand } from '../../../theme';
 import { PrintChoiceChips, PrintOrderCard } from '../components';
 import { getPrintOrderStatusPresentation } from '../services';
 import { usePrintingStore } from '../store';
@@ -192,6 +192,7 @@ export function MyPrintOrdersScreen({ navigation }: Props) {
         refreshControl={
           <RefreshControl
             colors={[brand.primary]}
+            progressBackgroundColor={colors.background.elevated}
             onRefresh={handleRefresh}
             refreshing={isRefreshing}
             tintColor={brand.primary}

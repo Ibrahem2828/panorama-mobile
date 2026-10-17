@@ -106,7 +106,7 @@ export function VerificationCardImagePicker({
           />
           {isUploading ? (
             <View style={styles.uploadOverlay}>
-              <AppText color="inverse" variant="subtitle" weight="600">
+              <AppText color="inverse" style={styles.overlayText} variant="subtitle" weight="600">
                 {copy.uploading(percent)}
               </AppText>
               <View style={styles.track}>
@@ -206,6 +206,7 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     backgroundColor: 'rgba(16, 24, 40, 0.62)',
   },
+  overlayText: { color: '#FFFFFF' },
   track: {
     width: '80%',
     height: 8,

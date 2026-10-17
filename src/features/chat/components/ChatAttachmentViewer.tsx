@@ -77,12 +77,12 @@ export function ChatAttachmentViewer({ groupId, message, onClose }: ChatAttachme
     >
       <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <View style={styles.header}>
-          <AppText color="inverse" variant="title">
+          <AppText color="inverse" style={styles.mediaText} variant="title">
             {t.chat.attachment.viewerTitle}
           </AppText>
           <AppIconButton
             accessibilityLabel={t.common.cancel}
-            icon={<Icon color={colors.text.inverse} name="close" />}
+            icon={<Icon color={MEDIA_WHITE} name="close" />}
             onPress={onClose}
           />
         </View>
@@ -90,8 +90,8 @@ export function ChatAttachmentViewer({ groupId, message, onClose }: ChatAttachme
         <View style={styles.body}>
           {state.status === 'loading' ? (
             <View style={styles.center}>
-              <ActivityIndicator color={colors.text.inverse} size="large" />
-              <AppText color="inverse" variant="bodySmall">
+              <ActivityIndicator color={MEDIA_WHITE} size="large" />
+              <AppText color="inverse" style={styles.mediaText} variant="bodySmall">
                 {t.chat.attachment.loading}
               </AppText>
             </View>
@@ -99,7 +99,7 @@ export function ChatAttachmentViewer({ groupId, message, onClose }: ChatAttachme
 
           {state.status === 'error' ? (
             <View style={styles.center}>
-              <AppText align="center" color="inverse">
+              <AppText align="center" color="inverse" style={styles.mediaText}>
                 {t.chat.attachment.loadError}
               </AppText>
               <AppButton onPress={() => void load()} title={t.common.retry} variant="outline" />
@@ -140,7 +140,11 @@ export function ChatAttachmentViewer({ groupId, message, onClose }: ChatAttachme
   );
 }
 
+// The viewer is always black (like a photo gallery), in both colour schemes.
+const MEDIA_WHITE = '#FFFFFF';
+
 const styles = StyleSheet.create({
+  mediaText: { color: MEDIA_WHITE },
   screen: {
     flex: 1,
     backgroundColor: '#000000',

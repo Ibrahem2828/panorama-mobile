@@ -2093,12 +2093,19 @@ export const en: TranslationCatalog = {
       subtitle: 'App settings',
       notifications: 'Notifications',
       notificationsDescription: 'Open the notification centre',
-      darkMode: 'Dark mode',
-      darkModeDescription: 'Dark mode will arrive in a future update',
       version: 'App version',
       versionDescription: 'Current app version number',
       environment: 'Version type',
       environmentDescription: 'The version you are using',
+    },
+
+    theme: {
+      title: 'Appearance',
+      description: 'Choose light, dark, or follow your phone',
+      system: 'System',
+      light: 'Light',
+      dark: 'Dark',
+      restartRequired: 'Appearance saved. Restart the app to see the new look.',
     },
 
     language: {

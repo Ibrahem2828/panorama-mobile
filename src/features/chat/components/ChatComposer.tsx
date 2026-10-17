@@ -4,7 +4,15 @@ import { Image, Keyboard, Platform, Pressable, StyleSheet, TextInput, View } fro
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconButton, AppText, Icon } from '../../../components';
-import { colors, layout, radius, spacing, typography, useBrand } from '../../../theme';
+import {
+  colors,
+  inputThemeProps,
+  layout,
+  radius,
+  spacing,
+  typography,
+  useBrand,
+} from '../../../theme';
 import { useTranslation } from '../../../i18n';
 import { getIsRTL } from '../../../utils/rtl';
 import { toChatAttachment, validateChatAttachment } from '../logic/attachments';
@@ -171,6 +179,7 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
           onPress={() => void handlePickImage()}
         />
         <TextInput
+          {...inputThemeProps}
           accessibilityLabel={t.chat.composerLabel}
           maxLength={MAX_MESSAGE_LENGTH}
           multiline

@@ -75,7 +75,7 @@ function ListRowComponent({
       accessibilityLabel={subtitle ? `${title}. ${subtitle}` : title}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
-      android_ripple={{ color: 'rgba(16, 24, 40, 0.08)', foreground: true }}
+      android_ripple={{ color: colors.ripple, foreground: true }}
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [

@@ -1,6 +1,9 @@
 import type { ImageSourcePropType } from 'react-native';
 
-import { colors } from './colors';
+// colorScheme resolves the scheme before the palettes below are built.
+import { isDarkScheme } from './colorScheme';
+import { darkPalette, DARK_INK, lightPalette } from './colors';
+import { contrastRatio, mixHex } from './contrast';
 
 /**
  * Faculty identity. Every Panorama faculty logo shares the same burgundy + purple infinity mark and
@@ -37,7 +40,7 @@ export type BrandPalette = {
   logo: ImageSourcePropType;
 };
 
-const LOGOS = {
+const LOGOS_LIGHT = {
   default: require('../assets/images/brand-logo-full-ar.png') as ImageSourcePropType,
   medicine: require('../assets/faculty/medicine.png') as ImageSourcePropType,
   dentistry: require('../assets/faculty/dentistry.png') as ImageSourcePropType,
@@ -47,25 +50,33 @@ const LOGOS = {
   business: require('../assets/faculty/business.png') as ImageSourcePropType,
 };
 
-const LOGO_PURPLE = colors.brand.secondary;
-const LOGO_BURGUNDY = colors.brand.accent;
+// Light lettering for dark backgrounds (transparent cut-outs, never boxed).
+const LOGOS_DARK = {
+  default: require('../assets/images/brand-logo-full-ar-dark.png') as ImageSourcePropType,
+  medicine: require('../assets/faculty/medicine-dark.png') as ImageSourcePropType,
+  dentistry: require('../assets/faculty/dentistry-dark.png') as ImageSourcePropType,
+  pharmacy: require('../assets/faculty/pharmacy-dark.png') as ImageSourcePropType,
+  informatics: require('../assets/faculty/informatics-dark.png') as ImageSourcePropType,
+  petroleum: require('../assets/faculty/petroleum-dark.png') as ImageSourcePropType,
+  business: require('../assets/faculty/business-dark.png') as ImageSourcePropType,
+};
 
-function mixHex(from: string, to: string, amount: number): string {
-  const parse = (hex: string): [number, number, number] => [
-    parseInt(hex.slice(1, 3), 16),
-    parseInt(hex.slice(3, 5), 16),
-    parseInt(hex.slice(5, 7), 16),
-  ];
-  const [r1, g1, b1] = parse(from);
-  const [r2, g2, b2] = parse(to);
-  const blend = (a: number, b: number) =>
-    Math.round(a + (b - a) * amount)
-      .toString(16)
-      .padStart(2, '0');
-  return `#${blend(r1, r2)}${blend(g1, g2)}${blend(b1, b2)}`;
+const LOGOS = isDarkScheme ? LOGOS_DARK : LOGOS_LIGHT;
+
+const LOGO_PURPLE = lightPalette.brand.secondary;
+const LOGO_BURGUNDY = lightPalette.brand.accent;
+
+function lightenForDark(color: string, minContrastWithInk: number): string {
+  let amount = 0.4;
+  let result = mixHex(color, '#FFFFFF', amount);
+  while (contrastRatio(result, DARK_INK) < minContrastWithInk && amount < 0.95) {
+    amount += 0.05;
+    result = mixHex(color, '#FFFFFF', amount);
+  }
+  return result;
 }
 
-function palette(
+function lightPaletteFor(
   key: FacultyThemeKey,
   primary: string,
   primarySoft: string,
@@ -78,26 +89,84 @@ function palette(
     primarySoft,
     deep: mixHex(primary, '#0A0F2C', 0.42),
     secondary: overrides.secondary ?? LOGO_PURPLE,
-    secondarySoft: overrides.secondarySoft ?? colors.brand.secondarySoft,
+    secondarySoft: overrides.secondarySoft ?? lightPalette.brand.secondarySoft,
     accent: LOGO_BURGUNDY,
-    accentSoft: colors.brand.accentSoft,
+    accentSoft: lightPalette.brand.accentSoft,
     ribbon,
     onPrimary: '#FFFFFF',
     logo: LOGOS[key],
   };
 }
 
+/**
+ * Dark variant built from the same inputs: a lightened primary that stays readable (links, icons, active
+ * tab) on the dark surfaces, a deep tint instead of the pastel soft colour, and dark ink wherever white
+ * text would fail contrast on the lightened primary.
+ */
+function darkPaletteFor(
+  key: FacultyThemeKey,
+  primary: string,
+  _primarySoft: string,
+  ribbon: readonly [string, string],
+  overrides: Partial<Pick<BrandPalette, 'secondary' | 'secondarySoft'>> = {},
+): BrandPalette {
+  // >= 6:1 against the dark ink keeps the primary above ~5:1 on the dark surface as well.
+  const lightPrimary = key === 'default' ? darkPalette.brand.primary : lightenForDark(primary, 6);
+  const secondary = lightenForDark(overrides.secondary ?? LOGO_PURPLE, 4.5);
+  return {
+    key,
+    primary: lightPrimary,
+    primarySoft: mixHex(primary, darkPalette.background.surface, 0.8),
+    deep: mixHex(primary, '#0A0F2C', 0.2),
+    secondary,
+    secondarySoft: mixHex(overrides.secondary ?? LOGO_PURPLE, darkPalette.background.surface, 0.8),
+    accent: darkPalette.brand.accent,
+    accentSoft: darkPalette.brand.accentSoft,
+    ribbon: [mixHex(ribbon[0], darkPalette.background.surface, 0.25), ribbon[1]],
+    onPrimary:
+      contrastRatio('#FFFFFF', lightPrimary) >= 4.5 &&
+      contrastRatio('#FFFFFF', lightPrimary) >= contrastRatio(DARK_INK, lightPrimary)
+        ? '#FFFFFF'
+        : DARK_INK,
+    logo: LOGOS[key],
+  };
+}
+
+const palette = isDarkScheme ? darkPaletteFor : lightPaletteFor;
+
+/** Exposed for tests: both variants regardless of the scheme the app resolved at startup. */
+export const paletteBuilders = { light: lightPaletteFor, dark: darkPaletteFor } as const;
+
+const FACULTY_INPUTS: Record<FacultyThemeKey, [string, string, readonly [string, string]]> = {
+  default: [lightPalette.brand.primary, lightPalette.brand.primarySoft, ['#9AA3B5', '#3B0CA3']],
+  medicine: ['#0B7A4F', '#E2F5EC', ['#8FDCB8', '#047857']],
+  dentistry: ['#2563C9', '#E6F0FD', ['#C2E8FB', '#8DB4F5']],
+  pharmacy: ['#6A2C94', '#F1E8F8', ['#B488D6', '#3B0CA3']],
+  informatics: ['#C2550A', '#FFF0E1', ['#FDCB9C', '#F28C1E']],
+  petroleum: ['#1B2F78', '#E8ECFA', ['#FDB05C', '#F77F00']],
+  business: ['#C2305F', '#FDE8EF', ['#D8A3B1', '#D13D6D']],
+};
+
+/** Test helper: the palette of every faculty for a given scheme. */
+export function buildFacultyPalettes(
+  scheme: 'light' | 'dark',
+): Record<FacultyThemeKey, BrandPalette> {
+  const build = paletteBuilders[scheme];
+  const keys = Object.keys(FACULTY_INPUTS) as FacultyThemeKey[];
+  return Object.fromEntries(keys.map((key) => [key, build(key, ...FACULTY_INPUTS[key])])) as Record<
+    FacultyThemeKey,
+    BrandPalette
+  >;
+}
+
 export const facultyPalettes: Record<FacultyThemeKey, BrandPalette> = {
-  default: palette('default', colors.brand.primary, colors.brand.primarySoft, [
-    '#9AA3B5',
-    '#3B0CA3',
-  ]),
-  medicine: palette('medicine', '#0B7A4F', '#E2F5EC', ['#8FDCB8', '#047857']),
-  dentistry: palette('dentistry', '#2563C9', '#E6F0FD', ['#C2E8FB', '#8DB4F5']),
-  pharmacy: palette('pharmacy', '#6A2C94', '#F1E8F8', ['#B488D6', '#3B0CA3']),
-  informatics: palette('informatics', '#C2550A', '#FFF0E1', ['#FDCB9C', '#F28C1E']),
-  petroleum: palette('petroleum', '#1B2F78', '#E8ECFA', ['#FDB05C', '#F77F00']),
-  business: palette('business', '#C2305F', '#FDE8EF', ['#D8A3B1', '#D13D6D']),
+  default: palette('default', ...FACULTY_INPUTS.default),
+  medicine: palette('medicine', ...FACULTY_INPUTS.medicine),
+  dentistry: palette('dentistry', ...FACULTY_INPUTS.dentistry),
+  pharmacy: palette('pharmacy', ...FACULTY_INPUTS.pharmacy),
+  informatics: palette('informatics', ...FACULTY_INPUTS.informatics),
+  petroleum: palette('petroleum', ...FACULTY_INPUTS.petroleum),
+  business: palette('business', ...FACULTY_INPUTS.business),
 };
 
 // Faculty codes follow the first digit of the student number (see the backend student-number rule).

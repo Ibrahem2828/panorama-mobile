@@ -3,7 +3,7 @@ import { Image, Pressable, StyleSheet } from 'react-native';
 
 import { AppBadge, AppCard, AppText, IconTile, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import { opacity, radius, useBrand } from '../../../theme';
+import { colors, opacity, radius, useBrand } from '../../../theme';
 import { formatDate } from '../../../utils/formatDateTime';
 import { getAnnouncementDate, isEndingSoon } from '../services';
 import type { AnnouncementItem } from '../types';
@@ -33,7 +33,7 @@ function AnnouncementListItemComponent({ item, isUnread, onPress }: Announcement
       accessibilityHint={isUnread ? t.announcements.newBadge : undefined}
       accessibilityLabel={t.announcements.openDetails(title)}
       accessibilityRole="button"
-      android_ripple={{ color: 'rgba(16, 24, 40, 0.08)', foreground: true }}
+      android_ripple={{ color: colors.ripple, foreground: true }}
       onPress={handlePress}
       style={({ pressed }) => (pressed ? styles.pressed : null)}
     >

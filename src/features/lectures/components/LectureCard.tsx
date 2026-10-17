@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Icon, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import { spacing, radius, useBrand } from '../../../theme';
+import { colors, spacing, radius, useBrand } from '../../../theme';
 import { formatDate } from '../../../utils/formatDateTime';
 import { lectureTitle } from '../logic';
 import type { Lecture } from '../types';
@@ -35,7 +35,7 @@ function LectureCardBase({ lecture, onPress, compact = false }: Props) {
     <Pressable
       accessibilityLabel={t.lectures.openLecture(title)}
       accessibilityRole="button"
-      android_ripple={{ color: 'rgba(16, 24, 40, 0.08)', foreground: true }}
+      android_ripple={{ color: colors.ripple, foreground: true }}
       onPress={() => onPress(lecture)}
       style={({ pressed }) => (pressed ? styles.pressed : null)}
     >

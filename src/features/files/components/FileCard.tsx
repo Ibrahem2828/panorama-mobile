@@ -4,7 +4,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { formatDate } from '../../../utils/formatDateTime';
-import { opacity } from '../../../theme';
+import { colors, opacity } from '../../../theme';
 import {
   formatFileSize,
   getEntityLabel,
@@ -47,7 +47,7 @@ function FileCardComponent({ file, onPress }: FileCardProps) {
   return (
     <Pressable
       accessibilityRole="button"
-      android_ripple={{ color: 'rgba(16, 24, 40, 0.08)', foreground: true }}
+      android_ripple={{ color: colors.ripple, foreground: true }}
       disabled={!onPress}
       onPress={onPress}
       style={({ pressed }) => [pressed && onPress ? styles.pressed : null]}

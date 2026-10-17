@@ -91,6 +91,9 @@
     "transformIgnorePatterns": [
       "node_modules/(?!(?:jest-)?react-native|@react-native|@react-navigation|expo|expo-.*|@expo|@expo/.*|react-native-.*)"
     ],
+    "moduleNameMapper": {
+      "\\.(png|jpg|jpeg|gif|webp)$": "<rootDir>/__mocks__/fileMock.js"
+    },
     "testMatch": [
       "**/__tests__/**/*.test.ts",
       "**/__tests__/**/*.test.tsx"

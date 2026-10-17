@@ -3,6 +3,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import { StyleSheet, View } from 'react-native';
 
 import { colors, useBrand } from '../../theme';
+import { isDarkScheme } from '../../theme/colorScheme';
 import type { IconName } from '../icons';
 import { Icon } from '../icons';
 import type { ArtworkTone } from './artworkCatalog';
@@ -40,7 +41,7 @@ export const IconTile = memo(function IconTile({
     main = colors.semantic.success;
     soft = colors.semantic.successSoft;
   } else if (tone === 'warning') {
-    main = '#B54708';
+    main = isDarkScheme ? colors.semantic.warning : '#B54708';
     soft = colors.semantic.warningSoft;
   } else if (tone === 'error') {
     main = colors.semantic.error;

@@ -32,7 +32,7 @@ function AnnouncementCardComponent({ announcement, onPress }: AnnouncementCardPr
     <Pressable
       accessibilityLabel={t.announcements.openDetails(title)}
       accessibilityRole="button"
-      android_ripple={{ color: 'rgba(16, 24, 40, 0.08)', foreground: true }}
+      android_ripple={{ color: colors.ripple, foreground: true }}
       disabled={!onPress}
       onPress={handlePress}
       style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}

@@ -1,5 +1,7 @@
 import type { ImageSourcePropType } from 'react-native';
 
+import { isDarkScheme } from '../../theme/colorScheme';
+
 const asset = (value: ImageSourcePropType) => value;
 
 /**
@@ -8,8 +10,13 @@ const asset = (value: ImageSourcePropType) => value;
  */
 export const images = {
   brand: {
-    logoFullAr: asset(require('./brand-logo-full-ar.png')),
-    symbol: asset(require('./brand-symbol.png')),
+    // Light lettering variants are used when the app resolved a dark colour scheme at startup.
+    logoFullAr: asset(
+      isDarkScheme ? require('./brand-logo-full-ar-dark.png') : require('./brand-logo-full-ar.png'),
+    ),
+    symbol: asset(
+      isDarkScheme ? require('./brand-symbol-dark.png') : require('./brand-symbol.png'),
+    ),
   },
   illustrations: {
     success: asset(require('./illustration-success.png')),

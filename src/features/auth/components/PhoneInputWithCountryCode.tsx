@@ -5,7 +5,7 @@ import { AppText, Icon, OptionSheet } from '../../../components';
 import type { SelectOption } from '../../../components';
 import { FormField } from '../../../components/forms/FormField';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
-import { colors, layout, radius, spacing, typography } from '../../../theme';
+import { colors, inputThemeProps, layout, radius, spacing, typography } from '../../../theme';
 
 /** Dialling data only. The displayed name comes from the catalog, keyed by `id`. */
 type CountryCode = {
@@ -114,6 +114,7 @@ export function PhoneInputWithCountryCode({
         <View style={styles.divider} />
 
         <TextInput
+          {...inputThemeProps}
           ref={inputRef}
           autoComplete="tel"
           editable={!disabled}

@@ -17,7 +17,7 @@ import { useTranslation } from '../../../i18n';
 import { LecturesRoutes } from '../../../navigation/routes';
 import type { HomeStackParamList } from '../../../navigation/types';
 import { getFlexDirection } from '../../../utils/rtl';
-import { spacing, useBrand } from '../../../theme';
+import { colors, spacing, useBrand } from '../../../theme';
 import { FilterChip } from '../components/FilterChip';
 import { LectureCard } from '../components/LectureCard';
 import { filterLectures, uniqueSubjects } from '../logic';
@@ -171,6 +171,7 @@ export function LecturesListScreen({ navigation, route }: Props) {
         refreshControl={
           <RefreshControl
             colors={[brand.primary]}
+            progressBackgroundColor={colors.background.elevated}
             onRefresh={handleRefresh}
             refreshing={isRefreshing}
             tintColor={brand.primary}

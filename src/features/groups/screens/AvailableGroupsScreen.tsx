@@ -17,7 +17,7 @@ import {
 import { useTranslation } from '../../../i18n';
 import { GroupsRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
-import { layout, spacing, useBrand } from '../../../theme';
+import { colors, layout, spacing, useBrand } from '../../../theme';
 import { GroupCard } from '../components';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { getGroupSubjectId } from '../services';
@@ -253,6 +253,7 @@ export function AvailableGroupsScreen({ navigation, route }: AvailableGroupsScre
         refreshControl={
           <RefreshControl
             colors={[brand.primary]}
+            progressBackgroundColor={colors.background.elevated}
             onRefresh={handleRefresh}
             refreshing={isRefreshing}
             tintColor={brand.primary}

@@ -2122,12 +2122,19 @@ export const ar = {
       subtitle: 'إعدادات التطبيق',
       notifications: 'الإشعارات',
       notificationsDescription: 'افتح مركز الإشعارات',
-      darkMode: 'الوضع الليلي',
-      darkModeDescription: 'سيتوفر الوضع الليلي في تحديث قادم',
       version: 'إصدار التطبيق',
       versionDescription: 'رقم إصدار التطبيق الحالي',
       environment: 'نوع النسخة',
       environmentDescription: 'النسخة التي تستخدمها حاليًا',
+    },
+
+    theme: {
+      title: 'المظهر',
+      description: 'اختر مظهر التطبيق: فاتح أو داكن أو حسب نظام الجهاز',
+      system: 'النظام',
+      light: 'فاتح',
+      dark: 'داكن',
+      restartRequired: 'تم حفظ المظهر. أعد تشغيل التطبيق ليظهر المظهر الجديد.',
     },
 
     language: {

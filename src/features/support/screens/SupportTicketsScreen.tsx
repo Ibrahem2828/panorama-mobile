@@ -17,7 +17,7 @@ import {
 import { useTranslation } from '../../../i18n';
 import { ProfileRoutes } from '../../../navigation/routes';
 import type { ProfileStackParamList } from '../../../navigation/types';
-import { layout, spacing, useBrand } from '../../../theme';
+import { colors, layout, spacing, useBrand } from '../../../theme';
 import { SupportTicketCard } from '../components';
 import { getSupportTicketStatusLabel } from '../services';
 import { useSupportStore } from '../store';
@@ -207,6 +207,7 @@ export function SupportTicketsScreen({ navigation }: SupportTicketsScreenProps) 
         refreshControl={
           <RefreshControl
             colors={[brand.primary]}
+            progressBackgroundColor={colors.background.elevated}
             onRefresh={handleRefresh}
             refreshing={isRefreshing}
             tintColor={brand.primary}
