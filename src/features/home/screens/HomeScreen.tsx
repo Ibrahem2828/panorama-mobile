@@ -12,6 +12,7 @@ import {
   BrandRefreshControl,
   EmptyState,
   ErrorState,
+  Reveal,
   SkeletonList,
   Stack,
   type IconName,
@@ -257,15 +258,16 @@ export function HomeScreen() {
             <Stack gap="sm">
               <HomeSectionHeader title={t.home.services.title} />
               <View style={styles.tiles}>
-                {quickActions.map((action) => (
-                  <QuickActionTile
-                    badge={action.badge}
-                    icon={TILE_ICONS[action.key]}
-                    actionKey={action.key}
-                    key={action.key}
-                    label={action.title}
-                    onPress={handleQuickActionPress}
-                  />
+                {quickActions.map((action, i) => (
+                  <Reveal index={i} key={action.key} style={styles.tileSlot}>
+                    <QuickActionTile
+                      badge={action.badge}
+                      icon={TILE_ICONS[action.key]}
+                      actionKey={action.key}
+                      label={action.title}
+                      onPress={handleQuickActionPress}
+                    />
+                  </Reveal>
                 ))}
               </View>
             </Stack>
@@ -294,12 +296,13 @@ export function HomeScreen() {
                 />
               ) : (
                 <Stack gap="md">
-                  {announcements.slice(0, 5).map((announcement) => (
-                    <AnnouncementCard
-                      announcement={announcement}
-                      key={String(announcement.id)}
-                      onPress={handleOpenAnnouncement}
-                    />
+                  {announcements.slice(0, 5).map((announcement, i) => (
+                    <Reveal index={i + 2} key={String(announcement.id)}>
+                      <AnnouncementCard
+                        announcement={announcement}
+                        onPress={handleOpenAnnouncement}
+                      />
+                    </Reveal>
                   ))}
                 </Stack>
               )}
@@ -339,6 +342,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.screen.horizontal,
     paddingTop: spacing.xl,
   },
+  tileSlot: { width: '25%' },
   tiles: {
     flexDirection: 'row',
     flexWrap: 'wrap',

@@ -232,7 +232,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: 'Panorama',
     slug: 'panorama-mobile',
-    version: '2.1.0',
+    version: '2.2.0',
     orientation: 'portrait',
     scheme: 'panorama',
     icon: './src/assets/app/icon.png',
@@ -263,7 +263,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         'expo-splash-screen',
         {
           image: './src/assets/app/splash.png',
-          imageWidth: 240,
+          imageWidth: 288,
           resizeMode: 'contain',
           backgroundColor: '#FFFFFF',
           dark: { backgroundColor: '#0B1020', image: './src/assets/app/splash-dark.png' },
@@ -294,7 +294,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: {
       ...config.android,
       package: 'com.panorama.student',
-      versionCode: 210,
+      versionCode: 220,
       adaptiveIcon: {
         foregroundImage: './src/assets/app/adaptive-icon.png',
         monochromeImage: './src/assets/app/adaptive-icon-monochrome.png',

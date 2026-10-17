@@ -1,5 +1,7 @@
+import type { ReactNode } from 'react';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '../components/common';
@@ -15,6 +17,48 @@ const tabIcons: Record<string, IconName> = {
   [TabRoutes.Printing]: 'printer',
   [TabRoutes.Profile]: 'user',
 };
+
+/** Active-tab indicator: the soft pill grows from the centre and the icon lifts slightly. */
+function TabPill({ focused, children }: { focused: boolean; children: ReactNode }) {
+  const brand = useBrand();
+  const progress = useRef(new Animated.Value(focused ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.spring(progress, {
+      toValue: focused ? 1 : 0,
+      friction: 7,
+      tension: 120,
+      useNativeDriver: true,
+    }).start();
+  }, [focused, progress]);
+
+  return (
+    <View style={styles.pill}>
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            backgroundColor: brand.primarySoft,
+            opacity: progress,
+            transform: [
+              { scaleX: progress.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] }) },
+            ],
+          },
+        ]}
+      />
+      <Animated.View
+        style={{
+          transform: [
+            { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [0, -1] }) },
+            { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [1, 1.1] }) },
+          ],
+        }}
+      >
+        {children}
+      </Animated.View>
+    </View>
+  );
+}
 
 export function AppTabBar({ state, navigation }: BottomTabBarProps) {
   const { t } = useTranslation();
@@ -55,14 +99,14 @@ export function AppTabBar({ state, navigation }: BottomTabBarProps) {
             }}
             style={styles.item}
           >
-            <View style={[styles.pill, focused ? { backgroundColor: brand.primarySoft } : null]}>
+            <TabPill focused={focused}>
               <Icon
                 color={color}
                 name={tabIcons[route.name] ?? 'home'}
                 size={22}
                 strokeWidth={focused ? 2.2 : 1.8}
               />
-            </View>
+            </TabPill>
             <AppText
               align="center"
               numberOfLines={1}

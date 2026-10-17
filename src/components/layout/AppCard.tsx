@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, View } from 'react-native';
 
 import { colors, radius, shadows, spacing } from '../../theme';
+import { usePressScale } from '../motion/usePressScale';
 
 type CardVariant = 'default' | 'elevated' | 'outlined' | 'muted';
 type CardPadding = 'none' | 'sm' | 'md' | 'lg';
@@ -66,18 +67,23 @@ export function AppCard({
   accessibilityLabel,
 }: AppCardProps) {
   const cardStyle = [styles.base, variantStyles[variant], paddingStyles[padding], style];
+  const press = usePressScale(0.985);
 
   if (onPress) {
     return (
-      <Pressable
-        accessibilityLabel={accessibilityLabel}
-        accessibilityRole="button"
-        android_ripple={{ color: colors.ripple, foreground: true }}
-        onPress={onPress}
-        style={({ pressed }) => [cardStyle, pressed ? styles.pressed : null]}
-      >
-        {children}
-      </Pressable>
+      <Animated.View style={{ transform: [{ scale: press.scale }] }}>
+        <Pressable
+          accessibilityLabel={accessibilityLabel}
+          accessibilityRole="button"
+          android_ripple={{ color: colors.ripple, foreground: true }}
+          onPress={onPress}
+          onPressIn={press.onPressIn}
+          onPressOut={press.onPressOut}
+          style={({ pressed }) => [cardStyle, pressed ? styles.pressed : null]}
+        >
+          {children}
+        </Pressable>
+      </Animated.View>
     );
   }
 

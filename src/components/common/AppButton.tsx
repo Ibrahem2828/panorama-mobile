@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
 import type { GestureResponderEvent, StyleProp, TextStyle, ViewStyle } from 'react-native';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Animated, Pressable, StyleSheet, View } from 'react-native';
 
 import type { BrandPalette } from '../../theme';
 import { colors, layout, opacity, radius, spacing, useBrand } from '../../theme';
 import { getFlexDirection } from '../../utils/rtl';
+import { usePressScale } from '../motion/usePressScale';
 import { AppText } from './AppText';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'dangerOutline';
@@ -92,36 +93,43 @@ export function AppButton({
   const brand = useBrand();
   const isDisabled = disabled || loading;
   const contentColor = isDisabled ? colors.text.disabled : textColorFor(variant, brand);
+  const press = usePressScale(0.96);
 
   return (
-    <Pressable
-      accessibilityLabel={accessibilityLabel ?? title}
-      accessibilityRole="button"
-      accessibilityState={{ disabled: isDisabled, busy: loading }}
-      disabled={isDisabled}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.base,
-        sizeStyles[size],
-        containerFor(variant, brand),
-        fullWidth ? styles.fullWidth : null,
-        isDisabled ? styles.disabled : null,
-        pressed && !isDisabled ? styles.pressed : null,
-        style,
-      ]}
+    <Animated.View
+      style={[{ transform: [{ scale: press.scale }] }, fullWidth ? styles.fullWidth : null]}
     >
-      {loading ? (
-        <ActivityIndicator color={contentColor} size="small" />
-      ) : (
-        <>
-          {leftIcon ? <View style={styles.iconSlot}>{leftIcon}</View> : null}
-          <AppText color="inverse" style={[{ color: contentColor }, textStyle]} variant="button">
-            {title}
-          </AppText>
-          {rightIcon ? <View style={styles.iconSlot}>{rightIcon}</View> : null}
-        </>
-      )}
-    </Pressable>
+      <Pressable
+        accessibilityLabel={accessibilityLabel ?? title}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: isDisabled, busy: loading }}
+        disabled={isDisabled}
+        onPress={onPress}
+        onPressIn={press.onPressIn}
+        onPressOut={press.onPressOut}
+        style={({ pressed }) => [
+          styles.base,
+          sizeStyles[size],
+          containerFor(variant, brand),
+          fullWidth ? styles.fullWidth : null,
+          isDisabled ? styles.disabled : null,
+          pressed && !isDisabled ? styles.pressed : null,
+          style,
+        ]}
+      >
+        {loading ? (
+          <ActivityIndicator color={contentColor} size="small" />
+        ) : (
+          <>
+            {leftIcon ? <View style={styles.iconSlot}>{leftIcon}</View> : null}
+            <AppText color="inverse" style={[{ color: contentColor }, textStyle]} variant="button">
+              {title}
+            </AppText>
+            {rightIcon ? <View style={styles.iconSlot}>{rightIcon}</View> : null}
+          </>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 }
 

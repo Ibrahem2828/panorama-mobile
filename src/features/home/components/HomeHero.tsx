@@ -1,4 +1,5 @@
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, Icon } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -32,6 +33,11 @@ export function HomeHero({
   const { t } = useTranslation();
   const brand = useBrand();
   const name = firstName(displayName);
+  const intro = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(intro, { toValue: 1, friction: 6, tension: 70, useNativeDriver: true }).start();
+  }, [intro]);
 
   return (
     <View style={[styles.hero, { backgroundColor: brand.primarySoft }]}>
@@ -45,11 +51,19 @@ export function HomeHero({
       />
 
       <View style={styles.topRow}>
-        <Image
+        <Animated.Image
           accessibilityIgnoresInvertColors
           resizeMode="contain"
           source={brand.logo}
-          style={styles.logo}
+          style={[
+            styles.logo,
+            {
+              opacity: intro,
+              transform: [
+                { scale: intro.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) },
+              ],
+            },
+          ]}
         />
         <View style={styles.textBlock}>
           <AppText color="secondary" variant="caption" weight="600">

@@ -50,7 +50,7 @@ function QuickActionTileComponent<K extends string>({
 export const QuickActionTile = memo(QuickActionTileComponent) as typeof QuickActionTileComponent;
 
 const styles = StyleSheet.create({
-  tile: { width: '25%', alignItems: 'center', gap: 8, paddingVertical: 8, minHeight: 96 },
+  tile: { width: '100%', alignItems: 'center', gap: 8, paddingVertical: 8, minHeight: 96 },
   pressed: { opacity: 0.7 },
   iconBox: {
     width: 56,
