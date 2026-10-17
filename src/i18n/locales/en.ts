@@ -1074,6 +1074,25 @@ export const en: TranslationCatalog = {
     viewerSubtitle: 'Protected view inside the app',
   },
 
+  policies: {
+    title: 'Terms and policies updated',
+    description:
+      'The terms or the privacy policy were updated. Please review and accept them to continue.',
+    terms: 'Terms and conditions',
+    privacy: 'Privacy policy',
+    version: (version: string) => `Version ${version}`,
+    read: 'Read',
+    checkbox: 'I have read the current versions and I agree to them.',
+    needCheckbox: 'Please confirm your agreement to continue.',
+    accept: 'Agree and continue',
+    accepting: 'Recording your agreement...',
+    logout: 'Sign out',
+    errors: {
+      network: 'Could not record your agreement. Check your connection and try again.',
+      generic: 'Could not record your agreement. Please try again.',
+    },
+  },
+
   home: {
     title: 'Home',
     subtitle: 'Student dashboard',

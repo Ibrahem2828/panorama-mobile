@@ -36,6 +36,7 @@ export * as groupsService from './services/groups.service';
 export * as healthService from './services/health.service';
 export * as lifecycleService from './services/lifecycle.service';
 export * as notificationsService from './services/notifications.service';
+export * as policiesService from './services/policies.service';
 export * as printingService from './services/printing.service';
 export * as searchService from './services/search.service';
 export * as supportService from './services/support.service';

@@ -7,6 +7,7 @@ import { useFilesStore } from '../../features/files/store';
 import { useGroupsStore } from '../../features/groups/store';
 import { useHomeStore } from '../../features/home/store';
 import { useNotificationsStore } from '../../features/notifications/store';
+import { usePoliciesStore } from '../../features/policies';
 import { usePrintingStore } from '../../features/printing/store';
 import { useProfileStore } from '../../features/profile/store';
 import { useSettingsStore } from '../../features/settings/store';
@@ -23,6 +24,7 @@ export function useSessionStateCleanup() {
   const resetGroups = useGroupsStore((state) => state.reset);
   const resetHome = useHomeStore((state) => state.reset);
   const resetNotifications = useNotificationsStore((state) => state.reset);
+  const resetPolicies = usePoliciesStore((state) => state.reset);
   const resetPrinting = usePrintingStore((state) => state.reset);
   const resetProfile = useProfileStore((state) => state.reset);
   const resetSettings = useSettingsStore((state) => state.reset);
@@ -42,6 +44,7 @@ export function useSessionStateCleanup() {
     resetGroups();
     resetHome();
     resetNotifications();
+    resetPolicies();
     resetPrinting();
     resetProfile();
     resetSettings();
@@ -56,6 +59,7 @@ export function useSessionStateCleanup() {
     resetGroups,
     resetHome,
     resetNotifications,
+    resetPolicies,
     resetPrinting,
     resetProfile,
     resetSettings,
