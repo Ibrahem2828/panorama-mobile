@@ -50,7 +50,7 @@ export const resolvedScheme: ResolvedScheme = resolveScheme(themePreference);
 // An explicit choice also pins native chrome (dialogs, keyboard, scroll bars) to the same scheme; 'system'
 // hands control back to the OS.
 try {
-  Appearance.setColorScheme(themePreference === 'system' ? null : themePreference);
+  Appearance.setColorScheme(themePreference === 'system' ? 'unspecified' : themePreference);
 } catch {
   // Not supported on this platform/runtime; the JS palette is already resolved.
 }
