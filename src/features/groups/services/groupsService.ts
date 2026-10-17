@@ -9,7 +9,7 @@ import {
   type PaginatedResult,
 } from '../../../api';
 import type { AvailableGroupsParams } from '../../../api/services/groups.service';
-import type { TranslationCatalog } from '../../../i18n';
+import { useLocaleStore, type TranslationCatalog } from '../../../i18n';
 import { resolveMembershipState } from './membership';
 import type {
   Group,
@@ -116,9 +116,21 @@ export function getGroupImageUri(group: Group): string | null {
   return imageUri;
 }
 
+/**
+ * Human label of a related entity. A bare id (number or numeric string, or an object with
+ * only an id) is never shown: it falls back to the localized "not specified" text.
+ */
 export function getEntityLabel(value: unknown): string | null {
-  if (typeof value === 'string' || typeof value === 'number') {
-    return String(value);
+  const unspecified = useLocaleStore.getState().t.common.notSpecified;
+
+  if (typeof value === 'number') {
+    return unspecified;
+  }
+
+  if (typeof value === 'string') {
+    const text = value.trim();
+
+    return text && !/^\d+$/u.test(text) ? text : unspecified;
   }
 
   if (!isRecord(value)) {
@@ -130,8 +142,7 @@ export function getEntityLabel(value: unknown): string | null {
     toText(value.title) ??
     toText(value.label) ??
     toText(value.code) ??
-    toText(value.id) ??
-    null
+    unspecified
   );
 }
 

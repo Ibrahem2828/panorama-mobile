@@ -6,7 +6,7 @@ import {
   type FileAccessTicket,
 } from '../../../api';
 import type { FileResource, FileViewerType, Id } from '../types';
-import type { TranslationCatalog } from '../../../i18n';
+import { useLocaleStore, type TranslationCatalog } from '../../../i18n';
 
 type FilesCatalog = TranslationCatalog['files'];
 
@@ -170,9 +170,21 @@ export function getFileUpdatedAt(file: FileResource): string | null {
   return toText(file.updated_at) ?? toText(file.created_at) ?? null;
 }
 
+/**
+ * Human label of a related entity. A bare id (number or numeric string, or an object with
+ * only an id) is never shown: it falls back to the localized "not specified" text.
+ */
 export function getEntityLabel(value: unknown): string | null {
-  if (typeof value === 'string' || typeof value === 'number') {
-    return String(value);
+  const unspecified = useLocaleStore.getState().t.common.notSpecified;
+
+  if (typeof value === 'number') {
+    return unspecified;
+  }
+
+  if (typeof value === 'string') {
+    const text = value.trim();
+
+    return text && !/^\d+$/u.test(text) ? text : unspecified;
   }
 
   if (!isRecord(value)) {
@@ -184,8 +196,7 @@ export function getEntityLabel(value: unknown): string | null {
     toText(value.title) ??
     toText(value.label) ??
     toText(value.code) ??
-    toText(value.id) ??
-    null
+    unspecified
   );
 }
 

@@ -17,6 +17,8 @@ type VerificationState = {
   verification: VerificationRecord | null;
   selectedCardImage: VerificationCardImage | null;
   hasLoadedVerification: boolean;
+  /** Loading the verification failed, so a missing record does not mean 'never submitted'. */
+  loadFailed: boolean;
   lastAuthUserId: string | number | null;
   isLoadingVerification: boolean;
   isSubmitting: boolean;
@@ -62,6 +64,7 @@ function getInitialVerificationState() {
     verification: null,
     selectedCardImage: null,
     hasLoadedVerification: false,
+    loadFailed: false,
     lastAuthUserId: null,
     isLoadingVerification: false,
     isSubmitting: false,
@@ -106,8 +109,11 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
       return;
     }
 
+    const hadVerification = get().verification !== null;
+
     set({
       isLoadingVerification: true,
+      loadFailed: false,
       errorMessage: null,
       lastAuthUserId: userId,
     });
@@ -118,11 +124,13 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
       set({
         verification,
         hasLoadedVerification: true,
+        loadFailed: false,
         isLoadingVerification: false,
       });
     } catch (error) {
       set({
         hasLoadedVerification: true,
+        loadFailed: !hadVerification,
         isLoadingVerification: false,
         errorMessage: toSafeVerificationErrorMessage(error, verificationCatalog()),
       });

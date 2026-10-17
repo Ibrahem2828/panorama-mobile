@@ -1034,6 +1034,7 @@ export const ar = {
     bootstrap: {
       checkingSession: 'جارٍ التحقق من حسابك...',
       preparingStudentAccount: 'جارٍ تجهيز حسابك...',
+      studentContextError: 'تعذر تحميل بيانات حسابك. تحقق من الاتصال وحاول مرة أخرى.',
     },
 
     roleDenied: {

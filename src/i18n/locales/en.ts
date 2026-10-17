@@ -1018,6 +1018,8 @@ export const en: TranslationCatalog = {
     bootstrap: {
       checkingSession: 'Checking your session...',
       preparingStudentAccount: 'Preparing your student account...',
+      studentContextError:
+        'We could not load your account details. Check your connection and try again.',
     },
 
     roleDenied: {

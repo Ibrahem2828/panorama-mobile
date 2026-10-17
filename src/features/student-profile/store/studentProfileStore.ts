@@ -41,6 +41,8 @@ type StudentProfileState = {
   studentNumber: string;
   parsedStudentNumber: ParsedStudentNumber | null;
   hasBootstrapped: boolean;
+  /** The initial profile load failed, so a missing profile does not mean 'not set up yet'. */
+  loadFailed: boolean;
   lastAuthUserId: string | number | null;
   isBootstrapping: boolean;
   isLoadingOptions: boolean;
@@ -94,6 +96,7 @@ function getInitialDataState() {
     studentNumber: '',
     parsedStudentNumber: null,
     hasBootstrapped: false,
+    loadFailed: false,
     lastAuthUserId: null,
     isBootstrapping: false,
     isLoadingOptions: false,
@@ -163,6 +166,7 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
 
   async bootstrap(options) {
     const { isBootstrapping, hasBootstrapped, lastAuthUserId } = get();
+    const hadProfile = get().profile !== null;
     const { accessToken, userId } = requireAuthContext();
 
     if (isBootstrapping) {
@@ -226,6 +230,7 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
     } catch (error) {
       set({
         hasBootstrapped: true,
+        loadFailed: !hadProfile,
         isBootstrapping: false,
         isLoadingOptions: false,
         errorMessage: toSafeStudentProfileErrorMessage(error, studentProfileCatalog()),
