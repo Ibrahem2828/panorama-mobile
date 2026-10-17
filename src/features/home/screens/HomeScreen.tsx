@@ -20,6 +20,7 @@ import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { formatTime } from '../../../utils/formatDateTime';
 import {
   GroupsRoutes,
+  HomeRoutes,
   LecturesRoutes,
   PrintingRoutes,
   ProfileRoutes,
@@ -228,10 +229,9 @@ export function HomeScreen() {
               <HomeSectionHeader
                 action={
                   <AppButton
-                    loading={isRefreshing}
-                    onPress={handleRefresh}
+                    onPress={() => navigation.navigate(HomeRoutes.AnnouncementsList)}
                     size="sm"
-                    title={t.common.refresh}
+                    title={t.home.announcements.seeAll}
                     variant="ghost"
                   />
                 }

@@ -1310,6 +1310,7 @@ export const ar = {
     },
 
     announcements: {
+      seeAll: 'عرض الكل',
       title: 'الإعلانات',
       subtitle: 'آخر الإعلانات المرتبطة بحسابك.',
       emptyTitle: 'لا توجد إعلانات حاليا',

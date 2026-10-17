@@ -20,6 +20,7 @@ import { useSubjectsStore } from '../store';
 import type { Subject } from '../types';
 import { useTranslation } from '../../../i18n';
 import { SubjectLecturesSection } from '../../lectures';
+import { getSubjectDisplayName } from '../services';
 
 type SubjectDetailsScreenProps = NativeStackScreenProps<SubjectsStackParamList, 'SubjectDetails'>;
 type AppTabsNavigation = BottomTabNavigationProp<AppTabsParamList>;
@@ -71,9 +72,13 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
   }
 
   function handleOpenFiles() {
-    navigation
-      .getParent<AppTabsNavigation>()
-      ?.navigate(TabRoutes.Home, { screen: SharedRoutes.FilesList });
+    navigation.getParent<AppTabsNavigation>()?.navigate(TabRoutes.Home, {
+      screen: SharedRoutes.FilesList,
+      params: {
+        subjectId: subject?.id,
+        subjectName: subject ? getSubjectDisplayName(subject, t.subjects) : undefined,
+      },
+    });
   }
 
   if (!subject && isBusy) {

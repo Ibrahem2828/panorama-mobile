@@ -1339,6 +1339,7 @@ export const en: TranslationCatalog = {
     },
 
     announcements: {
+      seeAll: 'See all',
       title: 'Announcements',
       subtitle: 'The latest announcements for your account.',
       emptyTitle: 'No announcements',
