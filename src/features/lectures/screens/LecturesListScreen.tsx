@@ -10,7 +10,7 @@ import {
   AppTextInput,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -81,7 +81,7 @@ export function LecturesListScreen({ navigation, route }: Props) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         {header}
-        <LoadingState message={t.lectures.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }

@@ -10,7 +10,7 @@ import {
   AppText,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -156,7 +156,7 @@ export function PublicSuggestionsScreen({ navigation }: Props) {
     return (
       <AppScreen contentContainerStyle={styles.centerContent} scroll>
         {header}
-        <LoadingState message={t.feedback.publicList.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }

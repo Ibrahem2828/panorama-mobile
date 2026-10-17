@@ -13,7 +13,7 @@ import {
   EmptyState,
   ErrorState,
   Icon,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -168,7 +168,7 @@ export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
     return (
       <AppScreen contentContainerStyle={styles.centerContent} scroll>
         {header}
-        <LoadingState message={t.files.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }
@@ -188,7 +188,7 @@ export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
         ItemSeparatorComponent={Separator}
         ListEmptyComponent={
           isLoading ? (
-            <LoadingState message={t.files.loading} />
+            <SkeletonList />
           ) : listError ? (
             <ErrorState message={listError} onRetry={() => void loadList(query)} />
           ) : hasFilters || subjectId !== undefined ? (

@@ -11,7 +11,7 @@ import {
   ChoiceChips,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -124,7 +124,7 @@ export function SupportTicketsScreen({ navigation }: SupportTicketsScreenProps) 
     return (
       <AppScreen contentContainerStyle={styles.centerContent} scroll>
         {header}
-        <LoadingState message={t.support.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }
@@ -144,7 +144,7 @@ export function SupportTicketsScreen({ navigation }: SupportTicketsScreenProps) 
         ItemSeparatorComponent={Separator}
         ListEmptyComponent={
           isLoadingTickets ? (
-            <LoadingState message={t.support.loading} />
+            <SkeletonList />
           ) : statusFilter ? (
             <EmptyState
               action={

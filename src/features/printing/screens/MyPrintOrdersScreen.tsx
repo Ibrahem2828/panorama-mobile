@@ -9,7 +9,7 @@ import {
   AppText,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -128,7 +128,7 @@ export function MyPrintOrdersScreen({ navigation }: Props) {
         ItemSeparatorComponent={Separator}
         ListEmptyComponent={
           isLoadingOrders ? (
-            <LoadingState message={t.printing.home.loadingOrders} />
+            <SkeletonList />
           ) : statusFilter ? (
             <EmptyState
               action={

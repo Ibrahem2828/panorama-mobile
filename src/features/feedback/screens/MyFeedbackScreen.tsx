@@ -12,7 +12,7 @@ import {
   EmptyState,
   ErrorState,
   Icon,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
@@ -247,7 +247,7 @@ export function MyFeedbackScreen({ navigation }: Props) {
     return (
       <AppScreen contentContainerStyle={styles.centerContent} scroll>
         {header}
-        <LoadingState message={t.feedback.mine.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }

@@ -1,7 +1,7 @@
 import { memo, useCallback } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 
-import { AppBadge, AppCard, AppText, Stack } from '../../../components';
+import { AppBadge, AppCard, AppText, IconTile, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { opacity, radius, useBrand } from '../../../theme';
 import { formatDate } from '../../../utils/formatDateTime';
@@ -50,7 +50,7 @@ function AnnouncementListItemComponent({ item, isUnread, onPress }: Announcement
               style={styles.thumbnail}
             />
           ) : (
-            <View style={[styles.thumbnail, { backgroundColor: brand.primarySoft }]} />
+            <IconTile icon="megaphone" size="lg" style={styles.thumbnail} />
           )}
           <Stack gap="xs" style={styles.body}>
             <Stack align="center" direction="horizontal" gap="sm" wrap>

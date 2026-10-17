@@ -11,7 +11,7 @@ import {
   ChoiceChips,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -215,7 +215,7 @@ export function NotificationsScreen(_props: Props) {
     return (
       <AppScreen contentContainerStyle={styles.centerContent} scroll>
         {header}
-        <LoadingState message={t.notifications.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }

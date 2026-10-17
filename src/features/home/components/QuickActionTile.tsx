@@ -1,25 +1,33 @@
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, Icon, type IconName } from '../../../components';
 import { useBrand } from '../../../theme';
 
-type QuickActionTileProps = {
+type QuickActionTileProps<K extends string> = {
+  actionKey: K;
   label: string;
   icon: IconName;
   badge?: string;
-  onPress?: () => void;
+  onPress?: (key: K) => void;
 };
 
-function QuickActionTileComponent({ label, icon, badge, onPress }: QuickActionTileProps) {
+function QuickActionTileComponent<K extends string>({
+  actionKey,
+  label,
+  icon,
+  badge,
+  onPress,
+}: QuickActionTileProps<K>) {
   const brand = useBrand();
+  const handlePress = useCallback(() => onPress?.(actionKey), [actionKey, onPress]);
 
   return (
     <Pressable
-      accessibilityLabel={label}
+      accessibilityLabel={badge ? `${label} (${badge})` : label}
       accessibilityRole="button"
       android_ripple={{ color: brand.primarySoft, borderless: true, radius: 40 }}
-      onPress={onPress}
+      onPress={handlePress}
       style={({ pressed }) => [styles.tile, pressed ? styles.pressed : null]}
     >
       <View style={[styles.iconBox, { backgroundColor: brand.primarySoft }]}>
@@ -39,10 +47,10 @@ function QuickActionTileComponent({ label, icon, badge, onPress }: QuickActionTi
   );
 }
 
-export const QuickActionTile = memo(QuickActionTileComponent);
+export const QuickActionTile = memo(QuickActionTileComponent) as typeof QuickActionTileComponent;
 
 const styles = StyleSheet.create({
-  tile: { width: '25%', alignItems: 'center', gap: 8, paddingVertical: 8 },
+  tile: { width: '25%', alignItems: 'center', gap: 8, paddingVertical: 8, minHeight: 96 },
   pressed: { opacity: 0.7 },
   iconBox: {
     width: 56,

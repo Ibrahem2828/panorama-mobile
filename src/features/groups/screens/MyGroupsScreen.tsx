@@ -10,7 +10,7 @@ import {
   AppTextInput,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -119,7 +119,7 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
   );
 
   const listEmpty = showInitialLoading ? (
-    <LoadingState message={t.groups.mine.loading} />
+    <SkeletonList />
   ) : showInitialError ? (
     <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
   ) : myGroups.length === 0 ? (

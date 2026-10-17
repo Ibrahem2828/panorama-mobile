@@ -1,67 +1,83 @@
-import { StyleSheet, View } from 'react-native';
+import { memo, useCallback } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { AppBadge, AppCard, AppText, Stack } from '../../../components';
+import { AppBadge, AppText, IconTile } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import { colors, spacing } from '../../../theme';
+import { colors, opacity, radius, spacing } from '../../../theme';
 import { formatDate } from '../../../utils/formatDateTime';
+import { getAnnouncementIcon, isFreshAnnouncement } from '../services/homePresentation';
 import type { Announcement } from '../types';
 
 type AnnouncementCardProps = {
   announcement: Announcement;
+  onPress?: (id: Announcement['id']) => void;
 };
-
-function getAnnouncementTitle(announcement: Announcement, fallback: string): string {
-  return announcement.title?.trim() || fallback;
-}
 
 function getAnnouncementBody(announcement: Announcement, noDetails: string): string {
   return announcement.description?.trim() || announcement.body?.trim() || noDetails;
 }
 
-export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
+function AnnouncementCardComponent({ announcement, onPress }: AnnouncementCardProps) {
   const { t, locale } = useTranslation();
+  const title = announcement.title?.trim() || t.home.announcements.untitled;
   const dateText = formatDate(
     announcement.start_date ?? announcement.created_at ?? announcement.updated_at,
     locale,
     { day: 'numeric', month: 'short', year: 'numeric' },
   );
+  const isNew = isFreshAnnouncement(announcement);
+  const handlePress = useCallback(() => onPress?.(announcement.id), [announcement.id, onPress]);
 
   return (
-    <AppCard padding="md" variant="default">
-      <Stack gap="md">
-        <View style={styles.header}>
-          <AppText style={styles.title} variant="title">
-            {getAnnouncementTitle(announcement, t.home.announcements.untitled)}
+    <Pressable
+      accessibilityLabel={t.announcements.openDetails(title)}
+      accessibilityRole="button"
+      android_ripple={{ color: 'rgba(16, 24, 40, 0.08)' }}
+      disabled={!onPress}
+      onPress={handlePress}
+      style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
+    >
+      <IconTile icon={getAnnouncementIcon(announcement.type)} />
+      <View style={styles.body}>
+        <View style={styles.titleRow}>
+          <AppText numberOfLines={2} style={styles.title} variant="title">
+            {title}
           </AppText>
-          {announcement.type ? <AppBadge label={announcement.type} variant="info" /> : null}
+          {isNew ? <AppBadge label={t.announcements.newBadge} variant="brand" /> : null}
         </View>
-
-        <AppText color="secondary" variant="bodySmall">
+        <AppText color="secondary" numberOfLines={3} variant="bodySmall">
           {getAnnouncementBody(announcement, t.home.announcements.noDetails)}
         </AppText>
-
         {dateText ? (
           <AppText color="muted" variant="caption">
             {dateText}
           </AppText>
         ) : null}
-      </Stack>
-    </AppCard>
+      </View>
+    </Pressable>
   );
 }
 
+export const AnnouncementCard = memo(AnnouncementCardComponent);
+
 const styles = StyleSheet.create({
-  header: {
+  card: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    justifyContent: 'space-between',
     gap: spacing.md,
-    paddingBottom: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border.default,
+    padding: spacing.card.md,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.gray[200],
+    backgroundColor: colors.background.surface,
+    overflow: 'hidden',
   },
-  title: {
-    flex: 1,
-    minWidth: 0,
+  pressed: { opacity: opacity.pressed },
+  body: { flex: 1, minWidth: 0, gap: spacing.xs },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
   },
+  title: { flex: 1, minWidth: 0 },
 });

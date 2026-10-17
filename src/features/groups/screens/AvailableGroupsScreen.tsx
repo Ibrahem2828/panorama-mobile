@@ -11,7 +11,7 @@ import {
   AppTextInput,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -179,7 +179,7 @@ export function AvailableGroupsScreen({ navigation, route }: AvailableGroupsScre
   );
 
   const listEmpty = showInitialLoading ? (
-    <LoadingState message={t.groups.available.loading} />
+    <SkeletonList />
   ) : showInitialError ? (
     <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
   ) : hasFilters ? (

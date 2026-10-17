@@ -10,7 +10,7 @@ import {
   AppTextInput,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   SectionHeader,
   Stack,
 } from '../../../components';
@@ -76,7 +76,7 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         <AppHeader subtitle={t.files.groupFiles.subtitle} title={t.files.groupFiles.title} />
-        <LoadingState message={t.files.groupFiles.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }

@@ -9,7 +9,7 @@ import {
   AppText,
   EmptyState,
   ErrorState,
-  LoadingState,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -83,7 +83,7 @@ export function AnnouncementsListScreen({ navigation }: Props) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         {header}
-        <LoadingState message={t.announcements.loading} />
+        <SkeletonList />
       </AppScreen>
     );
   }

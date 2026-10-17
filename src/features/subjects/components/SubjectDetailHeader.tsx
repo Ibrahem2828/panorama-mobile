@@ -9,6 +9,7 @@ import {
   getSubjectCode,
   getSubjectDescription,
   getSubjectDisplayName,
+  parseSubjectMeta,
 } from '../services';
 import type { Subject } from '../types';
 
@@ -22,11 +23,14 @@ export function SubjectDetailHeader({ subject }: SubjectDetailHeaderProps) {
   const title = getSubjectDisplayName(subject, t.subjects);
   const code = getSubjectCode(subject);
   const description = getSubjectDescription(subject);
+  const { credits, category } = parseSubjectMeta(subject);
   const chips = [
     code ? t.subjects.codeBadge(code) : null,
     getEntityLabel(subject.academic_year),
     getEntityLabel(subject.semester),
     getEntityLabel(subject.major),
+    credits,
+    category,
   ].filter((value): value is string => Boolean(value));
 
   return (
