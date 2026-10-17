@@ -6,16 +6,16 @@ import { env } from '../../../config/env';
 import { useTranslation } from '../../../i18n';
 import { useBrand } from '../../../theme';
 import type { RegistrationConsent } from '../hooks/useRegistrationConsent';
-import type { ConsentKind, ConsentRequirement } from '../utils/consent';
+import type { ConsentRequirement } from '../utils/consent';
 
 function isHttps(url: string | null | undefined): url is string {
   return Boolean(url && url.startsWith('https://'));
 }
 
-/** The standalone legal page from the app config, else the version's own link; opened in-app. */
-function openPolicy(requirement: ConsentRequirement) {
-  const configured = requirement.kind === 'terms' ? env.termsUrl : env.privacyUrl;
-  const url = isHttps(configured) ? configured : requirement.contentUrl;
+/** One legal hub page lists both documents; falls back to the first published version's own link. */
+function openLegal(requirements: ConsentRequirement[]) {
+  const fallback = requirements.map((item) => item.contentUrl).find(isHttps);
+  const url = isHttps(env.legalUrl) ? env.legalUrl : fallback;
   if (isHttps(url)) void WebBrowser.openBrowserAsync(url);
 }
 
@@ -24,7 +24,7 @@ type ConsentSectionProps = {
   disabled?: boolean;
 };
 
-/** Terms / privacy checkboxes for registration. Renders nothing when no policy is published. */
+/** One consent checkbox for terms + privacy. Renders nothing when no policy is published. */
 export function ConsentSection({ consent, disabled = false }: ConsentSectionProps) {
   const { t } = useTranslation();
   const brand = useBrand();
@@ -53,44 +53,36 @@ export function ConsentSection({ consent, disabled = false }: ConsentSectionProp
 
   if (consent.requirements.length === 0) return null;
 
+  const accepted = consent.requirements.every((item) => consent.checks[item.kind] === true);
+  const hasError = consent.errors.length > 0;
+
   return (
     <Stack gap="xs">
-      {consent.requirements.map((requirement) => {
-        const kind: ConsentKind = requirement.kind;
-        const hasError = consent.errors.includes(kind);
-        const linkLabel = kind === 'terms' ? t.auth.consent.terms : t.auth.consent.privacy;
-        const prefix = kind === 'terms' ? t.auth.consent.termsPrefix : t.auth.consent.privacyPrefix;
-
-        return (
-          <Stack gap="xs" key={kind}>
-            <CheckboxRow
-              accessibilityLabel={`${prefix}${linkLabel}`}
-              checked={consent.checks[kind] === true}
-              disabled={disabled}
-              error={hasError}
-              onToggle={() => consent.toggle(kind)}
-            >
-              <AppText color={hasError ? 'error' : 'primary'} variant="bodySmall">
-                {prefix}
-                <AppText
-                  accessibilityRole="link"
-                  color="brand"
-                  onPress={() => openPolicy(requirement)}
-                  variant="bodySmall"
-                  weight="600"
-                >
-                  {linkLabel}
-                </AppText>
-              </AppText>
-            </CheckboxRow>
-            {hasError ? (
-              <AppText color="error" variant="caption">
-                {kind === 'terms' ? t.auth.consent.termsRequired : t.auth.consent.privacyRequired}
-              </AppText>
-            ) : null}
-          </Stack>
-        );
-      })}
+      <CheckboxRow
+        accessibilityLabel={`${t.auth.consent.combinedPrefix}${t.auth.consent.combinedLink}`}
+        checked={accepted}
+        disabled={disabled}
+        error={hasError}
+        onToggle={consent.toggleAll}
+      >
+        <AppText color={hasError ? 'error' : 'primary'} variant="bodySmall">
+          {t.auth.consent.combinedPrefix}
+          <AppText
+            accessibilityRole="link"
+            color="brand"
+            onPress={() => openLegal(consent.requirements)}
+            variant="bodySmall"
+            weight="600"
+          >
+            {t.auth.consent.combinedLink}
+          </AppText>
+        </AppText>
+      </CheckboxRow>
+      {hasError ? (
+        <AppText color="error" variant="caption">
+          {t.auth.consent.combinedRequired}
+        </AppText>
+      ) : null}
     </Stack>
   );
 }

@@ -374,6 +374,13 @@ export const ar = {
       semester: 'الفصل',
       all: 'الكل',
     },
+    locked: {
+      title: 'المحاضرات والملفات لأعضاء مجموعة المادة',
+      message: 'انضم إلى مجموعة هذه المادة وانتظر موافقة المشرف لتفتح لك المحاضرات والملفات.',
+      pending: 'طلب انضمامك قيد المراجعة. ستفتح لك المحاضرات والملفات فور الموافقة عليه.',
+      join: 'الانضمام إلى مجموعة المادة',
+      openGroup: 'عرض مجموعة المادة',
+    },
     general: 'مادة عامة',
     resultsCount: (count: number) =>
       count === 1
@@ -1000,6 +1007,9 @@ export const ar = {
     },
 
     consent: {
+      combinedPrefix: 'قرأت ووافقت على ',
+      combinedLink: 'الشروط والأحكام وسياسة الخصوصية',
+      combinedRequired: 'يجب الموافقة على الشروط والأحكام وسياسة الخصوصية للمتابعة.',
       loading: 'جارٍ تجهيز الموافقات...',
       loadFailed: 'تعذر تحميل الشروط والسياسات. أعد المحاولة للمتابعة.',
       termsPrefix: 'قرأت ووافقت على ',
@@ -1898,6 +1908,8 @@ export const ar = {
       pickFromLibrary: 'من الملفات المتاحة',
       pickPdf: 'ملف PDF',
       pickFromDevice: 'صورة من هاتفك',
+      uploadHintGeneral:
+        'ارفع ملفك بصيغة PDF أو صورة (PNG وJPG وWEBP)، بحد أقصى 25 م.ب. لطباعة ملف Word أو PowerPoint احفظه بصيغة PDF أولًا.',
       uploadHint: 'الصيغ المدعومة: PDF وPNG وJPG وWEBP، بحد أقصى 25 م.ب لكل ملف.',
       uploadNote: 'نفحص الملف قبل حساب السعر، ولا يمكن تنزيله لاحقًا.',
       uploadSelected: 'ملف من هاتفك',

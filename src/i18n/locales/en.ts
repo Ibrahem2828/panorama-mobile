@@ -359,6 +359,14 @@ export const en: TranslationCatalog = {
       semester: 'Semester',
       all: 'All',
     },
+    locked: {
+      title: 'Lectures and files are for subject group members',
+      message: 'Join this subject’s group and wait for approval to unlock its lectures and files.',
+      pending:
+        'Your join request is under review. Lectures and files unlock as soon as it is approved.',
+      join: 'Join the subject group',
+      openGroup: 'View the subject group',
+    },
     general: 'General subject',
     resultsCount: (count: number) => `${count} subjects`,
     levelHint:
@@ -982,6 +990,9 @@ export const en: TranslationCatalog = {
     },
 
     consent: {
+      combinedPrefix: 'I have read and agree to the ',
+      combinedLink: 'Terms and Conditions and Privacy Policy',
+      combinedRequired: 'You must accept the Terms and Conditions and Privacy Policy to continue.',
       loading: 'Preparing consents...',
       loadFailed: 'Could not load the terms and policies. Try again to continue.',
       termsPrefix: 'I have read and agree to the ',
@@ -1870,6 +1881,8 @@ export const en: TranslationCatalog = {
       pickFromLibrary: 'From available files',
       pickPdf: 'PDF file',
       pickFromDevice: 'Photo from your phone',
+      uploadHintGeneral:
+        'Upload your file as a PDF or an image (PNG, JPG, WEBP), up to 25 MB. To print a Word or PowerPoint file, save it as a PDF first.',
       uploadHint: 'Supported formats: PDF, PNG, JPG and WEBP, up to 25 MB each.',
       uploadNote: 'We check the file before pricing, and it cannot be downloaded later.',
       uploadSelected: 'File from your phone',

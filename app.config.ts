@@ -200,6 +200,7 @@ function requiredReleaseValue(name: string, value: string | undefined, appEnv: s
 
 const EAS_PROJECT_ID = '3804d959-0d36-4747-aeb0-d3339ad57f90';
 const DEFAULT_PRIVACY_URL = 'https://app.xn--mgbaab0cxheq.tech/legal/privacy.html';
+const DEFAULT_LEGAL_URL = 'https://app.xn--mgbaab0cxheq.tech/legal/';
 const DEFAULT_TERMS_URL = 'https://app.xn--mgbaab0cxheq.tech/legal/terms.html';
 
 export default ({ config }: ConfigContext): ExpoConfig => {
@@ -319,6 +320,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       dashboardUrl: process.env.EXPO_PUBLIC_DASHBOARD_URL ?? '',
       privacyUrl: process.env.EXPO_PUBLIC_PRIVACY_URL ?? DEFAULT_PRIVACY_URL,
       termsUrl: process.env.EXPO_PUBLIC_TERMS_URL ?? DEFAULT_TERMS_URL,
+      legalUrl: process.env.EXPO_PUBLIC_LEGAL_URL ?? DEFAULT_LEGAL_URL,
       eas: { projectId: EAS_PROJECT_ID },
     },
   };

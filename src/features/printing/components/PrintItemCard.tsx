@@ -7,6 +7,7 @@ import { colors, radius, spacing, useBrand } from '../../../theme';
 import { formatFileSize } from '../../files/services';
 import type { FileResource } from '../../files/types';
 import { getFileDisplayTitle } from '../../files/services';
+import { useAuthStore } from '../../auth/store';
 import { pickPrintDocument, pickPrintImage } from '../services/imagePicker';
 import type { PrintCartItem, PrintItemValidation, PrintSource, UploadProblem } from '../types';
 import { PrintCopiesStepper } from './PrintCopiesStepper';
@@ -37,6 +38,8 @@ function PrintItemCardComponent({
   const { t } = useTranslation();
   const brand = useBrand();
   const [libraryOpen, setLibraryOpen] = useState(false);
+  // General accounts print their own uploads only; students can also pick subject files they may open.
+  const isStudent = useAuthStore((state) => state.user?.role?.toLowerCase() === 'student');
   const [pickerProblem, setPickerProblem] = useState<UploadProblem | 'error' | null>(null);
   const [isPicking, setIsPicking] = useState(false);
 
@@ -142,13 +145,15 @@ function PrintItemCardComponent({
         ) : (
           <Stack gap="sm">
             <Stack direction="horizontal" gap="sm" wrap>
-              <AppButton
-                leftIcon={<Icon color={brand.primary} name="folder" size={18} />}
-                onPress={() => setLibraryOpen(true)}
-                size="sm"
-                title={t.printing.create.pickFromLibrary}
-                variant="outline"
-              />
+              {isStudent ? (
+                <AppButton
+                  leftIcon={<Icon color={brand.primary} name="folder" size={18} />}
+                  onPress={() => setLibraryOpen(true)}
+                  size="sm"
+                  title={t.printing.create.pickFromLibrary}
+                  variant="outline"
+                />
+              ) : null}
               <AppButton
                 leftIcon={<Icon color={brand.primary} name="image" size={18} />}
                 loading={isPicking}
@@ -167,7 +172,7 @@ function PrintItemCardComponent({
               />
             </Stack>
             <AppText color="muted" variant="caption">
-              {t.printing.create.uploadHint}
+              {isStudent ? t.printing.create.uploadHint : t.printing.create.uploadHintGeneral}
             </AppText>
           </Stack>
         )}
@@ -191,12 +196,14 @@ function PrintItemCardComponent({
         <PrintItemOptions item={item} onChange={(patch) => onChange(item.key, patch)} />
       </Stack>
 
-      <PrintLibraryPicker
-        onClose={() => setLibraryOpen(false)}
-        onSelect={handleLibrarySelect}
-        selectedId={source?.kind === 'library' ? source.id : null}
-        visible={libraryOpen}
-      />
+      {isStudent ? (
+        <PrintLibraryPicker
+          onClose={() => setLibraryOpen(false)}
+          onSelect={handleLibrarySelect}
+          selectedId={source?.kind === 'library' ? source.id : null}
+          visible={libraryOpen}
+        />
+      ) : null}
     </AppCard>
   );
 }

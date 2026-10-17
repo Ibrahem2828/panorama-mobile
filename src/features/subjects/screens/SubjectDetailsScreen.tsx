@@ -20,7 +20,9 @@ import { SubjectDetailHeader, SubjectLinkedSectionCard } from '../components';
 import { useSubjectsStore } from '../store';
 import type { Subject } from '../types';
 import { useTranslation } from '../../../i18n';
+import { useSubjectGroupAccess } from '../../groups';
 import { SubjectLecturesSection } from '../../lectures';
+import { SubjectLockedCard } from '../components/SubjectLockedCard';
 import { getSubjectDisplayName } from '../services';
 
 type SubjectDetailsScreenProps = NativeStackScreenProps<SubjectsStackParamList, 'SubjectDetails'>;
@@ -45,6 +47,7 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
     selectedSubject && isSameSubjectId(selectedSubject, subjectId)
       ? selectedSubject
       : (subjects.find((item) => isSameSubjectId(item, subjectId)) ?? null);
+  const access = useSubjectGroupAccess(subjectId);
   const isBusy = isLoading || isRefreshing;
 
   useEffect(() => {
@@ -126,14 +129,23 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
             onPress={handleOpenGroups}
             title={t.subjects.details.groupsTitle}
           />
-          <SubjectLinkedSectionCard
-            description={t.subjects.details.filesDescription}
-            icon="folder"
-            onPress={handleOpenFiles}
-            title={t.subjects.details.filesTitle}
-          />
+          {access.status === 'member' ? (
+            <SubjectLinkedSectionCard
+              description={t.subjects.details.filesDescription}
+              icon="folder"
+              onPress={handleOpenFiles}
+              title={t.subjects.details.filesTitle}
+            />
+          ) : null}
         </Stack>
-        <SubjectLecturesSection subjectId={subject.id} />
+        {access.status === 'member' ? (
+          <SubjectLecturesSection subjectId={subject.id} />
+        ) : access.status === 'loading' ? null : (
+          <SubjectLockedCard
+            onOpenGroups={handleOpenGroups}
+            pending={access.status === 'pending'}
+          />
+        )}
       </Stack>
     </AppScreen>
   );

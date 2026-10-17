@@ -19,6 +19,8 @@ export type RegistrationConsent = {
   isLoading: boolean;
   loadFailed: boolean;
   toggle: (kind: ConsentKind) => void;
+  /** One checkbox covers every published document (terms and privacy). */
+  toggleAll: () => void;
   retry: () => void;
   /** Marks unticked boxes and returns true when registration may proceed. */
   validate: () => boolean;
@@ -63,6 +65,14 @@ export function useRegistrationConsent(): RegistrationConsent {
     setErrors((current) => current.filter((item) => item !== kind));
   }, []);
 
+  const toggleAll = useCallback(() => {
+    setChecks((current) => {
+      const next = !requirements.every((item) => current[item.kind] === true);
+      return Object.fromEntries(requirements.map((item) => [item.kind, next])) as ConsentChecks;
+    });
+    setErrors([]);
+  }, [requirements]);
+
   const retry = useCallback(() => setAttempt((value) => value + 1), []);
 
   const validate = useCallback(() => {
@@ -80,6 +90,7 @@ export function useRegistrationConsent(): RegistrationConsent {
     isLoading,
     loadFailed,
     toggle,
+    toggleAll,
     retry,
     validate,
     body,
