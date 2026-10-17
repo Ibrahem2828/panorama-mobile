@@ -235,7 +235,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     orientation: 'portrait',
     scheme: 'panorama',
     icon: './src/assets/app/icon.png',
-    userInterfaceStyle: 'light',
+    userInterfaceStyle: 'automatic',
     runtimeVersion: { policy: 'appVersion' },
     updates: {
       url: `https://u.expo.dev/${EAS_PROJECT_ID}`,
@@ -265,7 +265,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           imageWidth: 240,
           resizeMode: 'contain',
           backgroundColor: '#FFFFFF',
-          dark: { backgroundColor: '#FFFFFF' },
+          dark: { backgroundColor: '#0B1020', image: './src/assets/app/splash-dark.png' },
         },
       ],
       [

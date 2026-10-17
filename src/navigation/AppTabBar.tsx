@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '../components/common';
 import { Icon, type IconName } from '../components/icons';
 import { useTranslation } from '../i18n';
-import { colors, useBrand } from '../theme';
+import { colors, shadows, useBrand } from '../theme';
 import { TabRoutes } from './routes';
 
 const tabIcons: Record<string, IconName> = {
@@ -86,11 +86,7 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border.default,
     paddingTop: 6,
-    elevation: 12,
-    shadowColor: '#101828',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    ...shadows.md,
   },
   item: {
     flex: 1,

@@ -3,7 +3,7 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import { AppAvatar, AppButton, AppCard, AppText, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import { opacity } from '../../../theme';
+import { colors, opacity } from '../../../theme';
 import { getGroupDisplayName, getGroupImageUri, resolveMembershipState } from '../services';
 import type { Group, Id, SubjectLabel } from '../types';
 import { GroupMembershipBadge } from './GroupMembershipBadge';
@@ -37,7 +37,7 @@ function GroupCardBase({ group, subject, pendingAction, onPress, onJoin }: Group
       <Pressable
         accessibilityLabel={t.groups.card.openGroup(title)}
         accessibilityRole="button"
-        android_ripple={{ color: 'rgba(16, 24, 40, 0.08)', foreground: true }}
+        android_ripple={{ color: colors.ripple, foreground: true }}
         disabled={!onPress}
         onPress={handlePress}
         style={({ pressed }) => [pressed ? styles.pressed : null]}

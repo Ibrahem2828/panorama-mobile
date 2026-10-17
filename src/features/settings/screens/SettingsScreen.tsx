@@ -9,7 +9,7 @@ import { ProfileRoutes } from '../../../navigation/routes';
 import { openLegalPage } from '../../profile/services';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
-import { LanguageSelector, SettingsOptionRow, SettingsSection } from '../components';
+import { LanguageSelector, SettingsOptionRow, SettingsSection, ThemeSelector } from '../components';
 
 type SettingsScreenProps = NativeStackScreenProps<ProfileStackParamList, 'Settings'>;
 
@@ -65,19 +65,16 @@ export function SettingsScreen({ navigation }: SettingsScreenProps) {
           <LanguageSelector />
         </SettingsSection>
 
+        <SettingsSection subtitle={t.settings.theme.description} title={t.settings.theme.title}>
+          <ThemeSelector />
+        </SettingsSection>
+
         <SettingsSection subtitle={t.settings.app.subtitle} title={t.settings.app.title}>
           <SettingsOptionRow
             description={t.settings.app.notificationsDescription}
             onPress={() => navigation.navigate(ProfileRoutes.Notifications)}
             icon="bell"
             title={t.settings.app.notifications}
-          />
-          <SettingsOptionRow
-            description={t.settings.app.darkModeDescription}
-            disabled
-            icon="eye"
-            title={t.settings.app.darkMode}
-            value={t.common.comingSoon}
           />
           <SettingsOptionRow
             description={t.settings.app.versionDescription}

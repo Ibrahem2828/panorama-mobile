@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { useTranslation } from '../../i18n';
-import { colors, radius, spacing, typography, useBrand } from '../../theme';
+import { colors, inputThemeProps, radius, spacing, typography, useBrand } from '../../theme';
 import { AppText } from '../common';
 import { OTP_LENGTH, activeOtpIndex, isOtpComplete, otpBoxes, sanitizeOtp } from './otpInput';
 
@@ -87,6 +87,7 @@ export function OtpCodeInput({
           );
         })}
         <TextInput
+          {...inputThemeProps}
           ref={inputRef}
           autoComplete="sms-otp"
           caretHidden

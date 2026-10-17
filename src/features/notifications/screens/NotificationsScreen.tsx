@@ -16,7 +16,7 @@ import {
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import type { ProfileStackParamList } from '../../../navigation/types';
-import { layout, spacing, useBrand } from '../../../theme';
+import { colors, layout, spacing, useBrand } from '../../../theme';
 import { formatDate } from '../../../utils/formatDateTime';
 import {
   NotificationCard,
@@ -288,6 +288,7 @@ export function NotificationsScreen(_props: Props) {
         refreshControl={
           <RefreshControl
             colors={[brand.primary]}
+            progressBackgroundColor={colors.background.elevated}
             onRefresh={handleRefresh}
             refreshing={isRefreshing}
             tintColor={brand.primary}

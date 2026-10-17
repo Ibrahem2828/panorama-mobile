@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import type { RefreshControlProps } from 'react-native';
 import { RefreshControl } from 'react-native';
 
-import { useBrand } from '../../theme';
+import { colors, useBrand } from '../../theme';
 
 type BrandRefreshControlProps = Omit<RefreshControlProps, 'colors' | 'tintColor'> & {
   /** ScrollView/FlatList clone this element and pass the scrollable as its child. */
@@ -20,7 +20,7 @@ export function BrandRefreshControl(props: BrandRefreshControlProps) {
 
   return (
     <RefreshControl
-      progressBackgroundColor="#FFFFFF"
+      progressBackgroundColor={colors.background.elevated}
       {...props}
       colors={[brand.primary]}
       tintColor={brand.primary}

@@ -10,3 +10,12 @@ export { facultyPalettes, getFacultyPalette, resolveFacultyThemeKey } from './fa
 export type { BrandPalette, FacultyThemeKey } from './facultyTheme';
 export { useBrand, useBrandStore } from './brandStore';
 export { fontFiles, fontFamilyForWeight } from './fonts';
+export {
+  isDarkScheme,
+  resolvedScheme,
+  themePreference,
+  THEME_PREFERENCES,
+  saveThemePreference,
+} from './colorScheme';
+export type { ResolvedScheme, ThemePreference } from './colorScheme';
+export { inputThemeProps } from './inputTheme';

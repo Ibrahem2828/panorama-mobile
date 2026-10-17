@@ -153,7 +153,9 @@ const styles = StyleSheet.create({
     borderRadius: 23,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border.default,
     ...shadows.sm,
   },
   dot: {
@@ -167,7 +169,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dotText: { color: '#FFFFFF', fontSize: 10, lineHeight: 14 },
+  dotText: { color: colors.text.inverse, fontSize: 10, lineHeight: 14 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
     flexDirection: 'row',
@@ -177,7 +179,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: radius.full,
-    backgroundColor: 'rgba(255,255,255,0.85)',
+    backgroundColor: colors.glass,
   },
   search: {
     minHeight: 50,
@@ -186,7 +188,7 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingHorizontal: 16,
     borderRadius: radius.xl,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background.surface,
     borderWidth: 1,
     borderColor: colors.border.default,
     ...shadows.xs,

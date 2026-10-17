@@ -19,7 +19,7 @@ import {
 import { useTranslation } from '../../../i18n';
 import { SharedRoutes } from '../../../navigation/routes';
 import type { HomeStackParamList } from '../../../navigation/types';
-import { layout, spacing, useBrand } from '../../../theme';
+import { colors, layout, spacing, useBrand } from '../../../theme';
 import { FileCard } from '../components';
 import { useFilesStore } from '../store';
 import type { FileResource, FilesListQuery, FilesOrdering } from '../types';
@@ -254,6 +254,7 @@ export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
         refreshControl={
           <RefreshControl
             colors={[brand.primary]}
+            progressBackgroundColor={colors.background.elevated}
             onRefresh={handleRefresh}
             refreshing={isRefreshing}
             tintColor={brand.primary}

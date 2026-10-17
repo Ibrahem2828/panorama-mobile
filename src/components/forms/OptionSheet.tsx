@@ -12,7 +12,15 @@ import {
 import type { ListRenderItemInfo } from 'react-native';
 
 import { useTranslation } from '../../i18n';
-import { colors, radius, shadows, spacing, typography, useBrand } from '../../theme';
+import {
+  colors,
+  inputThemeProps,
+  radius,
+  shadows,
+  spacing,
+  typography,
+  useBrand,
+} from '../../theme';
 import { AppText } from '../common';
 import { Icon } from '../icons';
 import { normalizeSearchText } from './searchText';
@@ -165,6 +173,7 @@ export function OptionSheet({
             <View style={styles.searchBox}>
               <Icon color={colors.text.muted} name="search" size={18} />
               <TextInput
+                {...inputThemeProps}
                 accessibilityLabel={t.forms.searchPlaceholder}
                 autoCorrect={false}
                 onChangeText={setQuery}

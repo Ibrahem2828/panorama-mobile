@@ -21,6 +21,8 @@ export function SubjectDetailHeader({ subject }: SubjectDetailHeaderProps) {
   const { t } = useTranslation();
   const brand = useBrand();
   const labels = useSubjectLabels();
+  const onTint = (alpha: number) =>
+    brand.onPrimary === '#FFFFFF' ? `rgba(255,255,255,${alpha})` : `rgba(11,16,32,${alpha})`;
   const title = getSubjectDisplayName(subject, t.subjects);
   const code = getSubjectCode(subject);
   const description = getSubjectDescription(subject);
@@ -38,23 +40,23 @@ export function SubjectDetailHeader({ subject }: SubjectDetailHeaderProps) {
     <View style={styles.card}>
       <View style={[styles.body, { backgroundColor: brand.primary }]}>
         <View style={styles.iconRow}>
-          <View style={styles.iconBubble}>
-            <Icon color="#FFFFFF" name="book" size={24} />
+          <View style={[styles.iconBubble, { backgroundColor: onTint(0.18) }]}>
+            <Icon color={brand.onPrimary} name="book" size={24} />
           </View>
         </View>
-        <AppText style={styles.title} variant="h2">
+        <AppText style={{ color: brand.onPrimary }} variant="h2">
           {title}
         </AppText>
         {description ? (
-          <AppText style={styles.description} variant="bodySmall">
+          <AppText style={{ color: onTint(0.9) }} variant="bodySmall">
             {description}
           </AppText>
         ) : null}
         {chips.length > 0 ? (
           <View style={styles.chips}>
             {chips.map((chip) => (
-              <View key={chip} style={styles.chip}>
-                <AppText style={styles.chipText} variant="caption" weight="600">
+              <View key={chip} style={[styles.chip, { backgroundColor: onTint(0.18) }]}>
+                <AppText style={{ color: brand.onPrimary }} variant="caption" weight="600">
                   {chip}
                 </AppText>
               </View>
@@ -90,13 +92,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.18)',
-  },
-  title: {
-    color: '#FFFFFF',
-  },
-  description: {
-    color: 'rgba(255,255,255,0.88)',
   },
   chips: {
     flexDirection: 'row',
@@ -107,10 +102,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs + 2,
     borderRadius: radius.full,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-  },
-  chipText: {
-    color: '#FFFFFF',
   },
   ribbon: {
     height: 6,

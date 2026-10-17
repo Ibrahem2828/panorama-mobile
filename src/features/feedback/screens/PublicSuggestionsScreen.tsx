@@ -15,7 +15,7 @@ import {
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import type { ProfileStackParamList } from '../../../navigation/types';
-import { layout, spacing, useBrand } from '../../../theme';
+import { colors, layout, spacing, useBrand } from '../../../theme';
 import { useAuthStore } from '../../auth/store';
 import {
   loadPublicSuggestions,
@@ -209,6 +209,7 @@ export function PublicSuggestionsScreen({ navigation }: Props) {
         refreshControl={
           <RefreshControl
             colors={[brand.primary]}
+            progressBackgroundColor={colors.background.elevated}
             onRefresh={() => void load(true)}
             refreshing={isRefreshing}
             tintColor={brand.primary}

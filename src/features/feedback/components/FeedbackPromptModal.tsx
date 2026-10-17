@@ -103,6 +103,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.background.muted,
   },
-  starSelected: { backgroundColor: '#FFF3C4', borderWidth: 1, borderColor: '#F5A524' },
-  starText: { fontSize: 28, color: '#F5A524' },
+  starSelected: {
+    backgroundColor: colors.semantic.warningSoft,
+    borderWidth: 1,
+    borderColor: colors.semantic.warning,
+  },
+  starText: { fontSize: 28, color: colors.semantic.warning },
 });

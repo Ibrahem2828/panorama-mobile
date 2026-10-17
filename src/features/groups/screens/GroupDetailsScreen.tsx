@@ -17,7 +17,7 @@ import {
 import { useTranslation } from '../../../i18n';
 import { GroupsRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
-import { layout, spacing, useBrand } from '../../../theme';
+import { colors, layout, spacing, useBrand } from '../../../theme';
 import {
   GroupDetailHeader,
   GroupMembershipActions,
@@ -108,6 +108,7 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
         refreshControl={
           <RefreshControl
             colors={[brand.primary]}
+            progressBackgroundColor={colors.background.elevated}
             onRefresh={handleRefresh}
             refreshing={isLoadingDetail}
             tintColor={brand.primary}

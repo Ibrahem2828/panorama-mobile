@@ -2,7 +2,7 @@ import { memo, useCallback } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, Icon, type IconName } from '../../../components';
-import { useBrand } from '../../../theme';
+import { colors, useBrand } from '../../../theme';
 
 type QuickActionTileProps<K extends string> = {
   actionKey: K;
@@ -71,5 +71,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badgeText: { color: '#FFFFFF', fontSize: 11, lineHeight: 14 },
+  badgeText: { color: colors.text.inverse, fontSize: 11, lineHeight: 14 },
 });

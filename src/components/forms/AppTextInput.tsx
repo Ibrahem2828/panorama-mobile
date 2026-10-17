@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import type { StyleProp, TextInputProps, TextStyle, ViewStyle } from 'react-native';
 import { StyleSheet, TextInput, View } from 'react-native';
 
-import { colors, layout, radius, spacing, typography } from '../../theme';
+import { colors, inputThemeProps, layout, radius, spacing, typography } from '../../theme';
 import { getFlexDirection, getIsRTL } from '../../utils/rtl';
 import { FormField } from './FormField';
 
@@ -45,6 +45,7 @@ export function AppTextInput({
       >
         {leftIcon ? <View style={styles.iconSlot}>{leftIcon}</View> : null}
         <TextInput
+          {...inputThemeProps}
           {...props}
           accessibilityState={{ disabled: isDisabled }}
           editable={!isDisabled}

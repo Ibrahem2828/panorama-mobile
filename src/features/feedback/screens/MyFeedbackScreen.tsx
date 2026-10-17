@@ -300,6 +300,7 @@ export function MyFeedbackScreen({ navigation }: Props) {
         refreshControl={
           <RefreshControl
             colors={[brand.primary]}
+            progressBackgroundColor={colors.background.elevated}
             onRefresh={() => void load(true)}
             refreshing={isRefreshing}
             tintColor={brand.primary}

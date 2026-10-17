@@ -2,7 +2,7 @@ import { memo } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { StyleSheet, View } from 'react-native';
 
-import { colors, useBrand } from '../../theme';
+import { colors, shadows, useBrand } from '../../theme';
 import { Icon } from '../icons';
 import type { ArtworkKey, ArtworkSpec, ArtworkTone } from './artworkCatalog';
 import { artworks } from './artworkCatalog';
@@ -121,11 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.surface,
   },
   coreShadow: {
-    shadowColor: '#101828',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    ...shadows.md,
   },
   dot: {
     position: 'absolute',

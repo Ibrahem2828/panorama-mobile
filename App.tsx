@@ -1,3 +1,6 @@
+// Must stay the first import: it resolves the colour scheme before any StyleSheet is created.
+import './src/theme/colorScheme';
+
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -9,7 +12,7 @@ import { RootNavigator } from './src/navigation';
 import { AppProviders } from './src/providers/AppProviders';
 import { RootErrorBoundary } from './src/providers/RootErrorBoundary';
 import { initMonitoring } from './src/services/monitoring';
-import { fontFiles, useBrandStore } from './src/theme';
+import { fontFiles, isDarkScheme, useBrandStore } from './src/theme';
 import { configureRtl } from './src/utils/rtl';
 
 void SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -53,7 +56,7 @@ function AppRoot() {
 
   return (
     <AppProviders>
-      <StatusBar style="dark" />
+      <StatusBar style={isDarkScheme ? 'light' : 'dark'} />
       <RootNavigator />
     </AppProviders>
   );
