@@ -1,7 +1,7 @@
 import { I18nManager } from 'react-native';
 import { create } from 'zustand';
 
-import { DEFAULT_LOCALE, getDeviceLocale, readStoredLocale, storeLocale } from './localeStorage';
+import { DEFAULT_LOCALE, readStoredLocale, storeLocale } from './localeStorage';
 import { ar } from './locales/ar';
 import { en } from './locales/en';
 import type { Locale, TranslationCatalog } from './types';
@@ -31,7 +31,7 @@ export const useLocaleStore = create<LocaleState>((set) => ({
   isHydrated: false,
 
   async hydrate() {
-    const locale = (await readStoredLocale()) ?? getDeviceLocale();
+    const locale = (await readStoredLocale()) ?? DEFAULT_LOCALE;
     // Applies to the *next* launch: React Native reads direction from the native layer at
     // startup, so forcing it now cannot re-lay-out the running app.
     I18nManager.allowRTL(true);

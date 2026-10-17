@@ -64,7 +64,7 @@ export function HomeGreetingCard({
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: spacing.md,

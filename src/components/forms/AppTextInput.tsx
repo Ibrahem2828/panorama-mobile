@@ -3,7 +3,7 @@ import type { StyleProp, TextInputProps, TextStyle, ViewStyle } from 'react-nati
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { colors, layout, radius, spacing, typography } from '../../theme';
-import { getFlexDirection, getRTLTextAlign } from '../../utils/rtl';
+import { getFlexDirection, getIsRTL } from '../../utils/rtl';
 import { FormField } from './FormField';
 
 type AppTextInputProps = Omit<TextInputProps, 'style'> & {
@@ -51,7 +51,7 @@ export function AppTextInput({
           multiline={multiline}
           placeholderTextColor={placeholderTextColor}
           style={[styles.input, multiline ? styles.inputMultiline : null, inputStyle]}
-          textAlign={getRTLTextAlign()}
+          textAlign={getIsRTL() ? 'right' : 'left'}
         />
         {rightIcon ? <View style={styles.iconSlot}>{rightIcon}</View> : null}
       </View>
@@ -87,7 +87,6 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     color: colors.text.primary,
-    writingDirection: 'rtl',
     padding: 0,
   },
   inputMultiline: {

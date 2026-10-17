@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     borderColor: colors.brand.primary,
     backgroundColor: colors.background.muted,
   },
-  stars: { flexDirection: 'row-reverse', justifyContent: 'center', gap: spacing.sm },
+  stars: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sm },
   star: {
     width: 48,
     height: 48,

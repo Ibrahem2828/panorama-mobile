@@ -53,7 +53,7 @@ export function ProfileActionItem({
 const styles = StyleSheet.create({
   row: {
     minHeight: 56,
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.md,

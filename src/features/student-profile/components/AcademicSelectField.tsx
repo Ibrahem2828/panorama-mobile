@@ -108,7 +108,7 @@ export function AcademicSelectField({
 const styles = StyleSheet.create({
   labelRow: {
     minHeight: layout.touchTargetMinSize,
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.md,
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   },
   option: {
     minHeight: layout.touchTargetMinSize,
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.md,

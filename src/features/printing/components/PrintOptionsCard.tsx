@@ -143,7 +143,7 @@ export function PrintOptionsCard({ draft, locations, onChange }: Props) {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: spacing.sm },
+  row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   choice: {
     borderWidth: 1,
     borderColor: colors.border.default,

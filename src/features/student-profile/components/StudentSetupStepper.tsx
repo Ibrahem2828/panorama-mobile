@@ -59,7 +59,7 @@ export function StudentSetupStepper({ currentStep }: StudentSetupStepperProps) {
 const styles = StyleSheet.create({
   step: {
     minHeight: 44,
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.md,

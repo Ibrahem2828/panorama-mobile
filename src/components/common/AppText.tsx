@@ -79,7 +79,5 @@ export function AppText({
 }
 
 const styles = StyleSheet.create({
-  base: {
-    writingDirection: 'rtl',
-  },
+  base: {},
 });

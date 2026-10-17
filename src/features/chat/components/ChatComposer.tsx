@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppIconButton, AppText, Icon } from '../../../components';
 import { colors, layout, radius, spacing, typography, useBrand } from '../../../theme';
 import { useTranslation } from '../../../i18n';
-import { getIsRTL, getRTLTextAlign } from '../../../utils/rtl';
+import { getIsRTL } from '../../../utils/rtl';
 import { toChatAttachment, validateChatAttachment } from '../logic/attachments';
 import type { SendResult } from '../store/chatStore';
 import { MAX_MESSAGE_LENGTH, type ChatAttachment } from '../types';
@@ -178,7 +178,7 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
           placeholder={t.chat.inputPlaceholder}
           placeholderTextColor={colors.text.muted}
           style={styles.input}
-          textAlign={getRTLTextAlign()}
+          textAlign={getIsRTL() ? 'right' : 'left'}
           textAlignVertical="center"
           value={text}
         />

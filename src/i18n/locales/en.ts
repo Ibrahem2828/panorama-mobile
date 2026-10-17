@@ -334,7 +334,8 @@ export const en: TranslationCatalog = {
     },
     general: 'General subject',
     resultsCount: (count: number) => `${count} subjects`,
-    levelHint: 'Subjects are filtered to your year and semester by default. Choose “All” to browse any year or semester, for example retakes.',
+    levelHint:
+      'Subjects are filtered to your year and semester by default. Choose “All” to browse any year or semester, for example retakes.',
     codeBadge: (code: string) => `Code ${code}`,
     filesCount: (count: number) => `${count} files`,
     groupsCount: (count: number) => `${count} groups`,

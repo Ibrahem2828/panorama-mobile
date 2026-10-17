@@ -325,7 +325,8 @@ export const ar = {
     },
     general: 'مادة عامة',
     resultsCount: (count: number) => `${count} مادة`,
-    levelHint: 'تعرض المواد حسب سنتك وفصلك افتراضيا. اختر «الكل» لتصفح أي سنة أو فصل، مثل مواد الإعادة.',
+    levelHint:
+      'تعرض المواد حسب سنتك وفصلك افتراضيا. اختر «الكل» لتصفح أي سنة أو فصل، مثل مواد الإعادة.',
     codeBadge: (code: string) => `رمز ${code}`,
     filesCount: (count: number) => `ملفات ${count}`,
     groupsCount: (count: number) => `مجموعات ${count}`,
@@ -345,11 +346,9 @@ export const ar = {
       orderLabel: 'الترتيب',
       linkedTitle: 'المحتوى المرتبط',
       filesTitle: 'الملفات',
-      filesDescription:
-        'تصفح الملفات والملخصات المتاحة لك داخل التطبيق.',
+      filesDescription: 'تصفح الملفات والملخصات المتاحة لك داخل التطبيق.',
       groupsTitle: 'المجموعات',
-      groupsDescription:
-        'انضم إلى مجموعة هذه المادة وتابع الدردشة مع زملائك.',
+      groupsDescription: 'انضم إلى مجموعة هذه المادة وتابع الدردشة مع زملائك.',
       announcementsTitle: 'الإعلانات',
       announcementsDescription: 'لا يوجد endpoint موثق لإعلانات المادة في هذه المرحلة.',
     },

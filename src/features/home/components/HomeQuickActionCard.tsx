@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     opacity: opacity.pressed,
   },
   header: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.sm,

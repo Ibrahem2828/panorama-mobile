@@ -22,7 +22,7 @@ type OnboardingScreenProps = NativeStackScreenProps<PublicStackParamList, 'Onboa
 
 // Images only; the copy for each slide comes from the catalog at the same index.
 const SLIDE_IMAGES = [
-  images.onboarding.university,
+  images.brand.logoFullAr,
   images.onboarding.verification,
   images.onboarding.groups,
   images.onboarding.filesPrinting,
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     minHeight: 150,
   },
   pagination: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignSelf: 'center',
     gap: spacing.sm,
   },

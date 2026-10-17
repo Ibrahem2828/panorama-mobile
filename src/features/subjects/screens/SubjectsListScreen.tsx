@@ -11,7 +11,6 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
-  SectionHeader,
   Stack,
 } from '../../../components';
 import { SubjectsRoutes } from '../../../navigation/routes';
@@ -66,8 +65,9 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
   }
 
   const renderItem = useCallback(
-    ({ item }: { item: Subject }) => <SubjectCard onPress={() => handleSubjectPress(item)} subject={item} />,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    ({ item }: { item: Subject }) => (
+      <SubjectCard onPress={() => handleSubjectPress(item)} subject={item} />
+    ),
     [],
   );
 

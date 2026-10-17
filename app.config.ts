@@ -1,5 +1,5 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
-import { withAndroidManifest, type ConfigPlugin } from 'expo/config-plugins';
+import { withAndroidManifest, withMainApplication, type ConfigPlugin } from 'expo/config-plugins';
 
 const DEVELOPMENT_API_BASE_URL = 'http://127.0.0.1:8000';
 const DEVELOPMENT_WS_BASE_URL = 'ws://127.0.0.1:8000';
@@ -33,6 +33,27 @@ const withWhatsAppPackageVisibility: ConfigPlugin = (config) =>
       });
     }
     return androidConfig;
+  });
+
+// Arabic is the default language, so the app must lay out right-to-left from the very first launch.
+// React Native only applies forceRTL on the next start, so seed the preference natively; once the
+// user picks a language in Settings the JS side overwrites it.
+const withDefaultRtl: ConfigPlugin = (config) =>
+  withMainApplication(config, (mod) => {
+    const marker = '// panorama-default-rtl';
+    if (mod.modResults.language === 'kt' && !mod.modResults.contents.includes(marker)) {
+      mod.modResults.contents = mod.modResults.contents.replace(
+        'super.onCreate()',
+        `super.onCreate()
+    ${marker}
+    val rtlPrefs = getSharedPreferences("com.facebook.react.modules.i18nmanager.I18nUtil", MODE_PRIVATE)
+    if (!rtlPrefs.contains("RCTI18nUtil_forceRTL")) {
+      com.facebook.react.modules.i18nmanager.I18nUtil.instance.allowRTL(this, true)
+      com.facebook.react.modules.i18nmanager.I18nUtil.instance.forceRTL(this, true)
+    }`,
+      );
+    }
+    return mod;
   });
 
 function requiredReleaseValue(name: string, value: string | undefined, appEnv: string): string {

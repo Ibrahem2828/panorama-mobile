@@ -116,7 +116,7 @@ export function StudentNumberPreviewCard({ parsedStudentNumber }: StudentNumberP
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.md,

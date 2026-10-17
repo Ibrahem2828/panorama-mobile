@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(8,13,34,0.62)',
   },
   card: { width: '100%', maxWidth: 520, alignSelf: 'center' },
-  stars: { flexDirection: 'row-reverse', justifyContent: 'center', gap: spacing.sm },
+  stars: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sm },
   starButton: {
     minWidth: 46,
     minHeight: 46,

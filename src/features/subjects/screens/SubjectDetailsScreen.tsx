@@ -64,12 +64,10 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
   }
 
   function handleOpenGroups() {
-    navigation
-      .getParent<AppTabsNavigation>()
-      ?.navigate(TabRoutes.Groups, {
-        screen: GroupsRoutes.AvailableGroups,
-        params: { subjectId: subject?.id },
-      });
+    navigation.getParent<AppTabsNavigation>()?.navigate(TabRoutes.Groups, {
+      screen: GroupsRoutes.AvailableGroups,
+      params: { subjectId: subject?.id },
+    });
   }
 
   function handleOpenFiles() {

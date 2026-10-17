@@ -110,7 +110,7 @@ export function VerificationStatusCard({ verification }: VerificationStatusCardP
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.md,

@@ -59,7 +59,6 @@ export function AppScreen({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    direction: 'rtl',
   },
   scrollContent: {
     flexGrow: 1,
