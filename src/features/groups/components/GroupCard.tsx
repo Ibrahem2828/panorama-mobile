@@ -44,7 +44,7 @@ function GroupCardBase({ group, subject, pendingAction, onPress, onJoin }: Group
       >
         <Stack gap="md">
           <Stack direction="horizontal" gap="md" style={styles.header}>
-            <AppAvatar imageUri={imageUri} name={title} size="md" />
+            <AppAvatar icon="users" imageUri={imageUri} name={title} size="md" />
             <Stack gap="xs" style={styles.titleBlock}>
               <AppText numberOfLines={2} variant="title">
                 {title}

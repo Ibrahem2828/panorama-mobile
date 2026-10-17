@@ -7,7 +7,7 @@ import { colors, layout, opacity, radius, spacing, useBrand } from '../../theme'
 import { getFlexDirection } from '../../utils/rtl';
 import { AppText } from './AppText';
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'dangerOutline';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 type AppButtonProps = {
@@ -53,6 +53,8 @@ function containerFor(variant: ButtonVariant, brand: BrandPalette): ViewStyle {
       return { backgroundColor: 'transparent', borderColor: brand.primary };
     case 'ghost':
       return { backgroundColor: 'transparent', borderColor: 'transparent' };
+    case 'dangerOutline':
+      return { backgroundColor: 'transparent', borderColor: colors.semantic.error };
     default:
       return { backgroundColor: colors.semantic.error, borderColor: colors.semantic.error };
   }
@@ -66,6 +68,8 @@ function textColorFor(variant: ButtonVariant, brand: BrandPalette): string {
     case 'outline':
     case 'ghost':
       return brand.primary;
+    case 'dangerOutline':
+      return colors.semantic.error;
     default:
       return colors.text.inverse;
   }

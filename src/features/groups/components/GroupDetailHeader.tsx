@@ -22,7 +22,7 @@ export function GroupDetailHeader({ group, subject }: GroupDetailHeaderProps) {
     <AppCard variant="elevated">
       <Stack gap="lg">
         <Stack direction="horizontal" gap="md" style={styles.header}>
-          <AppAvatar imageUri={imageUri} name={title} size="lg" />
+          <AppAvatar icon="users" imageUri={imageUri} name={title} size="lg" />
           <Stack gap="sm" style={styles.titleBlock}>
             <AppText variant="h2">{title}</AppText>
             <GroupMembershipBadge status={group.current_user_membership_status} />

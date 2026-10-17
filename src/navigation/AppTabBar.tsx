@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '../components/common';
 import { Icon, type IconName } from '../components/icons';
 import { useTranslation } from '../i18n';
-import { colors, radius, useBrand } from '../theme';
+import { colors, useBrand } from '../theme';
 import { TabRoutes } from './routes';
 
 const tabIcons: Record<string, IconName> = {

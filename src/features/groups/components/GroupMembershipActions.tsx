@@ -68,7 +68,7 @@ export function GroupMembershipActions({
           loading={pendingAction === 'leave'}
           onPress={confirmLeave}
           title={t.groups.details.leave}
-          variant="danger"
+          variant="dangerOutline"
         />
       ) : null}
     </Stack>
