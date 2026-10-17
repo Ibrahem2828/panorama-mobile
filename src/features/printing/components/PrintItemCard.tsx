@@ -7,7 +7,7 @@ import { colors, radius, spacing, useBrand } from '../../../theme';
 import { formatFileSize } from '../../files/services';
 import type { FileResource } from '../../files/types';
 import { getFileDisplayTitle } from '../../files/services';
-import { pickPrintImage } from '../services/imagePicker';
+import { pickPrintDocument, pickPrintImage } from '../services/imagePicker';
 import type { PrintCartItem, PrintItemValidation, PrintSource, UploadProblem } from '../types';
 import { PrintCopiesStepper } from './PrintCopiesStepper';
 import { PrintItemOptions } from './PrintItemOptions';
@@ -45,7 +45,7 @@ function PrintItemCardComponent({
     [item.key, onChange],
   );
 
-  async function handlePickFromDevice() {
+  async function handlePickFromDevice(picker: typeof pickPrintImage = pickPrintImage) {
     if (isPicking) {
       return;
     }
@@ -53,7 +53,7 @@ function PrintItemCardComponent({
     setIsPicking(true);
     setPickerProblem(null);
 
-    const result = await pickPrintImage();
+    const result = await picker();
 
     setIsPicking(false);
 
@@ -103,7 +103,7 @@ function PrintItemCardComponent({
 
         {source ? (
           <Stack align="center" direction="horizontal" gap="md">
-            {source.kind === 'upload' ? (
+            {source.kind === 'upload' && source.file.mimeType?.startsWith('image/') ? (
               <Image
                 accessibilityIgnoresInvertColors
                 resizeMode="cover"
@@ -155,6 +155,14 @@ function PrintItemCardComponent({
                 onPress={() => void handlePickFromDevice()}
                 size="sm"
                 title={t.printing.create.pickFromDevice}
+                variant="outline"
+              />
+              <AppButton
+                leftIcon={<Icon color={brand.primary} name="file" size={18} />}
+                loading={isPicking}
+                onPress={() => void handlePickFromDevice(pickPrintDocument)}
+                size="sm"
+                title={t.printing.create.pickPdf}
                 variant="outline"
               />
             </Stack>

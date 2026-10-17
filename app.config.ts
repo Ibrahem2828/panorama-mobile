@@ -1,7 +1,12 @@
+/// <reference types="node" />
 import type { ConfigContext, ExpoConfig } from 'expo/config';
+import fs from 'node:fs';
+import path from 'node:path';
+
 import {
   withAndroidManifest,
   withAppBuildGradle,
+  withDangerousMod,
   withGradleProperties,
   withMainApplication,
   type ConfigPlugin,
@@ -111,6 +116,80 @@ const withReleaseSigning: ConfigPlugin = (config) => {
   });
 };
 
+// App hardening for the installed APK:
+//  - no cloud/adb backups or device-to-device extraction of app data (tokens, cached profile),
+//  - HTTPS only with the system trust store (user-installed CAs are never trusted),
+//  - no debuggable flag outside development builds.
+const SECURITY_XML = {
+  networkSecurityConfig: `<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+  <base-config cleartextTrafficPermitted="false">
+    <trust-anchors>
+      <certificates src="system" />
+    </trust-anchors>
+  </base-config>
+  <domain-config cleartextTrafficPermitted="false">
+    <domain includeSubdomains="true">xn--mgbaab0cxheq.tech</domain>
+    <trust-anchors>
+      <certificates src="system" />
+    </trust-anchors>
+  </domain-config>
+</network-security-config>
+`,
+  dataExtractionRules: `<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+  <cloud-backup>
+    <exclude domain="root" />
+    <exclude domain="file" />
+    <exclude domain="database" />
+    <exclude domain="sharedpref" />
+    <exclude domain="external" />
+  </cloud-backup>
+  <device-transfer>
+    <exclude domain="root" />
+    <exclude domain="file" />
+    <exclude domain="database" />
+    <exclude domain="sharedpref" />
+    <exclude domain="external" />
+  </device-transfer>
+</data-extraction-rules>
+`,
+};
+
+const withAppHardening: ConfigPlugin<{ production: boolean }> = (config, { production }) => {
+  const withManifest = withAndroidManifest(config, (mod) => {
+    const application = mod.modResults.manifest.application?.[0];
+    if (application) {
+      application.$['android:allowBackup'] = 'false';
+      application.$['android:fullBackupContent'] = 'false';
+      application.$['android:dataExtractionRules'] = '@xml/data_extraction_rules';
+      if (production) {
+        application.$['android:networkSecurityConfig'] = '@xml/network_security_config';
+      }
+    }
+    return mod;
+  });
+
+  return withDangerousMod(withManifest, [
+    'android',
+    async (mod) => {
+      const xmlDir = path.join(mod.modRequest.platformProjectRoot, 'app/src/main/res/xml');
+      fs.mkdirSync(xmlDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(xmlDir, 'data_extraction_rules.xml'),
+        SECURITY_XML.dataExtractionRules,
+      );
+      if (production) {
+        fs.writeFileSync(
+          path.join(xmlDir, 'network_security_config.xml'),
+          SECURITY_XML.networkSecurityConfig,
+        );
+      }
+      return mod;
+    },
+  ]);
+};
+
 function requiredReleaseValue(name: string, value: string | undefined, appEnv: string): string {
   const normalized = value?.trim();
   if (appEnv !== 'development' && !normalized) {
@@ -160,8 +239,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     runtimeVersion: { policy: 'appVersion' },
     updates: {
       url: `https://u.expo.dev/${EAS_PROJECT_ID}`,
-      enabled: appEnv !== 'development',
-      checkAutomatically: 'ON_LOAD',
+      // No over-the-air code updates: the app only runs the code inside the signed APK.
+      enabled: false,
+      checkAutomatically: 'NEVER',
       fallbackToCacheTimeout: 0,
     },
     plugins: [
@@ -220,6 +300,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         backgroundColor: '#FFFFFF',
       },
       permissions: ['POST_NOTIFICATIONS'],
+      blockedPermissions: [
+        'android.permission.READ_EXTERNAL_STORAGE',
+        'android.permission.WRITE_EXTERNAL_STORAGE',
+        'android.permission.SYSTEM_ALERT_WINDOW',
+        'android.permission.RECORD_AUDIO',
+        'android.permission.READ_PHONE_STATE',
+      ],
     },
     web: { ...config.web, favicon: './src/assets/app/favicon.png' },
     extra: {
@@ -237,10 +324,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   };
 
   return withReleaseSigning(
-    withDefaultRtl(
-      withWhatsAppPackageVisibility(
-        withAndroidCleartextTraffic(expoConfig, { enabled: allowDevelopmentCleartext }),
+    withAppHardening(
+      withDefaultRtl(
+        withWhatsAppPackageVisibility(
+          withAndroidCleartextTraffic(expoConfig, { enabled: allowDevelopmentCleartext }),
+        ),
       ),
+      { production: appEnv === 'production' },
     ),
   );
 };

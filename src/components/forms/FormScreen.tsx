@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useSecureScreen } from '../../hooks/useSecureScreen';
 import { useTranslation } from '../../i18n';
 import { colors, layout, radius, spacing } from '../../theme';
 import { getIsRTL } from '../../utils/rtl';
@@ -27,6 +28,7 @@ export function FormScreen({
   backgroundColor = colors.background.surface,
   centered = false,
 }: FormScreenProps) {
+  useSecureScreen('form');
   return (
     <SafeAreaView style={[styles.root, { backgroundColor }]}>
       <KeyboardAvoidingView behavior="padding" style={styles.flex}>
