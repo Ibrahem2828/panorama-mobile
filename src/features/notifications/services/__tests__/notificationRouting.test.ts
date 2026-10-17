@@ -51,4 +51,20 @@ describe('notification routing against real backend payloads', () => {
       ticketId: '88',
     });
   });
+
+  it('routes announcements and an id-less support target to real screens', () => {
+    expect(resolveNotificationRouteIntent(resolveTargetFromData({ announcement_id: 5 }))).toEqual({
+      kind: 'announcement',
+      announcementId: 5,
+    });
+    expect(resolveNotificationRouteIntent({ targetType: 'support', targetId: null })).toEqual({
+      kind: 'supportList',
+    });
+  });
+
+  it('refuses ids that are not plain numbers', () => {
+    expect(resolveNotificationRouteIntent({ targetType: 'file', targetId: '1/../../x' })).toEqual({
+      kind: 'none',
+    });
+  });
 });

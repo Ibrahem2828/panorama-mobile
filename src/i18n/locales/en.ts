@@ -201,8 +201,6 @@ export const en: TranslationCatalog = {
     emptyMessage:
       'Updates about verification, groups, files and print orders will appear here when there are any.',
     emptyIllustrationAlt: 'Illustration showing no notifications',
-    screenNote:
-      'This is an in-app notification screen only. Push permissions and device tokens are not part of this stage.',
     centerTitle: 'Notification centre',
     hasUnread: 'You have unread notifications to follow up.',
     allRead: 'All current notifications have been read.',
@@ -212,14 +210,39 @@ export const en: TranslationCatalog = {
     unread: 'Unread',
     read: 'Read',
     noDetails: 'There are no further details for this notification.',
-    targetLabel: 'Target',
     typeIconAlt: 'Notification type icon',
     androidChannelName: 'Panorama notifications',
     fallbackTitle: 'New notification',
 
+    filterLabel: 'Show notifications',
+    filterAll: 'All',
+    filterUnread: 'Unread',
+    unreadEmptyTitle: 'No unread notifications',
+    unreadEmptyMessage: 'All your notifications are read.',
+    dayToday: 'Today',
+    dayYesterday: 'Yesterday',
+    dayUnknown: 'Unknown date',
+    expired: 'Expired',
+    expiredNotice: 'This notification has expired, so it no longer has a destination.',
+    expiredHidden: (count: number) => `${count} expired notifications are hidden.`,
+    showExpired: 'Show expired',
+    hideExpired: 'Hide expired',
+    loadMore: 'Load more',
+    loadingMore: 'Loading more...',
+    openFailed: 'Could not open this notification.',
+
+    prefs: {
+      title: 'Notification preferences',
+      description: 'Choose which kinds of notifications you receive.',
+      show: 'Show',
+      hide: 'Hide',
+      inApp: 'In-app notifications',
+      typesTitle: 'Types',
+      loadFailed: 'Could not load your preferences.',
+      saveFailed: 'Could not save your preferences. Please try again.',
+    },
+
     routeMessages: {
-      futureTarget: (label: string) =>
-        `The notification was opened. Routing to ${label} is completed in a later stage.`,
       verification:
         'The notification was opened. Verification routing is in place and completes as the access rules allow.',
       none: 'The notification was opened; it has no linked target.',

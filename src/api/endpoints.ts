@@ -77,6 +77,7 @@ export const endpoints = {
     unreadCount: `${API_PREFIX}/notifications/unread-count/`,
     markRead: (notificationId: EndpointId) => `${API_PREFIX}/notifications/${notificationId}/read/`,
     readAll: `${API_PREFIX}/notifications/read-all/`,
+    preferences: `${API_PREFIX}/notifications/preferences/`,
     deviceTokens: `${API_PREFIX}/notifications/device-tokens/`,
     deviceTokenDetail: (tokenId: EndpointId) =>
       `${API_PREFIX}/notifications/device-tokens/${tokenId}/`,

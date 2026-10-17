@@ -26,7 +26,11 @@ type NotificationsState = {
   successMessage: string | null;
   lastLoadedAt: string | null;
   notificationsCount: number;
+  nextPage: number | null;
+  isLoadingMore: boolean;
+  loadMoreErrorMessage: string | null;
 
+  loadMore: () => Promise<void>;
   loadNotifications: () => Promise<void>;
   loadUnreadCount: () => Promise<void>;
   refreshNotifications: () => Promise<void>;
@@ -98,6 +102,9 @@ const initialNotificationsState = {
   successMessage: null,
   lastLoadedAt: null,
   notificationsCount: 0,
+  nextPage: null as number | null,
+  isLoadingMore: false,
+  loadMoreErrorMessage: null as string | null,
 };
 
 export const useNotificationsStore = create<NotificationsState>((set, get) => {
@@ -125,6 +132,8 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => {
     set({
       notifications: response.results,
       notificationsCount: response.count,
+      nextPage: response.next ? 2 : null,
+      loadMoreErrorMessage: null,
       lastLoadedAt: new Date().toISOString(),
     });
   }
@@ -160,6 +169,40 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => {
         set({
           isLoading: false,
           errorMessage: toSafeNotificationsErrorMessage(error, notificationsCatalog()),
+        });
+      }
+    },
+
+    async loadMore() {
+      const { nextPage, isLoadingMore, isLoading, isRefreshing } = get();
+      const accessToken = getAccessToken();
+
+      if (nextPage === null || isLoadingMore || isLoading || isRefreshing || !accessToken) {
+        return;
+      }
+
+      set({ isLoadingMore: true, loadMoreErrorMessage: null });
+
+      try {
+        const response = await loadNotifications(accessToken, nextPage);
+
+        set((state) => {
+          const known = new Set(state.notifications.map((item) => String(item.id)));
+
+          return {
+            notifications: [
+              ...state.notifications,
+              ...response.results.filter((item) => !known.has(String(item.id))),
+            ],
+            notificationsCount: response.count,
+            nextPage: response.next ? nextPage + 1 : null,
+            isLoadingMore: false,
+          };
+        });
+      } catch (error) {
+        set({
+          isLoadingMore: false,
+          loadMoreErrorMessage: toSafeNotificationsErrorMessage(error, notificationsCatalog()),
         });
       }
     },

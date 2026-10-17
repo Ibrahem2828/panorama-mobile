@@ -341,6 +341,21 @@ export type NotificationRecord = ApiEntity & {
   data?: Record<string, unknown> | null;
   created_at?: string;
   updated_at?: string;
+  title_ar?: string | null;
+  title_en?: string | null;
+  body_ar?: string | null;
+  body_en?: string | null;
+  /** App path chosen by the backend; validated before it is ever followed. */
+  deep_link?: string | null;
+  related_object_type?: string | null;
+  related_object_id?: string | null;
+  expires_at?: string | null;
+};
+
+export type NotificationPreferences = {
+  in_app_enabled: boolean;
+  push_enabled: boolean;
+  disabled_types: string[];
 };
 
 export type AnnouncementRecord = ApiEntity & {
