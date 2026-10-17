@@ -228,7 +228,6 @@ export function MyFeedbackScreen({ navigation }: Props) {
   const header = (
     <Stack gap="lg" style={styles.header}>
       <AppHeader subtitle={t.feedback.mine.subtitle} title={t.feedback.mine.title} />
-      <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
       {notice ? (
         <AppCard variant="muted">
           <AppText color="success" variant="bodySmall">

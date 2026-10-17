@@ -144,7 +144,6 @@ export function PublicSuggestionsScreen({ navigation }: Props) {
   const header = (
     <Stack gap="lg" style={styles.header}>
       <AppHeader subtitle={t.feedback.publicList.subtitle} title={t.feedback.publicList.title} />
-      <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
       {error && items.length > 0 ? (
         <AppText color="error" variant="bodySmall">
           {error}

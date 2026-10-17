@@ -30,7 +30,7 @@ import {
 
 type Props = NativeStackScreenProps<ProfileStackParamList, 'DeleteAccount'>;
 
-export function DeleteAccountScreen({ navigation }: Props) {
+export function DeleteAccountScreen(_props: Props) {
   const { t, locale } = useTranslation();
   const copy = t.settings.deleteAccountFlow;
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -105,7 +105,6 @@ export function DeleteAccountScreen({ navigation }: Props) {
   const header = (
     <Stack gap="md">
       <AppHeader subtitle={copy.subtitle} title={copy.title} />
-      <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
     </Stack>
   );
 

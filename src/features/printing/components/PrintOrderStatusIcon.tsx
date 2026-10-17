@@ -1,8 +1,8 @@
-import { Image, StyleSheet, View } from 'react-native';
+import { memo } from 'react';
 
-import { images } from '../../../assets/images';
+import type { ArtworkKey } from '../../../components';
+import { IconTile } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import { colors } from '../../../theme';
 import type { PrintOrderStatus } from '../types';
 
 type PrintOrderStatusIconProps = {
@@ -10,62 +10,56 @@ type PrintOrderStatusIconProps = {
   size?: 'sm' | 'md';
 };
 
-export function getPrintOrderStatusImage(status: PrintOrderStatus) {
+export function getPrintOrderStatusArtwork(status: PrintOrderStatus): ArtworkKey {
   switch (status) {
     case 'submitted':
     case 'pending':
     case 'accepted':
-      return images.printing.orderPending;
+      return 'printingPending';
     case 'in_progress':
     case 'printing':
-      return images.printing.orderProcessing;
+      return 'printingProcessing';
     case 'ready':
     case 'ready_for_pickup':
-      return images.printing.orderReady;
+      return 'printingReady';
     case 'delivered':
-      return images.printing.orderCompleted;
+      return 'printingCompleted';
     case 'cancelled':
     case 'canceled':
     case 'rejected':
-      return images.printing.orderCancelled;
+      return 'printingCancelled';
     default:
-      return images.printing.orderPending;
+      return 'printingPending';
   }
 }
 
-export function PrintOrderStatusIcon({ status, size = 'sm' }: PrintOrderStatusIconProps) {
+function PrintOrderStatusIconComponent({ status, size = 'sm' }: PrintOrderStatusIconProps) {
   const { t } = useTranslation();
+  const artwork = getPrintOrderStatusArtwork(status);
 
+  const visual = getVisual(artwork);
   return (
-    <View style={[styles.container, size === 'sm' ? styles.sm : styles.md]}>
-      <Image
-        accessibilityIgnoresInvertColors
-        accessibilityLabel={t.printing.details.statusIconAlt}
-        resizeMode="contain"
-        source={getPrintOrderStatusImage(status)}
-        style={styles.image}
-      />
-    </View>
+    <IconTile
+      accessibilityLabel={t.printing.details.statusIconAlt}
+      icon={visual.icon}
+      size={size === 'md' ? 'lg' : 'md'}
+      tone={visual.tone}
+    />
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 12,
-    backgroundColor: colors.background.muted,
-  },
-  sm: {
-    width: 48,
-    height: 48,
-  },
-  md: {
-    width: 72,
-    height: 72,
-  },
-  image: {
-    width: '82%',
-    height: '82%',
-  },
-});
+function getVisual(artwork: ArtworkKey) {
+  switch (artwork) {
+    case 'printingProcessing':
+      return { icon: 'printer', tone: 'info' } as const;
+    case 'printingReady':
+    case 'printingCompleted':
+      return { icon: 'check', tone: 'success' } as const;
+    case 'printingCancelled':
+      return { icon: 'close', tone: 'error' } as const;
+    default:
+      return { icon: 'clock', tone: 'warning' } as const;
+  }
+}
+
+export const PrintOrderStatusIcon = memo(PrintOrderStatusIconComponent);

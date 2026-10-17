@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { ReactElement, ReactNode } from 'react';
+import type { RefreshControlProps, StyleProp, ViewStyle } from 'react-native';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,6 +11,10 @@ type AppScreenProps = {
   safeArea?: boolean;
   horizontalPadding?: boolean;
   backgroundColor?: string;
+  /** Pull-to-refresh for scrolling screens (use BrandRefreshControl). */
+  refreshControl?: ReactElement<RefreshControlProps>;
+  /** Content is centred and capped to this width on tablets; `false` lets it span the screen. */
+  maxContentWidth?: number | false;
   style?: StyleProp<ViewStyle>;
   contentContainerStyle?: StyleProp<ViewStyle>;
 };
@@ -21,10 +25,14 @@ export function AppScreen({
   safeArea = true,
   horizontalPadding = true,
   backgroundColor = colors.background.primary,
+  refreshControl,
+  maxContentWidth = layout.maxContentWidth,
   style,
   contentContainerStyle,
 }: AppScreenProps) {
   const Container = safeArea ? SafeAreaView : View;
+  const widthStyle =
+    maxContentWidth === false ? styles.fill : [styles.capped, { maxWidth: maxContentWidth }];
 
   if (scroll) {
     return (
@@ -36,23 +44,19 @@ export function AppScreen({
             contentContainerStyle,
           ]}
           keyboardShouldPersistTaps="handled"
+          refreshControl={refreshControl}
         >
-          {children}
+          <View style={widthStyle}>{children}</View>
         </ScrollView>
       </Container>
     );
   }
 
   return (
-    <Container
-      style={[
-        styles.root,
-        horizontalPadding ? styles.horizontalPadding : null,
-        { backgroundColor },
-        style,
-      ]}
-    >
-      {children}
+    <Container style={[styles.root, { backgroundColor }, style]}>
+      <View style={[styles.inner, horizontalPadding ? styles.horizontalPadding : null, widthStyle]}>
+        {children}
+      </View>
     </Container>
   );
 }
@@ -60,6 +64,18 @@ export function AppScreen({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+  },
+  inner: {
+    flex: 1,
+  },
+  fill: {
+    flexGrow: 1,
+    width: '100%',
+  },
+  capped: {
+    flexGrow: 1,
+    width: '100%',
+    alignSelf: 'center',
   },
   scrollContent: {
     flexGrow: 1,

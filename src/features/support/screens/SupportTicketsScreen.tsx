@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppCard,
@@ -168,7 +167,7 @@ export function SupportTicketsScreen({ navigation }: SupportTicketsScreenProps) 
                 />
               }
               illustrationLabel={t.support.emptyIllustrationAlt}
-              illustrationSource={images.emptyStates.supportTickets}
+              artwork="support"
               message={t.support.emptyMessage}
               title={t.support.emptyTitle}
             />

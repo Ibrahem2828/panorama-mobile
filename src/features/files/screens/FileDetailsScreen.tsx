@@ -133,7 +133,6 @@ export function FileDetailsScreen() {
       <AppScreen contentContainerStyle={styles.content} scroll>
         <Stack gap="lg">
           <AppHeader subtitle={t.files.details.subtitle} title={t.files.title} />
-          <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
           <ErrorState
             message={errorMessage ?? t.files.details.unavailableMessage}
             onRetry={handleRetry}
@@ -149,7 +148,6 @@ export function FileDetailsScreen() {
       <Stack gap="xl">
         <Stack gap="md">
           <AppHeader subtitle={t.files.details.subtitle} title={t.files.title} />
-          <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
         </Stack>
 
         <FileDetailHeader file={activeFile} />

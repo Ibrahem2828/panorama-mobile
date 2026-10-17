@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppCard,
@@ -45,7 +44,7 @@ function Separator() {
   return <View style={styles.separator} />;
 }
 
-export function NotificationsScreen({ navigation }: Props) {
+export function NotificationsScreen(_props: Props) {
   const { t, locale } = useTranslation();
   const brand = useBrand();
   const [filter, setFilter] = useState<Filter>('all');
@@ -166,7 +165,6 @@ export function NotificationsScreen({ navigation }: Props) {
   const header = (
     <Stack gap="lg" style={styles.header}>
       <AppHeader subtitle={t.notifications.subtitle} title={t.notifications.title} />
-      <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
       <NotificationsHeaderActions
         isMarkingAllRead={isMarkingAllRead}
         isRefreshing={isRefreshing}
@@ -247,7 +245,7 @@ export function NotificationsScreen({ navigation }: Props) {
                 <AppButton onPress={handleRefresh} title={t.common.refresh} variant="outline" />
               }
               illustrationLabel={t.notifications.emptyIllustrationAlt}
-              illustrationSource={images.emptyStates.notifications}
+              artwork="notifications"
               message={t.notifications.emptyMessage}
               title={t.notifications.emptyTitle}
             />

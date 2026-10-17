@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { FlatList, StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppHeader,
@@ -135,7 +134,7 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
         )
       }
       illustrationLabel={search ? t.common.noSearchResultsAlt : t.subjects.emptyIllustrationAlt}
-      illustrationSource={search ? images.illustrations.search : images.emptyStates.subjects}
+      artwork={search ? 'search' : 'subjects'}
       message={search ? t.common.searchNoResultsMessage : t.subjects.emptyMessage}
       title={search ? t.common.searchNoResultsTitle : t.subjects.emptyTitle}
     />

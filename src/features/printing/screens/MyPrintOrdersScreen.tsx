@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppHeader,
@@ -100,7 +99,6 @@ export function MyPrintOrdersScreen({ navigation }: Props) {
         title={t.printing.myOrders.title}
       />
       <Stack direction="horizontal" gap="md" wrap>
-        <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
         <AppButton
           onPress={() => navigation.navigate(PrintingRoutes.CreatePrintOrder)}
           title={t.printing.myOrders.createOrder}
@@ -152,7 +150,7 @@ export function MyPrintOrdersScreen({ navigation }: Props) {
                 />
               }
               illustrationLabel={t.printing.myOrders.emptyIllustrationAlt}
-              illustrationSource={images.emptyStates.printingOrders}
+              artwork="printing"
               message={t.printing.myOrders.emptyMessage}
               title={t.printing.myOrders.emptyTitle}
             />

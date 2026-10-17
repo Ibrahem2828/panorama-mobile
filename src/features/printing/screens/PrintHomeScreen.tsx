@@ -2,17 +2,17 @@ import { useEffect } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppCard,
   AppHeader,
   AppScreen,
   AppText,
+  Artwork,
+  BrandRefreshControl,
   ErrorState,
-  Illustration,
-  LoadingState,
   SectionHeader,
+  SkeletonList,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -40,18 +40,20 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
   const latestOrder = orders[0];
 
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
+    <AppScreen
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <BrandRefreshControl onRefresh={() => void loadMyOrders('')} refreshing={isLoadingOrders} />
+      }
+      scroll
+    >
       <Stack gap="xl">
         <AppHeader subtitle={t.printing.home.subtitle} title={t.printing.title} />
 
         <AppCard variant="elevated">
-          <Stack gap="lg">
-            <Illustration
-              accessibilityLabel={t.printing.home.illustrationAlt}
-              size="lg"
-              source={images.printing.hero}
-            />
-            <Stack gap="xs">
+          <Stack align="center" gap="lg">
+            <Artwork name="printing" size="md" />
+            <Stack gap="xs" style={{ alignSelf: 'stretch' }}>
               <AppText variant="h2">{t.printing.home.heading}</AppText>
               <AppText color="secondary" variant="bodySmall">
                 {t.printing.home.description}
@@ -83,7 +85,7 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
             title={t.printing.home.latestOrder}
           />
           {isLoadingOrders && !latestOrder ? (
-            <LoadingState message={t.printing.home.loadingOrders} />
+            <SkeletonList count={1} />
           ) : latestOrder ? (
             <PrintOrderCard
               order={latestOrder}

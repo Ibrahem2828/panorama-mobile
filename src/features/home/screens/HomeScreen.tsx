@@ -5,7 +5,6 @@ import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Animated, StyleSheet, View } from 'react-native';
 
-import { images } from '../../../assets/images';
 import {
   AppButton,
   AppScreen,
@@ -242,7 +241,7 @@ export function HomeScreen() {
               ) : announcements.length === 0 ? (
                 <EmptyState
                   illustrationLabel={t.home.announcements.emptyIllustrationAlt}
-                  illustrationSource={images.emptyStates.announcements}
+                  artwork="announcements"
                   message={t.home.announcements.emptyMessage}
                   title={t.home.announcements.emptyTitle}
                 />

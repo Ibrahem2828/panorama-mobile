@@ -64,8 +64,12 @@ export function EditProfileScreen({ navigation }: EditProfileScreenProps) {
     <AppScreen contentContainerStyle={styles.content} scroll>
       <Stack gap="xl">
         <Stack gap="md">
-          <AppHeader subtitle={t.profile.edit.subtitle} title={t.profile.edit.title} />
-          <AppButton onPress={handleCancel} title={t.common.back} variant="ghost" />
+          <AppHeader
+            onBack={handleCancel}
+            showBack
+            subtitle={t.profile.edit.subtitle}
+            title={t.profile.edit.title}
+          />
         </Stack>
 
         {isLoading && !user ? <LoadingState message={t.profile.loadingAccount} /> : null}

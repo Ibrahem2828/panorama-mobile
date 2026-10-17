@@ -46,10 +46,11 @@ export function ChangePasswordScreen({ navigation }: ChangePasswordScreenProps) 
       <Stack gap="xl">
         <Stack gap="md">
           <AppHeader
+            onBack={handleBack}
+            showBack
             subtitle={t.settings.changePassword.subtitle}
             title={t.settings.changePassword.title}
           />
-          <AppButton onPress={handleBack} title={t.common.back} variant="ghost" />
         </Stack>
 
         <AppCard variant="muted">

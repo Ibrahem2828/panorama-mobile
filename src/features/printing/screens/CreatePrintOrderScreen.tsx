@@ -104,7 +104,6 @@ export function CreatePrintOrderScreen({ navigation, route }: Props) {
       <Stack gap="xl">
         <Stack gap="md">
           <AppHeader subtitle={t.printing.create.subtitle} title={t.printing.create.title} />
-          <AppButton onPress={() => navigation.goBack()} title={t.common.back} variant="ghost" />
         </Stack>
 
         <StepIndicator current={1} />

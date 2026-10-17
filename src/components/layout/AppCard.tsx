@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { colors, radius, shadows, spacing } from '../../theme';
 
@@ -12,18 +12,22 @@ type AppCardProps = {
   variant?: CardVariant;
   padding?: CardPadding;
   style?: StyleProp<ViewStyle>;
+  /** Makes the whole card a pressable with ripple feedback. */
+  onPress?: () => void;
+  accessibilityLabel?: string;
 };
 
 const variantStyles: Record<CardVariant, ViewStyle> = {
   default: {
+    ...shadows.xs,
     backgroundColor: colors.background.surface,
-    borderColor: colors.border.default,
+    borderColor: colors.gray[200],
     borderWidth: 1,
   },
   elevated: {
     ...shadows.card,
     backgroundColor: colors.background.elevated,
-    borderColor: colors.border.default,
+    borderColor: colors.gray[200],
     borderWidth: StyleSheet.hairlineWidth,
   },
   outlined: {
@@ -53,17 +57,40 @@ const paddingStyles: Record<CardPadding, ViewStyle> = {
   },
 };
 
-export function AppCard({ children, variant = 'default', padding = 'md', style }: AppCardProps) {
-  return (
-    <View style={[styles.base, variantStyles[variant], paddingStyles[padding], style]}>
-      {children}
-    </View>
-  );
+export function AppCard({
+  children,
+  variant = 'default',
+  padding = 'md',
+  style,
+  onPress,
+  accessibilityLabel,
+}: AppCardProps) {
+  const cardStyle = [styles.base, variantStyles[variant], paddingStyles[padding], style];
+
+  if (onPress) {
+    return (
+      <Pressable
+        accessibilityLabel={accessibilityLabel}
+        accessibilityRole="button"
+        android_ripple={{ color: 'rgba(16, 24, 40, 0.08)' }}
+        onPress={onPress}
+        style={({ pressed }) => [cardStyle, pressed ? styles.pressed : null]}
+      >
+        {children}
+      </Pressable>
+    );
+  }
+
+  return <View style={cardStyle}>{children}</View>;
 }
 
 const styles = StyleSheet.create({
   base: {
     minHeight: 72,
     borderRadius: radius.card,
+    overflow: 'hidden',
+  },
+  pressed: {
+    opacity: 0.92,
   },
 });

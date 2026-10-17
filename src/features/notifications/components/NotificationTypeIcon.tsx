@@ -1,58 +1,46 @@
-import { Image, StyleSheet, View } from 'react-native';
+import { memo } from 'react';
 
-import { images } from '../../../assets/images';
-import { colors } from '../../../theme';
-import type { NotificationType } from '../types';
+import type { ArtworkTone, IconName } from '../../../components';
+import { IconTile } from '../../../components';
 import { useTranslation } from '../../../i18n';
+import type { NotificationType } from '../types';
 
 type NotificationTypeIconProps = {
   type?: NotificationType;
 };
 
-function getNotificationImage(type?: NotificationType) {
+export function getNotificationVisual(type?: NotificationType): {
+  icon: IconName;
+  tone: ArtworkTone;
+} {
   switch (type) {
     case 'verification':
-      return images.notifications.verification;
+      return { icon: 'shield', tone: 'success' };
     case 'printing':
-      return images.notifications.printing;
+      return { icon: 'printer', tone: 'info' };
     case 'support':
-      return images.notifications.support;
+      return { icon: 'help', tone: 'warning' };
     case 'group':
-      return images.notifications.group;
-    case 'announcement':
+      return { icon: 'users', tone: 'brand' };
     case 'file':
+      return { icon: 'file', tone: 'brand' };
+    case 'announcement':
     case 'system':
     default:
-      return images.notifications.announcement;
+      return { icon: 'megaphone', tone: 'brand' };
   }
 }
 
-export function NotificationTypeIcon({ type }: NotificationTypeIconProps) {
+function NotificationTypeIconComponent({ type }: NotificationTypeIconProps) {
   const { t } = useTranslation();
+  const visual = getNotificationVisual(type);
   return (
-    <View style={styles.container}>
-      <Image
-        accessibilityIgnoresInvertColors
-        accessibilityLabel={t.notifications.typeIconAlt}
-        resizeMode="contain"
-        source={getNotificationImage(type)}
-        style={styles.image}
-      />
-    </View>
+    <IconTile
+      accessibilityLabel={t.notifications.typeIconAlt}
+      icon={visual.icon}
+      tone={visual.tone}
+    />
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    width: 48,
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 12,
-    backgroundColor: colors.background.muted,
-  },
-  image: {
-    width: '80%',
-    height: '80%',
-  },
-});
+export const NotificationTypeIcon = memo(NotificationTypeIconComponent);

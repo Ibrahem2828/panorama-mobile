@@ -5,7 +5,7 @@ export { PrintItemOptions, usePrintOptionLabels } from './PrintItemOptions';
 export { PrintLibraryPicker } from './PrintLibraryPicker';
 export { PrintOrderCard } from './PrintOrderCard';
 export { PrintOrderStatusBadge } from './PrintOrderStatusBadge';
-export { PrintOrderStatusIcon, getPrintOrderStatusImage } from './PrintOrderStatusIcon';
+export { PrintOrderStatusIcon, getPrintOrderStatusArtwork } from './PrintOrderStatusIcon';
 export { PrintPickupSelector } from './PrintPickupSelector';
 export { PrintQuoteBreakdown } from './PrintQuoteBreakdown';
 export { PrintStatusProgress } from './PrintStatusProgress';

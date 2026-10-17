@@ -5,10 +5,13 @@ import { StyleSheet } from 'react-native';
 import { colors, spacing } from '../../theme';
 import { AppText } from '../common';
 import { AppCard, Stack } from '../layout';
+import { Artwork } from './Artwork';
+import type { ArtworkKey } from './artworkCatalog';
 import { Illustration } from './Illustration';
 
 type StatusIllustrationCardProps = {
-  source: ImageSourcePropType;
+  artwork?: ArtworkKey;
+  source?: ImageSourcePropType;
   accessibilityLabel: string;
   title: string;
   description: string;
@@ -16,6 +19,7 @@ type StatusIllustrationCardProps = {
 };
 
 export function StatusIllustrationCard({
+  artwork,
   source,
   accessibilityLabel,
   title,
@@ -25,7 +29,11 @@ export function StatusIllustrationCard({
   return (
     <AppCard padding="lg" style={styles.card} variant="default">
       <Stack align="center" gap="md">
-        <Illustration accessibilityLabel={accessibilityLabel} size="lg" source={source} />
+        {artwork ? (
+          <Artwork name={artwork} size="md" />
+        ) : source ? (
+          <Illustration accessibilityLabel={accessibilityLabel} size="lg" source={source} />
+        ) : null}
         <Stack gap="xs" style={styles.textBlock}>
           <AppText align="center" variant="title">
             {title}
