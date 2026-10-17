@@ -1831,6 +1831,8 @@ export const en: TranslationCatalog = {
       notInstalled:
         'Could not open WhatsApp. Make sure the app is installed on your phone and try again.',
       error: 'Could not open WhatsApp right now. Please try again in a moment.',
+      unavailable:
+        'The WhatsApp group link has not been added yet. It will appear here once the administration adds it.',
     },
 
     emptyMine: {

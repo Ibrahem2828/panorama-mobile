@@ -93,6 +93,11 @@ export function GroupWhatsAppCard({ groupId, canLaunch }: GroupWhatsAppCardProps
             {copy.notInstalled}
           </AppText>
         ) : null}
+        {result === 'unavailable' ? (
+          <AppText color="muted" variant="bodySmall">
+            {copy.unavailable}
+          </AppText>
+        ) : null}
         {result === 'failed' ? (
           <AppText color="error" variant="bodySmall">
             {copy.error}

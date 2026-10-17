@@ -1,4 +1,17 @@
-import { launchGroupWhatsApp, parseWhatsAppAppLink } from '../whatsappLaunch';
+jest.mock('expo-constants', () => ({
+  __esModule: true,
+  default: {
+    expoConfig: {
+      extra: { apiBaseUrl: 'https://api.example.com', wsBaseUrl: 'wss://api.example.com' },
+    },
+  },
+}));
+import { ApiClientError } from '../../../../api';
+import {
+  isWhatsAppUnavailableError,
+  launchGroupWhatsApp,
+  parseWhatsAppAppLink,
+} from '../whatsappLaunch';
 
 const VALID = 'whatsapp://chat?code=AbCdEf1234567890';
 
@@ -49,5 +62,43 @@ describe('launchGroupWhatsApp', () => {
       }),
     ).resolves.toBe('failed');
     expect(openUrl).not.toHaveBeenCalled();
+  });
+});
+
+describe('no WhatsApp channel yet', () => {
+  const unavailable = () =>
+    new ApiClientError({
+      code: 'VALIDATION_ERROR',
+      status: 400,
+      message: 'Request failed',
+      raw: ['WhatsApp channel is not available for this group.'],
+    });
+
+  it('recognises the 400 "not available" answer', () => {
+    expect(isWhatsAppUnavailableError(unavailable())).toBe(true);
+    expect(
+      isWhatsAppUnavailableError(
+        new ApiClientError({ code: 'SERVER_ERROR', status: 500, message: 'not available' }),
+      ),
+    ).toBe(false);
+    expect(isWhatsAppUnavailableError(new Error('boom'))).toBe(false);
+  });
+
+  it('reports unavailable instead of a generic failure, without opening anything', async () => {
+    const openUrl = jest.fn();
+
+    await expect(
+      launchGroupWhatsApp({ requestAppUrl: () => Promise.reject(unavailable()), openUrl }),
+    ).resolves.toBe('unavailable');
+    expect(openUrl).not.toHaveBeenCalled();
+  });
+
+  it('still reports failed for other errors', async () => {
+    await expect(
+      launchGroupWhatsApp({
+        requestAppUrl: () => Promise.reject(new Error('network')),
+        openUrl: jest.fn(),
+      }),
+    ).resolves.toBe('failed');
   });
 });
