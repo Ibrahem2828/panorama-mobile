@@ -2067,6 +2067,9 @@ export const en: TranslationCatalog = {
     errors: {
       missingFile: 'Choose a printable file.',
       invalidCopies: 'Copies must be between 1 and 99.',
+      pricingUnavailable:
+        'Printing prices are not available for these options yet. Please try again later or contact support.',
+      bindingUnavailable: 'Binding is currently unavailable. Choose no binding or try again later.',
       noItems: 'Add at least one file.',
       uploadsTooLarge:
         'The files you uploaded are too large for one order (48 MB in total). Upload fewer files, or choose files from the available files.',

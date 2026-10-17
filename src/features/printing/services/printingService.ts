@@ -193,7 +193,10 @@ export function toSafePrintingErrorMessage(error: unknown, t: PrintingCatalog): 
   if (normalized.code === 'UNAUTHORIZED') return t.errors.unauthorized;
   if (normalized.code === 'FORBIDDEN') return t.errors.forbidden;
   if (normalized.status === 413) return t.errors.tooLarge;
-  return normalized.message || t.errors.generic;
+  if (normalized.errorCode === 'PRINT_PRICING_UNAVAILABLE') return t.errors.pricingUnavailable;
+  if (normalized.errorCode === 'PRINT_BINDING_UNAVAILABLE') return t.errors.bindingUnavailable;
+  // Server messages are English and meant for developers: users get the localized generic text.
+  return t.errors.generic;
 }
 
 export async function calculatePrintQuote(
