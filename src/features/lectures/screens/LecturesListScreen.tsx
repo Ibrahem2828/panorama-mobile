@@ -20,7 +20,12 @@ import { getFlexDirection } from '../../../utils/rtl';
 import { colors, spacing, useBrand } from '../../../theme';
 import { FilterChip } from '../components/FilterChip';
 import { LectureCard } from '../components/LectureCard';
-import { filterLectures, uniqueSubjects } from '../logic';
+import {
+  GENERAL_LECTURES_FILTER,
+  filterLectures,
+  isGeneralLecture,
+  uniqueSubjects,
+} from '../logic';
 import { useLecturesStore } from '../store';
 import type { Lecture } from '../types';
 
@@ -48,6 +53,9 @@ export function LecturesListScreen({ navigation, route }: Props) {
   }, [load]);
 
   const subjects = useMemo(() => uniqueSubjects(lectures), [lectures]);
+  const hasGeneral = useMemo(() => lectures.some(isGeneralLecture), [lectures]);
+  // Chips help when there is more than one subject, or both subject and general lectures.
+  const showChips = subjects.length > 1 || (subjects.length > 0 && hasGeneral);
   const filtered = useMemo(
     () => filterLectures(lectures, { search, subject }),
     [lectures, search, subject],
@@ -133,7 +141,7 @@ export function LecturesListScreen({ navigation, route }: Props) {
               returnKeyType="search"
               value={search}
             />
-            {subjects.length > 1 ? (
+            {showChips ? (
               <ScrollView
                 contentContainerStyle={styles.chips}
                 horizontal
@@ -144,6 +152,13 @@ export function LecturesListScreen({ navigation, route }: Props) {
                   onPress={() => setSubject('')}
                   selected={subject === ''}
                 />
+                {hasGeneral ? (
+                  <FilterChip
+                    label={t.lectures.generalFilter}
+                    onPress={() => setSubject(GENERAL_LECTURES_FILTER)}
+                    selected={subject === GENERAL_LECTURES_FILTER}
+                  />
+                ) : null}
                 {subjects.map((item) => (
                   <FilterChip
                     key={item.id}

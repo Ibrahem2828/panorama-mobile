@@ -4,8 +4,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { AppBadge, AppCard, AppText, Icon, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { colors, spacing, radius, useBrand } from '../../../theme';
+import { getIsRTL } from '../../../utils/rtl';
 import { formatDate } from '../../../utils/formatDateTime';
-import { lectureTitle } from '../logic';
+import { isGeneralLecture, lectureTitle } from '../logic';
 import type { Lecture } from '../types';
 import { LectureStatusBadge } from './LectureStatusBadge';
 
@@ -54,7 +55,9 @@ function LectureCardBase({ lecture, onPress, compact = false }: Props) {
               </AppText>
             ) : null}
             <Stack direction="horizontal" gap="xs" wrap>
-              {!compact && lecture.subject_name ? (
+              {!compact && isGeneralLecture(lecture) ? (
+                <AppBadge label={t.lectures.generalBadge} variant="info" />
+              ) : !compact && lecture.subject_name ? (
                 <AppBadge label={lecture.subject_name} variant="info" />
               ) : null}
               <AppBadge label={t.lectures.pagesCount(lecture.page_count)} variant="brand" />
@@ -62,7 +65,11 @@ function LectureCardBase({ lecture, onPress, compact = false }: Props) {
               {!compact && date ? <AppBadge label={t.lectures.updatedOn(date)} /> : null}
             </Stack>
           </View>
-          <Icon color={brand.primary} name="chevronLeft" size={18} />
+          <Icon
+            color={brand.primary}
+            name={getIsRTL() ? 'chevronLeft' : 'chevronRight'}
+            size={18}
+          />
         </Stack>
       </AppCard>
     </Pressable>

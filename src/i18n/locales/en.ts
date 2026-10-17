@@ -418,13 +418,16 @@ export const en: TranslationCatalog = {
 
   lectures: {
     title: 'Lectures',
-    subtitle: 'Read your subjects’ lectures inside the app, and add your own private notes.',
+    subtitle:
+      'Read your subjects’ lectures and general lectures inside the app, and add your own private notes.',
     listTitle: 'Lecture list',
-    searchPlaceholder: 'Search by lecture or subject name',
+    searchPlaceholder: 'Search by lecture title',
+    generalFilter: 'General lectures',
+    generalBadge: 'General',
     subjectFilterLabel: 'Filter by subject',
     allSubjects: 'All subjects',
     emptyTitle: 'No lectures yet',
-    emptyMessage: 'Published lectures for your faculty’s subjects will appear here.',
+    emptyMessage: 'Published lectures for your subjects and general lectures will appear here.',
     loading: 'Loading lectures...',
     totalCount: (count: number) => `Lectures: ${count}`,
     pagesCount: (count: number) => (count === 1 ? '1 page' : `${count} pages`),
@@ -462,8 +465,7 @@ export const en: TranslationCatalog = {
       quarantinedTitle: 'This lecture is unavailable',
       quarantinedMessage: 'This lecture is unavailable right now.',
       unpublishedTitle: 'This lecture cannot be viewed',
-      unpublishedMessage:
-        'This lecture is not published right now, or is not linked to your subjects.',
+      unpublishedMessage: 'This lecture is not published right now, or is not available to you.',
     },
     detail: {
       unavailableTitle: 'Could not open the lecture',
@@ -1421,7 +1423,7 @@ export const en: TranslationCatalog = {
       groups: 'Groups',
       groupsDescription: 'Join your subjects’ groups and follow the discussion.',
       lectures: 'Lectures',
-      lecturesDescription: 'Read your subject lectures in the app.',
+      lecturesDescription: 'Read your subject lectures and general lectures in the app.',
       files: 'Files',
       filesDescription: 'Open your subject files inside the app.',
       search: 'Search',

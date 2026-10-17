@@ -17,8 +17,13 @@ export type LectureStatus = (typeof LECTURE_STATUSES)[number];
 /** `LectureSerializer` (student read-only). Status is kept as a string: unknown values must not crash the UI. */
 export type Lecture = {
   id: number;
-  subject: number;
+  /** `null` for a general lecture that is not linked to any subject. */
+  subject: number | null;
   subject_name: string | null;
+  faculty: number | null;
+  faculty_name: string | null;
+  /** True when the lecture is not linked to a subject (derived from `subject` when absent). */
+  is_general: boolean;
   title: string | null;
   description: string | null;
   status: string;

@@ -52,6 +52,19 @@ describe('parseLecture', () => {
     });
   });
 
+  it('keeps a null subject null and flags the lecture as general', () => {
+    const lecture = parseLecture({
+      id: 8,
+      subject: null,
+      subject_name: null,
+      faculty: 3,
+      faculty_name: 'Medicine',
+    });
+    expect(lecture?.subject).toBeNull();
+    expect(lecture).toMatchObject({ is_general: true, faculty: 3, faculty_name: 'Medicine' });
+    expect(parseLecture({ id: 9, subject: 5 })).toMatchObject({ subject: 5, is_general: false });
+  });
+
   it('survives missing fields and unknown statuses', () => {
     const lecture = parseLecture({ id: '7', status: 'brand-new' });
     expect(lecture).toMatchObject({ id: 7, title: null, page_count: 0, status: 'brand-new' });

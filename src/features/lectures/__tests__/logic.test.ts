@@ -20,6 +20,8 @@ import {
   stepZoom,
   toggleZoom,
   uniqueSubjects,
+  GENERAL_LECTURES_FILTER,
+  isGeneralLecture,
   type ViewerSession,
 } from '../logic';
 import type { Lecture } from '../types';
@@ -35,6 +37,9 @@ function lecture(overrides: Partial<Lecture>): Lecture {
     id: 1,
     subject: 10,
     subject_name: 'Anatomy',
+    faculty: null,
+    faculty_name: null,
+    is_general: false,
     title: 'Intro',
     description: null,
     status: 'ready',
@@ -206,6 +211,13 @@ describe('lecture list helpers', () => {
     lecture({ id: 1, subject: 10, subject_name: 'Anatomy', title: 'Heart' }),
     lecture({ id: 2, subject: 11, subject_name: 'Biology', title: 'Cell' }),
     lecture({ id: 3, subject: 10, subject_name: 'Anatomy', title: null }),
+    lecture({
+      id: 4,
+      subject: null,
+      subject_name: null,
+      is_general: true,
+      title: 'Study tips',
+    }),
   ];
 
   it('filters by subject and search', () => {
@@ -213,8 +225,18 @@ describe('lecture list helpers', () => {
     expect(filterLectures(lectures, { subject: '11' }).map((item) => item.id)).toEqual([2]);
     expect(filterLectures(lectures, { search: ' heart ' }).map((item) => item.id)).toEqual([1]);
     expect(filterLectures(lectures, { search: 'bio' }).map((item) => item.id)).toEqual([2]);
-    expect(filterLectures(lectures, {}).length).toBe(3);
-    expect(filterLectures(lectures, { subject: null, search: '' }).length).toBe(3);
+    expect(filterLectures(lectures, {}).length).toBe(4);
+    expect(filterLectures(lectures, { subject: null, search: '' }).length).toBe(4);
+  });
+
+  it('selects general lectures with the pseudo filter and keeps them out of subjects', () => {
+    expect(
+      filterLectures(lectures, { subject: GENERAL_LECTURES_FILTER }).map((item) => item.id),
+    ).toEqual([4]);
+    expect(filterLectures(lectures, { subject: 10 }).map((item) => item.id)).toEqual([1, 3]);
+    expect(filterLectures(lectures, { search: 'tips' }).map((item) => item.id)).toEqual([4]);
+    expect(isGeneralLecture(lectures[3])).toBe(true);
+    expect(isGeneralLecture(lectures[0])).toBe(false);
   });
 
   it('lists unique subjects sorted by name', () => {

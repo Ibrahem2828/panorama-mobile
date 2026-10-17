@@ -208,6 +208,13 @@ export function lectureTitle(lecture: Pick<Lecture, 'title'>, fallback: string):
   return lecture.title?.trim() || fallback;
 }
 
+/** Pseudo subject filter value that selects the general (subject-less) lectures. */
+export const GENERAL_LECTURES_FILTER = '__general';
+
+export function isGeneralLecture(lecture: Pick<Lecture, 'subject' | 'is_general'>): boolean {
+  return lecture.subject === null || lecture.subject === undefined || lecture.is_general === true;
+}
+
 export type LectureFilters = {
   search?: string;
   subject?: string | number | null;
@@ -221,9 +228,13 @@ export function filterLectures(lectures: readonly Lecture[], filters: LectureFil
       ? null
       : String(filters.subject);
   return lectures.filter((lecture) => {
-    if (subject !== null && String(lecture.subject) !== subject) return false;
+    if (subject === GENERAL_LECTURES_FILTER) {
+      if (!isGeneralLecture(lecture)) return false;
+    } else if (subject !== null) {
+      if (lecture.subject === null || String(lecture.subject) !== subject) return false;
+    }
     if (!needle) return true;
-    return `${lecture.title ?? ''} ${lecture.subject_name ?? ''}`
+    return `${lecture.title ?? ''} ${lecture.subject_name ?? ''} ${lecture.faculty_name ?? ''}`
       .toLocaleLowerCase()
       .includes(needle);
   });
@@ -232,6 +243,7 @@ export function filterLectures(lectures: readonly Lecture[], filters: LectureFil
 export function uniqueSubjects(lectures: readonly Lecture[]): { id: string; name: string }[] {
   const seen = new Map<string, string>();
   for (const lecture of lectures) {
+    if (lecture.subject === null || lecture.subject === undefined) continue;
     const id = String(lecture.subject);
     if (!seen.has(id)) seen.set(id, lecture.subject_name?.trim() || id);
   }

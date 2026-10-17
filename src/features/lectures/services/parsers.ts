@@ -14,6 +14,13 @@ function text(value: unknown): string | null {
   return typeof value === 'string' ? value : null;
 }
 
+/** A positive integer id, or `null` (never 0) when the value is missing or not an id. */
+function nullableId(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return Math.trunc(value);
+  if (typeof value === 'string' && /^\d+$/.test(value.trim())) return Number(value.trim());
+  return null;
+}
+
 function int(value: unknown, fallback = 0): number {
   return typeof value === 'number' && Number.isFinite(value) ? Math.trunc(value) : fallback;
 }
@@ -36,10 +43,14 @@ export function parseLecture(value: unknown): Lecture | null {
   if (typeof id !== 'number' && typeof id !== 'string') return null;
   const numericId = Number(id);
   if (!Number.isFinite(numericId)) return null;
+  const subject = nullableId(value.subject);
   return {
     id: numericId,
-    subject: int(value.subject),
+    subject,
     subject_name: text(value.subject_name)?.trim() || null,
+    faculty: nullableId(value.faculty),
+    faculty_name: text(value.faculty_name)?.trim() || null,
+    is_general: typeof value.is_general === 'boolean' ? value.is_general : subject === null,
     title: text(value.title)?.trim() || null,
     description: text(value.description)?.trim() || null,
     status: text(value.status) ?? 'unknown',

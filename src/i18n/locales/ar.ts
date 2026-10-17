@@ -435,13 +435,15 @@ export const ar = {
 
   lectures: {
     title: 'المحاضرات',
-    subtitle: 'اقرأ محاضرات موادك داخل التطبيق، وأضف ملاحظاتك الخاصة.',
+    subtitle: 'اقرأ محاضرات موادك والمحاضرات العامة داخل التطبيق، وأضف ملاحظاتك الخاصة.',
     listTitle: 'قائمة المحاضرات',
-    searchPlaceholder: 'ابحث بعنوان المحاضرة أو المادة',
+    searchPlaceholder: 'ابحث بعنوان المحاضرة',
+    generalFilter: 'محاضرات عامة',
+    generalBadge: 'عامة',
     subjectFilterLabel: 'تصفية حسب المادة',
     allSubjects: 'كل المواد',
     emptyTitle: 'لا توجد محاضرات بعد',
-    emptyMessage: 'ستظهر هنا المحاضرات المنشورة لمواد كليتك.',
+    emptyMessage: 'ستظهر هنا المحاضرات المنشورة لموادك والمحاضرات العامة.',
     loading: 'جارٍ تحميل المحاضرات...',
     totalCount: (count: number) => `عدد المحاضرات: ${count}`,
     pagesCount: (count: number) =>
@@ -483,7 +485,7 @@ export const ar = {
       quarantinedTitle: 'المحاضرة غير متاحة',
       quarantinedMessage: 'هذه المحاضرة غير متاحة حاليًا.',
       unpublishedTitle: 'المحاضرة غير متاحة للعرض',
-      unpublishedMessage: 'هذه المحاضرة غير منشورة حاليًا أو غير مرتبطة بموادك.',
+      unpublishedMessage: 'هذه المحاضرة غير منشورة حاليًا أو غير متاحة لك.',
     },
     detail: {
       unavailableTitle: 'تعذّر فتح المحاضرة',
@@ -1435,7 +1437,7 @@ export const ar = {
       groups: 'المجموعات',
       groupsDescription: 'انضم إلى مجموعات موادك وتابع النقاش.',
       lectures: 'المحاضرات',
-      lecturesDescription: 'اقرأ محاضرات موادك داخل التطبيق.',
+      lecturesDescription: 'اقرأ محاضرات موادك والمحاضرات العامة داخل التطبيق.',
       files: 'الملفات',
       filesDescription: 'افتح ملفات موادك داخل التطبيق.',
       search: 'البحث',
