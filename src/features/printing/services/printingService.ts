@@ -170,13 +170,29 @@ export function formatMoneyAmount(value: string | number | null | undefined): st
   return amount.toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
+/** SYP as `1,234 ل.س`, USD as `$12.34` (always 2 decimals); Western digits; unknown/missing is SYP. */
 export function formatPrintMoney(
   value: string | number | null | undefined,
   currency: string | null | undefined,
 ): string | null {
-  const amount = formatMoneyAmount(value);
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
 
-  return amount === null ? null : `${amount} ${currency || 'SYP'}`;
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return String(value);
+  }
+
+  if (currency === 'USD') {
+    return `$${number.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+
+  return `${formatMoneyAmount(value)} ل.س`;
 }
 
 export function formatPrintOrderPrice(order: Pick<PrintOrder, 'total_price' | 'currency'>) {
@@ -193,7 +209,9 @@ export function toSafePrintingErrorMessage(error: unknown, t: PrintingCatalog): 
   if (normalized.code === 'UNAUTHORIZED') return t.errors.unauthorized;
   if (normalized.code === 'FORBIDDEN') return t.errors.forbidden;
   if (normalized.status === 413) return t.errors.tooLarge;
-  if (normalized.errorCode === 'PRINT_PRICING_UNAVAILABLE') return t.errors.pricingUnavailable;
+  if (normalized.errorCode === 'PRINT_PRICING_UNAVAILABLE') {
+    return `${t.errors.pricingUnavailable} ${t.errors.pricingUnavailableSwitchCurrency}`;
+  }
   if (normalized.errorCode === 'PRINT_BINDING_UNAVAILABLE') return t.errors.bindingUnavailable;
   // Server messages are English and meant for developers: users get the localized generic text.
   return t.errors.generic;

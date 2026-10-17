@@ -9,6 +9,7 @@ import {
   AppScreen,
   AppText,
   AppTextInput,
+  ChoiceChips,
   Icon,
   Stack,
 } from '../../../components';
@@ -68,6 +69,8 @@ export function CreatePrintOrderScreen({ navigation, route }: Props) {
   const prefillLibraryFile = usePrintingStore((state) => state.prefillLibraryFile);
   const setPickupLocation = usePrintingStore((state) => state.setPickupLocation);
   const setNotes = usePrintingStore((state) => state.setNotes);
+  const setCurrency = usePrintingStore((state) => state.setCurrency);
+  const loadStoredCurrency = usePrintingStore((state) => state.loadStoredCurrency);
   const calculateQuote = usePrintingStore((state) => state.calculateQuote);
   const cancelTransfer = usePrintingStore((state) => state.cancelTransfer);
   const resetDraft = usePrintingStore((state) => state.resetDraft);
@@ -81,6 +84,9 @@ export function CreatePrintOrderScreen({ navigation, route }: Props) {
   useEffect(() => {
     void loadConfiguration();
   }, [loadConfiguration]);
+  useEffect(() => {
+    void loadStoredCurrency();
+  }, [loadStoredCurrency]);
   useEffect(() => {
     if (fileId !== undefined) {
       prefillLibraryFile(fileId, fileTitle ?? t.printing.library.unnamedFile(String(fileId)));
@@ -212,6 +218,16 @@ export function CreatePrintOrderScreen({ navigation, route }: Props) {
             </Stack>
           </AppCard>
         ) : null}
+
+        <ChoiceChips
+          label={t.printing.create.currencyLabel}
+          onChange={setCurrency}
+          options={[
+            { value: 'SYP', label: t.printing.create.currencySyp },
+            { value: 'USD', label: t.printing.create.currencyUsd },
+          ]}
+          value={draft.currency}
+        />
 
         {transfer && hasUploads(draft) ? (
           <UploadProgressCard onCancel={cancelTransfer} transfer={transfer} />

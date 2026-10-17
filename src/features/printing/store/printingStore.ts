@@ -13,6 +13,8 @@ import {
   draftSignature,
   isUserAbort,
   loadMyPrintOrders,
+  readStoredPrintCurrency,
+  storePrintCurrency,
   loadPickupLocations,
   loadPrintOrderDetail,
   newCartItem,
@@ -24,6 +26,7 @@ import {
 import type {
   Id,
   PrintCartItem,
+  PrintCurrency,
   PrintDraft,
   PrintDraftValidation,
   PrintOrder,
@@ -72,6 +75,8 @@ type State = {
   prefillLibraryFile: (id: Id, title: string) => void;
   setPickupLocation: (id: Id | null) => void;
   setNotes: (notes: string) => void;
+  setCurrency: (currency: PrintCurrency) => void;
+  loadStoredCurrency: () => Promise<void>;
   validateDraft: () => boolean;
   calculateQuote: () => Promise<boolean>;
   createOrder: () => Promise<PrintOrder | null>;
@@ -325,6 +330,19 @@ export const usePrintingStore = create<State>((set, get) => {
     setNotes(notes) {
       set((state) => ({ draft: { ...state.draft, userNotes: notes } }));
     },
+    setCurrency(currency) {
+      // A different currency changes the draft signature, so any earlier quote becomes stale.
+      set((state) => ({ draft: { ...state.draft, currency }, draftError: null }));
+      void storePrintCurrency(currency);
+    },
+    async loadStoredCurrency() {
+      const stored = await readStoredPrintCurrency();
+      if (stored) {
+        set((state) =>
+          state.draft.currency === stored ? state : { draft: { ...state.draft, currency: stored } },
+        );
+      }
+    },
     validateDraft() {
       const validation = validateDraft(get().draft);
       set({ validation });
@@ -441,7 +459,10 @@ export const usePrintingStore = create<State>((set, get) => {
     },
     resetDraft() {
       set({
-        draft: { ...createEmptyDraft(), pickupLocationId: get().draft.pickupLocationId },
+        draft: {
+          ...createEmptyDraft(get().draft.currency),
+          pickupLocationId: get().draft.pickupLocationId,
+        },
         validation: null,
         quote: null,
         draftError: null,

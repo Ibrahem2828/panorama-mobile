@@ -8,6 +8,9 @@ export type PrintPaperSize = 'A4' | 'A3' | 'A5';
 export type PrintSides = 'one_sided' | 'double_sided';
 export type PrintBinding = 'none' | 'staple' | 'spiral' | 'thermal';
 
+/** Wire values match the backend's currency enum (SYP is the new Syrian pound). */
+export type PrintCurrency = 'SYP' | 'USD';
+
 export type PrintOrderStatus =
   | 'submitted'
   | 'under_review'
@@ -105,6 +108,7 @@ export type PrintDraft = {
   items: PrintCartItem[];
   pickupLocationId: Id | null;
   userNotes: string;
+  currency: PrintCurrency;
 };
 
 export type PrintItemValidation = { source?: boolean; copies?: boolean };

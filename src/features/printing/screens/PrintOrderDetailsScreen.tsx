@@ -28,7 +28,7 @@ import {
 } from '../components';
 import {
   canCancelPrintOrder,
-  formatMoneyAmount,
+  formatPrintMoney,
   formatPrintOrderDate,
   formatPrintOrderDateTime,
   formatPrintOrderPrice,
@@ -270,7 +270,7 @@ export function PrintOrderDetailsScreen({ navigation, route }: Props) {
               </AppCard>
             ) : (
               activeOrder.items.map((item, index) => {
-                const itemPrice = formatMoneyAmount(item.price);
+                const itemPrice = formatPrintMoney(item.price, activeOrder.currency);
                 const fileLabel = getPrintOrderItemFileLabel(item, t.printing);
 
                 return (
@@ -301,7 +301,7 @@ export function PrintOrderDetailsScreen({ navigation, route }: Props) {
                       </Stack>
                       {itemPrice ? (
                         <AppText color="brand" variant="caption" weight="600">
-                          {`${t.printing.details.itemPrice}: ${itemPrice} ${activeOrder.currency ?? ''}`}
+                          {`${t.printing.details.itemPrice}: ${itemPrice}`}
                         </AppText>
                       ) : null}
                       {item.id !== undefined ? (
