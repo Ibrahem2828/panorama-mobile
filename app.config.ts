@@ -1,5 +1,11 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
-import { withAndroidManifest, withMainApplication, type ConfigPlugin } from 'expo/config-plugins';
+import {
+  withAndroidManifest,
+  withAppBuildGradle,
+  withGradleProperties,
+  withMainApplication,
+  type ConfigPlugin,
+} from 'expo/config-plugins';
 
 const DEVELOPMENT_API_BASE_URL = 'http://127.0.0.1:8000';
 const DEVELOPMENT_WS_BASE_URL = 'ws://127.0.0.1:8000';
@@ -55,6 +61,53 @@ const withDefaultRtl: ConfigPlugin = (config) =>
     }
     return mod;
   });
+
+// Release signing comes from the environment (never from the repo): set PANORAMA_KEYSTORE_FILE,
+// PANORAMA_KEYSTORE_PASSWORD, PANORAMA_KEY_ALIAS and PANORAMA_KEY_PASSWORD when building a store/APK
+// release. Without them the build falls back to the debug key so local test builds keep working.
+const withReleaseSigning: ConfigPlugin = (config) => {
+  const withGradle = withAppBuildGradle(config, (mod) => {
+    const marker = '// panorama-release-signing';
+    if (mod.modResults.language === 'groovy' && !mod.modResults.contents.includes(marker)) {
+      let contents = mod.modResults.contents;
+      contents = contents.replace(
+        'signingConfigs {',
+        `signingConfigs {
+        ${marker}
+        release {
+            def keystoreFile = System.getenv("PANORAMA_KEYSTORE_FILE")
+            if (keystoreFile) {
+                storeFile file(keystoreFile)
+                storePassword System.getenv("PANORAMA_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("PANORAMA_KEY_ALIAS")
+                keyPassword System.getenv("PANORAMA_KEY_PASSWORD")
+            }
+        }`,
+      );
+      contents = contents.replace(
+        /(release \{[\s\S]*?)signingConfig signingConfigs\.debug/,
+        '$1signingConfig System.getenv("PANORAMA_KEYSTORE_FILE") ? signingConfigs.release : signingConfigs.debug',
+      );
+      mod.modResults.contents = contents;
+    }
+    return mod;
+  });
+
+  // Smaller, faster release builds: R8 shrinking + resource shrinking.
+  return withGradleProperties(withGradle, (mod) => {
+    const set = (key: string, value: string) => {
+      const existing = mod.modResults.find((item) => item.type === 'property' && item.key === key);
+      if (existing && existing.type === 'property') {
+        existing.value = value;
+      } else {
+        mod.modResults.push({ type: 'property', key, value });
+      }
+    };
+    set('android.enableMinifyInReleaseBuilds', 'true');
+    set('android.enableShrinkResourcesInReleaseBuilds', 'true');
+    return mod;
+  });
+};
 
 function requiredReleaseValue(name: string, value: string | undefined, appEnv: string): string {
   const normalized = value?.trim();
@@ -180,9 +233,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
   };
 
-  return withDefaultRtl(
-    withWhatsAppPackageVisibility(
-      withAndroidCleartextTraffic(expoConfig, { enabled: allowDevelopmentCleartext }),
+  return withReleaseSigning(
+    withDefaultRtl(
+      withWhatsAppPackageVisibility(
+        withAndroidCleartextTraffic(expoConfig, { enabled: allowDevelopmentCleartext }),
+      ),
     ),
   );
 };
