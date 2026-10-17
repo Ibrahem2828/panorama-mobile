@@ -38,7 +38,7 @@ export function HomeGreetingCard({
           </View>
           <Image
             accessibilityIgnoresInvertColors
-            accessibilityLabel="Panorama student journey illustration"
+            accessibilityLabel={t.home.greeting.heroImageAlt}
             resizeMode="cover"
             source={images.illustrations.dashboardHero}
             style={styles.heroImage}
