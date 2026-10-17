@@ -74,9 +74,7 @@ export function SupportTicketsScreen({ navigation }: SupportTicketsScreenProps) 
     [navigation, setSelectedTicket],
   );
   const renderItem = useCallback(
-    ({ item }: { item: SupportTicket }) => (
-      <SupportTicketCard onPress={() => handleOpen(item)} ticket={item} />
-    ),
+    ({ item }: { item: SupportTicket }) => <SupportTicketCard onPress={handleOpen} ticket={item} />,
     [handleOpen],
   );
   const filterOptions = useMemo(

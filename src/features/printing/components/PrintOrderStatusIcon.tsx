@@ -4,34 +4,12 @@ import type { ArtworkKey } from '../../../components';
 import { IconTile } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import type { PrintOrderStatus } from '../types';
+import { getPrintOrderStatusArtwork } from './printOrderStatusArtwork';
 
 type PrintOrderStatusIconProps = {
   status: PrintOrderStatus;
   size?: 'sm' | 'md';
 };
-
-export function getPrintOrderStatusArtwork(status: PrintOrderStatus): ArtworkKey {
-  switch (status) {
-    case 'submitted':
-    case 'pending':
-    case 'accepted':
-      return 'printingPending';
-    case 'in_progress':
-    case 'printing':
-      return 'printingProcessing';
-    case 'ready':
-    case 'ready_for_pickup':
-      return 'printingReady';
-    case 'delivered':
-      return 'printingCompleted';
-    case 'cancelled':
-    case 'canceled':
-    case 'rejected':
-      return 'printingCancelled';
-    default:
-      return 'printingPending';
-  }
-}
 
 function PrintOrderStatusIconComponent({ status, size = 'sm' }: PrintOrderStatusIconProps) {
   const { t } = useTranslation();

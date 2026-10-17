@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
@@ -24,7 +25,7 @@ type FileCardProps = {
   onPress?: () => void;
 };
 
-export function FileCard({ file, onPress }: FileCardProps) {
+function FileCardComponent({ file, onPress }: FileCardProps) {
   const { t, locale } = useTranslation();
   const title = getFileDisplayTitle(file, t.files);
   const description = getFileDescription(file);
@@ -80,6 +81,8 @@ export function FileCard({ file, onPress }: FileCardProps) {
     </Pressable>
   );
 }
+
+export const FileCard = memo(FileCardComponent);
 
 const styles = StyleSheet.create({
   header: {
