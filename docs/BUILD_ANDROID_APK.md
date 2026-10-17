@@ -59,7 +59,7 @@ Never ship that variant.
 Production builds pin the API host (`api.xn--mgbaab0cxheq.tech` and subdomains) in the generated
 `network_security_config.xml` (see `API_PINS` in `app.config.ts`).
 
-- **What is pinned:** the SPKI hashes of long-lived CA *roots* (Let's Encrypt ISRG X1/X2, ZeroSSL's USERTrust RSA/ECC and
+- **What is pinned:** the SPKI hashes of long-lived CA _roots_ (Let's Encrypt ISRG X1/X2, ZeroSSL's USERTrust RSA/ECC and
   Google Trust Services R1/R3/R4), never the leaf or an intermediate. Let's Encrypt renews the leaf every ~60 days and
   rotates intermediates every few years, so pinning those would lock users out after a routine renewal. Android checks
   the pins against the whole validated chain, so any chain ending in one of these roots passes (including cross-signed
