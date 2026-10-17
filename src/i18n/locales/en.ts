@@ -990,6 +990,7 @@ export const en: TranslationCatalog = {
     terms: {
       title: 'Terms and conditions',
       subtitle: 'Terms of use for the Panorama app',
+      openOnline: 'Read the full terms on the website',
       sections: [
         {
           title: 'Acceptable use',
@@ -1827,6 +1828,19 @@ export const en: TranslationCatalog = {
       cancelRequest: 'Cancel deletion request',
       cancelledNotice: 'The deletion request was cancelled. Your account is safe.',
       requestedNotice: 'Your deletion request was received.',
+      statusLoading: 'Checking your deletion request status...',
+      statusError: 'Could not load the deletion request status.',
+      unavailable: 'Account deletion requests are not available right now.',
+      requestedAt: (date: string) => `Requested: ${date}`,
+      cancelledBefore:
+        'Your earlier deletion request was cancelled. You can make a new one at any time.',
+      completedNote: 'The deletion of this account is complete.',
+      failed: 'Could not complete the operation. Please try again.',
+      cancelConfirmTitle: 'Cancel the deletion request?',
+      cancelConfirmMessage: 'Your account will stay as it is and will not be deleted.',
+      cancelConfirmAction: 'Yes, cancel the request',
+      keepRequest: 'Keep the request',
+      reasonCounter: (count: number, max: number) => `${count}/${max}`,
       loadError: 'Could not load the request status. Please try again.',
     },
 

@@ -14,6 +14,7 @@ import {
   Stack,
 } from '../../../components';
 import { PrintingRoutes, ProfileRoutes, TabRoutes } from '../../../navigation/routes';
+import { openLegalPage } from '../services';
 import type { AppTabsParamList, ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { useAuthStore } from '../../auth/store';
@@ -39,6 +40,13 @@ function getAcademicValue(value: { name?: string } | null | undefined, fallback:
 
 export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
   const { t } = useTranslation();
+  async function openLegalOrScreen(kind: 'privacy' | 'terms') {
+    // The standalone page is the authoritative text; the built-in summary is the fallback.
+    if (!(await openLegalPage(kind))) {
+      navigation.navigate(kind === 'privacy' ? ProfileRoutes.PrivacyPolicy : ProfileRoutes.Terms);
+    }
+  }
+
   const [isConfirmingLogout, setIsConfirmingLogout] = useState(false);
   const tabNavigation = navigation.getParent<AppTabsNavigation>();
   const authUser = useAuthStore((state) => state.user);
@@ -183,11 +191,11 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
           title={t.profile.legalSection.title}
         >
           <ProfileActionItem
-            onPress={() => navigation.navigate(ProfileRoutes.PrivacyPolicy)}
+            onPress={() => openLegalOrScreen('privacy')}
             title={t.legal.privacy.title}
           />
           <ProfileActionItem
-            onPress={() => navigation.navigate(ProfileRoutes.Terms)}
+            onPress={() => openLegalOrScreen('terms')}
             title={t.legal.terms.title}
           />
           <ProfileActionItem

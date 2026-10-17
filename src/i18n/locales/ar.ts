@@ -973,6 +973,7 @@ export const ar = {
     terms: {
       title: 'الشروط والأحكام',
       subtitle: 'شروط استخدام تطبيق بانوراما',
+      openOnline: 'قراءة الشروط الكاملة على الموقع',
       sections: [
         {
           title: 'الاستخدام المقبول',
@@ -1800,6 +1801,18 @@ export const ar = {
       cancelledNotice: 'تم إلغاء طلب الحذف وحسابك آمن.',
       requestedNotice: 'تم استلام طلب الحذف.',
       loadError: 'تعذّر تحميل حالة الطلب. حاول مرة أخرى.',
+      statusLoading: 'جاري التحقق من حالة طلب الحذف...',
+      statusError: 'تعذر تحميل حالة طلب الحذف.',
+      unavailable: 'طلب حذف الحساب غير متاح حاليا.',
+      requestedAt: (date: string) => `تاريخ الطلب: ${date}`,
+      cancelledBefore: 'تم إلغاء طلب الحذف السابق. يمكنك تقديم طلب جديد في أي وقت.',
+      completedNote: 'اكتمل حذف هذا الحساب.',
+      failed: 'تعذر إتمام العملية. حاول مرة أخرى.',
+      cancelConfirmTitle: 'إلغاء طلب الحذف؟',
+      cancelConfirmMessage: 'سيبقى حسابك كما هو ولن يُحذف.',
+      cancelConfirmAction: 'نعم، ألغِ الطلب',
+      keepRequest: 'إبقاء الطلب',
+      reasonCounter: (count: number, max: number) => `${count}/${max}`,
     },
 
     changePassword: {
