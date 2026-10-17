@@ -366,6 +366,12 @@ export const en: TranslationCatalog = {
         'Your join request is under review. Lectures and files unlock as soon as it is approved.',
       join: 'Join the subject group',
       openGroup: 'View the subject group',
+      rejected:
+        'Your request to join the subject group was declined. You can send a new request to unlock lectures and files.',
+      blocked:
+        'You are blocked from this subject’s group, so lectures and files are unavailable. Contact support if this is a mistake.',
+      left: 'You left this subject’s group. Join again to unlock lectures and files.',
+      rejoin: 'Send a new join request',
     },
     general: 'General subject',
     resultsCount: (count: number) => `${count} subjects`,
@@ -396,6 +402,8 @@ export const en: TranslationCatalog = {
         'Join this subject’s groups and follow the discussion with your classmates.',
       announcementsTitle: 'Announcements',
       announcementsDescription: 'There are no announcements for this subject right now.',
+      chatTitle: 'Group chat',
+      chatDescription: 'Talk with your classmates and the subject group members.',
     },
 
     errors: {

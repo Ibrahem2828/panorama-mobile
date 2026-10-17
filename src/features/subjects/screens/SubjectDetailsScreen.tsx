@@ -20,7 +20,7 @@ import { SubjectDetailHeader, SubjectLinkedSectionCard } from '../components';
 import { useSubjectsStore } from '../store';
 import type { Subject } from '../types';
 import { useTranslation } from '../../../i18n';
-import { useSubjectGroupAccess } from '../../groups';
+import { GroupWhatsAppCard, useSubjectGroupAccess } from '../../groups';
 import { SubjectLecturesSection } from '../../lectures';
 import { SubjectLockedCard } from '../components/SubjectLockedCard';
 import { getSubjectDisplayName } from '../services';
@@ -76,12 +76,19 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
   }
 
   function handleOpenFiles() {
-    navigation.getParent<AppTabsNavigation>()?.navigate(TabRoutes.Home, {
-      screen: SharedRoutes.FilesList,
-      params: {
-        subjectId: subject?.id,
-        subjectName: subject ? getSubjectDisplayName(subject, t.subjects) : undefined,
-      },
+    // Pushed onto the Subjects stack so Back returns to this subject.
+    navigation.navigate(SharedRoutes.FilesList, {
+      subjectId: subject?.id,
+      subjectName: subject ? getSubjectDisplayName(subject, t.subjects) : undefined,
+    });
+  }
+
+  function handleOpenChat() {
+    if (!access.group) return;
+    navigation.getParent<AppTabsNavigation>()?.navigate(TabRoutes.Groups, {
+      screen: GroupsRoutes.ChatRoom,
+      params: { groupId: access.group.id },
+      initial: false,
     });
   }
 
@@ -130,21 +137,29 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
             title={t.subjects.details.groupsTitle}
           />
           {access.status === 'member' ? (
-            <SubjectLinkedSectionCard
-              description={t.subjects.details.filesDescription}
-              icon="folder"
-              onPress={handleOpenFiles}
-              title={t.subjects.details.filesTitle}
-            />
+            <>
+              <SubjectLinkedSectionCard
+                description={t.subjects.details.chatDescription}
+                icon="chat"
+                onPress={handleOpenChat}
+                title={t.subjects.details.chatTitle}
+              />
+              <SubjectLinkedSectionCard
+                description={t.subjects.details.filesDescription}
+                icon="folder"
+                onPress={handleOpenFiles}
+                title={t.subjects.details.filesTitle}
+              />
+            </>
           ) : null}
         </Stack>
+        {access.status === 'member' && access.group ? (
+          <GroupWhatsAppCard canLaunch groupId={access.group.id} />
+        ) : null}
         {access.status === 'member' ? (
           <SubjectLecturesSection subjectId={subject.id} />
         ) : access.status === 'loading' ? null : (
-          <SubjectLockedCard
-            onOpenGroups={handleOpenGroups}
-            pending={access.status === 'pending'}
-          />
+          <SubjectLockedCard membership={access.membership} onOpenGroups={handleOpenGroups} />
         )}
       </Stack>
     </AppScreen>

@@ -40,6 +40,9 @@ export type HomeStackParamList = {
 export type SubjectsStackParamList = {
   SubjectsList: undefined;
   SubjectDetails: { subjectId: string | number };
+  FilesList: { subjectId?: string | number; subjectName?: string } | undefined;
+  FileDetails: { fileId: string | number };
+  PdfViewer: { fileId: string | number; title?: string };
   LecturesList: LecturesListParams;
   LectureViewer: LectureViewerParams;
 };

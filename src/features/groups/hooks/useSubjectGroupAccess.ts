@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { resolveMembershipState } from '../services/membership';
+import { resolveMembershipState, type MembershipKind } from '../services/membership';
 import { useGroupsStore } from '../store';
 import type { Group } from '../types';
 
@@ -8,6 +8,8 @@ export type SubjectGroupAccess = {
   status: 'loading' | 'member' | 'pending' | 'none';
   /** The subject's group the student belongs to (or asked to join), when there is one. */
   group: Group | null;
+  /** Membership of `group` (`notMember` when the student has no group for this subject). */
+  membership: MembershipKind;
 };
 
 function subjectIdOf(group: Group): string | null {
@@ -46,10 +48,21 @@ export function useSubjectGroupAccess(subjectId: string | number): SubjectGroupA
   const wanted = String(subjectId);
   const related = myGroups.filter((group) => subjectIdOf(group) === wanted);
   const member = related.find((group) => resolveMembershipState(group).kind === 'member');
-  if (member) return { status: 'member', group: member };
+  if (member) return { status: 'member', group: member, membership: 'member' };
 
   const pending = related.find((group) => resolveMembershipState(group).kind === 'pending');
-  if (pending) return { status: 'pending', group: pending };
+  if (pending) return { status: 'pending', group: pending, membership: 'pending' };
 
-  return { status: loaded ? 'none' : 'loading', group: null };
+  // A blocked/rejected/left group is reported so the locked card can say why.
+  const other =
+    related.find((group) => resolveMembershipState(group).kind === 'blocked') ??
+    related.find((group) => resolveMembershipState(group).kind === 'rejected') ??
+    related.find((group) => resolveMembershipState(group).kind === 'left') ??
+    null;
+
+  return {
+    status: loaded ? 'none' : 'loading',
+    group: other,
+    membership: other ? resolveMembershipState(other).kind : 'notMember',
+  };
 }
