@@ -5,7 +5,11 @@ import Svg, { Circle, Ellipse, G, Line, Rect } from 'react-native-svg';
 import { AppText, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { colors, radius, spacing, useBrand } from '../../../theme';
-import { buildPrintPreview, spiralRingCount, type PrintPreviewModel } from '../services/printPreview';
+import {
+  buildPrintPreview,
+  spiralRingCount,
+  type PrintPreviewModel,
+} from '../services/printPreview';
 import type { PrintCartItem } from '../types';
 import { usePrintOptionLabels } from './PrintItemOptions';
 
@@ -165,7 +169,15 @@ function Binding({ model, x, y }: { model: PrintPreviewModel; x: number; y: numb
       <G>
         <Rect fill={brand.primary} height={h} rx={1.5} width={8} x={edge - 8} y={y} />
         <Rect fill="#FFFFFF" height={h - 6} opacity={0.22} width={1.6} x={edge - 6} y={y + 3} />
-        <Line stroke="#FFFFFF" strokeOpacity={0.4} strokeWidth={0.8} x1={edge - 8} x2={edge - 8} y1={y} y2={y + h} />
+        <Line
+          stroke="#FFFFFF"
+          strokeOpacity={0.4}
+          strokeWidth={0.8}
+          x1={edge - 8}
+          x2={edge - 8}
+          y1={y}
+          y2={y + h}
+        />
       </G>
     );
   }
@@ -176,9 +188,35 @@ function Binding({ model, x, y }: { model: PrintPreviewModel; x: number; y: numb
 
     return (
       <G origin={`${sx + 8}, ${sy}`} rotation={-38}>
-        <Line stroke="#000000" strokeLinecap="round" strokeOpacity={0.18} strokeWidth={3.6} x1={sx + 0.6} x2={sx + 16.6} y1={sy + 1.4} y2={sy + 1.4} />
-        <Line stroke={STAPLE_COLOR} strokeLinecap="round" strokeWidth={3.2} x1={sx} x2={sx + 16} y1={sy} y2={sy} />
-        <Line stroke="#FFFFFF" strokeLinecap="round" strokeOpacity={0.75} strokeWidth={0.9} x1={sx + 1.5} x2={sx + 14.5} y1={sy - 0.8} y2={sy - 0.8} />
+        <Line
+          stroke="#000000"
+          strokeLinecap="round"
+          strokeOpacity={0.18}
+          strokeWidth={3.6}
+          x1={sx + 0.6}
+          x2={sx + 16.6}
+          y1={sy + 1.4}
+          y2={sy + 1.4}
+        />
+        <Line
+          stroke={STAPLE_COLOR}
+          strokeLinecap="round"
+          strokeWidth={3.2}
+          x1={sx}
+          x2={sx + 16}
+          y1={sy}
+          y2={sy}
+        />
+        <Line
+          stroke="#FFFFFF"
+          strokeLinecap="round"
+          strokeOpacity={0.75}
+          strokeWidth={0.9}
+          x1={sx + 1.5}
+          x2={sx + 14.5}
+          y1={sy - 0.8}
+          y2={sy - 0.8}
+        />
       </G>
     );
   }
@@ -201,7 +239,10 @@ function PrintOrderPreviewComponent({
 
   const frontX = (CANVAS_WIDTH - model.sheetWidth) / 2 + model.stackDepth * 2;
   const frontY = (CANVAS_HEIGHT - model.sheetHeight) / 2 - model.stackDepth * 2;
-  const backSheets = Array.from({ length: model.stackDepth }, (_, index) => model.stackDepth - index);
+  const backSheets = Array.from(
+    { length: model.stackDepth },
+    (_, index) => model.stackDepth - index,
+  );
   const bindingKey = model.binding;
 
   const caption = [
@@ -241,7 +282,11 @@ function PrintOrderPreviewComponent({
           const tilt = model.binding === 'none' ? (depth % 2 === 0 ? 1.6 : -1.3) : 0;
 
           return (
-            <G key={depth} origin={`${x + model.sheetWidth / 2}, ${y + model.sheetHeight / 2}`} rotation={tilt}>
+            <G
+              key={depth}
+              origin={`${x + model.sheetWidth / 2}, ${y + model.sheetHeight / 2}`}
+              rotation={tilt}
+            >
               <Sheet front={false} model={model} x={x} y={y} />
               <Binding model={model} x={x} y={y} />
             </G>

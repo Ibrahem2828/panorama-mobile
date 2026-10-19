@@ -1,8 +1,4 @@
-import {
-  MAX_VISIBLE_COPIES,
-  buildPrintPreview,
-  spiralRingCount,
-} from '../services/printPreview';
+import { MAX_VISIBLE_COPIES, buildPrintPreview, spiralRingCount } from '../services/printPreview';
 
 const base = {
   paperSize: 'A4',
@@ -36,7 +32,12 @@ describe('buildPrintPreview', () => {
   });
 
   it('maps colour, sides and the booklet bindings', () => {
-    const model = buildPrintPreview({ ...base, colorMode: 'color', sides: 'double_sided', binding: 'spiral' });
+    const model = buildPrintPreview({
+      ...base,
+      colorMode: 'color',
+      sides: 'double_sided',
+      binding: 'spiral',
+    });
 
     expect(model).toMatchObject({ colored: true, doubleSided: true, isBooklet: true });
     expect(buildPrintPreview({ ...base, binding: 'thermal' }).isBooklet).toBe(true);

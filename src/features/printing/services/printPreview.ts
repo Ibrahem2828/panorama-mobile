@@ -37,7 +37,9 @@ export type PrintPreviewModel = {
 
 export function buildPrintPreview(input: PrintPreviewInput): PrintPreviewModel {
   const copies = Math.max(1, Math.floor(Number.isFinite(input.copies) ? input.copies : 1));
-  const sheetWidth = Math.round((A3_DRAW_WIDTH * PAPER_WIDTH_SCALE[input.paperSize]) / PAPER_WIDTH_SCALE.A3);
+  const sheetWidth = Math.round(
+    (A3_DRAW_WIDTH * PAPER_WIDTH_SCALE[input.paperSize]) / PAPER_WIDTH_SCALE.A3,
+  );
 
   return {
     paperSize: input.paperSize,
