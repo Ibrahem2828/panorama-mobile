@@ -2047,6 +2047,18 @@ export const en: TranslationCatalog = {
       bindingThermal: 'Thermal binding',
     },
 
+    preview: {
+      title: 'Order preview',
+      copies: (n: number) => `${n} copies`,
+      pages: (n: number) => `${n} pages`,
+      bindingHint: {
+        none: 'Loose sheets, not bound.',
+        staple: 'Sheets are stapled at the corner. Good for short files.',
+        spiral: 'Spiral-bound: the file opens easily and lies flat. Good for lectures and notes.',
+        thermal: 'Thermal binding with a glued spine and cover: a formal look for reports.',
+      },
+    },
+
     futureOptions: {
       title: 'A clear price before you confirm',
       description:

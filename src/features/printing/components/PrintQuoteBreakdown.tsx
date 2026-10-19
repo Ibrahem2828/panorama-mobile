@@ -7,6 +7,7 @@ import { radius, spacing, useBrand } from '../../../theme';
 import { formatPrintMoney } from '../services';
 import type { PrintCartItem, PrintQuote } from '../types';
 import { usePrintOptionLabels } from './PrintItemOptions';
+import { PrintOrderPreview } from './PrintOrderPreview';
 
 type PrintQuoteBreakdownProps = {
   quote: PrintQuote;
@@ -51,6 +52,7 @@ export function PrintQuoteBreakdown({ quote, items, names }: PrintQuoteBreakdown
               <AppText color="secondary" numberOfLines={2} variant="caption">
                 {names[index]}
               </AppText>
+              <PrintOrderPreview item={item} pages={line?.pages_count} />
               <Divider />
               <Row label={t.printing.priceSummary.copiesSummary} value={String(item.copies)} />
               <Row

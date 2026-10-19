@@ -20,6 +20,7 @@ import { PrintingRoutes } from '../../../navigation/routes';
 import type { PrintingStackParamList } from '../../../navigation/types';
 import { colors, layout, spacing, useBrand } from '../../../theme';
 import {
+  PrintOrderPreview,
   PrintOrderStatusBadge,
   PrintOrderStatusIcon,
   PrintStatusProgress,
@@ -284,6 +285,16 @@ export function PrintOrderDetailsScreen({ navigation, route }: Props) {
                           item.pages_count ? t.printing.order.pages(item.pages_count) : ''
                         }`}
                       </AppText>
+                      <PrintOrderPreview
+                        item={{
+                          paperSize: item.paper_size ?? 'A4',
+                          colorMode: item.color_mode ?? 'black_white',
+                          sides: item.sides ?? 'one_sided',
+                          binding: item.binding ?? 'none',
+                          copies: item.copies,
+                        }}
+                        pages={item.pages_count}
+                      />
                       <Stack direction="horizontal" gap="xs" wrap>
                         {(
                           [item.color_mode, item.paper_size, item.sides, item.binding] as Array<

@@ -14,6 +14,7 @@ import { pickPrintDocument, pickPrintImage } from '../services/imagePicker';
 import type { PrintCartItem, PrintItemValidation, PrintSource, UploadProblem } from '../types';
 import { PrintCopiesStepper } from './PrintCopiesStepper';
 import { PrintItemOptions } from './PrintItemOptions';
+import { PrintOrderPreview } from './PrintOrderPreview';
 import { PrintLibraryPicker } from './PrintLibraryPicker';
 
 type PrintItemCardProps = {
@@ -231,6 +232,16 @@ function PrintItemCardComponent({
           error={showErrors && problems?.copies ? t.printing.errors.invalidCopies : undefined}
           onChange={(copies) => onChange(item.key, { copies })}
           value={item.copies}
+        />
+        <PrintOrderPreview
+          item={{
+            paperSize: item.paperSize,
+            colorMode: item.colorMode,
+            sides: item.sides,
+            binding: item.binding,
+            copies: item.copies,
+          }}
+          pages={item.source?.kind === 'converted' ? item.source.pages : null}
         />
         <PrintItemOptions item={item} onChange={(patch) => onChange(item.key, patch)} />
       </Stack>
