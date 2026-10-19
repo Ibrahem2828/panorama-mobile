@@ -3,6 +3,7 @@ export { PrintCopiesStepper } from './PrintCopiesStepper';
 export { PrintItemCard } from './PrintItemCard';
 export { PrintItemOptions, usePrintOptionLabels } from './PrintItemOptions';
 export { PrintLibraryPicker } from './PrintLibraryPicker';
+export { PrintOrderPreview } from './PrintOrderPreview';
 export { PrintOrderCard } from './PrintOrderCard';
 export { PrintOrderStatusBadge } from './PrintOrderStatusBadge';
 export { PrintOrderStatusIcon } from './PrintOrderStatusIcon';
