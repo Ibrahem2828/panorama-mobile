@@ -64,7 +64,7 @@ const PickerRow = memo(function PickerRow({ file, isSelected, onPress }: RowProp
               {title}
             </AppText>
             <AppText color="muted" variant="caption">
-              {[`#${String(file.id)}`, size].filter(Boolean).join(' · ')}
+              {[`⁦#${String(file.id)}⁩`, size].filter(Boolean).join(' · ')}
             </AppText>
           </Stack>
           {isSelected ? <AppBadge label={t.printing.library.selected} variant="brand" /> : null}

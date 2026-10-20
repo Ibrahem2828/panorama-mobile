@@ -7,9 +7,10 @@ export function StudentContextLoadingScreen() {
   const { t } = useTranslation();
   const profileFailed = useStudentProfileStore((state) => state.loadFailed);
   const verificationFailed = useVerificationStore((state) => state.loadFailed);
-  const isLoading =
-    useStudentProfileStore((state) => state.isBootstrapping) ||
-    useVerificationStore((state) => state.isLoadingVerification);
+  // Both hooks must run on every render: `a() || b()` skips b() while a() is true and changes the hook count.
+  const profileLoading = useStudentProfileStore((state) => state.isBootstrapping);
+  const verificationLoading = useVerificationStore((state) => state.isLoadingVerification);
+  const isLoading = profileLoading || verificationLoading;
 
   function handleRetry() {
     void useStudentProfileStore.getState().bootstrap({ force: true });
