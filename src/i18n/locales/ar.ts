@@ -261,7 +261,7 @@ export const ar = {
       longMessage: 'الرسالة طويلة. الحد الأقصى 4000 حرف.',
       rateLimited: 'أرسلت رسائل كثيرة بسرعة. انتظر قليلا ثم حاول مرة أخرى.',
       sendNetwork: 'لم تُرسل الرسالة بسبب ضعف الاتصال. اضغط لإعادة المحاولة.',
-      attachmentType: 'الصيغ المدعومة للصور: PNG وJPG وWEBP.',
+      attachmentType: 'الصيغ المدعومة للصور: PNG أو JPG أو WEBP.',
       attachmentSize: 'حجم الصورة كبير. الحد الأقصى 25 م.ب.',
       attachmentEmpty: 'الصورة المختارة فارغة. اختر صورة أخرى.',
       attachmentRejected: 'تعذر قبول المرفق. جرّب صورة أخرى.',
@@ -1342,7 +1342,7 @@ export const ar = {
 
   attachments: {
     attach: 'إرفاق صورة',
-    hint: 'الصيغ المدعومة: PNG وJPG وWEBP، بحد أقصى 25 م.ب.',
+    hint: 'الصيغ المدعومة: PNG أو JPG أو WEBP، بحد أقصى 25 م.ب.',
     remove: 'إزالة المرفق',
     selected: 'مرفق مختار',
     uploading: (percent: number) => `جارٍ الرفع ${percent}%`,
@@ -1489,7 +1489,7 @@ export const ar = {
     emptyTitle: 'لا توجد تذاكر دعم',
     emptyMessage: 'لم تنشئ أي تذكرة دعم بعد.',
     emptyIllustrationAlt: 'رسم يوضح عدم وجود تذاكر دعم',
-    fallbackTitle: (id: string) => `تذكرة دعم #${id}`,
+    fallbackTitle: (id: string) => `تذكرة دعم رقم ${id}`,
     emptyMessageBody: 'رسالة بدون نص',
 
     create: {
@@ -1846,7 +1846,7 @@ export const ar = {
       opened: 'تم فتح واتساب.',
       notInstalled: 'تعذر فتح واتساب. تأكد من تثبيت التطبيق على هاتفك ثم حاول مرة أخرى.',
       error: 'تعذر فتح واتساب الآن. حاول مرة أخرى بعد قليل.',
-      unavailable: 'لم تتم إضافة رابط مجموعة الواتساب بعد، سيظهر هنا عندما تضيفه الإدارة',
+      unavailable: 'لم تضف الإدارة رابط مجموعة الواتساب بعد. سيعمل هذا الزر فور إضافته.',
     },
 
     emptyMine: {
@@ -1923,8 +1923,9 @@ export const ar = {
       pickPdf: 'ملف PDF أو Word',
       pickFromDevice: 'صورة من هاتفك',
       uploadHintGeneral:
-        'ارفع ملفك بصيغة PDF أو Word أو PowerPoint أو صورة (PNG وJPG وWEBP)، بحد أقصى 25 م.ب. نحوّل ملفات Word وPowerPoint إلى PDF تلقائيًا.',
-      uploadHint: 'الصيغ المدعومة: PDF وWord وPowerPoint وPNG وJPG وWEBP، بحد أقصى 25 م.ب لكل ملف.',
+        'ارفع ملفك بصيغة PDF أو Word أو PowerPoint أو صورة (PNG أو JPG أو WEBP)، بحد أقصى 25 م.ب. نحوّل ملفات Word أو PowerPoint إلى PDF تلقائيًا.',
+      uploadHint:
+        'الصيغ المدعومة: PDF أو Word أو PowerPoint أو PNG أو JPG أو WEBP، بحد أقصى 25 م.ب لكل ملف.',
       converting: 'نحوّل الملف إلى PDF، قد يستغرق ذلك لحظات…',
       convertFailed:
         'تعذر تحويل الملف إلى PDF. جرّب حفظه بصيغة PDF من تطبيق Word أو PowerPoint ثم ارفعه.',
@@ -1964,7 +1965,7 @@ export const ar = {
       loadFailed: 'تعذر تحميل الملفات. حاول مرة أخرى.',
       selected: 'محدد',
       fileLabel: 'ملف من الملفات المتاحة',
-      unnamedFile: (id: string) => `ملف #${id}`,
+      unnamedFile: (id: string) => `ملف رقم ${id}`,
     },
 
     transfer: {
@@ -2042,7 +2043,7 @@ export const ar = {
       viewFile: 'عرض الملف',
       viewFileLabel: (name: string) => `عرض الملف: ${name}`,
       autoRefresh: 'تتحدث الحالة تلقائيًا.',
-      roundingLine: (amount: string) => `بعد التقريب: ${amount}`,
+      roundingLine: (amount: string) => `تقريب السعر: ${amount}`,
     },
 
     itemViewer: {
@@ -2073,8 +2074,11 @@ export const ar = {
 
     preview: {
       title: 'محاكاة الطلب',
-      copies: (n: number) => `${n} نسخ`,
-      pages: (n: number) => `${n} صفحة`,
+      // Arabic plural forms: 1 نسخة, 2 نسختان, 3-10 نسخ, 11+ نسخة (the same for pages).
+      copies: (n: number) =>
+        n === 1 ? '1 نسخة' : n === 2 ? '2 نسختان' : n >= 3 && n <= 10 ? `${n} نسخ` : `${n} نسخة`,
+      pages: (n: number) =>
+        n === 1 ? '1 صفحة' : n === 2 ? '2 صفحتان' : n >= 3 && n <= 10 ? `${n} صفحات` : `${n} صفحة`,
       bindingHint: {
         none: 'أوراق منفصلة غير مجلّدة.',
         staple: 'تُدبَّس الأوراق بدبّوس في الزاوية. مناسب للملفات القصيرة.',
@@ -2102,7 +2106,7 @@ export const ar = {
     },
 
     order: {
-      fallbackTitle: (id: string) => `طلب طباعة #${id}`,
+      fallbackTitle: (id: string) => `طلب طباعة رقم ${id}`,
       fallbackFileTitle: 'ملف مطبوع',
       uploadedFile: 'ملف مرفوع',
       copies: (count: number) =>

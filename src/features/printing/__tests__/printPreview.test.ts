@@ -1,3 +1,4 @@
+import { ar } from '../../../i18n/locales/ar';
 import { MAX_VISIBLE_COPIES, buildPrintPreview, spiralRingCount } from '../services/printPreview';
 
 const base = {
@@ -47,5 +48,24 @@ describe('buildPrintPreview', () => {
   it('draws more coil loops on a taller sheet, never fewer than four', () => {
     expect(spiralRingCount(40)).toBe(4);
     expect(spiralRingCount(160)).toBeGreaterThan(spiralRingCount(80));
+  });
+});
+
+describe('preview wording', () => {
+  it('uses the right Arabic plural forms for copies and pages', () => {
+    expect([1, 2, 3, 10, 11, 40].map(ar.printing.preview.copies)).toEqual([
+      '1 نسخة',
+      '2 نسختان',
+      '3 نسخ',
+      '10 نسخ',
+      '11 نسخة',
+      '40 نسخة',
+    ]);
+    expect([1, 2, 6, 12].map(ar.printing.preview.pages)).toEqual([
+      '1 صفحة',
+      '2 صفحتان',
+      '6 صفحات',
+      '12 صفحة',
+    ]);
   });
 });

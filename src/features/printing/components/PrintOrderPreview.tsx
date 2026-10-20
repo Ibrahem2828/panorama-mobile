@@ -262,9 +262,18 @@ function PrintOrderPreviewComponent({
       accessibilityLabel={`${t.printing.preview.title}: ${caption}`}
       style={[styles.box, { backgroundColor: brand.primarySoft }]}
     >
-      <AppText color="muted" variant="caption" weight="700">
-        {t.printing.preview.title}
-      </AppText>
+      <View style={styles.header}>
+        <AppText color="muted" variant="caption" weight="700">
+          {t.printing.preview.title}
+        </AppText>
+        {model.copies > 1 ? (
+          <View style={[styles.badge, { backgroundColor: brand.primary }]}>
+            <AppText color="inverse" variant="caption" weight="700">
+              {`×${model.copies}`}
+            </AppText>
+          </View>
+        ) : null}
+      </View>
       <Svg height={CANVAS_HEIGHT} viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`} width="100%">
         {/* Soft ground shadow under the stack. */}
         <Ellipse
@@ -297,13 +306,6 @@ function PrintOrderPreviewComponent({
           <Binding model={model} x={frontX} y={frontY} />
         </G>
       </Svg>
-      {model.copies > 1 ? (
-        <View style={[styles.badge, { backgroundColor: brand.primary }]}>
-          <AppText color="inverse" variant="caption" weight="700">
-            {`×${model.copies}`}
-          </AppText>
-        </View>
-      ) : null}
       <Stack gap="xs">
         <AppText color="secondary" variant="caption">
           {caption}
@@ -320,10 +322,9 @@ export const PrintOrderPreview = memo(PrintOrderPreviewComponent);
 
 const styles = StyleSheet.create({
   box: { borderRadius: radius.card, padding: spacing.md, gap: spacing.sm },
+  // The copy count sits in the title row (not on top of it): absolute left/right are mirrored in RTL.
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   badge: {
-    position: 'absolute',
-    top: spacing.md,
-    left: spacing.md,
     minWidth: 34,
     borderRadius: radius.button,
     paddingHorizontal: spacing.sm,

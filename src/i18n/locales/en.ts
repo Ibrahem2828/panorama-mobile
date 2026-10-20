@@ -1832,7 +1832,7 @@ export const en: TranslationCatalog = {
         'Could not open WhatsApp. Make sure the app is installed on your phone and try again.',
       error: 'Could not open WhatsApp right now. Please try again in a moment.',
       unavailable:
-        'The WhatsApp group link has not been added yet. It will appear here once the administration adds it.',
+        'The administration has not added the WhatsApp group link yet. This button will work as soon as it is added.',
     },
 
     emptyMine: {
@@ -2022,7 +2022,7 @@ export const en: TranslationCatalog = {
       viewFile: 'View file',
       viewFileLabel: (name: string) => `View file: ${name}`,
       autoRefresh: 'The status updates automatically.',
-      roundingLine: (amount: string) => `After rounding: ${amount}`,
+      roundingLine: (amount: string) => `Price rounding: ${amount}`,
     },
 
     itemViewer: {

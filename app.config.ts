@@ -254,7 +254,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: 'Panorama',
     slug: 'panorama-mobile',
-    version: '2.7.0',
+    version: '2.7.1',
     orientation: 'portrait',
     scheme: 'panorama',
     icon: './src/assets/app/icon.png',
@@ -316,7 +316,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: {
       ...config.android,
       package: 'com.panorama.student',
-      versionCode: 270,
+      versionCode: 271,
       adaptiveIcon: {
         foregroundImage: './src/assets/app/adaptive-icon.png',
         monochromeImage: './src/assets/app/adaptive-icon-monochrome.png',
