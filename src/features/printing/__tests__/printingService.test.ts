@@ -15,6 +15,7 @@ import {
   canCancelPrintOrder,
   formatMoneyAmount,
   formatPrintMoney,
+  formatRounding,
   getPrintOrderItemFileLabel,
   getPrintOrderStatusPresentation,
 } from '../services/printingService';
@@ -72,5 +73,19 @@ describe('printing service helpers', () => {
       t.order.uploadedFile,
     );
     expect(getPrintOrderItemFileLabel({ copies: 1 }, t)).toBe(t.order.fallbackFileTitle);
+  });
+});
+
+describe('formatRounding', () => {
+  it('shows how much a total was rounded, with its sign and currency', () => {
+    expect(formatRounding('6.00', 'SYP')).toBe('+6 ل.س');
+    expect(formatRounding(-4, 'SYP')).toBe('-4 ل.س');
+    expect(formatRounding('-0.02', 'USD')).toBe('-$0.02');
+  });
+
+  it('shows nothing when the total was not rounded or the value is unusable', () => {
+    for (const value of ['0.00', 0, '', null, undefined, 'abc']) {
+      expect(formatRounding(value, 'SYP')).toBeNull();
+    }
   });
 });

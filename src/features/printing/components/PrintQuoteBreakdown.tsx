@@ -4,7 +4,7 @@ import { AppCard, AppText, Divider, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { formatDateTime } from '../../../utils/formatDateTime';
 import { radius, spacing, useBrand } from '../../../theme';
-import { formatPrintMoney } from '../services';
+import { formatPrintMoney, formatRounding } from '../services';
 import type { PrintCartItem, PrintQuote } from '../types';
 import { usePrintOptionLabels } from './PrintItemOptions';
 import { PrintOrderPreview } from './PrintOrderPreview';
@@ -36,6 +36,7 @@ export function PrintQuoteBreakdown({ quote, items, names }: PrintQuoteBreakdown
   const money = (value: string | number, currency: string) =>
     formatPrintMoney(value, currency) ?? String(value);
   const calculatedAt = formatDateTime(quote.calculated_at, locale);
+  const rounding = formatRounding(quote.rounding_adjustment, quote.currency);
 
   return (
     <Stack gap="md">
@@ -83,6 +84,15 @@ export function PrintQuoteBreakdown({ quote, items, names }: PrintQuoteBreakdown
           </AppCard>
         );
       })}
+
+      {rounding ? (
+        <AppCard variant="muted">
+          <Row label={t.printing.priceSummary.rounding} value={rounding} />
+          <AppText color="muted" variant="caption">
+            {t.printing.priceSummary.roundingNote}
+          </AppText>
+        </AppCard>
+      ) : null}
 
       <View style={[styles.total, { backgroundColor: brand.primarySoft }]}>
         <Stack align="center" direction="horizontal" gap="md" justify="space-between">

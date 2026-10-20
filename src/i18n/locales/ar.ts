@@ -1999,6 +1999,9 @@ export const ar = {
       bindingPrice: 'سعر التجليد',
       subtotal: 'المجموع الفرعي',
       total: 'الإجمالي',
+      rounding: 'التقريب',
+      roundingNote:
+        'تُقرَّب الليرة السورية إلى عشرة: ما ينتهي بـ 1 أو 2 ينزل وما ينتهي بـ 3 فأكثر يصعد.',
       calculatedAt: (time: string) => `حُسب في ${time}`,
       staleTitle: 'تغيّرت الخيارات',
       staleMessage: 'تغيّرت الخيارات بعد حساب السعر. أعد حساب السعر قبل التأكيد.',
@@ -2039,6 +2042,7 @@ export const ar = {
       viewFile: 'عرض الملف',
       viewFileLabel: (name: string) => `عرض الملف: ${name}`,
       autoRefresh: 'تتحدث الحالة تلقائيًا.',
+      roundingLine: (amount: string) => `بعد التقريب: ${amount}`,
     },
 
     itemViewer: {

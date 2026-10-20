@@ -195,6 +195,28 @@ export function formatPrintMoney(
   return `${formatMoneyAmount(value)} ل.س`;
 }
 
+/** "+6 ل.س" / "-4 ل.س": how much the total was rounded; null when it was not rounded (or the value is unusable). */
+export function formatRounding(
+  value: string | number | null | undefined,
+  currency: string | null | undefined,
+): string | null {
+  const number = Number(value);
+
+  if (
+    value === null ||
+    value === undefined ||
+    value === '' ||
+    !Number.isFinite(number) ||
+    number === 0
+  ) {
+    return null;
+  }
+
+  const money = formatPrintMoney(Math.abs(number), currency);
+
+  return money === null ? null : `${number > 0 ? '+' : '-'}${money}`;
+}
+
 export function formatPrintOrderPrice(order: Pick<PrintOrder, 'total_price' | 'currency'>) {
   return formatPrintMoney(order.total_price, order.currency);
 }
