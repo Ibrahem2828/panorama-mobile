@@ -33,6 +33,7 @@ import {
   formatPrintOrderDate,
   formatPrintOrderDateTime,
   formatPrintOrderPrice,
+  formatRounding,
   getPrintOrderCopiesCount,
   getPrintOrderItemFileLabel,
   getPrintOrderItemsCount,
@@ -142,6 +143,7 @@ export function PrintOrderDetailsScreen({ navigation, route }: Props) {
     t.common.unknown,
   );
   const price = formatPrintOrderPrice(activeOrder);
+  const rounding = formatRounding(activeOrder.rounding_adjustment, activeOrder.currency);
   const date = formatPrintOrderDate(activeOrder.created_at, locale);
   const pickup = activeOrder.pickup_location_detail;
   const extraRows = [
@@ -197,6 +199,11 @@ export function PrintOrderDetailsScreen({ navigation, route }: Props) {
               {price ? (
                 <AppText color="brand" variant="h3">
                   {price}
+                </AppText>
+              ) : null}
+              {rounding ? (
+                <AppText color="muted" variant="caption">
+                  {t.printing.details.roundingLine(rounding)}
                 </AppText>
               ) : null}
               {isActive ? (

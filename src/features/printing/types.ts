@@ -68,6 +68,8 @@ export type PrintOrder = {
   user_notes?: string | null;
   rejected_reason?: string | null;
   total_price?: string | number | null;
+  /** Signed amount the total was rounded by (new Syrian pound totals are rounded to tens); 0 when it was not. */
+  rounding_adjustment?: string | number | null;
   currency?: string | null;
   pickup_location?: Id | null;
   pickup_location_detail?: PrintPickupLocation | null;
@@ -136,6 +138,9 @@ export type PrintQuoteItem = {
 
 export type PrintQuote = {
   total_price: string | number;
+  /** The total by the price list before rounding, and how much the rounding moved it. */
+  exact_total?: string | number | null;
+  rounding_adjustment?: string | number | null;
   currency: string;
   calculated_at?: string;
   items: PrintQuoteItem[];

@@ -1977,6 +1977,9 @@ export const en: TranslationCatalog = {
       bindingPrice: 'Binding price',
       subtotal: 'Subtotal',
       total: 'Total',
+      rounding: 'Rounding',
+      roundingNote:
+        'New Syrian pounds are rounded to tens: a last digit of 1 or 2 goes down, 3 or more goes up.',
       calculatedAt: (time: string) => `Calculated at ${time}`,
       staleTitle: 'Options changed',
       staleMessage:
@@ -2019,6 +2022,7 @@ export const en: TranslationCatalog = {
       viewFile: 'View file',
       viewFileLabel: (name: string) => `View file: ${name}`,
       autoRefresh: 'The status updates automatically.',
+      roundingLine: (amount: string) => `After rounding: ${amount}`,
     },
 
     itemViewer: {
