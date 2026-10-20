@@ -1924,7 +1924,8 @@ export const ar = {
       pickFromDevice: 'صورة من هاتفك',
       uploadHintGeneral:
         'ارفع ملفك بصيغة PDF أو Word أو PowerPoint أو صورة (PNG أو JPG أو WEBP)، بحد أقصى 25 م.ب. نحوّل ملفات Word أو PowerPoint إلى PDF تلقائيًا.',
-      uploadHint: 'الصيغ المدعومة: PDF أو Word أو PowerPoint أو PNG أو JPG أو WEBP، بحد أقصى 25 م.ب لكل ملف.',
+      uploadHint:
+        'الصيغ المدعومة: PDF أو Word أو PowerPoint أو PNG أو JPG أو WEBP، بحد أقصى 25 م.ب لكل ملف.',
       converting: 'نحوّل الملف إلى PDF، قد يستغرق ذلك لحظات…',
       convertFailed:
         'تعذر تحويل الملف إلى PDF. جرّب حفظه بصيغة PDF من تطبيق Word أو PowerPoint ثم ارفعه.',
