@@ -102,6 +102,8 @@ export function ViewerPageStage({
     [registerTap],
   );
 
+  // React Native on Android forwards `source.headers` only when `source` is an array; a single object silently loses the
+  // `Authorization` and `X-Viewer-Session` headers (the backend then answers 401), so every Image here gets `[source]`.
   const pageSource = pages.ready ? pages.getSource('page', page) : null;
   const pageKey = pages.sourceKey('page', page);
   const pageLoaded = loadedKey === pageKey || warmPages.current.has(page);
@@ -143,7 +145,7 @@ export function ViewerPageStage({
             key={thumbnailKey}
             onLoad={() => setThumbKey(thumbnailKey)}
             resizeMode="contain"
-            source={thumbSource}
+            source={[thumbSource]}
             style={[styles.layer, dimensions]}
           />
         ) : null}
@@ -159,7 +161,7 @@ export function ViewerPageStage({
               setLoadedKey(pageKey);
             }}
             resizeMode="contain"
-            source={pageSource}
+            source={[pageSource]}
             style={[styles.layer, dimensions]}
           />
         ) : null}
@@ -215,7 +217,7 @@ export function ViewerPageStage({
                     key={pages.sourceKey('page', neighbour)}
                     onLoad={() => warmPages.current.add(neighbour)}
                     resizeMode="contain"
-                    source={source}
+                    source={[source]}
                     style={[styles.layer, size]}
                   />
                 );
