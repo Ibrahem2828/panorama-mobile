@@ -26,6 +26,7 @@ const FACULTY_ORDER = [
   'informatics',
   'petroleum',
   'business',
+  'construction',
 ] as const;
 
 const STAGE = 264;
@@ -153,18 +154,21 @@ const styles = StyleSheet.create({
   },
   dotOne: { top: 40, start: 36 },
   dotTwo: { bottom: 40, start: 70 },
+  // Seven logos: each shrinks (down to its natural size at most) so the row never overflows a narrow phone.
   faculties: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 8,
+    width: '100%',
   },
   // The logos are transparent cut-outs, so they sit directly on the page: no circle, border or box.
   facultyLogo: {
-    width: FACULTY_LOGO * 1.3,
-    height: FACULTY_LOGO,
+    flex: 1,
+    maxWidth: FACULTY_LOGO * 1.3,
+    aspectRatio: 1.3,
   },
   facultyImage: {
-    width: FACULTY_LOGO * 1.3,
-    height: FACULTY_LOGO,
+    width: '100%',
+    height: '100%',
   },
 });

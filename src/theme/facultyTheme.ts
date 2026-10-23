@@ -9,7 +9,7 @@ import { contrastRatio, mixHex } from './contrast';
  * Faculty identity. Every Panorama faculty logo shares the same burgundy + purple infinity mark and
  * differs only by its ribbon colour, so a student's theme keeps the brand and swaps that ribbon colour:
  * medicine green, dentistry sky blue, pharmacy lavender, informatics orange, petroleum amber on navy,
- * business rose, and neutral grey for the general / basic-requirement identity.
+ * business rose, construction teal, and neutral grey for the general / basic-requirement identity.
  */
 export type FacultyThemeKey =
   | 'default'
@@ -18,7 +18,8 @@ export type FacultyThemeKey =
   | 'pharmacy'
   | 'informatics'
   | 'petroleum'
-  | 'business';
+  | 'business'
+  | 'construction';
 
 export type BrandPalette = {
   key: FacultyThemeKey;
@@ -48,6 +49,7 @@ const LOGOS_LIGHT = {
   informatics: require('../assets/faculty/informatics.png') as ImageSourcePropType,
   petroleum: require('../assets/faculty/petroleum.png') as ImageSourcePropType,
   business: require('../assets/faculty/business.png') as ImageSourcePropType,
+  construction: require('../assets/faculty/construction.png') as ImageSourcePropType,
 };
 
 // Light lettering for dark backgrounds (transparent cut-outs, never boxed).
@@ -59,6 +61,7 @@ const LOGOS_DARK = {
   informatics: require('../assets/faculty/informatics-dark.png') as ImageSourcePropType,
   petroleum: require('../assets/faculty/petroleum-dark.png') as ImageSourcePropType,
   business: require('../assets/faculty/business-dark.png') as ImageSourcePropType,
+  construction: require('../assets/faculty/construction-dark.png') as ImageSourcePropType,
 };
 
 const LOGOS = isDarkScheme ? LOGOS_DARK : LOGOS_LIGHT;
@@ -145,6 +148,7 @@ const FACULTY_INPUTS: Record<FacultyThemeKey, [string, string, readonly [string,
   informatics: ['#C2550A', '#FFF0E1', ['#FDCB9C', '#F28C1E']],
   petroleum: ['#1B2F78', '#E8ECFA', ['#FDB05C', '#F77F00']],
   business: ['#C2305F', '#FDE8EF', ['#D8A3B1', '#D13D6D']],
+  construction: ['#0B7A75', '#E0F4F2', ['#9BDDD6', '#0E9F96']],
 };
 
 /** Test helper: the palette of every faculty for a given scheme. */
@@ -167,6 +171,7 @@ export const facultyPalettes: Record<FacultyThemeKey, BrandPalette> = {
   informatics: palette('informatics', ...FACULTY_INPUTS.informatics),
   petroleum: palette('petroleum', ...FACULTY_INPUTS.petroleum),
   business: palette('business', ...FACULTY_INPUTS.business),
+  construction: palette('construction', ...FACULTY_INPUTS.construction),
 };
 
 // Faculty codes follow the first digit of the student number (see the backend student-number rule).
@@ -181,6 +186,7 @@ const CODE_TO_KEY: Record<string, FacultyThemeKey> = {
 
 // Name keywords keep the theme right when a university names or codes faculties differently.
 const NAME_RULES: readonly [RegExp, FacultyThemeKey][] = [
+  [/بناء|البناء|تشييد|تشيد|إنشاء|انشاء|عمارة|مدني|construct|civil|architect/i, 'construction'],
   [/اسنان|أسنان|dent/i, 'dentistry'],
   [/صيدل|pharm/i, 'pharmacy'],
   [/معلومات|informat|computer|حاسوب|software|برمج/i, 'informatics'],
