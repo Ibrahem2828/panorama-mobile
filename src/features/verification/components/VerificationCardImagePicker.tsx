@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Image, Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppButton, AppText, Icon, Stack } from '../../../components';
 import { colors, radius, spacing, useBrand } from '../../../theme';
@@ -50,26 +50,10 @@ export function VerificationCardImagePicker({
   const { t } = useTranslation();
   const brand = useBrand();
   const [localError, setLocalError] = useState<string | null>(null);
+  const [canOpenSettings, setCanOpenSettings] = useState(false);
   const copy = t.verificationFlow.imagePicker;
 
-  async function handlePickImage() {
-    setLocalError(null);
-
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permission.granted) {
-      setLocalError(copy.permissionDenied);
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: 'images',
-      allowsEditing: true,
-      aspect: [3, 2],
-      quality: 0.9,
-      allowsMultipleSelection: false,
-    });
-
+  function applyResult(result: ImagePicker.ImagePickerResult) {
     if (result.canceled) {
       return;
     }
@@ -89,6 +73,52 @@ export function VerificationCardImagePicker({
       height: asset.height,
       size: asset.fileSize,
     });
+  }
+
+  const pickerOptions: ImagePicker.ImagePickerOptions = {
+    mediaTypes: 'images',
+    allowsEditing: true,
+    aspect: [3, 2],
+    quality: 0.9,
+    allowsMultipleSelection: false,
+  };
+
+  // The gallery uses the system photo picker: Android and iOS let any app read the photo the user picks there without
+  // a storage permission, so nothing is requested (a permission prompt cannot even appear for it).
+  async function handlePickImage() {
+    setLocalError(null);
+    setCanOpenSettings(false);
+
+    try {
+      applyResult(await ImagePicker.launchImageLibraryAsync(pickerOptions));
+    } catch {
+      setLocalError(copy.invalidImage);
+    }
+  }
+
+  // The camera is the only picker that needs a permission. If it was refused for good, the system will not ask
+  // again, so the user is sent to the app settings instead of being left with a dead button.
+  async function handleTakePhoto() {
+    setLocalError(null);
+    setCanOpenSettings(false);
+
+    try {
+      let permission = await ImagePicker.getCameraPermissionsAsync();
+
+      if (!permission.granted) {
+        permission = await ImagePicker.requestCameraPermissionsAsync();
+      }
+
+      if (!permission.granted) {
+        setLocalError(copy.cameraDenied);
+        setCanOpenSettings(true);
+        return;
+      }
+
+      applyResult(await ImagePicker.launchCameraAsync(pickerOptions));
+    } catch {
+      setLocalError(copy.cameraUnavailable);
+    }
   }
 
   const percent = Math.round(Math.min(Math.max(progress, 0), 1) * 100);
@@ -141,10 +171,29 @@ export function VerificationCardImagePicker({
         </Pressable>
       )}
 
+      {!selectedImage ? (
+        <AppButton
+          disabled={disabled}
+          leftIcon={<Icon color={brand.primary} name="camera" size={18} />}
+          onPress={() => void handleTakePhoto()}
+          title={copy.camera}
+          variant="outline"
+        />
+      ) : null}
+
       {localError ? (
         <AppText color="error" variant="bodySmall">
           {localError}
         </AppText>
+      ) : null}
+
+      {canOpenSettings ? (
+        <AppButton
+          onPress={() => void Linking.openSettings()}
+          size="sm"
+          title={copy.openSettings}
+          variant="ghost"
+        />
       ) : null}
 
       {selectedImage ? (
@@ -155,6 +204,14 @@ export function VerificationCardImagePicker({
             onPress={() => void handlePickImage()}
             size="sm"
             title={copy.replace}
+            variant="outline"
+          />
+          <AppButton
+            disabled={disabled}
+            leftIcon={<Icon color={brand.primary} name="camera" size={18} />}
+            onPress={() => void handleTakePhoto()}
+            size="sm"
+            title={copy.camera}
             variant="outline"
           />
           <AppButton

@@ -770,7 +770,12 @@ export const en: TranslationCatalog = {
       badGlare: 'Dark photo or glare on the card',
       replace: 'Replace photo',
       remove: 'Remove photo',
-      permissionDenied: 'Allow Panorama to access your photos so you can choose your card photo.',
+      camera: 'Take a photo with the camera',
+      cameraDenied:
+        'Camera permission was not granted. Choose a photo from your gallery instead, or open the app settings and allow the camera.',
+      cameraUnavailable:
+        'The camera could not be opened on this device. Choose a photo from your gallery.',
+      openSettings: 'Open app settings',
       invalidImage: 'This photo cannot be used. Choose another one.',
     },
   },

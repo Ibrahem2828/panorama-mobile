@@ -254,7 +254,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: 'Panorama',
     slug: 'panorama-mobile',
-    version: '2.8.2',
+    version: '2.8.3',
     orientation: 'portrait',
     scheme: 'panorama',
     icon: './src/assets/app/icon.png',
@@ -296,7 +296,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         {
           photosPermission:
             'يحتاج بانوراما للوصول إلى الصور لرفع البطاقة الجامعية أو المرفقات التي تختارها.',
-          cameraPermission: false,
+          cameraPermission: 'يحتاج بانوراما إلى الكاميرا لالتقاط صورة بطاقتك الجامعية.',
           microphonePermission: false,
         },
       ],
@@ -316,7 +316,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: {
       ...config.android,
       package: 'com.panorama.student',
-      versionCode: 282,
+      versionCode: 283,
       adaptiveIcon: {
         foregroundImage: './src/assets/app/adaptive-icon.png',
         monochromeImage: './src/assets/app/adaptive-icon-monochrome.png',
