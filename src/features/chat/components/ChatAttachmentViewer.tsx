@@ -112,7 +112,7 @@ export function ChatAttachmentViewer({ groupId, message, onClose }: ChatAttachme
               accessibilityLabel={t.chat.attachment.image}
               onError={() => setState({ status: 'error' })}
               resizeMode="contain"
-              source={{ uri: state.uri, headers }}
+              source={[{ uri: state.uri, headers }]}
               style={styles.image}
             />
           ) : null}
