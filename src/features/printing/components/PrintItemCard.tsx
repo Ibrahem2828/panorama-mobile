@@ -10,7 +10,7 @@ import { getFileDisplayTitle } from '../../files/services';
 import { useAuthStore } from '../../auth/store';
 import { isConvertibleDocument } from '../../attachments/services/localFile';
 import { convertOfficeDocument } from '../services/printingService';
-import { pickPrintDocument, pickPrintImage } from '../services/imagePicker';
+import { pickPrintDocument, pickPrintImage, pickPrintPhoto } from '../services/imagePicker';
 import type { PrintCartItem, PrintItemValidation, PrintSource, UploadProblem } from '../types';
 import { PrintCopiesStepper } from './PrintCopiesStepper';
 import { PrintItemOptions } from './PrintItemOptions';
@@ -48,7 +48,9 @@ function PrintItemCardComponent({
   );
   // General accounts print their own uploads only; students can also pick subject files they may open.
   const isStudent = useAuthStore((state) => state.user?.role?.toLowerCase() === 'student');
-  const [pickerProblem, setPickerProblem] = useState<UploadProblem | 'error' | 'convert' | null>(
+  const [pickerProblem, setPickerProblem] = useState<
+    UploadProblem | 'error' | 'convert' | 'camera' | null
+  >(
     null,
   );
   const [isPicking, setIsPicking] = useState(false);
@@ -91,6 +93,8 @@ function PrintItemCardComponent({
       setSource({ kind: 'upload', file: result.file });
     } else if (result.status === 'invalid') {
       setPickerProblem(result.problem);
+    } else if (result.status === 'permission_denied') {
+      setPickerProblem('camera');
     } else if (result.status === 'error') {
       setPickerProblem('error');
     }
@@ -112,7 +116,9 @@ function PrintItemCardComponent({
             ? t.printing.create.uploadPickerFailed
             : pickerProblem === 'convert'
               ? t.printing.create.convertFailed
-              : null;
+              : pickerProblem === 'camera'
+                ? t.printing.create.cameraDenied
+                : null;
   const { source } = item;
 
   return (
@@ -211,6 +217,14 @@ function PrintItemCardComponent({
                 onPress={() => void handlePickFromDevice()}
                 size="sm"
                 title={t.printing.create.pickFromDevice}
+                variant="outline"
+              />
+              <AppButton
+                leftIcon={<Icon color={brand.primary} name="camera" size={18} />}
+                loading={isPicking}
+                onPress={() => void handlePickFromDevice(pickPrintPhoto)}
+                size="sm"
+                title={t.printing.create.pickFromCamera}
                 variant="outline"
               />
               <AppButton

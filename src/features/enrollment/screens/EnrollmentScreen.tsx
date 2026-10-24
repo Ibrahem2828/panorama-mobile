@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import * as ImagePicker from 'expo-image-picker';
 import { Image, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { enrollmentService, normalizeApiError } from '../../../api';
@@ -18,6 +17,7 @@ import {
   Stack,
 } from '../../../components';
 import { TypeaheadSearch } from '../../../components/forms/TypeaheadSearch';
+import { IMAGE_ONLY_POLICY, pickFromSource } from '../../attachments';
 import { useTranslation } from '../../../i18n';
 import type { GroupsStackParamList } from '../../../navigation/types';
 import { colors, radius, spacing, useBrand } from '../../../theme';
@@ -124,56 +124,29 @@ export function EnrollmentScreen({ navigation }: Props) {
   const wizard = starting || !latest || latest.status === 'cancelled';
   const chosenKeys = useMemo(() => new Set(subjects.map((item) => String(item.id))), [subjects]);
 
-  const pickOptions = {
-    mediaTypes: 'images' as const,
-    allowsEditing: false,
-    allowsMultipleSelection: false,
-    exif: false,
-    quality: 0.9,
-  };
+  const pick = async (source: 'album' | 'camera') => {
+    setCameraDenied(false);
 
-  const apply = (result: ImagePicker.ImagePickerResult) => {
-    const asset = result.canceled ? null : result.assets[0];
+    const result = await pickFromSource(source, IMAGE_ONLY_POLICY, { quality: 0.9 });
 
-    if (asset) {
+    if (result.status === 'picked' && result.files[0]) {
+      const file = result.files[0];
+
       setShot({
-        uri: asset.uri,
-        name: asset.fileName ?? `learnata-${Date.now()}.jpg`,
-        type: asset.mimeType ?? 'image/jpeg',
+        uri: file.uri,
+        name: file.name,
+        type: file.mimeType ?? 'image/jpeg',
       });
       setError(null);
-    }
-  };
-
-  const pickFromGallery = async () => {
-    setCameraDenied(false);
-    try {
-      // The system photo picker needs no storage permission.
-      apply(await ImagePicker.launchImageLibraryAsync(pickOptions));
-    } catch {
+    } else if (result.status === 'permission_denied') {
+      setCameraDenied(true);
+    } else if (result.status === 'invalid' || result.status === 'error') {
       setError(copy.pickError);
     }
   };
 
-  const takePhoto = async () => {
-    setCameraDenied(false);
-    try {
-      let permission = await ImagePicker.getCameraPermissionsAsync();
-
-      if (!permission.granted && permission.canAskAgain) {
-        permission = await ImagePicker.requestCameraPermissionsAsync();
-      }
-
-      if (!permission.granted) {
-        setCameraDenied(true);
-        return;
-      }
-
-      apply(await ImagePicker.launchCameraAsync(pickOptions));
-    } catch {
-      setError(copy.pickError);
-    }
-  };
+  const pickFromGallery = () => pick('album');
+  const takePhoto = () => pick('camera');
 
   const search = useCallback(
     async (query: string) => {

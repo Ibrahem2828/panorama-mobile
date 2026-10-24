@@ -99,6 +99,7 @@ export const endpoints = {
   notifications: {
     list: `${API_PREFIX}/notifications/`,
     unreadCount: `${API_PREFIX}/notifications/unread-count/`,
+    summary: `${API_PREFIX}/notifications/summary/`,
     markRead: (notificationId: EndpointId) => `${API_PREFIX}/notifications/${notificationId}/read/`,
     readAll: `${API_PREFIX}/notifications/read-all/`,
     preferences: `${API_PREFIX}/notifications/preferences/`,

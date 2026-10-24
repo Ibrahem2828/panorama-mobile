@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import * as ImagePicker from 'expo-image-picker';
 import { Image, Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppButton, AppText, Icon, Stack } from '../../../components';
 import { colors, radius, spacing, useBrand } from '../../../theme';
+import { IMAGE_ONLY_POLICY, pickFromSource } from '../../attachments';
 import type { VerificationCardImage } from '../types';
 import { useTranslation } from '../../../i18n';
 
@@ -16,14 +16,6 @@ type VerificationCardImagePickerProps = {
   /** 0..1 upload progress. */
   progress?: number;
 };
-
-function getImageName(asset: ImagePicker.ImagePickerAsset): string {
-  return asset.fileName ?? `student-card-${Date.now()}.jpg`;
-}
-
-function getImageType(asset: ImagePicker.ImagePickerAsset): string {
-  return asset.mimeType ?? 'image/jpeg';
-}
 
 function GuidanceRow({ good, text }: { good: boolean; text: string }) {
   return (
@@ -53,73 +45,40 @@ export function VerificationCardImagePicker({
   const [canOpenSettings, setCanOpenSettings] = useState(false);
   const copy = t.verificationFlow.imagePicker;
 
-  function applyResult(result: ImagePicker.ImagePickerResult) {
-    if (result.canceled) {
-      return;
-    }
+  async function pick(source: 'album' | 'camera') {
+    setLocalError(null);
+    setCanOpenSettings(false);
 
-    const asset = result.assets[0];
-
-    if (!asset) {
-      setLocalError(copy.invalidImage);
-      return;
-    }
-
-    onChange({
-      uri: asset.uri,
-      name: getImageName(asset),
-      type: getImageType(asset),
-      width: asset.width,
-      height: asset.height,
-      size: asset.fileSize,
+    const result = await pickFromSource(source, IMAGE_ONLY_POLICY, {
+      allowsEditing: true,
+      aspect: [3, 2],
+      quality: 0.9,
     });
-  }
 
-  const pickerOptions: ImagePicker.ImagePickerOptions = {
-    mediaTypes: 'images',
-    allowsEditing: true,
-    aspect: [3, 2],
-    quality: 0.9,
-    allowsMultipleSelection: false,
-  };
+    if (result.status === 'picked' && result.files[0]) {
+      const file = result.files[0];
 
-  // The gallery uses the system photo picker: Android and iOS let any app read the photo the user picks there without
-  // a storage permission, so nothing is requested (a permission prompt cannot even appear for it).
-  async function handlePickImage() {
-    setLocalError(null);
-    setCanOpenSettings(false);
-
-    try {
-      applyResult(await ImagePicker.launchImageLibraryAsync(pickerOptions));
-    } catch {
+      onChange({
+        uri: file.uri,
+        name: file.name ?? `student-card-${Date.now()}.jpg`,
+        type: file.mimeType ?? 'image/jpeg',
+        width: file.width,
+        height: file.height,
+        size: file.size ?? undefined,
+      });
+    } else if (result.status === 'permission_denied') {
+      // A permanent refusal means the system will not ask again: send the user to the app settings.
+      setLocalError(copy.cameraDenied);
+      setCanOpenSettings(result.canOpenSettings);
+    } else if (result.status === 'invalid') {
       setLocalError(copy.invalidImage);
+    } else if (result.status === 'error') {
+      setLocalError(source === 'camera' ? copy.cameraUnavailable : copy.invalidImage);
     }
   }
 
-  // The camera is the only picker that needs a permission. If it was refused for good, the system will not ask
-  // again, so the user is sent to the app settings instead of being left with a dead button.
-  async function handleTakePhoto() {
-    setLocalError(null);
-    setCanOpenSettings(false);
-
-    try {
-      let permission = await ImagePicker.getCameraPermissionsAsync();
-
-      if (!permission.granted) {
-        permission = await ImagePicker.requestCameraPermissionsAsync();
-      }
-
-      if (!permission.granted) {
-        setLocalError(copy.cameraDenied);
-        setCanOpenSettings(true);
-        return;
-      }
-
-      applyResult(await ImagePicker.launchCameraAsync(pickerOptions));
-    } catch {
-      setLocalError(copy.cameraUnavailable);
-    }
-  }
+  const handlePickImage = () => pick('album');
+  const handleTakePhoto = () => pick('camera');
 
   const percent = Math.round(Math.min(Math.max(progress, 0), 1) * 100);
 

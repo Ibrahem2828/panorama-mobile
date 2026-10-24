@@ -442,7 +442,16 @@ export type NotificationPreferences = {
   in_app_enabled: boolean;
   push_enabled: boolean;
   disabled_types: string[];
+  /** Per-category switches; absent on a backend that predates them. */
+  channels?: Partial<
+    Record<'chat' | 'groups' | 'printing' | 'verification' | 'support', boolean>
+  >;
+  /** Do-not-disturb window; absent on a backend that predates it. */
+  quiet_hours?: { enabled: boolean; start: string; end: string; timezone?: string };
 };
+
+/** `GET /notifications/summary/`: unread notifications per category (shape normalised by the notifications feature). */
+export type NotificationSummaryResponse = unknown;
 
 export type AnnouncementRecord = ApiEntity & {
   title?: string;

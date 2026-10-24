@@ -6,6 +6,7 @@ export const RootRoutes = {
 
 export const PublicRoutes = {
   Onboarding: 'Onboarding',
+  Permissions: 'Permissions',
   Login: 'Login',
   AccountTypeChoice: 'AccountTypeChoice',
   RegisterStudent: 'RegisterStudent',
@@ -74,6 +75,8 @@ export const ProfileRoutes = {
   ChangePassword: 'ChangePassword',
   DeleteAccount: 'DeleteAccount',
   Notifications: 'Notifications',
+  NotificationSettings: 'NotificationSettings',
+  Permissions: 'Permissions',
   MyNotes: 'MyNotes',
   SupportTickets: 'SupportTickets',
   CreateSupportTicket: 'CreateSupportTicket',

@@ -99,3 +99,21 @@ export function buildMessageFormData(input: {
 
   return form;
 }
+
+/** A file chosen through the shared attachment picker, shaped for the chat composer (images are photos, the rest documents). */
+export function localFileToChatAttachment(file: {
+  uri: string;
+  name: string;
+  size: number | null;
+  mimeType: string | null;
+}): ChatAttachment {
+  const isImage = (IMAGE_EXTENSIONS as readonly string[]).includes(fileExtension(file.name));
+
+  return {
+    uri: file.uri,
+    name: file.name,
+    mimeType: file.mimeType ?? (isImage ? 'image/jpeg' : 'application/pdf'),
+    size: file.size ?? 0,
+    kind: isImage ? 'image' : 'file',
+  };
+}

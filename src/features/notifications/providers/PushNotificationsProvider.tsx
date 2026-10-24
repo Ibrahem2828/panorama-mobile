@@ -2,8 +2,9 @@ import { useEffect } from 'react';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
+import { ensureNotificationChannels } from '../../permissions/notificationChannels';
 import { navigationRef } from '../../../navigation/navigationRef';
 import { ProfileRoutes, RootRoutes, TabRoutes } from '../../../navigation/routes';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
@@ -13,10 +14,14 @@ import { useAuthStore } from '../../auth/store';
 import { useChatStore } from '../../chat/store';
 import { useChatUnreadStore } from '../../chat/store/unreadStore';
 import {
+  foregroundBannerPolicy,
+  intentFromPushData,
   navigateToNotificationIntent,
+  pushCategory,
   registerDeviceToken,
   resolveNotificationIntent,
 } from '../services';
+import { useNotificationPrefsStore } from '../store/notificationPrefsStore';
 
 function chatPushOf(data: Record<string, unknown> | null | undefined) {
   const groupId = Number(data?.group_id);
@@ -33,15 +38,28 @@ Notifications.setNotificationHandler({
     const active = useChatStore.getState().activeGroupId;
     // Someone reading this very chat does not need a banner for it.
     const reading = chat !== null && active !== null && String(active) === String(chat.groupId);
+    // Foreground policy: nothing for the chat being read or a category the user switched off; silent in quiet hours.
+    const policy = foregroundBannerPolicy({
+      category: pushCategory(notification.request.content.data),
+      prefs: useNotificationPrefsStore.getState().prefs,
+      now: new Date(),
+      readingThisChat: reading,
+    });
 
     return {
-      shouldPlaySound: !reading,
-      shouldSetBadge: !reading,
-      shouldShowBanner: !reading,
-      shouldShowList: !reading,
+      shouldPlaySound: policy.sound,
+      shouldSetBadge: policy.badge,
+      shouldShowBanner: policy.show,
+      shouldShowList: policy.show,
     };
   },
 });
+
+/** Reloads everything the tab badges show (notification summary and unread chat counts). */
+function refreshBadges() {
+  void useNotificationPrefsStore.getState().loadSummary();
+  void useChatUnreadStore.getState().load();
+}
 
 function getProjectId(): string | undefined {
   return (
@@ -63,19 +81,7 @@ async function registerCurrentDevice(
   if (!permissions.granted) return;
 
   if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: catalog.androidChannelName,
-      importance: Notifications.AndroidImportance.HIGH,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#3510A3',
-    });
-    // The backend sends chat pushes on this channel so members can tune them apart from the rest.
-    await Notifications.setNotificationChannelAsync('chat', {
-      name: catalog.androidChatChannelName,
-      importance: Notifications.AndroidImportance.HIGH,
-      vibrationPattern: [0, 200, 150, 200],
-      lightColor: '#3510A3',
-    });
+    await ensureNotificationChannels(catalog.channels);
   }
 
   const projectId = getProjectId();
@@ -102,8 +108,14 @@ function openNotificationTarget(data: Record<string, unknown> | null | undefined
   const deepLink = typeof data?.deep_link === 'string' ? data.deep_link : undefined;
   const intent = resolveNotificationIntent({ deep_link: deepLink, data: data ?? null });
 
-  // Unresolved targets fall back to the list rather than a dead route.
-  if (!navigateToNotificationIntent(intent)) openNotificationsScreen();
+  if (navigateToNotificationIntent(intent)) return;
+
+  // No usable deep link: route by the push's category and ids; an unresolved target falls back to the inbox.
+  const byCategory = intentFromPushData(data);
+
+  if (byCategory && navigateToNotificationIntent(byCategory)) return;
+
+  openNotificationsScreen();
 }
 
 export function PushNotificationsProvider() {
@@ -120,18 +132,35 @@ export function PushNotificationsProvider() {
     });
   }, [accessToken, status, t.notifications]);
 
+  // Preferences (for the foreground banner policy) and the unread summary (tab badges), kept fresh while signed in.
+  useEffect(() => {
+    if (status !== 'authenticated' || !accessToken) return undefined;
+
+    void useNotificationPrefsStore.getState().loadPrefs();
+    refreshBadges();
+
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        refreshBadges();
+      }
+    });
+
+    return () => subscription.remove();
+  }, [accessToken, status]);
+
   // A chat push that reaches the phone means the message is delivered (grey double tick for its sender).
   useEffect(() => {
     const subscription = Notifications.addNotificationReceivedListener((notification) => {
       const chat = chatPushOf(notification.request.content.data);
       const token = useAuthStore.getState().accessToken;
 
+      refreshBadges();
+
       if (!chat || !token) return;
 
       void groupsService
         .postChatReceipts(chat.groupId, { delivered_up_to: chat.messageId }, token)
         .catch(() => undefined);
-      void useChatUnreadStore.getState().load();
     });
     return () => subscription.remove();
   }, []);
