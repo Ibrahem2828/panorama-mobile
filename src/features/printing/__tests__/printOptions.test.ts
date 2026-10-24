@@ -1,3 +1,8 @@
+jest.mock('expo-constants', () => ({
+  __esModule: true,
+  default: { expoConfig: { extra: { apiBaseUrl: 'https://api.example.com' } } },
+}));
+
 import {
   buildSheetSimulation,
   parsePageRange,
