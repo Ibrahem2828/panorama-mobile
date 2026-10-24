@@ -7,6 +7,7 @@ import { LifecycleGate } from '../features/lifecycle';
 import { PushNotificationsProvider } from '../features/notifications';
 import { BrandSync } from '../features/student-profile';
 import { useLocaleStore } from '../i18n';
+import { useBrandStore } from '../theme';
 import { useSecureScreen } from '../hooks/useSecureScreen';
 import { OverlayHost } from '../components/overlay';
 
@@ -14,13 +15,16 @@ type AppProvidersProps = { children: ReactNode };
 
 export function AppProviders({ children }: AppProvidersProps) {
   const hydrateLocale = useLocaleStore((state) => state.hydrate);
+  const hydrateBrand = useBrandStore((state) => state.hydrate);
 
   // Every screen of the app is protected from screenshots and screen recording (see useSecureScreen).
   useSecureScreen('app');
 
   useEffect(() => {
     void hydrateLocale();
-  }, [hydrateLocale]);
+    // The last signed-in faculty, so a cold start already shows its logo and colours while the session restores.
+    void hydrateBrand();
+  }, [hydrateBrand, hydrateLocale]);
 
   return (
     <SafeAreaProvider>

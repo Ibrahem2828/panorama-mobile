@@ -56,7 +56,7 @@ export function PublicNavigator() {
   if (!initialRouteName) {
     return (
       <AppScreen horizontalPadding={false}>
-        <LoadingState centered message={t.navigation.preparingStart} />
+        <LoadingState branded centered message={t.navigation.preparingStart} />
       </AppScreen>
     );
   }

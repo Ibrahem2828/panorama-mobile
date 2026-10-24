@@ -6,7 +6,7 @@ export function AuthBootstrapScreen() {
 
   return (
     <AppScreen horizontalPadding={false}>
-      <LoadingState centered message={t.auth.bootstrap.checkingSession} />
+      <LoadingState branded centered message={t.auth.bootstrap.checkingSession} />
     </AppScreen>
   );
 }

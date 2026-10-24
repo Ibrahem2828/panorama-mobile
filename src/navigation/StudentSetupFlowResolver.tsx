@@ -44,6 +44,11 @@ export function StudentSetupFlowResolver() {
   }, [initialRoute, navigation, phase]);
 
   return (
-    <LoadingState centered message={t.navigation.loadingSetup} title={t.navigation.studentSetup} />
+    <LoadingState
+      branded
+      centered
+      message={t.navigation.loadingSetup}
+      title={t.navigation.studentSetup}
+    />
   );
 }
