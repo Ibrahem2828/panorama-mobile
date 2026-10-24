@@ -84,6 +84,8 @@ export const endpoints = {
   },
   printing: {
     quote: `${API_PREFIX}/printing/quote/`,
+    options: `${API_PREFIX}/printing/options/`,
+    products: `${API_PREFIX}/printing/products/`,
     convert: `${API_PREFIX}/printing/convert/`,
     convertDetail: (id: string) => `${API_PREFIX}/printing/convert/${id}/`,
     createOrder: `${API_PREFIX}/printing/orders/`,
