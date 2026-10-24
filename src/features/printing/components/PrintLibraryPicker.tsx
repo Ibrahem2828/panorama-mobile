@@ -1,5 +1,5 @@
 import { memo, useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import {
   AppBadge,
@@ -24,6 +24,7 @@ import {
 } from '../../files/services';
 import type { FileResource, Id } from '../../files/types';
 import { usePrintableFiles } from '../hooks/usePrintableFiles';
+import { AppModal } from '../../../components/overlay';
 
 type PrintLibraryPickerProps = {
   visible: boolean;
@@ -117,12 +118,7 @@ export function PrintLibraryPicker({
   );
 
   return (
-    <Modal
-      animationType="slide"
-      onRequestClose={onClose}
-      presentationStyle="pageSheet"
-      visible={visible}
-    >
+    <AppModal animationType="slide" onRequestClose={onClose} visible={visible}>
       <AppScreen>
         <Stack gap="md" style={styles.header}>
           <AppHeader title={t.printing.library.title} />
@@ -177,7 +173,7 @@ export function PrintLibraryPicker({
           variant="outline"
         />
       </AppScreen>
-    </Modal>
+    </AppModal>
   );
 }
 

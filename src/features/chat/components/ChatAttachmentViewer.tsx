@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import * as ScreenCapture from 'expo-screen-capture';
-import { ActivityIndicator, Image, Modal, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
@@ -11,6 +11,7 @@ import { isTrustedBackendUrl } from '../../../utils/trustedUrl';
 import { useAuthStore } from '../../auth/store';
 import { CHAT_ATTACHMENT_PATH_PREFIX, requestChatAttachmentUrl } from '../services';
 import type { ChatMessage, Id } from '../types';
+import { AppModal } from '../../../components/overlay';
 
 type ChatAttachmentViewerProps = {
   groupId: Id;
@@ -68,10 +69,9 @@ export function ChatAttachmentViewer({ groupId, message, onClose }: ChatAttachme
   const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
 
   return (
-    <Modal
+    <AppModal
       animationType="fade"
       onRequestClose={onClose}
-      statusBarTranslucent
       transparent={false}
       visible={message !== null}
     >
@@ -123,6 +123,7 @@ export function ChatAttachmentViewer({ groupId, message, onClose }: ChatAttachme
               cacheEnabled={false}
               incognito
               onError={() => setState({ status: 'error' })}
+              onHttpError={() => setState({ status: 'error' })}
               onShouldStartLoadWithRequest={(request: { url: string }) =>
                 isTrustedBackendUrl(request.url, {
                   pathPrefixes: [CHAT_ATTACHMENT_PATH_PREFIX],
@@ -136,7 +137,7 @@ export function ChatAttachmentViewer({ groupId, message, onClose }: ChatAttachme
           ) : null}
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

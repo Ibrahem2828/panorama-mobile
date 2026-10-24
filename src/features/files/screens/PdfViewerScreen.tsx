@@ -8,6 +8,7 @@ import { useFeedbackStore } from '../../feedback/store';
 import { ProtectedPreview } from '../components/ProtectedPreview';
 import {
   getFileDisplayTitle,
+  getFileViewerType,
   requestProtectedFileTicket,
   toSafeFilesErrorMessage,
 } from '../services';
@@ -39,6 +40,11 @@ export function PdfViewerScreen() {
     [t],
   );
   const prepare = useCallback(() => loadFileDetail(fileId), [fileId, loadFileDetail]);
+  const canRender = useCallback(() => {
+    const loaded = useFilesStore.getState().getFileById(fileId);
+
+    return !loaded || getFileViewerType(loaded) === 'image';
+  }, [fileId]);
   const handleViewed = useCallback(() => {
     void requestFeedbackPrompt({
       context: 'file',
@@ -51,6 +57,7 @@ export function PdfViewerScreen() {
   return (
     <ProtectedPreview
       onBack={() => navigation.goBack()}
+      canRender={canRender}
       onViewed={handleViewed}
       pathPrefix="/api/v1/protected-files/"
       prepare={prepare}

@@ -1646,6 +1646,8 @@ export const en: TranslationCatalog = {
       subtitle: 'Shown inside the app only',
       issuingTicket: 'Getting the file ready...',
       loadError: 'Could not display the file. Please try again.',
+      notSupportedYet:
+        'Viewing this file type inside the app is coming in an upcoming update. It cannot be downloaded, to protect the content.',
       securityNote:
         'The file opens inside the app only and cannot be downloaded or shared. Screenshots may be blocked while it is open.',
       unavailableTitle: 'This file cannot be displayed',

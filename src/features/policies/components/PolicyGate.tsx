@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import * as WebBrowser from 'expo-web-browser';
-import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppButton, AppCard, AppText, Icon, Stack } from '../../../components';
 import { env } from '../../../config/env';
@@ -10,6 +10,7 @@ import { formatDate } from '../../../utils/formatDateTime';
 import { useAuthStore } from '../../auth/store';
 import { pendingFromStatus, type PendingPolicy } from '../services/policyModel';
 import { usePoliciesStore } from '../store/policiesStore';
+import { AppModal } from '../../../components/overlay';
 
 const BOX_SIZE = 24;
 
@@ -63,7 +64,7 @@ export function PolicyGate() {
   }
 
   return (
-    <Modal
+    <AppModal
       animationType="fade"
       onRequestClose={() => undefined}
       transparent
@@ -164,7 +165,7 @@ export function PolicyGate() {
           </ScrollView>
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

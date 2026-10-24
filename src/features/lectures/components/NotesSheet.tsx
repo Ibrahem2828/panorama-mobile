@@ -4,7 +4,6 @@ import {
   Alert,
   FlatList,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   StyleSheet,
@@ -34,6 +33,7 @@ import {
 import type { LectureNote } from '../types';
 import { FilterChip } from './FilterChip';
 import { NoteRow } from './NoteRow';
+import { AppModal } from '../../../components/overlay';
 
 type Props = {
   visible: boolean;
@@ -160,13 +160,7 @@ export function NotesSheet({ visible, page, notesApi, onClose, onJump }: Props) 
         : t.lectures.notes.empty;
 
   return (
-    <Modal
-      animationType="slide"
-      onRequestClose={onClose}
-      statusBarTranslucent
-      transparent
-      visible={visible}
-    >
+    <AppModal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.root}
@@ -277,7 +271,7 @@ export function NotesSheet({ visible, page, notesApi, onClose, onJump }: Props) 
           />
         </View>
       </KeyboardAvoidingView>
-    </Modal>
+    </AppModal>
   );
 }
 
