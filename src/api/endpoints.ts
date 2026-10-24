@@ -128,6 +128,23 @@ export const endpoints = {
     noteDetail: (lectureId: EndpointId, noteId: EndpointId) =>
       `${API_PREFIX}/lectures/${lectureId}/notes/${noteId}/`,
   },
+  fileViewer: {
+    manifest: (fileId: EndpointId) => `${API_PREFIX}/files/${fileId}/viewer/manifest/`,
+    session: (fileId: EndpointId) => `${API_PREFIX}/files/${fileId}/viewer/session/`,
+    pageImage: (fileId: EndpointId, page: number) =>
+      `${API_PREFIX}/files/${fileId}/viewer/pages/${page}/`,
+    pageThumbnail: (fileId: EndpointId, page: number) =>
+      `${API_PREFIX}/files/${fileId}/viewer/pages/${page}/thumbnail/`,
+    pageText: (fileId: EndpointId, page: number) =>
+      `${API_PREFIX}/files/${fileId}/viewer/pages/${page}/text/`,
+  },
+  annotations: {
+    list: (kind: 'lectures' | 'files', id: EndpointId) =>
+      `${API_PREFIX}/annotations/${kind}/${id}/`,
+    sync: (kind: 'lectures' | 'files', id: EndpointId) =>
+      `${API_PREFIX}/annotations/${kind}/${id}/sync/`,
+    myNotes: `${API_PREFIX}/my-notes/`,
+  },
   feedback: {
     submit: `${API_PREFIX}/feedback/`,
     prompt: `${API_PREFIX}/feedback/prompt/`,

@@ -183,6 +183,12 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
             title={t.profile.servicesSection.notifications}
           />
           <ProfileActionItem
+            onPress={() => navigation.navigate(ProfileRoutes.MyNotes)}
+            subtitle={t.docViewer.myNotes.subtitle}
+            icon="bookmark"
+            title={t.docViewer.myNotes.title}
+          />
+          <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.SupportTickets)}
             subtitle={t.profile.servicesSection.supportSubtitle}
             icon="help"
