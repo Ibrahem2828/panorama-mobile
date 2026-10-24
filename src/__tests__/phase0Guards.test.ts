@@ -22,3 +22,18 @@ describe('release size', () => {
     expect(read('app.config.ts')).toMatch(/set\('expo\.useLegacyPackaging', 'true'\)/);
   });
 });
+
+describe('protected viewer does not hand non-image files to the web view', () => {
+  const read = (path: string) => require('fs').readFileSync(path, 'utf8') as string;
+
+  it('checks canRender after prepare and explains instead of opening the web view', () => {
+    const source = read('src/features/files/components/ProtectedPreview.tsx');
+
+    expect(source).toContain('canRender');
+    expect(source).toContain('notSupportedYet');
+  });
+
+  it('the file viewer only renders images for now', () => {
+    expect(read('src/features/files/screens/PdfViewerScreen.tsx')).toContain("getFileViewerType(loaded) === 'image'");
+  });
+});

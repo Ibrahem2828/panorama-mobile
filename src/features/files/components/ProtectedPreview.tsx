@@ -28,6 +28,12 @@ type ProtectedPreviewProps = {
   onViewed?: () => void;
   /** Runs before the ticket is requested, e.g. to refresh the record the title comes from. */
   prepare?: () => Promise<unknown>;
+  /**
+   * Checked after `prepare`. Android's web view cannot render PDFs: it hands them to the system download manager, which
+   * would fetch the protected file without the user's session (and would leave a downloadable copy). Callers that know
+   * the file is not an image return false and the viewer explains it instead of opening the web view.
+   */
+  canRender?: () => boolean;
 };
 
 /**
@@ -45,16 +51,18 @@ export function ProtectedPreview({
   onBack,
   onViewed,
   prepare,
+  canRender,
 }: ProtectedPreviewProps) {
   const { t } = useTranslation();
   const accessToken = useAuthStore((state) => state.accessToken);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [unsupported, setUnsupported] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // Callers pass inline functions; keep the latest in a ref so a re-render never re-issues a ticket.
-  const callbacks = useRef({ requestTicket, toErrorMessage, prepare });
+  const callbacks = useRef({ requestTicket, toErrorMessage, prepare, canRender });
 
-  callbacks.current = { requestTicket, toErrorMessage, prepare };
+  callbacks.current = { requestTicket, toErrorMessage, prepare, canRender };
 
   const loadPreview = useCallback(async () => {
     if (!accessToken) {
@@ -66,6 +74,14 @@ export function ProtectedPreview({
 
     try {
       await callbacks.current.prepare?.();
+
+      if (callbacks.current.canRender && !callbacks.current.canRender()) {
+        setUnsupported(true);
+        setPreviewUrl(null);
+        return;
+      }
+
+      setUnsupported(false);
 
       const ticket = await callbacks.current.requestTicket(accessToken);
       const trusted = isTrustedBackendUrl(ticket.preview_url, {
@@ -102,6 +118,9 @@ export function ProtectedPreview({
       </View>
 
       {isLoading ? <LoadingState message={t.files.viewer.issuingTicket} /> : null}
+      {unsupported && !isLoading && !error ? (
+        <ErrorState message={t.files.viewer.notSupportedYet} />
+      ) : null}
       {error ? <ErrorState message={error} onRetry={() => void loadPreview()} /> : null}
 
       {previewUrl && !isLoading && !error ? (
