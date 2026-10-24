@@ -293,7 +293,8 @@ export type PrintColorMode = 'black_white' | 'color';
 // Wire values match the backend's PaperSizeEnum / SidesEnum exactly (see docs/api/openapi.json).
 export type PrintPaperSize = 'A4' | 'A3' | 'A5';
 export type PrintSides = 'one_sided' | 'double_sided';
-export type PrintBinding = 'none' | 'staple' | 'spiral' | 'thermal';
+/** `none`, a built-in code (staple, spiral, thermal, beads) or any type the shop added; the server decides what is offered. */
+export type PrintBinding = string;
 
 export type CreatePrintOrderItemInput = {
   source_file?: EntityId;
@@ -304,7 +305,17 @@ export type CreatePrintOrderItemInput = {
   paper_size: PrintPaperSize;
   sides: PrintSides;
   binding: PrintBinding;
+  cover?: string;
+  pages_per_sheet?: number;
+  n_up_direction?: 'ltr' | 'rtl';
+  duplex_flip?: 'long_edge' | 'short_edge';
+  orientation?: 'auto' | 'portrait' | 'landscape';
+  page_range?: string;
+  collate?: boolean;
 };
+
+/** An item that is a ready-made product: its specification and price are fixed by the shop. */
+export type CreatePrintProductItemInput = { product: EntityId; copies: number };
 
 /** A Word/PowerPoint upload converted to PDF on the server (`status` is `pending` until the worker is done). */
 export type PrintConversion = {
@@ -318,7 +329,7 @@ export type PrintConversion = {
 export type PrintCurrency = 'SYP' | 'USD';
 
 export type PrintQuoteRequest = {
-  items: CreatePrintOrderItemInput[];
+  items: (CreatePrintOrderItemInput | CreatePrintProductItemInput)[];
   /** Optional; the server defaults to SYP. */
   currency?: PrintCurrency;
 };
@@ -335,6 +346,48 @@ export type PrintQuoteResponse = {
     currency: string;
     pricing_snapshot?: Record<string, unknown>;
   }>;
+};
+
+export type PrintBindingType = {
+  code: string;
+  name: string;
+  description: string;
+  kind: string;
+  price_mode: 'per_copy' | 'per_wire_kg';
+  price_per_copy: string | number;
+  price_per_kg: string | number;
+};
+
+export type PrintCoverOption = {
+  code: string;
+  name: string;
+  color_hex: string;
+  price_per_copy: string | number;
+};
+
+export type PrintOptionsResponse = {
+  currency: string;
+  pages_per_sheet: number[];
+  orientations: string[];
+  duplex_flips: string[];
+  n_up_directions: string[];
+  binding_types: PrintBindingType[];
+  covers: PrintCoverOption[];
+};
+
+export type PrintProduct = {
+  id: number;
+  name: string;
+  description: string;
+  image_url: string | null;
+  pages_count: number;
+  paper_size: PrintPaperSize;
+  color_mode: PrintColorMode;
+  sides: PrintSides;
+  binding: PrintBinding;
+  cover: string;
+  price: string | number;
+  currency: string;
 };
 
 export type PrintPickupLocation = ApiEntity & {

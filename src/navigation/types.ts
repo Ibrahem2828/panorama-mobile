@@ -66,6 +66,7 @@ export type PrintingStackParamList = {
   MyPrintOrders: undefined;
   PrintOrderDetails: { orderId: string | number };
   PrintItemViewer: { itemId: string | number; title?: string };
+  PrintProducts: undefined;
 };
 
 export type ProfileStackParamList = {

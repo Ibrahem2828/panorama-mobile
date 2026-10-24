@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 
+import { printingService as apiPrinting, type PrintOptionsResponse } from '../../../api';
+import type { PrintProduct } from '../types';
+
 import { useAuthStore } from '../../auth/store';
 import { useFeedbackStore } from '../../feedback/store';
 import { useLocaleStore } from '../../../i18n';
@@ -47,6 +50,10 @@ type State = {
   validation: PrintDraftValidation | null;
   quote: PrintQuoteState | null;
   pickupLocations: PrintPickupLocation[];
+  /** The shop's binding types and covers (null until loaded). */
+  options: PrintOptionsResponse | null;
+  products: PrintProduct[];
+  isLoadingProducts: boolean;
   transfer: PrintTransferState | null;
   isLoadingOrders: boolean;
   isLoadingMoreOrders: boolean;
@@ -69,6 +76,7 @@ type State = {
   loadMoreOrders: () => Promise<void>;
   loadOrderDetail: (id: Id, options?: { silent?: boolean }) => Promise<void>;
   loadPrintingConfiguration: () => Promise<void>;
+  loadProducts: () => Promise<void>;
   addItem: (source?: PrintSource) => void;
   removeItem: (key: string) => void;
   updateItem: (key: string, patch: Partial<Omit<PrintCartItem, 'key'>>) => void;
@@ -99,6 +107,9 @@ function initial() {
     validation: null,
     quote: null,
     pickupLocations: [] as PrintPickupLocation[],
+    options: null as PrintOptionsResponse | null,
+    products: [] as PrintProduct[],
+    isLoadingProducts: false,
     transfer: null,
     isLoadingOrders: false,
     isLoadingMoreOrders: false,
@@ -259,6 +270,11 @@ export const usePrintingStore = create<State>((set, get) => {
       const authToken = token();
       if (!authToken || get().isLoadingPickupLocations) return;
       set({ isLoadingPickupLocations: true, pickupError: null });
+      // The shop's own binding types and covers: without them the built-in choices are shown and the server still prices them.
+      void apiPrinting
+        .getPrintOptions(authToken)
+        .then((options) => set({ options }))
+        .catch(() => undefined);
       try {
         const locations = await loadPickupLocations(authToken);
         const defaultPickupLocation = locations[0];
@@ -275,6 +291,23 @@ export const usePrintingStore = create<State>((set, get) => {
           isLoadingPickupLocations: false,
           pickupError: toSafePrintingErrorMessage(error, printingCatalog()),
         });
+      }
+    },
+
+    async loadProducts() {
+      const authToken = token();
+      if (!authToken || get().isLoadingProducts) return;
+      set({ isLoadingProducts: true });
+      try {
+        const response: unknown = await apiPrinting.listPrintProducts(authToken);
+        const list = Array.isArray(response)
+          ? response
+          : Array.isArray((response as { results?: unknown })?.results)
+            ? (response as { results: unknown[] }).results
+            : [];
+        set({ products: list as PrintProduct[], isLoadingProducts: false });
+      } catch {
+        set({ isLoadingProducts: false });
       }
     },
 

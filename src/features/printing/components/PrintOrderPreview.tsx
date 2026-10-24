@@ -311,7 +311,9 @@ function PrintOrderPreviewComponent({
           {caption}
         </AppText>
         <AppText color="muted" variant="caption">
-          {t.printing.preview.bindingHint[item.binding]}
+          {t.printing.preview.bindingHint[
+            item.binding as keyof typeof t.printing.preview.bindingHint
+          ] ?? ''}
         </AppText>
       </Stack>
     </View>
