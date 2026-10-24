@@ -1,6 +1,7 @@
 import { apiClient, endpoints, generateIdempotencyKey, getAppClientHeaders } from '../../../api';
 import { buildApiUrl } from '../../../config/env';
 import { useAuthStore } from '../../auth/store';
+import { asDocRef, type DocRef } from '../../viewer/types';
 import type {
   Lecture,
   LectureId,
@@ -57,8 +58,23 @@ export async function fetchLecture(lectureId: LectureId): Promise<Lecture> {
   return lecture;
 }
 
-export async function fetchProcessingStatus(lectureId: LectureId): Promise<ProcessingStatus> {
-  const data = await apiClient.get<unknown>(endpoints.lectures.processingStatus(lectureId), {
+export async function fetchProcessingStatus(target: LectureId | DocRef): Promise<ProcessingStatus> {
+  const doc = asDocRef(target);
+
+  if (doc.kind === 'file') {
+    const data = await apiClient.get<{ status?: string; page_count?: number; ready?: boolean }>(
+      endpoints.fileViewer.manifest(doc.id),
+      { authToken: authToken() },
+    );
+
+    return {
+      status: typeof data.status === 'string' ? data.status : 'pending',
+      page_count: typeof data.page_count === 'number' ? data.page_count : 0,
+      is_ready: data.ready === true,
+    };
+  }
+
+  const data = await apiClient.get<unknown>(endpoints.lectures.processingStatus(doc.id), {
     authToken: authToken(),
   });
   return parseProcessingStatus(data);
@@ -66,9 +82,14 @@ export async function fetchProcessingStatus(lectureId: LectureId): Promise<Proce
 
 // --- Viewer ----------------------------------------------------------------------------------------------------------
 
-export async function createViewerSession(lectureId: LectureId): Promise<ViewerSessionPayload> {
+export async function createViewerSession(
+  target: LectureId | DocRef,
+): Promise<ViewerSessionPayload> {
+  const doc = asDocRef(target);
   const data = await apiClient.post<unknown>(
-    endpoints.lectures.viewerSession(lectureId),
+    doc.kind === 'file'
+      ? endpoints.fileViewer.session(doc.id)
+      : endpoints.lectures.viewerSession(doc.id),
     undefined,
     {
       authToken: authToken(),
@@ -78,14 +99,20 @@ export async function createViewerSession(lectureId: LectureId): Promise<ViewerS
 }
 
 export async function fetchPageText(
-  lectureId: LectureId,
+  target: LectureId | DocRef,
   page: number,
   viewerToken: string,
 ): Promise<PageText> {
-  const data = await apiClient.get<unknown>(endpoints.lectures.pageText(lectureId, page), {
-    authToken: authToken(),
-    headers: { 'X-Viewer-Session': viewerToken },
-  });
+  const doc = asDocRef(target);
+  const data = await apiClient.get<unknown>(
+    doc.kind === 'file'
+      ? endpoints.fileViewer.pageText(doc.id, page)
+      : endpoints.lectures.pageText(doc.id, page),
+    {
+      authToken: authToken(),
+      headers: { 'X-Viewer-Session': viewerToken },
+    },
+  );
   return parsePageText(data, page);
 }
 
@@ -94,15 +121,15 @@ export async function fetchPageText(
  * passed through JS), authenticated by the access token plus the short-lived `X-Viewer-Session` header.
  */
 export function buildPageImageSource(
-  lectureId: LectureId,
+  target: LectureId | DocRef,
   kind: PageKind,
   page: number,
   viewerToken: string,
 ): ViewerImageSource {
+  const doc = asDocRef(target);
+  const endpoint = doc.kind === 'file' ? endpoints.fileViewer : endpoints.lectures;
   const path =
-    kind === 'thumbnail'
-      ? endpoints.lectures.pageThumbnail(lectureId, page)
-      : endpoints.lectures.pageImage(lectureId, page);
+    kind === 'thumbnail' ? endpoint.pageThumbnail(doc.id, page) : endpoint.pageImage(doc.id, page);
   const token = authToken();
   return {
     uri: buildApiUrl(path),

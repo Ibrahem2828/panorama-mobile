@@ -73,6 +73,7 @@ export const ProfileRoutes = {
   ChangePassword: 'ChangePassword',
   DeleteAccount: 'DeleteAccount',
   Notifications: 'Notifications',
+  MyNotes: 'MyNotes',
   SupportTickets: 'SupportTickets',
   CreateSupportTicket: 'CreateSupportTicket',
   TicketDetails: 'TicketDetails',

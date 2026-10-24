@@ -3,6 +3,7 @@ import { AppState } from 'react-native';
 
 import { isTerminalStatus, lectureErrorKind, pollDelayMs, type LectureErrorKind } from '../logic';
 import { fetchProcessingStatus } from '../services/lecturesService';
+import type { DocRef } from '../../viewer/types';
 import type { LectureId, ProcessingStatus } from '../types';
 
 type ProcessingState = {
@@ -17,7 +18,7 @@ type ProcessingState = {
  * in the background and resumes (with an immediate check) when it comes back.
  */
 export function useProcessingStatus(
-  lectureId: LectureId,
+  lectureId: LectureId | DocRef,
   enabled: boolean,
   onTerminal?: (status: ProcessingStatus) => void,
 ): ProcessingState {

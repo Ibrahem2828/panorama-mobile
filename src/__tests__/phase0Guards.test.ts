@@ -33,10 +33,11 @@ describe('protected viewer does not hand non-image files to the web view', () =>
     expect(source).toContain('notSupportedYet');
   });
 
-  it('the file viewer only renders images for now', () => {
-    expect(read('src/features/files/screens/PdfViewerScreen.tsx')).toContain(
-      "getFileViewerType(loaded) === 'image'",
-    );
+  it('library files open in the unified page viewer, never in a web view', () => {
+    const source = read('src/features/files/screens/PdfViewerScreen.tsx');
+
+    expect(source).toContain('DocumentViewerBody');
+    expect(source).not.toContain('WebView');
   });
 });
 
