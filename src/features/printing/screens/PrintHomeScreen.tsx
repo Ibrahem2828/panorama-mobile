@@ -65,6 +65,11 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
                 title={t.printing.home.newOrder}
               />
               <AppButton
+                onPress={() => navigation.navigate(PrintingRoutes.PrintProducts)}
+                title={t.printing.products.homeButton}
+                variant="outline"
+              />
+              <AppButton
                 onPress={() => navigation.navigate(PrintingRoutes.MyPrintOrders)}
                 title={t.printing.home.myOrders}
                 variant="outline"

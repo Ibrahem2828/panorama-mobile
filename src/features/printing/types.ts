@@ -1,12 +1,20 @@
 import type { StatusVariant } from '../../types/common';
+import type { PrintProduct } from '../../api/types';
 import type { LocalFile, UploadProblem } from '../attachments/services/localFile';
+import type {
+  DuplexFlip,
+  NUpDirection,
+  PagesPerSheet,
+  PrintOrientation,
+} from './services/printOptions';
 
 export type Id = string | number;
 export type PrintColorMode = 'black_white' | 'color';
 // Wire values match the backend's PaperSizeEnum / SidesEnum exactly (see contracts/openapi.json).
 export type PrintPaperSize = 'A4' | 'A3' | 'A5';
 export type PrintSides = 'one_sided' | 'double_sided';
-export type PrintBinding = 'none' | 'staple' | 'spiral' | 'thermal';
+/** `none`, a built-in code or a type the shop added (the server lists what is offered). */
+export type PrintBinding = string;
 
 /** Wire values match the backend's currency enum (SYP is the new Syrian pound). */
 export type PrintCurrency = 'SYP' | 'USD';
@@ -93,6 +101,8 @@ export type PrintSource =
   | { kind: 'upload'; file: PrintLocalFile }
   /** A Word/PowerPoint file the server already converted to PDF; `id` is the conversion reference. */
   | { kind: 'converted'; id: string; name: string; pages: number | null }
+  /** A ready-made product: spec and price are fixed by the shop. */
+  | { kind: 'product'; product: PrintProduct }
   | null;
 
 /** One file of the order with its own print options. `key` is a local identity only. */
@@ -104,6 +114,13 @@ export type PrintCartItem = {
   paperSize: PrintPaperSize;
   sides: PrintSides;
   binding: PrintBinding;
+  cover: string;
+  pagesPerSheet: PagesPerSheet;
+  nUpDirection: NUpDirection;
+  duplexFlip: DuplexFlip;
+  orientation: PrintOrientation;
+  pageRange: string;
+  collate: boolean;
 };
 
 export type PrintDraft = {
@@ -113,7 +130,9 @@ export type PrintDraft = {
   currency: PrintCurrency;
 };
 
-export type PrintItemValidation = { source?: boolean; copies?: boolean };
+export type PrintItemValidation = { source?: boolean; copies?: boolean; pageRange?: boolean };
+
+export type { PrintProduct };
 
 export type PrintDraftValidation = {
   /** Index-aligned with `draft.items`. */
@@ -130,6 +149,12 @@ export type { UploadProblem };
 export type PrintQuoteItem = {
   pages_count: number;
   sheets_count: number;
+  pricing_snapshot?: {
+    selected_pages?: number;
+    sheets_per_copy?: number;
+    wire_grams_per_copy?: string | null;
+    cover_price_per_copy?: string;
+  } & Record<string, unknown>;
   unit_price: string | number;
   binding_price: string | number;
   subtotal: string | number;

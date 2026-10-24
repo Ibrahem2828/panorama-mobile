@@ -8,7 +8,9 @@ import type {
   EmptyResponse,
   FileAccessTicket,
   PrintConversion,
+  PrintOptionsResponse,
   PrintOrder,
+  PrintProduct,
   PrintPickupLocation,
   PrintQuoteRequest,
   PrintQuoteResponse,
@@ -62,6 +64,15 @@ export function getPrintConversion(conversionId: string, authToken: string) {
   return apiClient.get<PrintConversion>(endpoints.printing.convertDetail(conversionId), {
     authToken,
   });
+}
+export function getPrintOptions(authToken: string, currency?: string) {
+  return apiClient.get<PrintOptionsResponse>(endpoints.printing.options, {
+    authToken,
+    query: { currency },
+  });
+}
+export function listPrintProducts(authToken: string) {
+  return apiClient.get<PrintProduct[]>(endpoints.printing.products, { authToken });
 }
 export function listPickupLocations(authToken: string) {
   return apiClient.get<PrintPickupLocation[]>(endpoints.printing.pickupLocations, { authToken });

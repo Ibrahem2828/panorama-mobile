@@ -4,6 +4,7 @@ export { PrintItemCard } from './PrintItemCard';
 export { PrintItemOptions, usePrintOptionLabels } from './PrintItemOptions';
 export { PrintLibraryPicker } from './PrintLibraryPicker';
 export { PrintOrderPreview } from './PrintOrderPreview';
+export { PrintSheetSimulation } from './PrintSheetSimulation';
 export { PrintOrderCard } from './PrintOrderCard';
 export { PrintOrderStatusBadge } from './PrintOrderStatusBadge';
 export { PrintOrderStatusIcon } from './PrintOrderStatusIcon';
