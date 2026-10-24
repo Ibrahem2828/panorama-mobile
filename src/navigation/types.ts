@@ -76,6 +76,9 @@ export type ProfileStackParamList = {
   ChangePassword: undefined;
   DeleteAccount: undefined;
   Notifications: undefined;
+  MyNotes: undefined;
+  LectureViewer: LectureViewerParams;
+  PdfViewer: { fileId: string | number; title?: string };
   SupportTickets: undefined;
   CreateSupportTicket: undefined;
   TicketDetails: { ticketId: string | number };
