@@ -22,13 +22,12 @@ type FaceProps = {
   simulation: SheetSimulation;
   x: number;
   y: number;
-  label: string;
   tint: string;
   coverColor?: string;
 };
 
 /** One face of a sheet: the paper with its grid of pages, each cell showing the page number it will carry. */
-function Face({ face, simulation, x, y, label, tint, coverColor }: FaceProps) {
+function Face({ face, simulation, x, y, tint, coverColor }: FaceProps) {
   const { layout } = simulation;
   const width = layout.landscape ? SHEET_LONG : SHEET_SHORT;
   const height = layout.landscape ? SHEET_SHORT : SHEET_LONG;
@@ -90,15 +89,6 @@ function Face({ face, simulation, x, y, label, tint, coverColor }: FaceProps) {
           </G>
         );
       })}
-      <SvgText
-        fill={colors.text.muted}
-        fontSize={9}
-        textAnchor="middle"
-        x={x + w / 2}
-        y={y + h + 11}
-      >
-        {label}
-      </SvgText>
     </G>
   );
 }
@@ -147,65 +137,88 @@ function PrintSheetSimulationComponent({
       <AppText color="muted" variant="caption" weight="700">
         {t.printing.simulation.title}
       </AppText>
-      <Svg height={CANVAS_HEIGHT} viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`} width="100%">
-        {twoFaces && simulation.back ? (
+      <View>
+        <Svg height={CANVAS_HEIGHT} viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`} width="100%">
+          {twoFaces && simulation.back ? (
+            <Face
+              coverColor={undefined}
+              face={simulation.back}
+              simulation={simulation}
+              tint={brand.accent}
+              x={backX}
+              y={y}
+            />
+          ) : null}
           <Face
-            coverColor={undefined}
-            face={simulation.back}
-            label={t.printing.simulation.back}
+            coverColor={coverColor}
+            face={simulation.front}
             simulation={simulation}
-            tint={brand.accent}
-            x={backX}
+            tint={brand.primary}
+            x={frontX}
             y={y}
           />
-        ) : null}
-        <Face
-          coverColor={coverColor}
-          face={simulation.front}
-          label={t.printing.simulation.front}
-          simulation={simulation}
-          tint={brand.primary}
-          x={frontX}
-          y={y}
-        />
-        {twoFaces ? (
-          <G>
-            {/* The turn between the faces: a vertical fold for the long edge, a horizontal one for the short edge. */}
-            {shortEdge ? (
-              <Line
-                stroke={colors.gray[500]}
-                strokeDasharray="3,3"
-                strokeWidth={1}
-                x1={flipX - 12}
-                x2={flipX + 12}
-                y1={y + h / 2}
-                y2={y + h / 2}
+          {twoFaces ? (
+            <G>
+              {/* The turn between the faces: a vertical fold for the long edge, a horizontal one for the short edge. */}
+              {shortEdge ? (
+                <Line
+                  stroke={colors.gray[500]}
+                  strokeDasharray="3,3"
+                  strokeWidth={1}
+                  x1={flipX - 12}
+                  x2={flipX + 12}
+                  y1={y + h / 2}
+                  y2={y + h / 2}
+                />
+              ) : (
+                <Line
+                  stroke={colors.gray[500]}
+                  strokeDasharray="3,3"
+                  strokeWidth={1}
+                  x1={flipX}
+                  x2={flipX}
+                  y1={y + h / 2 - 22}
+                  y2={y + h / 2 + 22}
+                />
+              )}
+              <Path
+                d={
+                  shortEdge
+                    ? `M ${flipX - 9} ${y + h / 2 - 10} Q ${flipX} ${y + h / 2 - 22} ${flipX + 9} ${y + h / 2 - 10}`
+                    : `M ${flipX - 8} ${y + h / 2 - 16} Q ${flipX - 18} ${y + h / 2} ${flipX - 8} ${y + h / 2 + 16}`
+                }
+                fill="none"
+                stroke={brand.primary}
+                strokeLinecap="round"
+                strokeWidth={1.6}
               />
-            ) : (
-              <Line
-                stroke={colors.gray[500]}
-                strokeDasharray="3,3"
-                strokeWidth={1}
-                x1={flipX}
-                x2={flipX}
-                y1={y + h / 2 - 22}
-                y2={y + h / 2 + 22}
-              />
-            )}
-            <Path
-              d={
-                shortEdge
-                  ? `M ${flipX - 9} ${y + h / 2 - 10} Q ${flipX} ${y + h / 2 - 22} ${flipX + 9} ${y + h / 2 - 10}`
-                  : `M ${flipX - 8} ${y + h / 2 - 16} Q ${flipX - 18} ${y + h / 2} ${flipX - 8} ${y + h / 2 + 16}`
-              }
-              fill="none"
-              stroke={brand.primary}
-              strokeLinecap="round"
-              strokeWidth={1.6}
-            />
-          </G>
-        ) : null}
-      </Svg>
+            </G>
+          ) : null}
+        </Svg>
+        {/* Face names are real text views: SVG text does not shape or order Arabic letters. */}
+        {[
+          { key: 'front', x: frontX, text: t.printing.simulation.front },
+          ...(twoFaces && simulation.back
+            ? [{ key: 'back', x: backX, text: t.printing.simulation.back }]
+            : []),
+        ].map((entry) => (
+          <AppText
+            align="center"
+            color="muted"
+            key={entry.key}
+            style={[
+              styles.faceLabel,
+              {
+                left: `${((entry.x + w / 2) / CANVAS_WIDTH) * 100 - 15}%`,
+                top: `${((y + h + 3) / CANVAS_HEIGHT) * 100}%`,
+              },
+            ]}
+            variant="caption"
+          >
+            {entry.text}
+          </AppText>
+        ))}
+      </View>
       <Stack gap="xs">
         <AppText color="secondary" variant="caption">
           {caption}
@@ -231,4 +244,5 @@ export const PrintSheetSimulation = memo(PrintSheetSimulationComponent);
 
 const styles = StyleSheet.create({
   box: { borderRadius: radius.card, padding: spacing.md, gap: spacing.sm },
+  faceLabel: { position: 'absolute', width: '30%' },
 });

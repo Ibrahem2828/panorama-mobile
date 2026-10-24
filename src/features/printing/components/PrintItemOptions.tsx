@@ -48,6 +48,11 @@ export function usePrintOptionLabels(): Record<string, string> {
 
     // A type the shop configured is named by the shop (in Arabic), whatever the built-in label was.
     bindingTypes?.forEach((type) => {
+      // "No binding" keeps its built-in translated name even when the shop's own list repeats the code.
+      if (type.code === 'none') {
+        return;
+      }
+
       labels[type.code] = type.name || labels[type.code] || type.code;
     });
 
