@@ -218,8 +218,15 @@ export const ar = {
     ownMessage: 'رسالتك',
 
     attachment: {
-      attach: 'إرفاق صورة',
-      remove: 'إزالة الصورة',
+      attach: 'إرفاق',
+      remove: 'إزالة المرفق',
+      menuTitle: 'إرفاق إلى المحادثة',
+      photo: 'صورة من الألبوم',
+      camera: 'التقاط صورة بالكاميرا',
+      document: 'ملف PDF',
+      cameraDenied: 'اسمح للتطبيق باستخدام الكاميرا من إعدادات الهاتف ثم أعد المحاولة.',
+      openSettings: 'فتح الإعدادات',
+      documentError: 'تعذر اختيار الملف. حاول مرة أخرى.',
       image: 'صورة',
       file: 'ملف مرفق',
       tapToView: 'اضغط للعرض',
@@ -230,6 +237,33 @@ export const ar = {
       pickError: 'تعذر اختيار الصورة. حاول مرة أخرى.',
       sizeLabel: (megabytes: string) => `${megabytes} م.ب`,
     },
+
+    ticks: {
+      sent: 'أُرسلت',
+      delivered: 'وصلت',
+      read: 'قُرئت',
+    },
+
+    reactions: {
+      title: 'تفاعل مع الرسالة',
+      remove: 'إزالة تفاعلك',
+      summary: (emoji: string, count: number) => `${emoji} ${count}`,
+    },
+
+    actions: {
+      title: 'خيارات الرسالة',
+      delete: 'حذف الرسالة',
+      deleteFailed: 'تعذر حذف الرسالة. حاول مرة أخرى.',
+      close: 'إغلاق',
+    },
+
+    mute: {
+      mute: 'كتم إشعارات هذه المحادثة',
+      unmute: 'إلغاء كتم الإشعارات',
+      mutedBadge: 'الإشعارات مكتومة',
+    },
+
+    unreadBadge: (count: number) => (count > 99 ? '99+' : String(count)),
 
     guard: {
       title: 'المحادثة للأعضاء فقط',
@@ -286,6 +320,7 @@ export const ar = {
     noDetails: 'لا توجد تفاصيل إضافية لهذا الإشعار.',
     typeIconAlt: 'أيقونة نوع الإشعار',
     androidChannelName: 'إشعارات بانوراما',
+    androidChatChannelName: 'رسائل المحادثات',
     fallbackTitle: 'إشعار جديد',
 
     filterLabel: 'عرض الإشعارات',

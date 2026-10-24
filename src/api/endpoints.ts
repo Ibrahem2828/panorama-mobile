@@ -61,6 +61,13 @@ export const endpoints = {
     files: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/files/`,
     messages: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/messages/`,
     chatTicket: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/chat-ticket/`,
+    chatReceipts: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/chat/receipts/`,
+    chatPreferences: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/chat/preferences/`,
+    messageReaction: (groupId: EndpointId, messageId: EndpointId) =>
+      `${API_PREFIX}/groups/${groupId}/messages/${messageId}/reaction/`,
+    messageDelete: (groupId: EndpointId, messageId: EndpointId) =>
+      `${API_PREFIX}/groups/${groupId}/messages/${messageId}/`,
+    chatUnread: `${API_PREFIX}/chat/unread/`,
     whatsappLaunch: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/whatsapp-launch/`,
     messageAttachmentTicket: (groupId: EndpointId, messageId: EndpointId) =>
       `${API_PREFIX}/groups/${groupId}/messages/${messageId}/attachment-ticket/`,

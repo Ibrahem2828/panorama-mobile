@@ -1,13 +1,28 @@
 import { buildGroupChatWebSocketUrl } from '../../../config/env';
 import { normalizeApiError } from '../../../api';
-import { normalizeChatMessage, parseDeletedFrame } from '../logic/messages';
-import type { ChatConnectionStatus, ChatMessage, Id } from '../types';
+import {
+  normalizeChatMessage,
+  parseDeletedFrame,
+  parseReactionFrame,
+  parseReceiptFrame,
+} from '../logic/messages';
+import type {
+  ChatConnectionStatus,
+  ChatMessage,
+  ChatReactionFrame,
+  ChatReceiptFrame,
+  Id,
+} from '../types';
 import { useLocaleStore } from '../../../i18n';
 
 export type ChatWebSocketHandlers = {
   onMessage?: (message: ChatMessage) => void;
   /** A moderator or the author removed a message; `id` is its server id. */
   onMessageDeleted?: (id: number) => void;
+  /** Another member's device received / read the chat up to these message ids (drives the ticks). */
+  onReceipt?: (receipt: ChatReceiptFrame) => void;
+  /** The reaction totals of one message changed. */
+  onReaction?: (reaction: ChatReactionFrame) => void;
   onStatusChange?: (status: ChatConnectionStatus) => void;
   onError?: (message: string) => void;
   /** The server refused this user for good (not a member / session invalid); no retry follows. */
@@ -260,6 +275,24 @@ export function createChatWebSocketClient({
 
           if (deletedId !== null) {
             handlers?.onMessageDeleted?.(deletedId);
+          }
+          return;
+        }
+
+        if (isRecord(payload) && payload.type === 'receipt') {
+          const receipt = parseReceiptFrame(payload);
+
+          if (receipt) {
+            handlers?.onReceipt?.(receipt);
+          }
+          return;
+        }
+
+        if (isRecord(payload) && payload.type === 'reaction') {
+          const reaction = parseReactionFrame(payload);
+
+          if (reaction) {
+            handlers?.onReaction?.(reaction);
           }
           return;
         }

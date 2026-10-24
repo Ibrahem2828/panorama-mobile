@@ -149,3 +149,74 @@ export function requestGroupWhatsAppLaunch(
     { authToken },
   );
 }
+
+/** Tells the server how far this device has received / read the chat (drives the senders' ticks). */
+export function postChatReceipts(
+  groupId: string | number,
+  cursors: { delivered_up_to?: number; read_up_to?: number },
+  authToken: string,
+): Promise<{ delivered_up_to: number; read_up_to: number }> {
+  return apiClient.post<{ delivered_up_to: number; read_up_to: number }, typeof cursors>(
+    endpoints.groups.chatReceipts(groupId),
+    cursors,
+    { authToken },
+  );
+}
+
+/** Sets (or, with `null`, clears) the caller's single emoji reaction on a message. */
+export function setMessageReaction(
+  groupId: string | number,
+  messageId: string | number,
+  emoji: string | null,
+  authToken: string,
+): Promise<{ message_id: number; my_reaction: string | null; counts: Record<string, number> }> {
+  type Reply = { message_id: number; my_reaction: string | null; counts: Record<string, number> };
+
+  return emoji === null
+    ? apiClient.delete<Reply>(endpoints.groups.messageReaction(groupId, messageId), { authToken })
+    : apiClient.put<Reply, { emoji: string }>(
+        endpoints.groups.messageReaction(groupId, messageId),
+        { emoji },
+        { authToken },
+      );
+}
+
+export function deleteGroupMessage(
+  groupId: string | number,
+  messageId: string | number,
+  authToken: string,
+): Promise<EmptyResponse> {
+  return apiClient.delete<EmptyResponse>(endpoints.groups.messageDelete(groupId, messageId), {
+    authToken,
+  });
+}
+
+export function getChatPreferences(
+  groupId: string | number,
+  authToken: string,
+): Promise<{ is_muted: boolean }> {
+  return apiClient.get<{ is_muted: boolean }>(endpoints.groups.chatPreferences(groupId), {
+    authToken,
+  });
+}
+
+export function setChatMuted(
+  groupId: string | number,
+  isMuted: boolean,
+  authToken: string,
+): Promise<{ is_muted: boolean }> {
+  return apiClient.put<{ is_muted: boolean }, { is_muted: boolean }>(
+    endpoints.groups.chatPreferences(groupId),
+    { is_muted: isMuted },
+    { authToken },
+  );
+}
+
+export function getChatUnread(
+  authToken: string,
+): Promise<{ groups: { group_id: number; unread: number }[] }> {
+  return apiClient.get<{ groups: { group_id: number; unread: number }[] }>(
+    endpoints.groups.chatUnread,
+    { authToken },
+  );
+}

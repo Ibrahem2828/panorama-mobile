@@ -7,21 +7,40 @@ import { Platform } from 'react-native';
 import { navigationRef } from '../../../navigation/navigationRef';
 import { ProfileRoutes, RootRoutes, TabRoutes } from '../../../navigation/routes';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
+import { groupsService } from '../../../api';
 import { logger } from '../../../utils/logger';
 import { useAuthStore } from '../../auth/store';
+import { useChatStore } from '../../chat/store';
+import { useChatUnreadStore } from '../../chat/store/unreadStore';
 import {
   navigateToNotificationIntent,
   registerDeviceToken,
   resolveNotificationIntent,
 } from '../services';
 
+function chatPushOf(data: Record<string, unknown> | null | undefined) {
+  const groupId = Number(data?.group_id);
+  const messageId = Number(data?.message_id);
+
+  return data?.kind === 'chat' && Number.isFinite(groupId) && Number.isFinite(messageId)
+    ? { groupId, messageId }
+    : null;
+}
+
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
+  handleNotification: async (notification) => {
+    const chat = chatPushOf(notification.request.content.data);
+    const active = useChatStore.getState().activeGroupId;
+    // Someone reading this very chat does not need a banner for it.
+    const reading = chat !== null && active !== null && String(active) === String(chat.groupId);
+
+    return {
+      shouldPlaySound: !reading,
+      shouldSetBadge: !reading,
+      shouldShowBanner: !reading,
+      shouldShowList: !reading,
+    };
+  },
 });
 
 function getProjectId(): string | undefined {
@@ -48,6 +67,13 @@ async function registerCurrentDevice(
       name: catalog.androidChannelName,
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#3510A3',
+    });
+    // The backend sends chat pushes on this channel so members can tune them apart from the rest.
+    await Notifications.setNotificationChannelAsync('chat', {
+      name: catalog.androidChatChannelName,
+      importance: Notifications.AndroidImportance.HIGH,
+      vibrationPattern: [0, 200, 150, 200],
       lightColor: '#3510A3',
     });
   }
@@ -93,6 +119,22 @@ export function PushNotificationsProvider() {
       });
     });
   }, [accessToken, status, t.notifications]);
+
+  // A chat push that reaches the phone means the message is delivered (grey double tick for its sender).
+  useEffect(() => {
+    const subscription = Notifications.addNotificationReceivedListener((notification) => {
+      const chat = chatPushOf(notification.request.content.data);
+      const token = useAuthStore.getState().accessToken;
+
+      if (!chat || !token) return;
+
+      void groupsService
+        .postChatReceipts(chat.groupId, { delivered_up_to: chat.messageId }, token)
+        .catch(() => undefined);
+      void useChatUnreadStore.getState().load();
+    });
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {

@@ -4,6 +4,9 @@ export type AttachmentProblem = 'type' | 'size' | 'empty';
 
 const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'] as const;
 const IMAGE_MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp'] as const;
+/** Chat documents follow the backend upload policy: PDF only (anything else is an image). */
+const FILE_EXTENSIONS = ['pdf'] as const;
+const FILE_MIME_TYPES = ['application/pdf', 'application/x-pdf'] as const;
 
 export function fileExtension(name: string): string {
   const index = name.lastIndexOf('.');
@@ -24,20 +27,18 @@ function extensionForMime(mimeType: string): string {
 
 /** Mirrors the backend upload policy so the user gets early feedback; the server stays authoritative. */
 export function validateChatAttachment(
-  file: Pick<ChatAttachment, 'name' | 'mimeType' | 'size'>,
+  file: Pick<ChatAttachment, 'name' | 'mimeType' | 'size' | 'kind'>,
 ): AttachmentProblem | null {
   const mime = file.mimeType.split(';')[0]?.trim().toLowerCase() ?? '';
   const extension = fileExtension(file.name);
+  const extensions: readonly string[] = file.kind === 'image' ? IMAGE_EXTENSIONS : FILE_EXTENSIONS;
+  const mimes: readonly string[] = file.kind === 'image' ? IMAGE_MIME_TYPES : FILE_MIME_TYPES;
 
-  if (!(IMAGE_EXTENSIONS as readonly string[]).includes(extension)) {
+  if (!extensions.includes(extension)) {
     return 'type';
   }
 
-  if (
-    mime &&
-    mime !== 'application/octet-stream' &&
-    !(IMAGE_MIME_TYPES as readonly string[]).includes(mime)
-  ) {
+  if (mime && mime !== 'application/octet-stream' && !mimes.includes(mime)) {
     return 'type';
   }
 
@@ -58,7 +59,23 @@ export function toChatAttachment(
   const name =
     rawName && fileExtension(rawName) ? rawName : `photo-${now}.${extensionForMime(mimeType)}`;
 
-  return { uri: asset.uri, name, mimeType, size: asset.fileSize ?? 0 };
+  return { uri: asset.uri, name, mimeType, size: asset.fileSize ?? 0, kind: 'image' };
+}
+
+/** Builds a document attachment from a document-picker asset (PDF only). */
+export function toChatDocument(asset: {
+  uri: string;
+  name?: string | null;
+  mimeType?: string | null;
+  size?: number | null;
+}): ChatAttachment {
+  return {
+    uri: asset.uri,
+    name: asset.name?.trim() || 'document.pdf',
+    mimeType: asset.mimeType?.toLowerCase() || 'application/pdf',
+    size: asset.size ?? 0,
+    kind: 'file',
+  };
 }
 
 /** Multipart body for `POST /groups/{id}/messages/`. */
@@ -72,7 +89,7 @@ export function buildMessageFormData(input: {
     form.append('content', input.content);
   }
 
-  form.append('message_type', 'image');
+  form.append('message_type', input.attachment.kind === 'image' ? 'image' : 'file');
   // React Native reads a `{uri, name, type}` part straight from disk.
   form.append('attachment', {
     uri: input.attachment.uri,

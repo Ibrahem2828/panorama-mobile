@@ -1,5 +1,5 @@
 import type { ChatListItem, ChatMessage, Id, PendingMessage } from '../types';
-import { isOwnChatMessage } from './messages';
+import { effectiveDeliveryState, isOwnChatMessage } from './messages';
 
 /** A new sender run starts after this much silence even from the same person. */
 export const GROUP_GAP_MS = 5 * 60 * 1000;
@@ -23,6 +23,7 @@ export function buildChatItems(
   messages: readonly ChatMessage[],
   pending: readonly PendingMessage[],
   currentUserId: Id | null | undefined,
+  peerCursors: Readonly<Record<number, { delivered: number; read: number }>> = {},
 ): ChatListItem[] {
   const ascending: ChatListItem[] = [];
   let previousDay: string | null = null;
@@ -62,7 +63,14 @@ export function buildChatItems(
     const sender = own ? 'me' : `u-${message.sender_detail?.id ?? message.sender ?? 'unknown'}`;
     const groupStart = place(message.created_at, sender);
 
-    ascending.push({ kind: 'message', key: `m-${message.id}`, message, own, groupStart });
+    ascending.push({
+      kind: 'message',
+      key: `m-${message.id}`,
+      message,
+      own,
+      delivery: own ? effectiveDeliveryState(message, peerCursors, currentUserId) : null,
+      groupStart,
+    });
   }
 
   for (const item of pending) {

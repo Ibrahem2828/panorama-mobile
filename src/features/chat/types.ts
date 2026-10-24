@@ -8,7 +8,43 @@ export const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
 
 export type ChatMessageSender = {
   id: number;
+  /** For staff this is their position (e.g. «بانوراما أدمن»), never their name. */
   full_name: string;
+  /** True when `full_name` is a staff position title. */
+  is_staff: boolean;
+};
+
+/** The six reactions the server accepts (one per member per message). */
+export const REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏'] as const;
+
+export type ChatReactionCount = { emoji: string; count: number };
+
+/** Ticks of the member's own message: one grey tick = sent, two grey = delivered, two blue = read. */
+export type DeliveryState = 'sent' | 'delivered' | 'read';
+
+export type ChatDelivery = {
+  state: DeliveryState;
+  delivered_count: number;
+  read_count: number;
+  recipients: number;
+};
+
+export type ChatReceiptFrame = { user_id: number; delivered_up_to: number; read_up_to: number };
+
+export type ChatReactionFrame = {
+  message_id: number;
+  user_id: number;
+  emoji: string | null;
+  counts: Record<string, number>;
+};
+
+export type ChatAttachmentMeta = { name: string; size: number | null };
+
+export type ChatReplyDetail = {
+  id: number;
+  is_deleted: boolean;
+  sender_name?: string;
+  preview?: string;
 };
 
 export type ChatMessageType = 'text' | 'image' | 'file' | 'system';
@@ -22,7 +58,13 @@ export type ChatMessage = {
   content: string;
   message_type: ChatMessageType;
   has_attachment: boolean;
+  attachment_meta: ChatAttachmentMeta | null;
   reply_to: number | null;
+  reply_to_detail: ChatReplyDetail | null;
+  reactions: ChatReactionCount[];
+  my_reaction: string | null;
+  /** Only present on the viewer's own messages. */
+  delivery: ChatDelivery | null;
   created_at: string;
 };
 
@@ -31,6 +73,8 @@ export type ChatAttachment = {
   name: string;
   mimeType: string;
   size: number;
+  /** `image` is sent as a photo message, `file` as a document message. */
+  kind: 'image' | 'file';
 };
 
 export type PendingStatus = 'sending' | 'failed';
@@ -79,6 +123,8 @@ export type ChatListItem =
       key: string;
       message: ChatMessage;
       own: boolean;
+      /** Ticks of the member's own message (null for other people's). */
+      delivery: DeliveryState | null;
       /** First message of a run by the same sender: shows name/avatar and extra spacing. */
       groupStart: boolean;
     }

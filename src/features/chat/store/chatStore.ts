@@ -7,10 +7,17 @@ import { UPLOAD_CANCELLED } from '../../../api/upload';
 import { useLocaleStore } from '../../../i18n';
 
 import { useAuthStore } from '../../auth/store';
+import { groupsService as apiGroupsService } from '../../../api';
 import { useGroupsStore } from '../../groups/store';
 import type { Group } from '../../groups/types';
+import { useChatUnreadStore } from './unreadStore';
 import { validateChatAttachment } from '../logic/attachments';
-import { mergeChatMessages, pruneMissingMessages, removeChatMessageById } from '../logic/messages';
+import {
+  mergeChatMessages,
+  pruneMissingMessages,
+  reactionList,
+  removeChatMessageById,
+} from '../logic/messages';
 import {
   createPending,
   findMatchingPending,
@@ -37,6 +44,8 @@ import {
   type ChatAttachment,
   type ChatConnectionStatus,
   type ChatMessage,
+  type ChatReactionFrame,
+  type ChatReceiptFrame,
   type Id,
   type PendingMessage,
 } from '../types';
@@ -60,6 +69,10 @@ export type ChatRoomState = {
   error: string | null;
   /** The server refused this user (not a member / removed). */
   forbidden: boolean;
+  /** How far each other member has received / read the chat (live, from receipt frames). */
+  peerCursors: Record<number, { delivered: number; read: number }>;
+  /** This member muted the chat's notifications. */
+  isMuted: boolean;
 };
 
 export type SendResult = { ok: true } | { ok: false; error: string };
@@ -76,6 +89,12 @@ type ChatState = {
   loadOlder: (groupId: Id) => Promise<void>;
   send: (groupId: Id, input: { text: string; attachment?: ChatAttachment | null }) => SendResult;
   retry: (groupId: Id, localId: string) => void;
+  /** Sets (or, with `null`, clears) the member's reaction; the bubble updates at once. */
+  react: (groupId: Id, messageId: number, emoji: string | null) => void;
+  deleteMessage: (groupId: Id, messageId: number) => Promise<boolean>;
+  setMuted: (groupId: Id, muted: boolean) => Promise<void>;
+  /** Tells the server (and so every sender) that this device now has / has read everything loaded. */
+  reportRead: (groupId: Id) => void;
   discard: (groupId: Id, localId: string) => void;
   reset: () => void;
 };
@@ -125,6 +144,8 @@ function emptyRoom(): ChatRoomState {
     loadOlderFailed: false,
     error: null,
     forbidden: false,
+    peerCursors: {},
+    isMuted: false,
   };
 }
 
@@ -141,6 +162,8 @@ const epochs = new Map<string, number>();
 /** Ids deleted live; a stale REST page must not resurrect them. */
 const deletedIds = new Map<string, Set<number>>();
 const uploadAborts = new Map<string, () => void>();
+/** Highest message id already reported as read per room, so unchanged state is never re-sent. */
+const reportedRead = new Map<string, number>();
 
 function bumpEpoch(groupKey: string) {
   epochs.set(groupKey, (epochs.get(groupKey) ?? 0) + 1);
@@ -244,6 +267,7 @@ export const useChatStore = create<ChatState>((set, get) => {
 
       if (sessionBefore === session) {
         patchRoom(groupKey, () => ({ isLoading: false, isRefreshing: false }));
+        get().reportRead(groupId);
       }
     }
   }
@@ -264,6 +288,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         pending: match ? [...removePending(room.pending, match.localId)] : room.pending,
       };
     });
+    get().reportRead(groupId);
   }
 
   function applyDeleted(groupId: Id, messageId: number) {
@@ -273,6 +298,42 @@ export const useChatStore = create<ChatState>((set, get) => {
     bumpEpoch(groupKey);
     patchRoom(groupKey, (room) => ({
       messages: [...removeChatMessageById(room.messages, messageId)],
+    }));
+  }
+
+  function applyReceipt(groupId: Id, receipt: ChatReceiptFrame) {
+    if (String(receipt.user_id) === String(getCurrentUserId())) {
+      return;
+    }
+
+    patchRoom(keyOf(groupId), (room) => {
+      const previous = room.peerCursors[receipt.user_id] ?? { delivered: 0, read: 0 };
+
+      return {
+        peerCursors: {
+          ...room.peerCursors,
+          [receipt.user_id]: {
+            delivered: Math.max(previous.delivered, receipt.delivered_up_to, receipt.read_up_to),
+            read: Math.max(previous.read, receipt.read_up_to),
+          },
+        },
+      };
+    });
+  }
+
+  function applyReaction(groupId: Id, frame: ChatReactionFrame) {
+    const mine = String(frame.user_id) === String(getCurrentUserId());
+
+    patchRoom(keyOf(groupId), (room) => ({
+      messages: room.messages.map((message) =>
+        message.id === frame.message_id
+          ? {
+              ...message,
+              reactions: reactionList(frame.counts),
+              my_reaction: mine ? frame.emoji : message.my_reaction,
+            }
+          : message,
+      ),
     }));
   }
 
@@ -325,11 +386,14 @@ export const useChatStore = create<ChatState>((set, get) => {
       handlers: {
         onMessage: (message) => applyIncoming(groupId, message),
         onMessageDeleted: (id) => applyDeleted(groupId, id),
+        onReceipt: (receipt) => applyReceipt(groupId, receipt),
+        onReaction: (frame) => applyReaction(groupId, frame),
         onStatusChange: (status) => {
           set({ connectionStatus: status });
 
           // Anything sent while the socket was down is never replayed: catch up over REST.
           if (status === 'connected') {
+            chatWebSocketClient?.send(JSON.stringify({ type: 'presence', active: true }));
             void syncLatest(groupId, 'poll');
           }
         },
@@ -587,6 +651,112 @@ export const useChatStore = create<ChatState>((set, get) => {
       void deliver(groupId, localId);
     },
 
+    reportRead(groupId) {
+      const groupKey = keyOf(groupId);
+      const accessToken = getAccessToken();
+      const room = get().rooms[groupKey];
+      const active = get().activeGroupId;
+
+      if (!accessToken || !room || active === null || keyOf(active) !== groupKey) {
+        return;
+      }
+
+      const latest = room.messages.reduce((top, message) => Math.max(top, message.id), 0);
+
+      if (latest === 0 || latest <= (reportedRead.get(groupKey) ?? 0)) {
+        return;
+      }
+
+      reportedRead.set(groupKey, latest);
+
+      const sentOverSocket =
+        get().connectionStatus === 'connected' &&
+        chatWebSocketClient?.send(
+          JSON.stringify({ type: 'receipt', delivered_up_to: latest, read_up_to: latest }),
+        ) === true;
+
+      if (!sentOverSocket) {
+        void apiGroupsService
+          .postChatReceipts(groupId, { delivered_up_to: latest, read_up_to: latest }, accessToken)
+          .catch(() => reportedRead.delete(groupKey));
+      }
+
+      useChatUnreadStore.getState().clear(groupId);
+    },
+
+    react(groupId, messageId, emoji) {
+      const groupKey = keyOf(groupId);
+      const accessToken = getAccessToken();
+
+      if (!accessToken) {
+        return;
+      }
+
+      patchRoom(groupKey, (room) => ({
+        messages: room.messages.map((message) => {
+          if (message.id !== messageId) {
+            return message;
+          }
+
+          const counts: Record<string, number> = {};
+
+          for (const entry of message.reactions) {
+            counts[entry.emoji] = entry.count;
+          }
+
+          if (message.my_reaction) {
+            counts[message.my_reaction] = Math.max(0, (counts[message.my_reaction] ?? 1) - 1);
+          }
+
+          if (emoji) {
+            counts[emoji] = (counts[emoji] ?? 0) + 1;
+          }
+
+          const kept = Object.fromEntries(Object.entries(counts).filter(([, count]) => count > 0));
+
+          return { ...message, my_reaction: emoji, reactions: reactionList(kept) };
+        }),
+      }));
+
+      void apiGroupsService.setMessageReaction(groupId, messageId, emoji, accessToken).catch(() => {
+        // The optimistic bubble was wrong: take the server's word.
+        void syncLatest(groupId, 'poll');
+      });
+    },
+
+    async deleteMessage(groupId, messageId) {
+      const accessToken = getAccessToken();
+
+      if (!accessToken) {
+        return false;
+      }
+
+      try {
+        await apiGroupsService.deleteGroupMessage(groupId, messageId, accessToken);
+        applyDeleted(groupId, messageId);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+
+    async setMuted(groupId, muted) {
+      const groupKey = keyOf(groupId);
+      const accessToken = getAccessToken();
+
+      if (!accessToken) {
+        return;
+      }
+
+      patchRoom(groupKey, () => ({ isMuted: muted }));
+
+      try {
+        await apiGroupsService.setChatMuted(groupId, muted, accessToken);
+      } catch {
+        patchRoom(groupKey, () => ({ isMuted: !muted }));
+      }
+    },
+
     discard(groupId, localId) {
       uploadAborts.get(localId)?.();
       patchRoom(keyOf(groupId), (room) => ({ pending: [...removePending(room.pending, localId)] }));
@@ -600,6 +770,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       syncing.clear();
       epochs.clear();
       deletedIds.clear();
+      reportedRead.clear();
       set(initialChatState);
     },
   };

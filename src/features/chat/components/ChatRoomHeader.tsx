@@ -14,14 +14,18 @@ type ChatRoomHeaderProps = {
   group: Group | null;
   connectionStatus: ChatConnectionStatus;
   isOnline: boolean;
+  isMuted: boolean;
   onBack: () => void;
+  onToggleMute: () => void;
 };
 
 export const ChatRoomHeader = memo(function ChatRoomHeader({
   group,
   connectionStatus,
   isOnline,
+  isMuted,
   onBack,
+  onToggleMute,
 }: ChatRoomHeaderProps) {
   const { t } = useTranslation();
 
@@ -47,6 +51,16 @@ export const ChatRoomHeader = memo(function ChatRoomHeader({
           ) : null}
         </Stack>
       </View>
+      <AppIconButton
+        accessibilityLabel={isMuted ? t.chat.mute.unmute : t.chat.mute.mute}
+        icon={
+          <Icon
+            color={isMuted ? colors.text.muted : colors.text.primary}
+            name={isMuted ? 'bellOff' : 'bell'}
+          />
+        }
+        onPress={onToggleMute}
+      />
     </View>
   );
 });

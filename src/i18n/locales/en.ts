@@ -200,8 +200,15 @@ export const en: TranslationCatalog = {
     ownMessage: 'Your message',
 
     attachment: {
-      attach: 'Attach a photo',
-      remove: 'Remove photo',
+      attach: 'Attach',
+      remove: 'Remove the attachment',
+      menuTitle: 'Attach to the chat',
+      photo: 'Photo from your gallery',
+      camera: 'Take a photo',
+      document: 'PDF file',
+      cameraDenied: 'Allow the app to use the camera in your phone settings, then try again.',
+      openSettings: 'Open settings',
+      documentError: 'Could not pick the file. Please try again.',
       image: 'Photo',
       file: 'Attached file',
       tapToView: 'Tap to view',
@@ -212,6 +219,33 @@ export const en: TranslationCatalog = {
       pickError: 'Could not pick the photo. Please try again.',
       sizeLabel: (megabytes: string) => `${megabytes} MB`,
     },
+
+    ticks: {
+      sent: 'Sent',
+      delivered: 'Delivered',
+      read: 'Read',
+    },
+
+    reactions: {
+      title: 'React to the message',
+      remove: 'Remove your reaction',
+      summary: (emoji: string, count: number) => `${emoji} ${count}`,
+    },
+
+    actions: {
+      title: 'Message options',
+      delete: 'Delete the message',
+      deleteFailed: 'Could not delete the message. Please try again.',
+      close: 'Close',
+    },
+
+    mute: {
+      mute: 'Mute notifications for this chat',
+      unmute: 'Unmute notifications',
+      mutedBadge: 'Notifications muted',
+    },
+
+    unreadBadge: (count: number) => (count > 99 ? '99+' : String(count)),
 
     guard: {
       title: 'Chat is for members only',
@@ -270,6 +304,7 @@ export const en: TranslationCatalog = {
     noDetails: 'There are no further details for this notification.',
     typeIconAlt: 'Notification type icon',
     androidChannelName: 'Panorama notifications',
+    androidChatChannelName: 'Chat messages',
     fallbackTitle: 'New notification',
 
     filterLabel: 'Show notifications',

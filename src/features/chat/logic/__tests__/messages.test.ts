@@ -21,7 +21,7 @@ describe('normalizeChatMessage', () => {
         id: 5,
         group: 7,
         sender: 3,
-        sender_detail: { id: 3, full_name: 'Sara Ali' },
+        sender_detail: { id: 3, full_name: 'Sara Ali', is_staff: false },
         content: 'hi',
         message_type: 'text',
         has_attachment: false,
@@ -32,13 +32,51 @@ describe('normalizeChatMessage', () => {
       id: 5,
       group: 7,
       sender: 3,
-      sender_detail: { id: 3, full_name: 'Sara Ali' },
+      sender_detail: { id: 3, full_name: 'Sara Ali', is_staff: false },
       content: 'hi',
       message_type: 'text',
       has_attachment: false,
+      attachment_meta: null,
       reply_to: null,
+      reply_to_detail: null,
+      reactions: [],
+      my_reaction: null,
+      delivery: null,
       created_at: '2026-01-01T00:00:05Z',
     });
+  });
+
+  it('reads ticks, reactions, staff titles and attachment details', () => {
+    const message = normalizeChatMessage({
+      id: 8,
+      sender_detail: { id: 1, full_name: 'بانوراما أدمن', title: 'بانوراما أدمن', is_staff: true },
+      content: '',
+      has_attachment: true,
+      message_type: 'file',
+      attachment_meta: { name: 'notes.pdf', size: 2048 },
+      reactions: [{ emoji: '👍', count: 2 }, { emoji: '❤️', count: 0 }, { emoji: 5 }],
+      my_reaction: '👍',
+      delivery: { state: 'read', delivered_count: 2, read_count: 1, recipients: 4 },
+      reply_to_detail: { id: 4, is_deleted: false, sender_name: 'سارة', preview: 'مرحبا' },
+    });
+
+    expect(message?.sender_detail).toEqual({ id: 1, full_name: 'بانوراما أدمن', is_staff: true });
+    expect(message?.attachment_meta).toEqual({ name: 'notes.pdf', size: 2048 });
+    expect(message?.reactions).toEqual([{ emoji: '👍', count: 2 }]);
+    expect(message?.my_reaction).toBe('👍');
+    expect(message?.delivery).toEqual({
+      state: 'read',
+      delivered_count: 2,
+      read_count: 1,
+      recipients: 4,
+    });
+    expect(message?.reply_to_detail?.preview).toBe('مرحبا');
+  });
+
+  it('ignores an unknown delivery state', () => {
+    expect(
+      normalizeChatMessage({ id: 1, content: 'x', delivery: { state: 'weird' } })?.delivery,
+    ).toBeNull();
   });
 
   it('unwraps socket envelopes and numeric-string ids', () => {
