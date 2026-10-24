@@ -112,6 +112,8 @@ const withReleaseSigning: ConfigPlugin = (config) => {
     };
     set('android.enableMinifyInReleaseBuilds', 'true');
     set('android.enableShrinkResourcesInReleaseBuilds', 'true');
+    // Compress the native libraries inside the APK: about a third smaller download (they are unpacked at install).
+    set('expo.useLegacyPackaging', 'true');
     return mod;
   });
 };
@@ -254,7 +256,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: 'Panorama',
     slug: 'panorama-mobile',
-    version: '2.8.3',
+    version: '2.8.4',
     orientation: 'portrait',
     scheme: 'panorama',
     icon: './src/assets/app/icon.png',
@@ -316,7 +318,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: {
       ...config.android,
       package: 'com.panorama.student',
-      versionCode: 283,
+      versionCode: 284,
       adaptiveIcon: {
         foregroundImage: './src/assets/app/adaptive-icon.png',
         monochromeImage: './src/assets/app/adaptive-icon-monochrome.png',
@@ -335,6 +337,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     extra: {
       ...config.extra,
       appEnv,
+      allowScreenshots: process.env.EXPO_PUBLIC_ALLOW_SCREENSHOTS === 'true',
       apiBaseUrl,
       wsBaseUrl,
       supportEmail: process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? 'panoramacompany31@gmail.com',

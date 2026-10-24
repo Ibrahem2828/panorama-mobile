@@ -17,6 +17,7 @@ type PublicExtra = {
   privacyUrl?: string;
   termsUrl?: string;
   legalUrl?: string;
+  allowScreenshots?: boolean;
 };
 
 const extra = (Constants.expoConfig?.extra ?? {}) as PublicExtra;
@@ -50,6 +51,8 @@ export const env = {
   privacyUrl: extra.privacyUrl || '',
   termsUrl: extra.termsUrl || '',
   legalUrl: extra.legalUrl || '',
+  // Only a non-production build may opt out of screenshot protection (testers and the emulator); production never can.
+  allowScreenshots: appEnv !== 'production' && extra.allowScreenshots === true,
   isDevelopment: appEnv === 'development',
   isPreview: appEnv === 'preview',
   isProduction: appEnv === 'production',

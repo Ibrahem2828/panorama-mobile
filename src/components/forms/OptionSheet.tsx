@@ -2,7 +2,6 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   StyleSheet,
@@ -24,6 +23,7 @@ import {
 import { AppText } from '../common';
 import { Icon } from '../icons';
 import { normalizeSearchText } from './searchText';
+import { AppModal } from '../overlay';
 
 export type SelectOption = {
   id: string | number;
@@ -134,14 +134,7 @@ export function OptionSheet({
   );
 
   return (
-    <Modal
-      animationType="slide"
-      navigationBarTranslucent
-      onRequestClose={onClose}
-      statusBarTranslucent
-      transparent
-      visible={visible}
-    >
+    <AppModal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.overlay}
@@ -230,7 +223,7 @@ export function OptionSheet({
           />
         </View>
       </KeyboardAvoidingView>
-    </Modal>
+    </AppModal>
   );
 }
 

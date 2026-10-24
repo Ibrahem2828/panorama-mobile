@@ -112,6 +112,9 @@ export function ProtectedPreview({
           incognito
           javaScriptEnabled
           onError={() => setError(t.files.viewer.loadError)}
+          // The stream endpoint needs the signed-in user as well as the ticket: without this header the server answers
+          // with a raw AUTHENTICATION_REQUIRED page inside the viewer. A refused request becomes a retryable message.
+          onHttpError={() => setError(t.files.viewer.loadError)}
           onLoadEnd={onViewed}
           onShouldStartLoadWithRequest={(request: { url: string }) =>
             isTrustedBackendUrl(request.url, {
@@ -122,7 +125,10 @@ export function ProtectedPreview({
           originWhitelist={['https://*', 'http://127.0.0.1:*', 'http://localhost:*']}
           pullToRefreshEnabled
           setSupportMultipleWindows={false}
-          source={{ uri: previewUrl }}
+          source={{
+            uri: previewUrl,
+            headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+          }}
           style={styles.webView}
         />
       ) : null}

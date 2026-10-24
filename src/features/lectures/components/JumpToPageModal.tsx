@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppButton, AppText, AppTextInput, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { colors, radius, spacing } from '../../../theme';
 import { parsePageInput } from '../logic';
+import { AppModal } from '../../../components/overlay';
 
 type Props = {
   visible: boolean;
@@ -36,7 +37,7 @@ export function JumpToPageModal({ visible, pageCount, onClose, onJump }: Props) 
   };
 
   return (
-    <Modal animationType="fade" onRequestClose={close} transparent visible={visible}>
+    <AppModal animationType="fade" onRequestClose={close} transparent visible={visible}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.root}
@@ -76,7 +77,7 @@ export function JumpToPageModal({ visible, pageCount, onClose, onJump }: Props) 
           </Stack>
         </View>
       </KeyboardAvoidingView>
-    </Modal>
+    </AppModal>
   );
 }
 

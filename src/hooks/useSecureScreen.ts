@@ -2,15 +2,16 @@ import { useEffect } from 'react';
 import * as ScreenCapture from 'expo-screen-capture';
 
 import { env } from '../config/env';
+import { isScreenCaptureBlocked } from '../utils/screenCapturePolicy';
 
 /**
- * Blocks screenshots, screen recording and the recent-apps thumbnail while a sensitive screen is
- * mounted (sign-in, registration, student-card upload). Only in production builds, so developers
- * and testers can still capture their own screens.
+ * Blocks screenshots, screen recording and the recent-apps thumbnail while the calling component is mounted. The app
+ * root uses it so that no screen at all can be captured (chat, groups, files, lectures, sign-in, verification...).
+ * Different keys are independent, so a screen that releases its own key never lifts the root protection.
  */
 export function useSecureScreen(key: string) {
   useEffect(() => {
-    if (env.appEnv !== 'production') {
+    if (!isScreenCaptureBlocked({ appEnv: env.appEnv, allowScreenshots: env.allowScreenshots })) {
       return undefined;
     }
 
