@@ -82,7 +82,8 @@ export function OnboardingScreen({ navigation }: OnboardingScreenProps) {
       await markOnboardingSeen();
     } finally {
       setIsCompleting(false);
-      navigation.replace(PublicRoutes.Login);
+      // The permissions screen comes next (it hands over to sign-in itself, or at once when nothing is left to ask).
+      navigation.replace(PublicRoutes.Permissions);
     }
   }
 

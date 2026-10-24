@@ -15,6 +15,8 @@ import { EditProfileScreen } from '../../features/profile/screens/EditProfileScr
 import { PrivacyPolicyScreen } from '../../features/profile/screens/PrivacyPolicyScreen';
 import { ProfileHomeScreen } from '../../features/profile/screens/ProfileHomeScreen';
 import { TermsScreen } from '../../features/profile/screens/TermsScreen';
+import { PermissionsSettingsScreen } from '../../features/permissions';
+import { NotificationSettingsScreen } from '../../features/notifications/screens/NotificationSettingsScreen';
 import { DeleteAccountScreen } from '../../features/settings/screens/DeleteAccountScreen';
 import { ChangePasswordScreen } from '../../features/settings/screens/ChangePasswordScreen';
 import { SettingsScreen } from '../../features/settings/screens/SettingsScreen';
@@ -41,6 +43,11 @@ export function ProfileStackNavigator() {
       <Stack.Screen component={ChangePasswordScreen} name={ProfileRoutes.ChangePassword} />
       <Stack.Screen component={DeleteAccountScreen} name={ProfileRoutes.DeleteAccount} />
       <Stack.Screen component={NotificationsScreen} name={ProfileRoutes.Notifications} />
+      <Stack.Screen
+        component={NotificationSettingsScreen}
+        name={ProfileRoutes.NotificationSettings}
+      />
+      <Stack.Screen component={PermissionsSettingsScreen} name={ProfileRoutes.Permissions} />
       <Stack.Screen component={MyNotesScreen} name={ProfileRoutes.MyNotes} />
       <Stack.Screen component={LectureViewerScreen} name={LecturesRoutes.LectureViewer} />
       <Stack.Screen component={PdfViewerScreen} name={SharedRoutes.PdfViewer} />

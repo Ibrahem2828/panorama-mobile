@@ -1,3 +1,4 @@
+export { BrandedLoading } from './BrandedLoading';
 export { BrandRefreshControl } from './BrandRefreshControl';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';

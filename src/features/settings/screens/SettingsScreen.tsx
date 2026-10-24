@@ -72,9 +72,15 @@ export function SettingsScreen({ navigation }: SettingsScreenProps) {
         <SettingsSection subtitle={t.settings.app.subtitle} title={t.settings.app.title}>
           <SettingsOptionRow
             description={t.settings.app.notificationsDescription}
-            onPress={() => navigation.navigate(ProfileRoutes.Notifications)}
+            onPress={() => navigation.navigate(ProfileRoutes.NotificationSettings)}
             icon="bell"
             title={t.settings.app.notifications}
+          />
+          <SettingsOptionRow
+            description={t.settings.app.permissionsDescription}
+            onPress={() => navigation.navigate(ProfileRoutes.Permissions)}
+            icon="shield"
+            title={t.settings.app.permissions}
           />
           <SettingsOptionRow
             description={t.settings.app.versionDescription}

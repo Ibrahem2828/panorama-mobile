@@ -2,6 +2,7 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 
 export type PublicStackParamList = {
   Onboarding: undefined;
+  Permissions: undefined;
   Login: undefined;
   AccountTypeChoice: undefined;
   RegisterStudent: undefined;
@@ -77,6 +78,8 @@ export type ProfileStackParamList = {
   ChangePassword: undefined;
   DeleteAccount: undefined;
   Notifications: undefined;
+  NotificationSettings: undefined;
+  Permissions: undefined;
   MyNotes: undefined;
   LectureViewer: LectureViewerParams;
   PdfViewer: { fileId: string | number; title?: string };

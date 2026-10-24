@@ -1,6 +1,4 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import * as DocumentPicker from 'expo-document-picker';
-import * as ImagePicker from 'expo-image-picker';
 import {
   Image,
   Keyboard,
@@ -14,7 +12,12 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconButton, AppText, Icon } from '../../../components';
-import { AppModal } from '../../../components/overlay';
+import {
+  AttachmentSourceSheet,
+  CHAT_POLICY,
+  pickFromSource,
+  type AttachmentSource,
+} from '../../attachments';
 import {
   colors,
   inputThemeProps,
@@ -26,7 +29,7 @@ import {
 } from '../../../theme';
 import { useTranslation } from '../../../i18n';
 import { getIsRTL, isolateLtr } from '../../../utils/rtl';
-import { toChatAttachment, toChatDocument, validateChatAttachment } from '../logic/attachments';
+import { localFileToChatAttachment, validateChatAttachment } from '../logic/attachments';
 import type { SendResult } from '../store/chatStore';
 import { MAX_MESSAGE_LENGTH, type ChatAttachment } from '../types';
 import { formatMegabytes } from './chatFormat';
@@ -34,15 +37,6 @@ import { formatMegabytes } from './chatFormat';
 type ChatComposerProps = {
   groupId: string | number;
   onSend: (input: { text: string; attachment: ChatAttachment | null }) => SendResult;
-};
-
-const IMAGE_PICKER_OPTIONS = {
-  mediaTypes: 'images' as const,
-  allowsMultipleSelection: false,
-  allowsEditing: false,
-  exif: false,
-  // JPEG re-encoding is the only downsizing available without extra packages.
-  quality: 0.8,
 };
 
 /** Unsent text survives leaving and re-entering the room (memory only, never persisted). */
@@ -126,70 +120,37 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
     [t],
   );
 
-  const handlePickImage = useCallback(async () => {
-    setMenuOpen(false);
-    setError(null);
+  const handleSource = useCallback(
+    async (source: AttachmentSource) => {
+      setError(null);
+      setCameraDenied(false);
 
-    try {
-      // The system photo picker needs no storage permission on current Android / iOS.
-      const result = await ImagePicker.launchImageLibraryAsync(IMAGE_PICKER_OPTIONS);
-      const asset = result.canceled ? null : result.assets[0];
+      const result = await pickFromSource(source, CHAT_POLICY, { quality: 0.8 });
 
-      if (asset) {
-        accept(toChatAttachment(asset));
-      }
-    } catch {
-      setError(t.chat.attachment.pickError);
-    }
-  }, [accept, t]);
+      if (result.status === 'picked') {
+        const file = result.files[0];
 
-  const handleTakePhoto = useCallback(async () => {
-    setMenuOpen(false);
-    setError(null);
-    setCameraDenied(false);
-
-    try {
-      let permission = await ImagePicker.getCameraPermissionsAsync();
-
-      if (!permission.granted && permission.canAskAgain) {
-        permission = await ImagePicker.requestCameraPermissionsAsync();
-      }
-
-      if (!permission.granted) {
+        if (file) {
+          accept(localFileToChatAttachment(file));
+        }
+      } else if (result.status === 'invalid') {
+        setError(
+          result.problem === 'size'
+            ? t.chat.errors.attachmentSize
+            : result.problem === 'empty'
+              ? t.chat.errors.attachmentEmpty
+              : t.chat.errors.attachmentType,
+        );
+      } else if (result.status === 'permission_denied') {
         setCameraDenied(true);
-        return;
+      } else if (result.status === 'error') {
+        setError(
+          source === 'document' ? t.chat.attachment.documentError : t.chat.attachment.pickError,
+        );
       }
-
-      const result = await ImagePicker.launchCameraAsync(IMAGE_PICKER_OPTIONS);
-      const asset = result.canceled ? null : result.assets[0];
-
-      if (asset) {
-        accept(toChatAttachment(asset));
-      }
-    } catch {
-      setError(t.chat.attachment.pickError);
-    }
-  }, [accept, t]);
-
-  const handlePickDocument = useCallback(async () => {
-    setMenuOpen(false);
-    setError(null);
-
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: 'application/pdf',
-        multiple: false,
-        copyToCacheDirectory: true,
-      });
-      const asset = result.canceled ? null : result.assets[0];
-
-      if (asset) {
-        accept(toChatDocument(asset));
-      }
-    } catch {
-      setError(t.chat.attachment.documentError);
-    }
-  }, [accept, t]);
+    },
+    [accept, t],
+  );
 
   const handleSend = useCallback(() => {
     const result = onSend({ text, attachment });
@@ -299,43 +260,12 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
         </Pressable>
       ) : null}
 
-      <AppModal
-        animationType="fade"
-        onRequestClose={() => setMenuOpen(false)}
-        transparent
+      <AttachmentSourceSheet
+        onClose={() => setMenuOpen(false)}
+        onSelect={(source) => void handleSource(source)}
+        sources={CHAT_POLICY.sources}
         visible={menuOpen}
-      >
-        <Pressable
-          accessibilityLabel={t.chat.actions.close}
-          onPress={() => setMenuOpen(false)}
-          style={styles.menuBackdrop}
-        >
-          <Pressable accessible={false} style={styles.menu}>
-            <AppText align="center" color="muted" variant="caption">
-              {t.chat.attachment.menuTitle}
-            </AppText>
-            {(
-              [
-                ['image', t.chat.attachment.photo, handlePickImage],
-                ['camera', t.chat.attachment.camera, handleTakePhoto],
-                ['file', t.chat.attachment.document, handlePickDocument],
-              ] as const
-            ).map(([icon, label, onPress]) => (
-              <Pressable
-                accessibilityRole="button"
-                key={icon}
-                onPress={() => void onPress()}
-                style={styles.menuRow}
-              >
-                <Icon color={brand.primary} name={icon} size={22} />
-                <AppText variant="label" weight="600">
-                  {label}
-                </AppText>
-              </Pressable>
-            ))}
-          </Pressable>
-        </Pressable>
-      </AppModal>
+      />
     </View>
   );
 });
@@ -345,26 +275,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.background.surface,
-  },
-  menuBackdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(16, 24, 40, 0.45)',
-  },
-  menu: {
-    gap: spacing.xs,
-    padding: spacing.lg,
-    borderTopStartRadius: radius.xl,
-    borderTopEndRadius: radius.xl,
-    backgroundColor: colors.background.surface,
-  },
-  menuRow: {
-    minHeight: 52,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.lg,
   },
   container: {
     gap: spacing.xs,
