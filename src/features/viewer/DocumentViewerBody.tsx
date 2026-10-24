@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import * as ScreenCapture from 'expo-screen-capture';
+import { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import {
@@ -11,6 +10,7 @@ import {
   Icon,
   Stack,
 } from '../../components';
+import { useSecureScreen } from '../../hooks/useSecureScreen';
 import { useTranslation } from '../../i18n';
 import { colors, spacing, useBrand } from '../../theme';
 import { getIsRTL } from '../../utils/rtl';
@@ -72,13 +72,7 @@ export function DocumentViewerBody({ doc, title, pageCount, initialPage, onBack 
   const rtl = getIsRTL();
 
   // Document pages are protected content: block screenshots and screen recording while the viewer is open.
-  useEffect(() => {
-    void ScreenCapture.preventScreenCaptureAsync();
-
-    return () => {
-      void ScreenCapture.allowScreenCaptureAsync();
-    };
-  }, []);
+  useSecureScreen('viewer');
 
   const goTo = useCallback(
     (target: number) => {
