@@ -53,6 +53,7 @@ export const GroupsRoutes = {
   GroupDetails: 'GroupDetails',
   GroupFiles: 'GroupFiles',
   ChatRoom: 'ChatRoom',
+  Enrollment: 'Enrollment',
 } as const;
 
 export const PrintingRoutes = {

@@ -110,6 +110,27 @@ export function GroupsOverviewScreen({ navigation }: GroupsOverviewScreenProps) 
 
         {errorMessage ? <ErrorState message={errorMessage} onRetry={handleRefresh} /> : null}
 
+        <AppCard
+          accessibilityLabel={t.enrollment.cardTitle}
+          onPress={() => navigation.navigate(GroupsRoutes.Enrollment)}
+          variant="elevated"
+        >
+          <View style={styles.cardRow}>
+            <IconTile icon="cap" size="lg" />
+            <View style={styles.cardText}>
+              <AppText variant="title">{t.enrollment.cardTitle}</AppText>
+              <AppText color="secondary" variant="bodySmall">
+                {t.enrollment.cardBody}
+              </AppText>
+            </View>
+            <Icon
+              color={colors.text.muted}
+              name={getIsRTL() ? 'chevronLeft' : 'chevronRight'}
+              size={18}
+            />
+          </View>
+        </AppCard>
+
         <Stack gap="md">
           <OverviewCard
             count={resolvedMyGroupsCount}

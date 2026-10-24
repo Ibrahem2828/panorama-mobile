@@ -56,6 +56,7 @@ export type GroupsStackParamList = {
   FileDetails: { fileId: string | number };
   PdfViewer: { fileId: string | number; title?: string };
   ChatRoom: { groupId: string | number };
+  Enrollment: undefined;
 };
 
 export type PrintingStackParamList = {

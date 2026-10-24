@@ -72,6 +72,11 @@ export const endpoints = {
     messageAttachmentTicket: (groupId: EndpointId, messageId: EndpointId) =>
       `${API_PREFIX}/groups/${groupId}/messages/${messageId}/attachment-ticket/`,
   },
+  enrollment: {
+    subjects: `${API_PREFIX}/enrollment/subjects/`,
+    requests: `${API_PREFIX}/enrollment/requests/`,
+    cancel: (id: EndpointId) => `${API_PREFIX}/enrollment/requests/${id}/cancel/`,
+  },
   files: {
     list: `${API_PREFIX}/files/`,
     detail: (fileId: EndpointId) => `${API_PREFIX}/files/${fileId}/`,

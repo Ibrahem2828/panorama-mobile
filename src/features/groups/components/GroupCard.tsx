@@ -5,7 +5,12 @@ import { AppAvatar, AppButton, AppCard, AppText, Stack } from '../../../componen
 import { useTranslation } from '../../../i18n';
 import { colors, opacity, radius, spacing, useBrand } from '../../../theme';
 import { useChatUnreadStore } from '../../chat/store/unreadStore';
-import { getGroupDisplayName, getGroupImageUri, resolveMembershipState } from '../services';
+import {
+  getGroupDisplayName,
+  getGroupImageUri,
+  getGroupSubjectId,
+  resolveMembershipState,
+} from '../services';
 import type { Group, Id, SubjectLabel } from '../types';
 import { GroupMembershipBadge } from './GroupMembershipBadge';
 import { GroupStatsRow } from './GroupStatsRow';
@@ -78,7 +83,7 @@ function GroupCardBase({ group, subject, pendingAction, onPress, onJoin }: Group
         </Stack>
       </Pressable>
 
-      {onJoin && membership.canRequestJoin ? (
+      {onJoin && membership.canRequestJoin && !getGroupSubjectId(group) ? (
         <AppButton
           fullWidth
           loading={pendingAction === 'join'}

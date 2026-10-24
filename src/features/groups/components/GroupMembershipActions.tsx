@@ -2,7 +2,7 @@ import { Alert } from 'react-native';
 
 import { AppButton, AppText, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import { resolveMembershipState } from '../services';
+import { getGroupSubjectId, resolveMembershipState } from '../services';
 import type { Group, Id } from '../types';
 
 type GroupMembershipActionsProps = {
@@ -51,7 +51,12 @@ export function GroupMembershipActions({
         </AppText>
       ) : null}
 
-      {membership.canRequestJoin ? (
+      {membership.canRequestJoin && getGroupSubjectId(group) ? (
+        <AppText color="secondary" variant="bodySmall">
+          {t.enrollment.joinByRegistration}
+        </AppText>
+      ) : null}
+      {membership.canRequestJoin && !getGroupSubjectId(group) ? (
         <AppButton
           fullWidth
           loading={pendingAction === 'join'}

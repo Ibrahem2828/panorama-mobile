@@ -589,7 +589,79 @@ export const en: TranslationCatalog = {
     },
   },
 
+  enrollment: {
+    title: 'Subject registration',
+    subtitle: 'Upload your Learnata screenshot and pick your subjects',
+    cardTitle: 'Register your subjects for this term',
+    cardBody: 'Once approved, your subjects’ groups, chat and files open up.',
+    joinByRegistration:
+      'Subject groups open after your subject registration is approved. Tap “Register your subjects” on the Groups page.',
+    loading: 'Loading...',
+    loadError: 'Could not load your registration status. Please try again.',
+    stepOf: (step: number, total: number) => `Step ${step} of ${total}`,
+    next: 'Next',
+    back: 'Back',
+    change: 'Change the image',
+    remove: 'Remove',
+    fromGallery: 'Choose from your gallery',
+    fromCamera: 'Take a photo',
+    cameraDenied:
+      'Allow the app to use the camera in your phone settings, then try again. Tap to open settings.',
+    pickError: 'Could not pick the image. Please try again.',
+    step1: {
+      title: 'Learnata screenshot',
+      body: 'Open Learnata after you have registered your subjects, take a screenshot that shows your registration, and upload it here.',
+      tips: [
+        'Your name is clear',
+        'The semester is visible',
+        'The date is visible',
+        'All your subjects are visible',
+      ],
+    },
+    step2: {
+      title: 'Your subjects',
+      body: 'Type a subject name or code and suggestions appear as you type.',
+      searchLabel: 'Search for a subject',
+      placeholder: 'Type the subject name...',
+      count: (count: number) =>
+        count === 0
+          ? 'No subjects chosen yet'
+          : count === 1
+            ? 'You chose 1 subject'
+            : `You chose ${count} subjects`,
+    },
+    step3: {
+      title: 'Review and send',
+      body: 'Check the screenshot and the subjects, then send the request to the administration.',
+    },
+    submit: 'Send the request',
+    sending: (percent: number) => `Sending ${percent}%`,
+    submitError: 'Could not send the request. Check your connection and try again.',
+    alreadyPending: 'You already have a request waiting for review.',
+    cancelRequest: 'Cancel the request',
+    cancelError: 'Could not cancel the request. Please try again.',
+    newRequest: 'New registration',
+    status: {
+      pending: 'Your request is under review',
+      approved: 'Your registration was approved',
+      partially_approved: 'Some of your subjects were approved',
+      rejected: 'Your registration was not approved',
+      cancelled: 'The request was cancelled',
+    },
+    statusHint: {
+      pending:
+        'You will get a notification when it is decided. You can cancel before it is reviewed.',
+      approved: 'You were added to your subjects’ groups. Open them from “My groups”.',
+      partially_approved: 'See the reason for the subjects that were not approved below.',
+      rejected: 'See the reason below, then send a new request.',
+      cancelled: 'You can send a new request at any time.',
+    },
+  },
+
   search: {
+    typeToSearch: 'Type at least two characters to see suggestions.',
+    failed: 'Search failed. Please try again.',
+    noMatches: 'No matches.',
     title: 'Search',
     subtitle: 'Search your subjects, groups and files',
     label: 'Search term',

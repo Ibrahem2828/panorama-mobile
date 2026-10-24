@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { ChatRoomScreen } from '../../features/chat/screens/ChatRoomScreen';
+import { EnrollmentScreen } from '../../features/enrollment/screens/EnrollmentScreen';
 import { FileDetailsScreen } from '../../features/files/screens/FileDetailsScreen';
 import { GroupFilesScreen } from '../../features/files/screens/GroupFilesScreen';
 import { PdfViewerScreen } from '../../features/files/screens/PdfViewerScreen';
@@ -28,6 +29,7 @@ export function GroupsStackNavigator() {
       <Stack.Screen component={FileDetailsScreen} name={SharedRoutes.FileDetails} />
       <Stack.Screen component={PdfViewerScreen} name={SharedRoutes.PdfViewer} />
       <Stack.Screen component={ChatRoomScreen} name={GroupsRoutes.ChatRoom} />
+      <Stack.Screen component={EnrollmentScreen} name={GroupsRoutes.Enrollment} />
     </Stack.Navigator>
   );
 }
