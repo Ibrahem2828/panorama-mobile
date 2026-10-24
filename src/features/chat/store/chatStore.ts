@@ -393,7 +393,7 @@ export const useChatStore = create<ChatState>((set, get) => {
 
           // Anything sent while the socket was down is never replayed: catch up over REST.
           if (status === 'connected') {
-            chatWebSocketClient?.send(JSON.stringify({ type: 'presence', active: true }));
+            chatWebSocketClient?.sendFrame({ type: 'presence', active: true });
             void syncLatest(groupId, 'poll');
           }
         },
@@ -671,9 +671,11 @@ export const useChatStore = create<ChatState>((set, get) => {
 
       const sentOverSocket =
         get().connectionStatus === 'connected' &&
-        chatWebSocketClient?.send(
-          JSON.stringify({ type: 'receipt', delivered_up_to: latest, read_up_to: latest }),
-        ) === true;
+        chatWebSocketClient?.sendFrame({
+          type: 'receipt',
+          delivered_up_to: latest,
+          read_up_to: latest,
+        }) === true;
 
       if (!sentOverSocket) {
         void apiGroupsService

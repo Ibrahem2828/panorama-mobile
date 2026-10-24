@@ -60,6 +60,8 @@ export type ChatWebSocketClient = {
   disconnect: () => void;
   /** Returns false when the socket is not open (the caller should fall back to REST). */
   send: (message: string) => boolean;
+  /** Sends a control frame (`receipt`, `presence`, `typing`) as is; never shown as a chat message. */
+  sendFrame: (frame: Record<string, unknown>) => boolean;
 };
 
 export const RECONNECT_BASE_DELAY_MS = 1000;
@@ -413,9 +415,20 @@ export function createChatWebSocketClient({
     return true;
   }
 
+  function sendFrame(frame: Record<string, unknown>): boolean {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      return false;
+    }
+
+    socket.send(JSON.stringify(frame));
+
+    return true;
+  }
+
   return {
     connect,
     disconnect,
     send,
+    sendFrame,
   };
 }

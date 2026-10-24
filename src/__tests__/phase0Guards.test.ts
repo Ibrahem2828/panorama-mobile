@@ -34,6 +34,20 @@ describe('protected viewer does not hand non-image files to the web view', () =>
   });
 
   it('the file viewer only renders images for now', () => {
-    expect(read('src/features/files/screens/PdfViewerScreen.tsx')).toContain("getFileViewerType(loaded) === 'image'");
+    expect(read('src/features/files/screens/PdfViewerScreen.tsx')).toContain(
+      "getFileViewerType(loaded) === 'image'",
+    );
+  });
+});
+
+describe('chat control frames', () => {
+  it('are never sent through send(), which wraps its text as a visible chat message', () => {
+    const store = require('fs').readFileSync(
+      'src/features/chat/store/chatStore.ts',
+      'utf8',
+    ) as string;
+
+    expect(store).not.toMatch(/\.send\(\s*JSON\.stringify/u);
+    expect(store).toContain('sendFrame');
   });
 });
