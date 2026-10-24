@@ -65,6 +65,19 @@ export function PrintQuoteBreakdown({ quote, items, names }: PrintQuoteBreakdown
               {line ? (
                 <>
                   <Row label={t.printing.priceSummary.pages} value={String(line.pages_count)} />
+                  {line.pricing_snapshot?.selected_pages &&
+                  line.pricing_snapshot.selected_pages !== line.pages_count ? (
+                    <Row
+                      label={t.printing.priceSummary.selectedPages}
+                      value={String(line.pricing_snapshot.selected_pages)}
+                    />
+                  ) : null}
+                  {item.pagesPerSheet > 1 ? (
+                    <Row
+                      label={t.printing.priceSummary.perSheet}
+                      value={String(item.pagesPerSheet)}
+                    />
+                  ) : null}
                   <Row label={t.printing.priceSummary.sheets} value={String(line.sheets_count)} />
                   <Row
                     label={t.printing.priceSummary.unitPrice}
@@ -74,6 +87,19 @@ export function PrintQuoteBreakdown({ quote, items, names }: PrintQuoteBreakdown
                     label={t.printing.priceSummary.bindingPrice}
                     value={money(line.binding_price, line.currency)}
                   />
+                  {line.pricing_snapshot?.wire_grams_per_copy ? (
+                    <Row
+                      label={t.printing.priceSummary.wire}
+                      value={`${line.pricing_snapshot.wire_grams_per_copy} g`}
+                    />
+                  ) : null}
+                  {line.pricing_snapshot?.cover_price_per_copy &&
+                  Number(line.pricing_snapshot.cover_price_per_copy) > 0 ? (
+                    <Row
+                      label={t.printing.priceSummary.coverPrice}
+                      value={money(line.pricing_snapshot.cover_price_per_copy, line.currency)}
+                    />
+                  ) : null}
                   <Row
                     label={t.printing.priceSummary.subtotal}
                     value={money(line.subtotal, line.currency)}
