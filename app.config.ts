@@ -111,7 +111,9 @@ const withReleaseSigning: ConfigPlugin = (config) => {
       }
     };
     set('android.enableMinifyInReleaseBuilds', 'true');
-    set('android.enableShrinkResourcesInReleaseBuilds', 'true');
+    // Off on purpose: the shrinker deletes the notification chime (it is only referenced by name at runtime), and the
+    // saving is under half a megabyte. Code shrinking (R8) stays on.
+    set('android.enableShrinkResourcesInReleaseBuilds', 'false');
     // Compress the native libraries inside the APK: about a third smaller download (they are unpacked at install).
     set('expo.useLegacyPackaging', 'true');
     return mod;
