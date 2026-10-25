@@ -22,7 +22,9 @@ type ChatMessageListProps = {
   isLoadingOlder: boolean;
   loadOlderFailed: boolean;
   onLoadOlder: () => void;
+  peerCursors: Readonly<Record<number, { delivered: number; read: number }>>;
   onOpenAttachment: (message: ChatMessage) => void;
+  onLongPressMessage: (message: ChatMessage) => void;
   onRetry: (localId: string) => void;
   onDiscard: (localId: string) => void;
 };
@@ -85,7 +87,9 @@ export const ChatMessageList = memo(function ChatMessageList({
   isLoadingOlder,
   loadOlderFailed,
   onLoadOlder,
+  peerCursors,
   onOpenAttachment,
+  onLongPressMessage,
   onRetry,
   onDiscard,
 }: ChatMessageListProps) {
@@ -99,8 +103,8 @@ export const ChatMessageList = memo(function ChatMessageList({
   const [unseen, setUnseen] = useState(0);
 
   const items = useMemo(
-    () => buildChatItems(messages, pending, currentUserId),
-    [messages, pending, currentUserId],
+    () => buildChatItems(messages, pending, currentUserId, peerCursors),
+    [messages, pending, currentUserId, peerCursors],
   );
 
   const newestId = messages.length > 0 ? (messages[messages.length - 1]?.id ?? null) : null;
@@ -165,11 +169,12 @@ export const ChatMessageList = memo(function ChatMessageList({
       <ChatMessageRow
         item={item}
         onDiscard={onDiscard}
+        onLongPressMessage={onLongPressMessage}
         onOpenAttachment={onOpenAttachment}
         onRetry={onRetry}
       />
     ),
-    [onDiscard, onOpenAttachment, onRetry],
+    [onDiscard, onLongPressMessage, onOpenAttachment, onRetry],
   );
 
   const footer = useMemo(

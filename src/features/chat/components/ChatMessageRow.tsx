@@ -6,7 +6,8 @@ import { colors, layout, radius, spacing, useBrand } from '../../../theme';
 import { useTranslation } from '../../../i18n';
 import { getChatSenderName } from '../logic/messages';
 import { getDayLabel } from '../logic/timeline';
-import type { ChatListItem, ChatMessage, PendingMessage } from '../types';
+import { isolateLtr } from '../../../utils/rtl';
+import type { ChatListItem, ChatMessage, DeliveryState, PendingMessage } from '../types';
 import { formatMegabytes, formatMessageClock, formatMessageDay } from './chatFormat';
 
 const AVATAR_SIZE = layout.avatar.sm;
@@ -16,6 +17,7 @@ const BODY_STYLE = { writingDirection: 'auto' } as const;
 
 type RowCallbacks = {
   onOpenAttachment: (message: ChatMessage) => void;
+  onLongPressMessage: (message: ChatMessage) => void;
   onRetry: (localId: string) => void;
   onDiscard: (localId: string) => void;
 };
@@ -69,6 +71,8 @@ function AttachmentTile({
   const { t } = useTranslation();
   const brand = useBrand();
   const label = message.message_type === 'image' ? t.chat.attachment.image : t.chat.attachment.file;
+  const meta = message.attachment_meta;
+  const size = meta?.size ? formatMegabytes(meta.size) : null;
 
   return (
     <Pressable
@@ -84,10 +88,11 @@ function AttachmentTile({
         size={26}
       />
       <View style={styles.attachmentText}>
-        <AppText color="brand" variant="label" weight="600">
-          {label}
+        <AppText color="brand" numberOfLines={1} variant="label" weight="600">
+          {message.message_type === 'file' && meta?.name ? isolateLtr(meta.name) : label}
         </AppText>
         <AppText color="muted" variant="caption">
+          {size ? `${t.chat.attachment.sizeLabel(size)} · ` : ''}
           {t.chat.attachment.tapToView}
         </AppText>
       </View>
@@ -95,50 +100,113 @@ function AttachmentTile({
   );
 }
 
+/** One grey tick = sent, two grey = delivered to someone, two blue = read by someone. */
+const DeliveryTicks = memo(function DeliveryTicks({ state }: { state: DeliveryState }) {
+  const { t } = useTranslation();
+
+  return (
+    <View accessibilityLabel={t.chat.ticks[state]} accessible style={styles.ticks}>
+      <Icon
+        color={state === 'read' ? colors.semantic.info : colors.text.muted}
+        name={state === 'sent' ? 'check' : 'checkAll'}
+        size={16}
+        strokeWidth={2.2}
+      />
+    </View>
+  );
+});
+
+const ReactionChips = memo(function ReactionChips({ message }: { message: ChatMessage }) {
+  const brand = useBrand();
+
+  if (message.reactions.length === 0) {
+    return null;
+  }
+
+  return (
+    <View style={styles.reactions}>
+      {message.reactions.map((reaction) => {
+        const mine = reaction.emoji === message.my_reaction;
+
+        return (
+          <View
+            key={reaction.emoji}
+            style={[
+              styles.reactionChip,
+              mine ? { backgroundColor: brand.primarySoft, borderColor: brand.primary } : null,
+            ]}
+          >
+            <AppText variant="caption">{reaction.emoji}</AppText>
+            <AppText color={mine ? 'brand' : 'secondary'} variant="caption" weight="700">
+              {reaction.count}
+            </AppText>
+          </View>
+        );
+      })}
+    </View>
+  );
+});
+
 const MessageBubble = memo(function MessageBubble({
   message,
   own,
+  delivery,
   groupStart,
   onOpenAttachment,
+  onLongPressMessage,
 }: {
   message: ChatMessage;
   own: boolean;
+  delivery: DeliveryState | null;
   groupStart: boolean;
   onOpenAttachment: (message: ChatMessage) => void;
+  onLongPressMessage: (message: ChatMessage) => void;
 }) {
   const { t, locale } = useTranslation();
   const brand = useBrand();
   const senderName = getChatSenderName(message, t.chat.unnamedSender);
   const time = formatMessageClock(message.created_at, locale);
 
+  const staff = message.sender_detail?.is_staff === true;
   const bubble = (
-    <View
+    <Pressable
+      accessibilityHint={t.chat.reactions.title}
+      delayLongPress={280}
+      onLongPress={() => onLongPressMessage(message)}
       style={[
         styles.bubble,
         own
           ? { backgroundColor: brand.primarySoft, borderColor: brand.primary }
           : styles.otherBubble,
+        staff && !own ? { borderColor: brand.primary } : null,
       ]}
     >
-      {!own && groupStart ? (
-        <AppText color="brand" numberOfLines={1} variant="caption" weight="700">
-          {senderName}
-        </AppText>
+      {!own && (groupStart || staff) ? (
+        <View style={styles.senderLine}>
+          {staff ? <Icon color={brand.primary} name="shield" size={14} /> : null}
+          <AppText color="brand" numberOfLines={1} variant="caption" weight="700">
+            {senderName}
+          </AppText>
+        </View>
       ) : null}
       {message.content ? (
-        <AppText align="auto" selectable style={BODY_STYLE}>
+        <AppText align="auto" style={BODY_STYLE}>
           {message.content}
         </AppText>
       ) : null}
       {message.has_attachment ? (
         <AttachmentTile message={message} onOpen={onOpenAttachment} />
       ) : null}
-      {time ? (
-        <AppText align="auto" color="muted" style={styles.time} variant="caption">
-          {time}
-        </AppText>
-      ) : null}
-    </View>
+      <ReactionChips message={message} />
+      <View style={styles.metaLine}>
+        {time ? (
+          <AppText align="auto" color="muted" style={styles.time} variant="caption">
+            {time}
+          </AppText>
+        ) : null}
+        {own && delivery ? <DeliveryTicks state={delivery} /> : null}
+      </View>
+    </Pressable>
   );
 
   return (
@@ -289,6 +357,7 @@ const PendingBubble = memo(function PendingBubble({
 export const ChatMessageRow = memo(function ChatMessageRow({
   item,
   onOpenAttachment,
+  onLongPressMessage,
   onRetry,
   onDiscard,
 }: ChatMessageRowProps) {
@@ -309,8 +378,10 @@ export const ChatMessageRow = memo(function ChatMessageRow({
     default:
       return (
         <MessageBubble
+          delivery={item.delivery}
           groupStart={item.groupStart}
           message={item.message}
+          onLongPressMessage={onLongPressMessage}
           onOpenAttachment={onOpenAttachment}
           own={item.own}
         />
@@ -369,6 +440,35 @@ const styles = StyleSheet.create({
   },
   time: {
     opacity: 0.9,
+  },
+  metaLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  ticks: {
+    justifyContent: 'center',
+  },
+  senderLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xxs,
+  },
+  reactions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xxs,
+  },
+  reactionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xxs,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+    backgroundColor: colors.background.surface,
   },
   attachmentTile: {
     minHeight: layout.touchTargetMinSize,

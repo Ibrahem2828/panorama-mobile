@@ -36,6 +36,7 @@ export const en: TranslationCatalog = {
 
   apiErrors: {
     network: 'Could not connect. Check your internet and try again.',
+    offline: 'You are offline. Connect to the internet and try again.',
     timeout: 'That took longer than expected. Please try again.',
     unauthorized: 'Your session has ended. Sign in again to continue.',
     forbidden: 'You do not have permission to do this.',
@@ -80,6 +81,13 @@ export const en: TranslationCatalog = {
   connectivity: {
     offline:
       'You are offline. What you have already loaded stays visible, and everything updates when you reconnect.',
+    offlineSaved: 'You are offline. Showing data saved on your device.',
+    staleSaved: 'Could not refresh right now. Showing data saved on your device.',
+    lastUpdated: (when: string) => `Last updated ${when}`,
+    justNow: 'just now',
+    minutesAgo: (count: number) => `${count} min ago`,
+    hoursAgo: (count: number) => `${count} h ago`,
+    daysAgo: (count: number) => `${count} d ago`,
   },
 
   navigation: {
@@ -200,8 +208,15 @@ export const en: TranslationCatalog = {
     ownMessage: 'Your message',
 
     attachment: {
-      attach: 'Attach a photo',
-      remove: 'Remove photo',
+      attach: 'Attach',
+      remove: 'Remove the attachment',
+      menuTitle: 'Attach to the chat',
+      photo: 'Photo from your gallery',
+      camera: 'Take a photo',
+      document: 'PDF file',
+      cameraDenied: 'Allow the app to use the camera in your phone settings, then try again.',
+      openSettings: 'Open settings',
+      documentError: 'Could not pick the file. Please try again.',
       image: 'Photo',
       file: 'Attached file',
       tapToView: 'Tap to view',
@@ -212,6 +227,33 @@ export const en: TranslationCatalog = {
       pickError: 'Could not pick the photo. Please try again.',
       sizeLabel: (megabytes: string) => `${megabytes} MB`,
     },
+
+    ticks: {
+      sent: 'Sent',
+      delivered: 'Delivered',
+      read: 'Read',
+    },
+
+    reactions: {
+      title: 'React to the message',
+      remove: 'Remove your reaction',
+      summary: (emoji: string, count: number) => `${emoji} ${count}`,
+    },
+
+    actions: {
+      title: 'Message options',
+      delete: 'Delete the message',
+      deleteFailed: 'Could not delete the message. Please try again.',
+      close: 'Close',
+    },
+
+    mute: {
+      mute: 'Mute notifications for this chat',
+      unmute: 'Unmute notifications',
+      mutedBadge: 'Notifications muted',
+    },
+
+    unreadBadge: (count: number) => (count > 99 ? '99+' : String(count)),
 
     guard: {
       title: 'Chat is for members only',
@@ -269,7 +311,48 @@ export const en: TranslationCatalog = {
     read: 'Read',
     noDetails: 'There are no further details for this notification.',
     typeIconAlt: 'Notification type icon',
-    androidChannelName: 'Panorama notifications',
+    channels: {
+      default: 'Panorama notifications',
+      general: 'General notifications',
+      chat: 'Chat messages',
+      groups: 'Groups and subject registration',
+      printing: 'Print orders',
+      verification: 'Verification',
+      support: 'Support',
+    },
+    categories: {
+      chat: 'Chat',
+      groups: 'Groups and subject registration',
+      printing: 'Printing',
+      verification: 'Verification',
+      support: 'Support',
+    },
+    badgeCount: (count: number) => (count > 99 ? '99+' : String(count)),
+    settings: {
+      title: 'Notification settings',
+      subtitle: 'Choose what reaches you and when',
+      permissionOffTitle: 'Notifications are off on your phone',
+      permissionOffBody:
+        'Allow notifications to get chat messages and registration and print decisions as soon as they happen.',
+      allow: 'Allow notifications',
+      openSettings: 'Open phone settings',
+      loadFailed: 'Could not load the notification settings. Please try again.',
+      saveFailed: 'Could not save the change. Check your connection and try again.',
+      push: 'Phone notifications',
+      pushDescription: 'Turning this off means you only see notifications inside the app.',
+      categoriesTitle: 'Notification types',
+      quietTitle: 'Quiet hours',
+      quietEnable: 'Turn on quiet hours',
+      quietDescription: 'During this window notifications arrive silently, without sound.',
+      quietFrom: 'From',
+      quietTo: 'Until',
+      earlier: 'Half an hour earlier',
+      later: 'Half an hour later',
+      systemSettings: 'System notification settings',
+      systemSettingsHint:
+        'There you tune the sound of each channel and how it shows on the lock screen.',
+      openInbox: 'Open the notification inbox',
+    },
     fallbackTitle: 'New notification',
 
     filterLabel: 'Show notifications',
@@ -554,7 +637,136 @@ export const en: TranslationCatalog = {
     },
   },
 
+  docViewer: {
+    close: 'Close',
+    tools: {
+      highlight: 'Highlight',
+      underline: 'Underline',
+      pen: 'Pen',
+      note: 'Text note',
+      eraser: 'Eraser',
+    },
+    colors: {
+      yellow: 'Yellow',
+      green: 'Green',
+      pink: 'Pink',
+      blue: 'Blue',
+      black: 'Black',
+      red: 'Red',
+    },
+    thin: 'Thin line',
+    thick: 'Thick line',
+    undo: 'Undo',
+    redo: 'Redo',
+    writeMode: 'Write and draw mode',
+    readMode: 'Read mode',
+    writeHint: 'Draw with one finger. To zoom and move around, go back to read mode.',
+    noteHint: 'Tap the page to place a note, or tap a note to edit it.',
+    eraserHint: 'Touch any highlight, drawing or note to delete it.',
+    noteTitle: 'Note on this page',
+    notePlaceholder: 'Write your note...',
+    noteSave: 'Save the note',
+    noteDelete: 'Delete the note',
+    showThumbs: 'Show page thumbnails',
+    hideThumbs: 'Hide thumbnails',
+    nightMode: 'Night mode',
+    dayMode: 'Day mode',
+    syncPending: 'Saving your marks…',
+    syncError: 'Could not save your marks right now; we will retry',
+    limitReached: 'You reached the maximum number of marks in this file.',
+    processingTitle: 'The file is being prepared',
+    processingBody:
+      'We are turning the file into protected pages for viewing. This takes a few minutes.',
+    notReadyTitle: 'The file is not ready to view yet',
+    notReadyBody:
+      'This file has not been prepared for viewing. Tell the administration if it persists.',
+    failedTitle: 'The file could not be prepared',
+    failedBody: 'Something went wrong while preparing the file. Ask the administration to retry.',
+    myNotes: {
+      title: 'My notes',
+      subtitle: 'Search your notes on lectures and files',
+      placeholder: 'Search my notes...',
+      empty: 'No matching notes.',
+      page: (page: number) => `Page ${page}`,
+      bookmark: 'Bookmark',
+      open: 'Open in the viewer',
+      failed: 'Could not load the notes. Please try again.',
+    },
+  },
+
+  enrollment: {
+    title: 'Subject registration',
+    subtitle: 'Upload your Learnata screenshot and pick your subjects',
+    cardTitle: 'Register your subjects for this term',
+    cardBody: 'Once approved, your subjects’ groups, chat and files open up.',
+    joinByRegistration:
+      'Subject groups open after your subject registration is approved. Tap “Register your subjects” on the Groups page.',
+    loading: 'Loading...',
+    loadError: 'Could not load your registration status. Please try again.',
+    stepOf: (step: number, total: number) => `Step ${step} of ${total}`,
+    next: 'Next',
+    back: 'Back',
+    change: 'Change the image',
+    remove: 'Remove',
+    fromGallery: 'Choose from your gallery',
+    fromCamera: 'Take a photo',
+    cameraDenied:
+      'Allow the app to use the camera in your phone settings, then try again. Tap to open settings.',
+    pickError: 'Could not pick the image. Please try again.',
+    step1: {
+      title: 'Learnata screenshot',
+      body: 'Open Learnata after you have registered your subjects, take a screenshot that shows your registration, and upload it here.',
+      tips: [
+        'Your name is clear',
+        'The semester is visible',
+        'The date is visible',
+        'All your subjects are visible',
+      ],
+    },
+    step2: {
+      title: 'Your subjects',
+      body: 'Type a subject name or code and suggestions appear as you type.',
+      searchLabel: 'Search for a subject',
+      placeholder: 'Type the subject name...',
+      count: (count: number) =>
+        count === 0
+          ? 'No subjects chosen yet'
+          : count === 1
+            ? 'You chose 1 subject'
+            : `You chose ${count} subjects`,
+    },
+    step3: {
+      title: 'Review and send',
+      body: 'Check the screenshot and the subjects, then send the request to the administration.',
+    },
+    submit: 'Send the request',
+    sending: (percent: number) => `Sending ${percent}%`,
+    submitError: 'Could not send the request. Check your connection and try again.',
+    alreadyPending: 'You already have a request waiting for review.',
+    cancelRequest: 'Cancel the request',
+    cancelError: 'Could not cancel the request. Please try again.',
+    newRequest: 'New registration',
+    status: {
+      pending: 'Your request is under review',
+      approved: 'Your registration was approved',
+      partially_approved: 'Some of your subjects were approved',
+      rejected: 'Your registration was not approved',
+      cancelled: 'The request was cancelled',
+    },
+    statusHint: {
+      pending:
+        'You will get a notification when it is decided. You can cancel before it is reviewed.',
+      approved: 'You were added to your subjects’ groups. Open them from “My groups”.',
+      partially_approved: 'See the reason for the subjects that were not approved below.',
+      rejected: 'See the reason below, then send a new request.',
+      cancelled: 'You can send a new request at any time.',
+    },
+  },
+
   search: {
+    typeToSearch: 'Type at least two characters to see suggestions.',
+    failed: 'Search failed. Please try again.',
+    noMatches: 'No matches.',
     title: 'Search',
     subtitle: 'Search your subjects, groups and files',
     label: 'Search term',
@@ -1331,15 +1543,26 @@ export const en: TranslationCatalog = {
   },
 
   attachments: {
-    attach: 'Attach an image',
-    hint: 'Supported formats: PNG, JPG and WEBP, up to 25 MB.',
+    attach: 'Attach a file',
+    hint: (megabytes: number) =>
+      `A photo from your album or camera, or a file from your device, up to ${megabytes} MB.`,
+    sources: {
+      title: 'Attach from',
+      album: 'Photo from your album',
+      camera: 'Take a photo',
+      document: 'File from your device',
+      close: 'Close',
+    },
+    cameraDenied: 'The camera is not allowed. Allow the app to use it in your phone settings.',
+    openSettings: 'Open settings',
+    retry: 'Try again',
     remove: 'Remove attachment',
     selected: 'Selected attachment',
     uploading: (percent: number) => `Uploading ${percent}%`,
-    invalidType: 'Unsupported file type. Choose a PNG, JPG or WEBP image.',
-    tooLarge: 'The file is larger than 25 MB.',
+    invalidType: 'Unsupported file type. Choose an image or a PDF file.',
+    tooLarge: (megabytes: number) => `The file is larger than ${megabytes} MB.`,
     empty: 'The file is empty.',
-    pickerFailed: 'Could not open the photo library. Please try again.',
+    pickerFailed: 'Could not open the picker. Please try again.',
     viewAttachment: 'View attachment',
     viewerTitle: 'Attachment',
     viewerSubtitle: 'Shown inside the app only',
@@ -1646,6 +1869,8 @@ export const en: TranslationCatalog = {
       subtitle: 'Shown inside the app only',
       issuingTicket: 'Getting the file ready...',
       loadError: 'Could not display the file. Please try again.',
+      notSupportedYet:
+        'Viewing this file type inside the app is coming in an upcoming update. It cannot be downloaded, to protect the content.',
       securityNote:
         'The file opens inside the app only and cannot be downloaded or shared. Screenshots may be blocked while it is open.',
       unavailableTitle: 'This file cannot be displayed',
@@ -1888,6 +2113,10 @@ export const en: TranslationCatalog = {
       title: 'New print order',
       subtitle: 'Choose your files and print options',
       stepConfigure: 'Options',
+      barSummary: (files: number, copies: number) =>
+        `${files === 1 ? '1 file' : `${files} files`} · ${copies === 1 ? '1 copy' : `${copies} copies`}`,
+      barNote: 'The price appears after calculation',
+      sourceTitle: 'Choose the file',
       stepSummary: 'Price summary',
       stepsLabel: (current: number, total: number) => `Step ${current} of ${total}`,
       cartTitle: 'Order files',
@@ -1918,6 +2147,8 @@ export const en: TranslationCatalog = {
       uploadTooLarge: 'The file is larger than 25 MB.',
       uploadEmpty: 'The file is empty.',
       uploadPickerFailed: 'Could not open the photo library. Please try again.',
+      pickFromCamera: 'Take a photo',
+      cameraDenied: 'The camera is not allowed. Allow the app to use it in your phone settings.',
       pickupTitle: 'Pickup point',
       pickupLoadFailed: 'Could not load pickup points.',
       pickupNone: 'No pickup points are available right now.',
@@ -1980,6 +2211,11 @@ export const en: TranslationCatalog = {
       sheets: 'Sheets',
       unitPrice: 'Price per sheet',
       bindingPrice: 'Binding price',
+      selectedPages: 'Pages printed',
+      perSheet: 'Pages per sheet',
+      wire: 'Wire weight per copy',
+      wireGrams: (grams: string | number) => `${grams} g`,
+      coverPrice: 'Cover price',
       subtotal: 'Subtotal',
       total: 'Total',
       rounding: 'Rounding',
@@ -2054,6 +2290,64 @@ export const en: TranslationCatalog = {
       bindingStaple: 'Staple',
       bindingSpiral: 'Spiral',
       bindingThermal: 'Thermal binding',
+      bindingBeads: 'Beads binding',
+      pagesPerSheet: 'Pages per sheet',
+      flip: 'Flip the sheet',
+      flips: { long_edge: 'On the long edge', short_edge: 'On the short edge' },
+      direction: 'Page order',
+      directions: { ltr: 'Left to right', rtl: 'Right to left' },
+      orientation: 'Page orientation',
+      orientations: { auto: 'Automatic', portrait: 'Portrait', landscape: 'Landscape' },
+      pageRange: 'Page range',
+      rangePlaceholder: 'e.g. 1-5, 8',
+      rangeHint: 'Leave empty to print every page.',
+      rangeHintWithTotal: (total: number) =>
+        `The file has ${total} pages. Leave empty to print them all.`,
+      rangeErrors: {
+        syntax: 'Write the pages like 1-5, 8',
+        order: 'A range must go from the smaller to the larger page.',
+        beyond: 'The page number is beyond the file’s page count.',
+        long: 'The range is too long.',
+      },
+      collate: 'Copy order',
+      collateHint: 'Collated: each copy complete, one after the other',
+      cover: 'Cover',
+      coverNone: 'No cover',
+      sectionPaper: 'Paper and printing',
+      sectionLayout: 'Page layout and copies',
+      sectionFinishing: 'Binding and cover',
+      sheetPages: (count: number) => (count === 1 ? '1 page per sheet' : `${count} pages per sheet`),
+      allPages: 'All pages',
+      collated: 'Collated',
+      notCollated: 'Not collated',
+      wirePriced: 'The binding price follows the weight of the wire used.',
+    },
+
+    simulation: {
+      title: 'Sheet simulation',
+      front: 'Front',
+      back: 'Back',
+      perSheet: (n: number) => (n === 1 ? '1 page per sheet' : `${n} pages per sheet`),
+      oneSide: 'One side',
+      flipLong: 'Two-sided, flip on the long edge',
+      flipShort: 'Two-sided, flip on the short edge',
+      sheetsTotal: (n: number) => (n === 1 ? '1 sheet' : `${n} sheets`),
+      copiesSingle: (copies: number, sheets: number) => `${copies} copies × ${sheets} sheets each`,
+      copiesDouble: (copies: number, sheets: number) =>
+        `${copies} copies × ${sheets} sheets (two-sided) each`,
+      sample: 'A sample drawing: the real one appears once you pick a file and get the price.',
+    },
+
+    products: {
+      homeButton: 'Ready notebooks',
+      title: 'Ready-made notebooks and products',
+      subtitle: 'Fixed specification and price, order in two taps',
+      emptyTitle: 'No products yet',
+      emptyMessage: 'Ready printed notebooks will appear here once they are added.',
+      order: 'Order',
+      productLabel: 'Ready product',
+      fixedSpec: (pages: number, paper: string) => `${pages} pages · ${paper}`,
+      fixedPrice: (price: string, currency: string) => `Fixed price: ${price} ${currency}`,
     },
 
     preview: {
@@ -2126,6 +2420,49 @@ export const en: TranslationCatalog = {
     },
   },
 
+  permissions: {
+    introTitle: "Let's set up your app",
+    introBody:
+      'We need your permission for a few things so features work properly. We will not ask for anything beyond what you see here, and you can change any permission later in Settings.',
+    rows: {
+      notifications: {
+        title: 'Notifications',
+        why: 'To get chat messages and registration, print and verification decisions as soon as they happen.',
+      },
+      camera: {
+        title: 'Camera',
+        why: 'To photograph your card, your Learnata screenshot, or a picture you send in chat.',
+      },
+      photos: {
+        title: 'Photos and albums',
+        why: 'You pick a photo from your albums with the secure system picker, so no permission is needed and we only see what you choose.',
+      },
+      files: {
+        title: 'Files',
+        why: 'You pick a PDF, Word or PowerPoint file from your device with the system picker, with no extra permission.',
+      },
+    },
+    status: {
+      granted: 'Allowed',
+      denied: 'Not allowed',
+      blocked: 'Blocked by the system',
+      undetermined: 'Not asked yet',
+      not_needed: 'No permission needed',
+    },
+    allow: 'Allow',
+    allowAll: 'Allow all',
+    openSettings: 'Open settings',
+    blockedHint:
+      'You refused it before, so no new request will appear. Open settings and turn it on there.',
+    allGranted: 'All permissions are ready',
+    continue: 'Continue',
+    skipForNow: 'Later',
+    skipHint: 'You can continue now; we will ask when a feature needs it, or you can use Settings.',
+    settingsTitle: 'Permissions',
+    settingsSubtitle: 'What the app uses on your phone',
+    footnote: 'Changes you make in the system settings show here when you come back to the app.',
+  },
+
   settings: {
     title: 'Settings',
     subtitle: 'Account and app settings',
@@ -2143,7 +2480,9 @@ export const en: TranslationCatalog = {
       title: 'App',
       subtitle: 'App settings',
       notifications: 'Notifications',
-      notificationsDescription: 'Open the notification centre',
+      notificationsDescription: 'Choose what reaches you and when, and open the inbox',
+      permissions: 'Permissions',
+      permissionsDescription: 'Notifications, camera, photos and files',
       version: 'App version',
       versionDescription: 'Current app version number',
       environment: 'Version type',

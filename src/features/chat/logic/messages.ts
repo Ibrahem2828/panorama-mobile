@@ -1,4 +1,15 @@
-import type { ChatMessage, ChatMessageSender, ChatMessageType, Id } from '../types';
+import type {
+  ChatDelivery,
+  ChatMessage,
+  ChatMessageSender,
+  ChatMessageType,
+  ChatReactionCount,
+  ChatReplyDetail,
+  ChatReactionFrame,
+  ChatReceiptFrame,
+  DeliveryState,
+  Id,
+} from '../types';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -35,6 +46,50 @@ function toMessageType(value: unknown): ChatMessageType {
   return typeof value === 'string' && MESSAGE_TYPES.has(value)
     ? (value as ChatMessageType)
     : 'text';
+}
+
+const DELIVERY_STATES = new Set<string>(['sent', 'delivered', 'read']);
+
+function toDelivery(value: unknown): ChatDelivery | null {
+  if (!isRecord(value) || typeof value.state !== 'string' || !DELIVERY_STATES.has(value.state)) {
+    return null;
+  }
+
+  return {
+    state: value.state as DeliveryState,
+    delivered_count: toNumericId(value.delivered_count) ?? 0,
+    read_count: toNumericId(value.read_count) ?? 0,
+    recipients: toNumericId(value.recipients) ?? 0,
+  };
+}
+
+function toReactions(value: unknown): ChatReactionCount[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((entry) => {
+    const count = isRecord(entry) ? toNumericId(entry.count) : null;
+
+    return isRecord(entry) && typeof entry.emoji === 'string' && count !== null && count > 0
+      ? [{ emoji: entry.emoji, count }]
+      : [];
+  });
+}
+
+function toReplyDetail(value: unknown): ChatReplyDetail | null {
+  const id = isRecord(value) ? toNumericId(value.id) : null;
+
+  if (!isRecord(value) || id === null) {
+    return null;
+  }
+
+  return {
+    id,
+    is_deleted: value.is_deleted === true,
+    sender_name: toText(value.sender_name),
+    preview: toText(value.preview),
+  };
 }
 
 /**
@@ -83,7 +138,9 @@ export function normalizeChatMessage(
       : {
           id: senderId,
           full_name: toText(detail?.full_name) ?? toText(candidate.sender_name) ?? '',
+          is_staff: detail?.is_staff === true,
         };
+  const meta = isRecord(candidate.attachment_meta) ? candidate.attachment_meta : null;
 
   return {
     id,
@@ -93,7 +150,12 @@ export function normalizeChatMessage(
     content,
     message_type: toMessageType(candidate.message_type),
     has_attachment: hasAttachment,
+    attachment_meta: meta ? { name: toText(meta.name) ?? '', size: toNumericId(meta.size) } : null,
     reply_to: toNumericId(candidate.reply_to),
+    reply_to_detail: toReplyDetail(candidate.reply_to_detail),
+    reactions: toReactions(candidate.reactions),
+    my_reaction: typeof candidate.my_reaction === 'string' ? candidate.my_reaction : null,
+    delivery: toDelivery(candidate.delivery),
     created_at: toText(candidate.created_at) ?? new Date().toISOString(),
   };
 }
@@ -187,4 +249,100 @@ export function isOwnChatMessage(message: ChatMessage, currentUserId?: Id | null
 
 export function getChatSenderName(message: ChatMessage, fallback: string): string {
   return toText(message.sender_detail?.full_name) ?? fallback;
+}
+
+function frameData(payload: unknown): Record<string, unknown> | null {
+  if (!isRecord(payload)) {
+    return null;
+  }
+
+  return isRecord(payload.data) ? payload.data : payload;
+}
+
+/** `{type:'receipt', data:{user_id, delivered_up_to, read_up_to}}`; null when malformed. */
+export function parseReceiptFrame(payload: unknown): ChatReceiptFrame | null {
+  const data = frameData(payload);
+  const userId = toNumericId(data?.user_id);
+
+  if (!data || userId === null) {
+    return null;
+  }
+
+  return {
+    user_id: userId,
+    delivered_up_to: toNumericId(data.delivered_up_to) ?? 0,
+    read_up_to: toNumericId(data.read_up_to) ?? 0,
+  };
+}
+
+/** `{type:'reaction', data:{message_id, user_id, emoji, counts}}`; null when malformed. */
+export function parseReactionFrame(payload: unknown): ChatReactionFrame | null {
+  const data = frameData(payload);
+  const messageId = toNumericId(data?.message_id);
+  const userId = toNumericId(data?.user_id);
+
+  if (!data || messageId === null || userId === null) {
+    return null;
+  }
+
+  const counts: Record<string, number> = {};
+
+  if (isRecord(data.counts)) {
+    for (const [emoji, count] of Object.entries(data.counts)) {
+      const value = toNumericId(count);
+
+      if (value !== null && value > 0) {
+        counts[emoji] = value;
+      }
+    }
+  }
+
+  return {
+    message_id: messageId,
+    user_id: userId,
+    emoji: typeof data.emoji === 'string' ? data.emoji : null,
+    counts,
+  };
+}
+
+/** Counts map → the sorted list shown under a bubble (most used first). */
+export function reactionList(counts: Record<string, number>): ChatReactionCount[] {
+  return Object.entries(counts)
+    .map(([emoji, count]) => ({ emoji, count }))
+    .sort((left, right) => right.count - left.count);
+}
+
+/** Whichever of the server's answer and the live cursors of the other members is further along. */
+export function effectiveDeliveryState(
+  message: ChatMessage,
+  peerCursors: Readonly<Record<number, { delivered: number; read: number }>>,
+  currentUserId: Id | null | undefined,
+): DeliveryState {
+  const server = message.delivery?.state ?? 'sent';
+
+  if (server === 'read') {
+    return 'read';
+  }
+
+  let state: DeliveryState = server;
+
+  for (const [userId, cursor] of Object.entries(peerCursors)) {
+    if (
+      currentUserId !== null &&
+      currentUserId !== undefined &&
+      String(userId) === String(currentUserId)
+    ) {
+      continue;
+    }
+
+    if (cursor.read >= message.id) {
+      return 'read';
+    }
+
+    if (cursor.delivered >= message.id) {
+      state = 'delivered';
+    }
+  }
+
+  return state;
 }

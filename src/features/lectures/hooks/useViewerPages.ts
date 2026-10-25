@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import { asDocRef, docKey, type DocRef } from '../../viewer/types';
 
 import { lectureErrorKind, type LectureErrorKind } from '../logic';
 import { ViewerSessionManager } from '../sessionManager';
@@ -35,7 +37,9 @@ export type ViewerPages = {
  * Viewer session + image sources for one lecture. Pages are streamed by the native image loader with the
  * `X-Viewer-Session` header, so nothing is ever written to shared storage by the app.
  */
-export function useViewerPages(lectureId: LectureId, page: number): ViewerPages {
+export function useViewerPages(target: LectureId | DocRef, page: number): ViewerPages {
+  const key = docKey(asDocRef(target));
+  const lectureId = useMemo(() => asDocRef(target), [key]);
   const managerRef = useRef<ViewerSessionManager | null>(null);
   if (managerRef.current === null) {
     managerRef.current = new ViewerSessionManager({

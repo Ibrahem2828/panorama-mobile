@@ -6,3 +6,4 @@ export * from './ChatMessageList';
 export * from './ChatMessageRow';
 export * from './ChatPermissionNotice';
 export * from './ChatRoomHeader';
+export { MessageActionsSheet } from './MessageActionsSheet';

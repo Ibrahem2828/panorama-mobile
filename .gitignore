@@ -17,3 +17,6 @@ yarn-error.log*
 terminals/
 .agents/
 .claude/
+
+# Firebase client config: supplied per build, never committed
+google-services.json

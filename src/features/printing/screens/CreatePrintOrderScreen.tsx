@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import {
   AppButton,
@@ -16,9 +16,14 @@ import {
 import { useTranslation } from '../../../i18n';
 import { PrintingRoutes } from '../../../navigation/routes';
 import type { PrintingStackParamList } from '../../../navigation/types';
-import { colors, radius, spacing, useBrand } from '../../../theme';
-import { PrintItemCard, PrintPickupSelector, UploadProgressCard } from '../components';
-import { MAX_PRINT_ITEMS, hasUploads } from '../services';
+import { colors, spacing, useBrand } from '../../../theme';
+import {
+  PrintItemCard,
+  PrintPickupSelector,
+  PrintStickyBar,
+  UploadProgressCard,
+} from '../components';
+import { MAX_PRINT_ITEMS, hasUploads, totalCopies } from '../services';
 import { isQuoteFresh, usePrintingStore } from '../store';
 
 type Props = NativeStackScreenProps<PrintingStackParamList, 'CreatePrintOrder'>;
@@ -29,27 +34,44 @@ function StepIndicator({ current }: { current: 1 | 2 }) {
   const steps = [t.printing.create.stepConfigure, t.printing.create.stepSummary];
 
   return (
-    <Stack direction="horizontal" gap="sm" style={styles.steps}>
+    <View style={styles.steps}>
       {steps.map((label, index) => {
-        const active = index + 1 === current;
+        const number = index + 1;
+        const active = number === current;
+        const done = number < current;
 
         return (
           <View
-            accessibilityLabel={`${t.printing.create.stepsLabel(current, steps.length)}: ${label}`}
+            accessibilityLabel={`${t.printing.create.stepsLabel(number, steps.length)}: ${label}`}
             accessible
             key={label}
-            style={[
-              styles.step,
-              { backgroundColor: active ? brand.primarySoft : colors.background.muted },
-            ]}
+            style={styles.step}
           >
+            <View
+              style={[
+                styles.stepDot,
+                {
+                  backgroundColor: active || done ? brand.primary : colors.background.muted,
+                  borderColor: active || done ? brand.primary : colors.border.default,
+                },
+              ]}
+            >
+              {done ? (
+                <Icon color={brand.onPrimary} name="check" size={14} strokeWidth={3} />
+              ) : (
+                <AppText color={active ? 'inverse' : 'muted'} variant="caption" weight="700">
+                  {String(number)}
+                </AppText>
+              )}
+            </View>
             <AppText color={active ? 'brand' : 'muted'} variant="caption" weight="700">
-              {`${index + 1}. ${label}`}
+              {label}
             </AppText>
+            {index < steps.length - 1 ? <View style={styles.stepLine} /> : null}
           </View>
         );
       })}
-    </Stack>
+    </View>
   );
 }
 
@@ -105,157 +127,195 @@ export function CreatePrintOrderScreen({ navigation, route }: Props) {
     }
   }, [calculateQuote, navigation]);
 
+  const calculating = transfer && hasUploads(draft);
+
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
-      <Stack gap="xl">
-        <Stack gap="md">
-          <AppHeader subtitle={t.printing.create.subtitle} title={t.printing.create.title} />
-        </Stack>
-
-        <StepIndicator current={1} />
-
-        {fileId !== undefined ? (
-          <AppCard variant="muted">
-            <AppText color="secondary" variant="bodySmall">
-              {t.printing.create.prefilledFile}
-            </AppText>
-          </AppCard>
-        ) : null}
-
-        <Stack gap="sm">
-          <Stack align="center" direction="horizontal" gap="md" justify="space-between">
-            <AppText variant="title">{t.printing.create.cartTitle}</AppText>
-            <AppText color="muted" variant="caption">
-              {t.printing.create.itemsCount(draft.items.length, MAX_PRINT_ITEMS)}
-            </AppText>
+    <AppScreen horizontalPadding={false} style={styles.screen}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        style={styles.scroll}
+      >
+        <Stack gap="xl">
+          <Stack gap="md">
+            <AppHeader subtitle={t.printing.create.subtitle} title={t.printing.create.title} />
           </Stack>
-          <AppText color="secondary" variant="bodySmall">
-            {t.printing.create.cartDescription(MAX_PRINT_ITEMS)}
-          </AppText>
-          {showErrors && validation?.count ? (
-            <AppText color="error" variant="bodySmall">
-              {t.printing.errors.noItems}
-            </AppText>
-          ) : null}
-        </Stack>
 
-        {draft.items.map((item, index) => (
-          <PrintItemCard
-            canRemove={draft.items.length > 1}
-            index={index}
-            item={item}
-            key={item.key}
-            onChange={updateItem}
-            onRemove={removeItem}
-            problems={validation?.items[index]}
-            showErrors={showErrors}
-          />
-        ))}
+          <StepIndicator current={1} />
 
-        <Stack gap="xs">
-          <AppButton
-            disabled={atLimit || isQuoting}
-            leftIcon={<Icon color={colors.text.secondary} name="plus" size={18} />}
-            onPress={() => addItem()}
-            title={t.printing.create.addItem}
-            variant="outline"
-          />
-          {atLimit ? (
-            <AppText color="muted" variant="caption">
-              {t.printing.create.limitReached(MAX_PRINT_ITEMS)}
-            </AppText>
-          ) : null}
-        </Stack>
-
-        <PrintPickupSelector
-          error={pickupError}
-          isLoading={isLoadingLocations}
-          locations={locations}
-          onRetry={() => void loadConfiguration()}
-          onSelect={setPickupLocation}
-          selectedId={draft.pickupLocationId}
-        />
-
-        <AppTextInput
-          helperText={t.printing.create.notesHelper}
-          label={t.printing.create.notesLabel}
-          maxLength={2000}
-          multiline
-          onChangeText={setNotes}
-          placeholder={t.printing.create.notesPlaceholder}
-          value={draft.userNotes}
-        />
-
-        <AppCard variant="muted">
-          <Stack gap="xs">
-            <AppText color="secondary" variant="caption">
-              {t.printing.create.pricingNotice}
-            </AppText>
-            <AppText color="muted" variant="caption">
-              {t.printing.create.uploadNote}
-            </AppText>
-          </Stack>
-        </AppCard>
-
-        {validation?.uploadsTooLarge ? (
-          <AppText color="error" variant="bodySmall">
-            {t.printing.errors.uploadsTooLarge}
-          </AppText>
-        ) : null}
-
-        {draftError ? (
-          <AppCard variant="muted">
-            <Stack gap="sm">
-              <AppText color="error" variant="bodySmall">
-                {draftError}
+          {fileId !== undefined ? (
+            <AppCard variant="muted">
+              <AppText color="secondary" variant="bodySmall">
+                {t.printing.create.prefilledFile}
               </AppText>
-              <AppButton
-                onPress={() => void handleCalculate()}
-                size="sm"
-                title={t.printing.errors.retry}
-                variant="outline"
-              />
+            </AppCard>
+          ) : null}
+
+          <Stack gap="sm">
+            <Stack align="center" direction="horizontal" gap="md" justify="space-between">
+              <AppText variant="title">{t.printing.create.cartTitle}</AppText>
+              <AppText color="muted" variant="caption">
+                {t.printing.create.itemsCount(draft.items.length, MAX_PRINT_ITEMS)}
+              </AppText>
+            </Stack>
+            <AppText color="secondary" variant="bodySmall">
+              {t.printing.create.cartDescription(MAX_PRINT_ITEMS)}
+            </AppText>
+            {showErrors && validation?.count ? (
+              <AppText color="error" variant="bodySmall">
+                {t.printing.errors.noItems}
+              </AppText>
+            ) : null}
+          </Stack>
+
+          {draft.items.map((item, index) => (
+            <PrintItemCard
+              canRemove={draft.items.length > 1}
+              index={index}
+              item={item}
+              key={item.key}
+              onChange={updateItem}
+              onRemove={removeItem}
+              problems={validation?.items[index]}
+              showErrors={showErrors}
+            />
+          ))}
+
+          <Stack gap="xs">
+            <AppButton
+              disabled={atLimit || isQuoting}
+              leftIcon={<Icon color={colors.text.secondary} name="plus" size={18} />}
+              onPress={() => addItem()}
+              title={t.printing.create.addItem}
+              variant="outline"
+            />
+            {atLimit ? (
+              <AppText color="muted" variant="caption">
+                {t.printing.create.limitReached(MAX_PRINT_ITEMS)}
+              </AppText>
+            ) : null}
+          </Stack>
+
+          <PrintPickupSelector
+            error={pickupError}
+            isLoading={isLoadingLocations}
+            locations={locations}
+            onRetry={() => void loadConfiguration()}
+            onSelect={setPickupLocation}
+            selectedId={draft.pickupLocationId}
+          />
+
+          <AppTextInput
+            helperText={t.printing.create.notesHelper}
+            label={t.printing.create.notesLabel}
+            maxLength={2000}
+            multiline
+            onChangeText={setNotes}
+            placeholder={t.printing.create.notesPlaceholder}
+            value={draft.userNotes}
+          />
+
+          <AppCard variant="muted">
+            <Stack gap="xs">
+              <AppText color="secondary" variant="caption">
+                {t.printing.create.pricingNotice}
+              </AppText>
+              <AppText color="muted" variant="caption">
+                {t.printing.create.uploadNote}
+              </AppText>
             </Stack>
           </AppCard>
-        ) : null}
 
-        <ChoiceChips
-          label={t.printing.create.currencyLabel}
-          onChange={setCurrency}
-          options={[
-            { value: 'SYP', label: t.printing.create.currencySyp },
-            { value: 'USD', label: t.printing.create.currencyUsd },
-          ]}
-          value={draft.currency}
-        />
+          {validation?.uploadsTooLarge ? (
+            <AppText color="error" variant="bodySmall">
+              {t.printing.errors.uploadsTooLarge}
+            </AppText>
+          ) : null}
 
-        {transfer && hasUploads(draft) ? (
+          {draftError ? (
+            <AppCard variant="muted">
+              <Stack gap="sm">
+                <AppText color="error" variant="bodySmall">
+                  {draftError}
+                </AppText>
+                <AppButton
+                  onPress={() => void handleCalculate()}
+                  size="sm"
+                  title={t.printing.errors.retry}
+                  variant="outline"
+                />
+              </Stack>
+            </AppCard>
+          ) : null}
+
+          <ChoiceChips
+            label={t.printing.create.currencyLabel}
+            onChange={setCurrency}
+            options={[
+              { value: 'SYP', label: t.printing.create.currencySyp },
+              { value: 'USD', label: t.printing.create.currencyUsd },
+            ]}
+            value={draft.currency}
+          />
+        </Stack>
+      </ScrollView>
+
+      <PrintStickyBar>
+        {calculating && transfer ? (
           <UploadProgressCard onCancel={cancelTransfer} transfer={transfer} />
         ) : (
-          <Stack gap="sm">
+          <>
+            <View style={styles.barRow}>
+              <View style={styles.barText}>
+                <AppText variant="bodySmall" weight="700">
+                  {t.printing.create.barSummary(draft.items.length, totalCopies(draft))}
+                </AppText>
+                <AppText color="muted" variant="caption">
+                  {t.printing.create.barNote}
+                </AppText>
+              </View>
+              {hasContent ? (
+                <AppButton
+                  onPress={resetDraft}
+                  size="sm"
+                  title={t.printing.create.startOver}
+                  variant="ghost"
+                />
+              ) : null}
+            </View>
             <AppButton
+              fullWidth
               loading={isQuoting}
               onPress={() => void handleCalculate()}
               title={t.printing.create.calculatePrice}
             />
-            {hasContent ? (
-              <AppButton onPress={resetDraft} title={t.printing.create.startOver} variant="ghost" />
-            ) : null}
-          </Stack>
+          </>
         )}
-      </Stack>
+      </PrintStickyBar>
     </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { gap: spacing.xl },
-  steps: { alignItems: 'stretch' },
-  step: {
-    flex: 1,
-    borderRadius: radius.button,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+  screen: { backgroundColor: colors.background.primary },
+  scroll: { flex: 1 },
+  content: { gap: spacing.xl, padding: spacing.lg, paddingBottom: spacing.xxl },
+  steps: { flexDirection: 'row', alignItems: 'center' },
+  step: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  stepDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1,
     alignItems: 'center',
+    justifyContent: 'center',
   },
+  stepLine: {
+    flex: 1,
+    height: 2,
+    marginHorizontal: spacing.xs,
+    backgroundColor: colors.border.default,
+  },
+  barRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  barText: { flex: 1, minWidth: 0, gap: 2 },
 });

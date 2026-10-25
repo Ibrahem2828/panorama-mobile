@@ -11,6 +11,12 @@ import { RegisterStudentScreen } from '../features/auth/screens/RegisterStudentS
 import { ResetPasswordScreen } from '../features/auth/screens/ResetPasswordScreen';
 import { OnboardingScreen } from '../features/onboarding/screens/OnboardingScreen';
 import { hasSeenOnboarding } from '../features/onboarding/services';
+import {
+  checkPermissions,
+  hasSeenPermissionsIntro,
+  PermissionsOnboardingScreen,
+  shouldShowPermissionsIntro,
+} from '../features/permissions';
 import { hiddenStackScreenOptions } from './config/screenOptions';
 import { PublicRoutes } from './routes';
 import type { PublicStackParamList } from './types';
@@ -24,9 +30,24 @@ export function PublicNavigator() {
 
   useEffect(() => {
     let mounted = true;
-    void hasSeenOnboarding().then((seen) => {
-      if (mounted) setInitialRouteName(seen ? PublicRoutes.Login : PublicRoutes.Onboarding);
-    });
+    void (async () => {
+      const seenOnboarding = await hasSeenOnboarding();
+      let next: keyof PublicStackParamList = PublicRoutes.Onboarding;
+
+      if (seenOnboarding) {
+        // Installs that predate the permissions screen see it once, but only while something is still open.
+        const [shown, snapshot] = await Promise.all([
+          hasSeenPermissionsIntro(),
+          checkPermissions(),
+        ]);
+
+        next = shouldShowPermissionsIntro({ alreadyShown: shown, snapshot })
+          ? PublicRoutes.Permissions
+          : PublicRoutes.Login;
+      }
+
+      if (mounted) setInitialRouteName(next);
+    })();
     return () => {
       mounted = false;
     };
@@ -35,7 +56,7 @@ export function PublicNavigator() {
   if (!initialRouteName) {
     return (
       <AppScreen horizontalPadding={false}>
-        <LoadingState centered message={t.navigation.preparingStart} />
+        <LoadingState branded centered message={t.navigation.preparingStart} />
       </AppScreen>
     );
   }
@@ -43,6 +64,7 @@ export function PublicNavigator() {
   return (
     <Stack.Navigator initialRouteName={initialRouteName} screenOptions={hiddenStackScreenOptions}>
       <Stack.Screen component={OnboardingScreen} name={PublicRoutes.Onboarding} />
+      <Stack.Screen component={PermissionsOnboardingScreen} name={PublicRoutes.Permissions} />
       <Stack.Screen component={LoginScreen} name={PublicRoutes.Login} />
       <Stack.Screen component={AccountTypeChoiceScreen} name={PublicRoutes.AccountTypeChoice} />
       <Stack.Screen component={RegisterStudentScreen} name={PublicRoutes.RegisterStudent} />

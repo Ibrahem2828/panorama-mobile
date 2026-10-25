@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -16,6 +16,7 @@ import { useTranslation } from '../../../i18n';
 import { colors, spacing, useBrand } from '../../../theme';
 import { getIsRTL } from '../../../utils/rtl';
 import type { ViewerPages } from '../hooks/useViewerPages';
+import { fitRect, type Size as BoxSize } from '../../viewer/annotations/geometry';
 import { prefetchPages, toggleZoom, ZOOM_FIT, type LectureErrorKind } from '../logic';
 
 type Props = {
@@ -26,6 +27,12 @@ type Props = {
   pages: ViewerPages;
   onZoomChange: (zoom: number) => void;
   onNavigate: (direction: 'next' | 'prev') => void;
+  /** Drawn exactly over the page image (the box the image really occupies), e.g. the annotation layer. */
+  renderOverlay?: (box: BoxSize) => ReactNode;
+  /** Write mode: the page neither scrolls, zooms by tap nor swipes, so one finger can draw. */
+  scrollLocked?: boolean;
+  /** Night mode: inverts the page colours. */
+  night?: boolean;
 };
 
 const DOUBLE_TAP_MS = 280;
@@ -50,6 +57,9 @@ export function ViewerPageStage({
   pages,
   onZoomChange,
   onNavigate,
+  renderOverlay,
+  scrollLocked = false,
+  night = false,
 }: Props) {
   const { t } = useTranslation();
   const brand = useBrand();
@@ -57,6 +67,7 @@ export function ViewerPageStage({
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const [thumbKey, setThumbKey] = useState<string | null>(null);
   const [error, setError] = useState<PageError | null>(null);
+  const [natural, setNatural] = useState<{ page: number; size: BoxSize } | null>(null);
   const warmPages = useRef(new Set<number>());
   const lastTap = useRef(0);
   const latest = useRef({ zoom, onZoomChange, onNavigate });
@@ -136,6 +147,8 @@ export function ViewerPageStage({
 
   function renderLayers(width: number, height: number) {
     const dimensions = { width, height };
+    const overlayBox =
+      natural && natural.page === page ? fitRect({ width, height }, natural.size) : null;
     return (
       <View style={dimensions}>
         {thumbSource ? (
@@ -156,15 +169,35 @@ export function ViewerPageStage({
             fadeDuration={0}
             key={pageKey}
             onError={handleImageError}
-            onLoad={() => {
+            onLoad={(event) => {
+              const source = event.nativeEvent.source;
+
               warmPages.current.delete(page);
               setLoadedKey(pageKey);
+              if (source?.width > 0 && source?.height > 0) {
+                setNatural({ page, size: { width: source.width, height: source.height } });
+              }
             }}
             resizeMode="contain"
             source={[pageSource]}
             style={[styles.layer, dimensions]}
           />
         ) : null}
+        {overlayBox && renderOverlay ? (
+          <View
+            pointerEvents="box-none"
+            style={{
+              position: 'absolute',
+              left: overlayBox.x,
+              top: overlayBox.y,
+              width: overlayBox.width,
+              height: overlayBox.height,
+            }}
+          >
+            {renderOverlay({ width: overlayBox.width, height: overlayBox.height })}
+          </View>
+        ) : null}
+        {night ? <View pointerEvents="none" style={[styles.night, dimensions]} /> : null}
       </View>
     );
   }
@@ -174,7 +207,7 @@ export function ViewerPageStage({
       {size ? (
         <>
           {fit ? (
-            <View {...panResponder.panHandlers} style={size}>
+            <View {...(scrollLocked ? {} : panResponder.panHandlers)} style={size}>
               {renderLayers(size.width, size.height)}
             </View>
           ) : (
@@ -182,6 +215,7 @@ export function ViewerPageStage({
               bounces={false}
               maximumZoomScale={Platform.OS === 'ios' ? 3 : 1}
               minimumZoomScale={1}
+              scrollEnabled={!scrollLocked}
               nestedScrollEnabled
               showsVerticalScrollIndicator={false}
               style={size}
@@ -189,13 +223,14 @@ export function ViewerPageStage({
               <ScrollView
                 bounces={false}
                 horizontal
+                scrollEnabled={!scrollLocked}
                 nestedScrollEnabled
                 showsHorizontalScrollIndicator={false}
               >
                 <Pressable
                   accessibilityLabel={t.lectures.viewer.zoomLevel(Math.round(zoom * 100))}
                   accessibilityRole="image"
-                  onPress={registerTap}
+                  onPress={scrollLocked ? undefined : registerTap}
                 >
                   {renderLayers(size.width * zoom, size.height * zoom)}
                 </Pressable>
@@ -256,6 +291,13 @@ export function ViewerPageStage({
 const styles = StyleSheet.create({
   stage: { flex: 1, backgroundColor: colors.background.muted, overflow: 'hidden' },
   layer: { position: 'absolute', top: 0, start: 0 },
+  night: {
+    position: 'absolute',
+    top: 0,
+    start: 0,
+    backgroundColor: '#FFFFFF',
+    mixBlendMode: 'difference',
+  },
   warm: { position: 'absolute', top: 0, start: 0, opacity: 0 },
   overlay: {
     ...StyleSheet.absoluteFill,

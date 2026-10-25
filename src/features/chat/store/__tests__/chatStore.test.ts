@@ -93,7 +93,12 @@ beforeEach(() => {
   jest.spyOn(webSocketService, 'createChatWebSocketClient').mockImplementation((options) => {
     capturedOptions = options;
 
-    return { connect: jest.fn(), disconnect, send: jest.fn(() => false) };
+    return {
+      connect: jest.fn(),
+      disconnect,
+      send: jest.fn(() => false),
+      sendFrame: jest.fn(() => false),
+    };
   });
 });
 

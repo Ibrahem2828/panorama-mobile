@@ -1,10 +1,16 @@
 import { memo, useCallback } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppAvatar, AppButton, AppCard, AppText, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import { colors, opacity } from '../../../theme';
-import { getGroupDisplayName, getGroupImageUri, resolveMembershipState } from '../services';
+import { colors, opacity, radius, spacing, useBrand } from '../../../theme';
+import { useChatUnreadStore } from '../../chat/store/unreadStore';
+import {
+  getGroupDisplayName,
+  getGroupImageUri,
+  getGroupSubjectId,
+  resolveMembershipState,
+} from '../services';
 import type { Group, Id, SubjectLabel } from '../types';
 import { GroupMembershipBadge } from './GroupMembershipBadge';
 import { GroupStatsRow } from './GroupStatsRow';
@@ -22,6 +28,8 @@ type GroupCardProps = {
 
 function GroupCardBase({ group, subject, pendingAction, onPress, onJoin }: GroupCardProps) {
   const { t } = useTranslation();
+  const brand = useBrand();
+  const unread = useChatUnreadStore((state) => state.byGroup[String(group.id)] ?? 0);
   const title = getGroupDisplayName(group, t.groups);
   const imageUri = getGroupImageUri(group) ?? undefined;
   const membership = resolveMembershipState(group);
@@ -58,6 +66,16 @@ function GroupCardBase({ group, subject, pendingAction, onPress, onJoin }: Group
                 </AppText>
               ) : null}
             </Stack>
+            {unread > 0 ? (
+              <View
+                accessibilityLabel={t.chat.unreadBadge(unread)}
+                style={[styles.unreadBadge, { backgroundColor: brand.primary }]}
+              >
+                <AppText color="inverse" variant="caption" weight="700">
+                  {t.chat.unreadBadge(unread)}
+                </AppText>
+              </View>
+            ) : null}
             <GroupMembershipBadge status={group.current_user_membership_status} />
           </Stack>
 
@@ -65,7 +83,7 @@ function GroupCardBase({ group, subject, pendingAction, onPress, onJoin }: Group
         </Stack>
       </Pressable>
 
-      {onJoin && membership.canRequestJoin ? (
+      {onJoin && membership.canRequestJoin && !getGroupSubjectId(group) ? (
         <AppButton
           fullWidth
           loading={pendingAction === 'join'}
@@ -92,6 +110,14 @@ const styles = StyleSheet.create({
   titleBlock: {
     flex: 1,
     minWidth: 0,
+  },
+  unreadBadge: {
+    minWidth: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xs,
+    borderRadius: radius.full,
   },
   joinButton: {
     marginTop: 12,

@@ -1,5 +1,8 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { PdfViewerScreen } from '../../features/files/screens/PdfViewerScreen';
+import { LectureViewerScreen } from '../../features/lectures/screens/LectureViewerScreen';
+import { MyNotesScreen } from '../../features/viewer/screens/MyNotesScreen';
 import { NotificationsScreen } from '../../features/notifications/screens/NotificationsScreen';
 import {
   FeedbackCenterScreen,
@@ -12,6 +15,8 @@ import { EditProfileScreen } from '../../features/profile/screens/EditProfileScr
 import { PrivacyPolicyScreen } from '../../features/profile/screens/PrivacyPolicyScreen';
 import { ProfileHomeScreen } from '../../features/profile/screens/ProfileHomeScreen';
 import { TermsScreen } from '../../features/profile/screens/TermsScreen';
+import { PermissionsSettingsScreen } from '../../features/permissions';
+import { NotificationSettingsScreen } from '../../features/notifications/screens/NotificationSettingsScreen';
 import { DeleteAccountScreen } from '../../features/settings/screens/DeleteAccountScreen';
 import { ChangePasswordScreen } from '../../features/settings/screens/ChangePasswordScreen';
 import { SettingsScreen } from '../../features/settings/screens/SettingsScreen';
@@ -20,7 +25,7 @@ import { SupportTicketsScreen } from '../../features/support/screens/SupportTick
 import { SupportAttachmentScreen } from '../../features/support/screens/SupportAttachmentScreen';
 import { TicketDetailsScreen } from '../../features/support/screens/TicketDetailsScreen';
 import { hiddenStackScreenOptions } from '../config/screenOptions';
-import { ProfileRoutes } from '../routes';
+import { LecturesRoutes, ProfileRoutes, SharedRoutes } from '../routes';
 import type { ProfileStackParamList } from '../types';
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -38,6 +43,14 @@ export function ProfileStackNavigator() {
       <Stack.Screen component={ChangePasswordScreen} name={ProfileRoutes.ChangePassword} />
       <Stack.Screen component={DeleteAccountScreen} name={ProfileRoutes.DeleteAccount} />
       <Stack.Screen component={NotificationsScreen} name={ProfileRoutes.Notifications} />
+      <Stack.Screen
+        component={NotificationSettingsScreen}
+        name={ProfileRoutes.NotificationSettings}
+      />
+      <Stack.Screen component={PermissionsSettingsScreen} name={ProfileRoutes.Permissions} />
+      <Stack.Screen component={MyNotesScreen} name={ProfileRoutes.MyNotes} />
+      <Stack.Screen component={LectureViewerScreen} name={LecturesRoutes.LectureViewer} />
+      <Stack.Screen component={PdfViewerScreen} name={SharedRoutes.PdfViewer} />
       <Stack.Screen component={SupportTicketsScreen} name={ProfileRoutes.SupportTickets} />
       <Stack.Screen
         component={CreateSupportTicketScreen}

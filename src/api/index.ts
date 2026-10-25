@@ -33,6 +33,7 @@ export * as academicService from './services/academic.service';
 export * as announcementsService from './services/announcements.service';
 export * as authService from './services/auth.service';
 export * as filesService from './services/files.service';
+export * as enrollmentService from './services/enrollment.service';
 export * as groupsService from './services/groups.service';
 export * as healthService from './services/health.service';
 export * as lifecycleService from './services/lifecycle.service';

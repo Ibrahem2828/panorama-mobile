@@ -1,47 +1,35 @@
-import * as ImagePicker from 'expo-image-picker';
-
-import {
-  toLocalFile,
-  validateUploadCandidate,
-  type LocalFile,
-  type UploadProblem,
-} from './localFile';
+import { DOCUMENT_POLICY } from './attachmentPolicy';
+import { pickFromSource, type PickSourceResult } from './pickSource';
+import type { LocalFile, UploadProblem } from './localFile';
 
 export type PickImageResult =
   | { status: 'picked'; file: LocalFile }
   | { status: 'canceled' }
   | { status: 'invalid'; problem: UploadProblem }
+  | { status: 'permission_denied'; canOpenSettings: boolean }
   | { status: 'error' };
 
-/**
- * Lets the user pick an image from the phone's library. The system photo picker needs no
- * storage permission. Documents (PDF) cannot be picked with the bundled packages, so only
- * images are offered; the size and type rules the server enforces are checked first.
- */
-export async function pickImage(): Promise<PickImageResult> {
-  try {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsMultipleSelection: false,
-      allowsEditing: false,
-      quality: 0.85,
-    });
+/** One file out of a multi-file pick result (single-file spots). */
+export function firstPicked(result: PickSourceResult): PickImageResult {
+  if (result.status === 'picked') {
+    const file = result.files[0];
 
-    if (result.canceled) {
-      return { status: 'canceled' };
-    }
-
-    const asset = result.assets[0];
-
-    if (!asset) {
-      return { status: 'error' };
-    }
-
-    const file = toLocalFile(asset);
-    const problem = validateUploadCandidate(file);
-
-    return problem ? { status: 'invalid', problem } : { status: 'picked', file };
-  } catch {
-    return { status: 'error' };
+    return file ? { status: 'picked', file } : { status: 'error' };
   }
+
+  if (result.status === 'invalid') {
+    return { status: 'invalid', problem: result.problem };
+  }
+
+  return result;
+}
+
+/** One image from the photo album (system photo picker, no storage permission). */
+export async function pickImage(): Promise<PickImageResult> {
+  return firstPicked(await pickFromSource('album', DOCUMENT_POLICY));
+}
+
+/** One photo taken with the camera (asks for the camera permission when needed). */
+export async function pickPhoto(): Promise<PickImageResult> {
+  return firstPicked(await pickFromSource('camera', DOCUMENT_POLICY));
 }

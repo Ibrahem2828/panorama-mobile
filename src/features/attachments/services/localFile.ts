@@ -5,6 +5,9 @@ export type LocalFile = {
   /** Bytes, or null when the platform could not tell. The server stays authoritative. */
   size: number | null;
   mimeType: string | null;
+  /** Pixel size of an image, when known. */
+  width?: number;
+  height?: number;
 };
 
 export type UploadProblem = 'type' | 'size' | 'empty';
@@ -109,6 +112,8 @@ export function toLocalFile(asset: {
   fileName?: string | null;
   fileSize?: number | null;
   mimeType?: string | null;
+  width?: number;
+  height?: number;
 }): LocalFile {
   const uriName = asset.uri.split('?')[0]?.split('/').pop() ?? '';
   const rawName = (asset.fileName ?? uriName).trim();
@@ -127,6 +132,7 @@ export function toLocalFile(asset: {
     name,
     size: typeof asset.fileSize === 'number' && asset.fileSize >= 0 ? asset.fileSize : null,
     mimeType: asset.mimeType ?? MIME_BY_EXTENSION[fileExtension(name)] ?? null,
+    ...(asset.width && asset.height ? { width: asset.width, height: asset.height } : {}),
   };
 }
 

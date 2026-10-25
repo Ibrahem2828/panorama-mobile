@@ -2,6 +2,7 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 
 export type PublicStackParamList = {
   Onboarding: undefined;
+  Permissions: undefined;
   Login: undefined;
   AccountTypeChoice: undefined;
   RegisterStudent: undefined;
@@ -56,6 +57,7 @@ export type GroupsStackParamList = {
   FileDetails: { fileId: string | number };
   PdfViewer: { fileId: string | number; title?: string };
   ChatRoom: { groupId: string | number };
+  Enrollment: undefined;
 };
 
 export type PrintingStackParamList = {
@@ -65,6 +67,7 @@ export type PrintingStackParamList = {
   MyPrintOrders: undefined;
   PrintOrderDetails: { orderId: string | number };
   PrintItemViewer: { itemId: string | number; title?: string };
+  PrintProducts: undefined;
 };
 
 export type ProfileStackParamList = {
@@ -75,6 +78,11 @@ export type ProfileStackParamList = {
   ChangePassword: undefined;
   DeleteAccount: undefined;
   Notifications: undefined;
+  NotificationSettings: undefined;
+  Permissions: undefined;
+  MyNotes: undefined;
+  LectureViewer: LectureViewerParams;
+  PdfViewer: { fileId: string | number; title?: string };
   SupportTickets: undefined;
   CreateSupportTicket: undefined;
   TicketDetails: { ticketId: string | number };

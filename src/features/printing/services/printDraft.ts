@@ -8,6 +8,7 @@ import {
   toLocalFile,
   validateUploadCandidate,
 } from '../../attachments/services/localFile';
+import { parsePageRange } from './printOptions';
 import type {
   PrintCartItem,
   PrintCurrency,
@@ -41,6 +42,13 @@ export const DEFAULT_ITEM_OPTIONS = {
   paperSize: 'A4',
   sides: 'one_sided',
   binding: 'none',
+  cover: '',
+  pagesPerSheet: 1,
+  nUpDirection: 'ltr',
+  duplexFlip: 'long_edge',
+  orientation: 'auto',
+  pageRange: '',
+  collate: true,
 } as const satisfies Omit<PrintCartItem, 'key' | 'source'>;
 
 let itemCounter = 0;
@@ -66,6 +74,11 @@ export function validateItem(item: PrintCartItem): PrintItemValidation {
 
   if (!Number.isInteger(item.copies) || item.copies < 1 || item.copies > MAX_COPIES) {
     out.copies = true;
+  }
+
+  // Only the writing of the range is checked here; whether the pages exist is the server's answer to the quote.
+  if (item.source?.kind !== 'product' && !parsePageRange(item.pageRange, null).ok) {
+    out.pageRange = true;
   }
 
   return out;
@@ -97,18 +110,30 @@ export function totalCopies(draft: PrintDraft): number {
   return draft.items.reduce((sum, item) => sum + item.copies, 0);
 }
 
-function itemFields(item: PrintCartItem) {
+/** The print-dialog options of a file item. A ready-made product sends only itself and the copies. */
+function itemFields(item: PrintCartItem): Record<string, string | number | boolean> {
+  if (item.source?.kind === 'product') {
+    return { product: item.source.product.id, copies: item.copies };
+  }
+
   return {
     copies: item.copies,
     color_mode: item.colorMode,
     paper_size: item.paperSize,
     sides: item.sides,
     binding: item.binding,
+    pages_per_sheet: item.pagesPerSheet,
+    n_up_direction: item.nUpDirection,
+    duplex_flip: item.duplexFlip,
+    orientation: item.orientation,
+    collate: item.collate,
+    ...(item.cover ? { cover: item.cover } : {}),
+    ...(item.pageRange.trim() ? { page_range: item.pageRange.trim() } : {}),
   };
 }
 
-type JsonItem = ReturnType<typeof itemFields> &
-  ({ source_file: number | string } | { converted_upload: string });
+type JsonItem = Record<string, string | number | boolean> &
+  ({ source_file: number | string } | { converted_upload: string } | { product: number });
 
 export type PrintQuoteJson = { items: JsonItem[]; currency: PrintCurrency };
 export type PrintOrderJson = PrintQuoteJson & {
@@ -128,7 +153,10 @@ export function buildQuoteBody(draft: PrintDraft): PrintQuoteJson | FormData {
 
   if (
     draft.items.every(
-      (item) => item.source?.kind === 'library' || item.source?.kind === 'converted',
+      (item) =>
+        item.source?.kind === 'library' ||
+        item.source?.kind === 'converted' ||
+        item.source?.kind === 'product',
     )
   ) {
     return {
@@ -136,9 +164,15 @@ export function buildQuoteBody(draft: PrintDraft): PrintQuoteJson | FormData {
       items: draft.items.map((item) => {
         const { source } = item;
 
-        return source?.kind === 'converted'
-          ? { converted_upload: source.id, ...itemFields(item) }
-          : { source_file: (source as { id: number | string }).id, ...itemFields(item) };
+        if (source?.kind === 'product') {
+          return itemFields(item) as JsonItem;
+        }
+
+        return (
+          source?.kind === 'converted'
+            ? { converted_upload: source.id, ...itemFields(item) }
+            : { source_file: (source as { id: number | string }).id, ...itemFields(item) }
+        ) as JsonItem;
       }),
     };
   }
@@ -157,6 +191,7 @@ export function buildQuoteBody(draft: PrintDraft): PrintQuoteJson | FormData {
     } else if (source?.kind === 'converted') {
       form.append(`items[${index}]converted_upload`, source.id);
     }
+    // (a product item has no file part: its own `product` field is in itemFields)
 
     Object.entries(itemFields(item)).forEach(([key, value]) => {
       form.append(`items[${index}]${key}`, String(value));
@@ -194,6 +229,10 @@ function sourceSignature(source: PrintSource): string {
     return `lib:${source.id}`;
   }
 
+  if (source.kind === 'product') {
+    return `pr:${source.product.id}`;
+  }
+
   return source.kind === 'converted'
     ? `cv:${source.id}`
     : `up:${source.file.uri}:${source.file.size ?? 0}`;
@@ -210,6 +249,13 @@ export function draftSignature(draft: PrintDraft): string {
       item.paperSize,
       item.sides,
       item.binding,
+      item.cover,
+      item.pagesPerSheet,
+      item.nUpDirection,
+      item.duplexFlip,
+      item.orientation,
+      item.pageRange.trim(),
+      item.collate,
     ]),
   ]);
 }
@@ -226,6 +272,10 @@ export function sourceName(source: PrintSource): string | null {
 
   if (source.kind === 'library') {
     return source.title;
+  }
+
+  if (source.kind === 'product') {
+    return source.product.name;
   }
 
   return source.kind === 'converted' ? source.name : source.file.name;

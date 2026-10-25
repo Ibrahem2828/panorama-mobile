@@ -5,6 +5,9 @@ import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '../components/common';
+import { totalUnread, useChatUnreadStore } from '../features/chat/store/unreadStore';
+import { tabBadgeCounts } from '../features/notifications/services/notificationPrefs';
+import { useNotificationPrefsStore } from '../features/notifications/store/notificationPrefsStore';
 import { Icon, type IconName } from '../components/icons';
 import { useTranslation } from '../i18n';
 import { colors, shadows, useBrand } from '../theme';
@@ -60,10 +63,24 @@ function TabPill({ focused, children }: { focused: boolean; children: ReactNode 
   );
 }
 
+/** Unread numbers per tab: chat + groups on Groups, print updates on Printing, everything else on Profile (the inbox). */
+function useTabBadges(): Record<string, number> {
+  const summary = useNotificationPrefsStore((state) => state.summary);
+  const chatUnread = useChatUnreadStore((state) => totalUnread(state.byGroup));
+  const counts = tabBadgeCounts({ summary, chatUnread });
+
+  return {
+    [TabRoutes.Groups]: counts.groups,
+    [TabRoutes.Printing]: counts.printing,
+    [TabRoutes.Profile]: counts.profile,
+  };
+}
+
 export function AppTabBar({ state, navigation }: BottomTabBarProps) {
   const { t } = useTranslation();
   const brand = useBrand();
   const insets = useSafeAreaInsets();
+  const badges = useTabBadges();
 
   const labels: Record<string, string> = {
     [TabRoutes.Home]: t.tabs.home,
@@ -82,7 +99,11 @@ export function AppTabBar({ state, navigation }: BottomTabBarProps) {
 
         return (
           <Pressable
-            accessibilityLabel={label}
+            accessibilityLabel={
+              badges[route.name]
+                ? `${label}, ${t.notifications.badgeCount(badges[route.name] ?? 0)}`
+                : label
+            }
             accessibilityRole="tab"
             accessibilityState={{ selected: focused }}
             android_ripple={{ color: brand.primarySoft, borderless: true, radius: 36 }}
@@ -107,6 +128,13 @@ export function AppTabBar({ state, navigation }: BottomTabBarProps) {
                 strokeWidth={focused ? 2.2 : 1.8}
               />
             </TabPill>
+            {badges[route.name] ? (
+              <View style={[styles.badge, { backgroundColor: colors.semantic.error }]}>
+                <AppText color="inverse" style={styles.badgeText} variant="caption" weight="700">
+                  {t.notifications.badgeCount(badges[route.name] ?? 0)}
+                </AppText>
+              </View>
+            ) : null}
             <AppText
               align="center"
               numberOfLines={1}
@@ -132,6 +160,19 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     ...shadows.md,
   },
+  badge: {
+    position: 'absolute',
+    top: 2,
+    start: '50%',
+    marginStart: 6,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 9,
+  },
+  badgeText: { fontSize: 10, lineHeight: 14 },
   item: {
     flex: 1,
     alignItems: 'center',

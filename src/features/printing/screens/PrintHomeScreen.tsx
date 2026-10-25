@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import {
   AppButton,
@@ -59,16 +59,29 @@ export function PrintHomeScreen({ navigation }: PrintHomeScreenProps) {
                 {t.printing.home.description}
               </AppText>
             </Stack>
-            <Stack direction="horizontal" gap="md" wrap>
+            <Stack gap="sm" style={styles.fullWidth}>
               <AppButton
+                fullWidth
                 onPress={() => navigation.navigate(PrintingRoutes.CreatePrintOrder)}
+                size="lg"
                 title={t.printing.home.newOrder}
               />
-              <AppButton
-                onPress={() => navigation.navigate(PrintingRoutes.MyPrintOrders)}
-                title={t.printing.home.myOrders}
-                variant="outline"
-              />
+              <View style={styles.secondaryRow}>
+                <AppButton
+                  fullWidth
+                  onPress={() => navigation.navigate(PrintingRoutes.PrintProducts)}
+                  style={styles.secondaryButton}
+                  title={t.printing.products.homeButton}
+                  variant="outline"
+                />
+                <AppButton
+                  fullWidth
+                  onPress={() => navigation.navigate(PrintingRoutes.MyPrintOrders)}
+                  style={styles.secondaryButton}
+                  title={t.printing.home.myOrders}
+                  variant="outline"
+                />
+              </View>
             </Stack>
           </Stack>
         </AppCard>
@@ -110,6 +123,8 @@ const styles = StyleSheet.create({
   fullWidth: {
     alignSelf: 'stretch',
   },
+  secondaryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  secondaryButton: { flexGrow: 1, flexBasis: '46%' },
   content: {
     gap: spacing.xl,
   },

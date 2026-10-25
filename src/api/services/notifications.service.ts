@@ -4,6 +4,7 @@ import type {
   ApiListParams,
   NotificationPreferences,
   NotificationRecord,
+  NotificationSummaryResponse,
   RegisterDeviceTokenRequest,
   UnreadCountResponse,
 } from '../types';
@@ -39,6 +40,12 @@ export function updateNotificationPreferences(
 
 export function getUnreadCount(authToken: string): Promise<UnreadCountResponse> {
   return apiClient.get<UnreadCountResponse>(endpoints.notifications.unreadCount, {
+    authToken,
+  });
+}
+
+export function getNotificationSummary(authToken: string): Promise<NotificationSummaryResponse> {
+  return apiClient.get<NotificationSummaryResponse>(endpoints.notifications.summary, {
     authToken,
   });
 }

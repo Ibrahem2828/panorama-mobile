@@ -13,6 +13,7 @@ import {
   SkeletonList,
   Stack,
 } from '../../../components';
+import { useRefreshOnReconnect } from '../../../offline/useRefreshOnReconnect';
 import { useTranslation } from '../../../i18n';
 import { GroupsRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
@@ -20,6 +21,7 @@ import { colors, layout, spacing, useBrand } from '../../../theme';
 import { GroupCard } from '../components';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { getGroupSubjectId, matchesGroupSearch } from '../services';
+import { useChatUnreadStore } from '../../chat/store/unreadStore';
 import { useGroupsStore } from '../store';
 import type { Group } from '../types';
 
@@ -43,10 +45,13 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
   const setSelectedGroup = useGroupsStore((state) => state.setSelectedGroup);
   const clearError = useGroupsStore((state) => state.clearError);
 
+  const loadUnread = useChatUnreadStore((state) => state.load);
+
   useEffect(() => {
     void loadMyGroups();
     void loadSubjectLabels();
-  }, [loadMyGroups, loadSubjectLabels]);
+    void loadUnread();
+  }, [loadMyGroups, loadSubjectLabels, loadUnread]);
 
   useEffect(() => clearError, [clearError]);
 
@@ -67,7 +72,10 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
 
   const handleRefresh = useCallback(() => {
     void refreshAllGroups();
-  }, [refreshAllGroups]);
+    void loadUnread();
+  }, [loadUnread, refreshAllGroups]);
+
+  useRefreshOnReconnect(handleRefresh);
 
   const handleGroupPress = useCallback(
     (group: Group) => {

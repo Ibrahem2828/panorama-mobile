@@ -10,11 +10,13 @@ import { getFileDisplayTitle } from '../../files/services';
 import { useAuthStore } from '../../auth/store';
 import { isConvertibleDocument } from '../../attachments/services/localFile';
 import { convertOfficeDocument } from '../services/printingService';
-import { pickPrintDocument, pickPrintImage } from '../services/imagePicker';
+import { pickPrintDocument, pickPrintImage, pickPrintPhoto } from '../services/imagePicker';
 import type { PrintCartItem, PrintItemValidation, PrintSource, UploadProblem } from '../types';
 import { PrintCopiesStepper } from './PrintCopiesStepper';
 import { PrintItemOptions } from './PrintItemOptions';
 import { PrintOrderPreview } from './PrintOrderPreview';
+import { PrintSheetSimulation } from './PrintSheetSimulation';
+import { usePrintingStore } from '../store';
 import { PrintLibraryPicker } from './PrintLibraryPicker';
 
 type PrintItemCardProps = {
@@ -41,11 +43,14 @@ function PrintItemCardComponent({
   const { t } = useTranslation();
   const brand = useBrand();
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const coverColor = usePrintingStore(
+    (state) => state.options?.covers.find((cover) => cover.code === item.cover)?.color_hex,
+  );
   // General accounts print their own uploads only; students can also pick subject files they may open.
   const isStudent = useAuthStore((state) => state.user?.role?.toLowerCase() === 'student');
-  const [pickerProblem, setPickerProblem] = useState<UploadProblem | 'error' | 'convert' | null>(
-    null,
-  );
+  const [pickerProblem, setPickerProblem] = useState<
+    UploadProblem | 'error' | 'convert' | 'camera' | null
+  >(null);
   const [isPicking, setIsPicking] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
 
@@ -86,6 +91,8 @@ function PrintItemCardComponent({
       setSource({ kind: 'upload', file: result.file });
     } else if (result.status === 'invalid') {
       setPickerProblem(result.problem);
+    } else if (result.status === 'permission_denied') {
+      setPickerProblem('camera');
     } else if (result.status === 'error') {
       setPickerProblem('error');
     }
@@ -107,7 +114,9 @@ function PrintItemCardComponent({
             ? t.printing.create.uploadPickerFailed
             : pickerProblem === 'convert'
               ? t.printing.create.convertFailed
-              : null;
+              : pickerProblem === 'camera'
+                ? t.printing.create.cameraDenied
+                : null;
   const { source } = item;
 
   return (
@@ -130,7 +139,14 @@ function PrintItemCardComponent({
 
         {source ? (
           <Stack align="center" direction="horizontal" gap="md">
-            {source.kind === 'upload' && source.file.mimeType?.startsWith('image/') ? (
+            {source.kind === 'product' && source.product.image_url ? (
+              <Image
+                accessibilityIgnoresInvertColors
+                resizeMode="cover"
+                source={{ uri: source.product.image_url }}
+                style={styles.thumb}
+              />
+            ) : source.kind === 'upload' && source.file.mimeType?.startsWith('image/') ? (
               <Image
                 accessibilityIgnoresInvertColors
                 resizeMode="cover"
@@ -150,14 +166,18 @@ function PrintItemCardComponent({
                   ? t.printing.create.uploadSelected
                   : source.kind === 'converted'
                     ? t.printing.create.convertedLabel
-                    : t.printing.library.fileLabel}
+                    : source.kind === 'product'
+                      ? t.printing.products.productLabel
+                      : t.printing.library.fileLabel}
               </AppText>
               <AppText numberOfLines={2} variant="bodySmall" weight="600">
                 {source.kind === 'library'
                   ? source.title
                   : source.kind === 'converted'
                     ? source.name
-                    : source.file.name}
+                    : source.kind === 'product'
+                      ? source.product.name
+                      : source.file.name}
               </AppText>
               {source.kind === 'converted' && source.pages ? (
                 <AppText color="muted" variant="caption">
@@ -179,9 +199,12 @@ function PrintItemCardComponent({
           </Stack>
         ) : (
           <Stack gap="sm">
-            <Stack direction="horizontal" gap="sm" wrap>
+            <AppText variant="label">{t.printing.create.sourceTitle}</AppText>
+            <View style={styles.sources}>
               {isStudent ? (
                 <AppButton
+                  fullWidth
+                  style={styles.sourceButton}
                   leftIcon={<Icon color={brand.primary} name="folder" size={18} />}
                   onPress={() => setLibraryOpen(true)}
                   size="sm"
@@ -190,6 +213,8 @@ function PrintItemCardComponent({
                 />
               ) : null}
               <AppButton
+                fullWidth
+                style={styles.sourceButton}
                 leftIcon={<Icon color={brand.primary} name="image" size={18} />}
                 loading={isPicking}
                 onPress={() => void handlePickFromDevice()}
@@ -198,6 +223,18 @@ function PrintItemCardComponent({
                 variant="outline"
               />
               <AppButton
+                fullWidth
+                style={styles.sourceButton}
+                leftIcon={<Icon color={brand.primary} name="camera" size={18} />}
+                loading={isPicking}
+                onPress={() => void handlePickFromDevice(pickPrintPhoto)}
+                size="sm"
+                title={t.printing.create.pickFromCamera}
+                variant="outline"
+              />
+              <AppButton
+                fullWidth
+                style={styles.sourceButton}
                 leftIcon={<Icon color={brand.primary} name="file" size={18} />}
                 loading={isPicking || isConverting}
                 onPress={() => void handlePickFromDevice(pickPrintDocument)}
@@ -205,7 +242,7 @@ function PrintItemCardComponent({
                 title={t.printing.create.pickPdf}
                 variant="outline"
               />
-            </Stack>
+            </View>
             {isConverting ? (
               <AppText color="secondary" variant="bodySmall">
                 {t.printing.create.converting}
@@ -233,17 +270,60 @@ function PrintItemCardComponent({
           onChange={(copies) => onChange(item.key, { copies })}
           value={item.copies}
         />
-        <PrintOrderPreview
-          item={{
-            paperSize: item.paperSize,
-            colorMode: item.colorMode,
-            sides: item.sides,
-            binding: item.binding,
-            copies: item.copies,
-          }}
-          pages={item.source?.kind === 'converted' ? item.source.pages : null}
-        />
-        <PrintItemOptions item={item} onChange={(patch) => onChange(item.key, patch)} />
+        {source?.kind === 'product' ? (
+          <Stack gap="xs">
+            <AppText color="secondary" variant="bodySmall">
+              {t.printing.products.fixedSpec(source.product.pages_count, source.product.paper_size)}
+            </AppText>
+            <AppText color="brand" variant="title">
+              {t.printing.products.fixedPrice(
+                String(source.product.price),
+                source.product.currency,
+              )}
+            </AppText>
+          </Stack>
+        ) : (
+          <>
+            <PrintSheetSimulation
+              coverColor={coverColor}
+              input={{
+                pages:
+                  source?.kind === 'converted'
+                    ? source.pages
+                    : source?.kind === 'upload' && source.file.mimeType?.startsWith('image/')
+                      ? 1
+                      : null,
+                pageRange: item.pageRange,
+                pagesPerSheet: item.pagesPerSheet,
+                orientation: item.orientation,
+                direction: item.nUpDirection,
+                doubleSided: item.sides === 'double_sided',
+                duplexFlip: item.duplexFlip,
+                copies: item.copies,
+              }}
+            />
+            <PrintOrderPreview
+              item={{
+                paperSize: item.paperSize,
+                colorMode: item.colorMode,
+                sides: item.sides,
+                binding: item.binding,
+                copies: item.copies,
+              }}
+              pages={item.source?.kind === 'converted' ? item.source.pages : null}
+            />
+            <PrintItemOptions
+              item={item}
+              onChange={(patch) => onChange(item.key, patch)}
+              pages={item.source?.kind === 'converted' ? item.source.pages : null}
+            />
+            {showErrors && problems?.pageRange ? (
+              <AppText color="error" variant="bodySmall">
+                {t.printing.options.rangeErrors.syntax}
+              </AppText>
+            ) : null}
+          </>
+        )}
       </Stack>
 
       {isStudent ? (
@@ -261,6 +341,8 @@ function PrintItemCardComponent({
 export const PrintItemCard = memo(PrintItemCardComponent);
 
 const styles = StyleSheet.create({
+  sources: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  sourceButton: { flexGrow: 1, flexBasis: '46%' },
   thumb: { width: THUMB_SIZE, height: THUMB_SIZE, borderRadius: radius.md },
   thumbIcon: { alignItems: 'center', justifyContent: 'center' },
   sourceBody: { flex: 1, minWidth: 0, paddingHorizontal: spacing.xs },

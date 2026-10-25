@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeyboardOverlap } from '../../../hooks/useKeyboardOverlap';
 
@@ -25,12 +25,15 @@ import {
   ChatMessageList,
   ChatPermissionNotice,
   ChatRoomHeader,
+  MessageActionsSheet,
 } from '../components';
 import { canOpenGroupChat, canSendMessageToGroup } from '../services';
 import { useChatStore } from '../store';
 import type { ChatAttachment, ChatMessage } from '../types';
 
 type ChatRoomScreenProps = NativeStackScreenProps<GroupsStackParamList, 'ChatRoom'>;
+
+const NO_CURSORS = {} as const;
 
 function isSameId(left: string | number, right: string | number): boolean {
   return String(left) === String(right);
@@ -59,7 +62,12 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
   const sendMessage = useChatStore((state) => state.send);
   const retry = useChatStore((state) => state.retry);
   const discard = useChatStore((state) => state.discard);
+  const react = useChatStore((state) => state.react);
+  const deleteMessage = useChatStore((state) => state.deleteMessage);
+  const setMuted = useChatStore((state) => state.setMuted);
   const [viewerMessage, setViewerMessage] = useState<ChatMessage | null>(null);
+  const [actionMessage, setActionMessage] = useState<ChatMessage | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const group = useMemo(() => {
     if (selectedGroup && isSameId(selectedGroup.id, groupId)) {
@@ -105,13 +113,38 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
     [groupId, sendMessage],
   );
   const handleCloseViewer = useCallback(() => setViewerMessage(null), []);
+  const handleCloseActions = useCallback(() => setActionMessage(null), []);
+  const handleReact = useCallback(
+    (message: ChatMessage, emoji: string | null) => react(groupId, message.id, emoji),
+    [groupId, react],
+  );
+  const handleDelete = useCallback(
+    async (message: ChatMessage) => {
+      setActionError(null);
+
+      if (!(await deleteMessage(groupId, message.id))) {
+        setActionError(t.chat.actions.deleteFailed);
+      }
+    },
+    [deleteMessage, groupId, t.chat.actions.deleteFailed],
+  );
+  const handleToggleMute = useCallback(
+    () => void setMuted(groupId, !(room?.isMuted ?? false)),
+    [groupId, room?.isMuted, setMuted],
+  );
+  // Members may delete their own messages; moderators and group admins may delete any.
+  const canModerate = ['moderator', 'group_admin', 'admin'].includes(
+    String(group?.current_user_group_role ?? ''),
+  );
 
   const header = (
     <ChatRoomHeader
       connectionStatus={connectionStatus}
       group={group}
+      isMuted={room?.isMuted ?? false}
       isOnline={isOnline}
       onBack={handleBack}
+      onToggleMute={handleToggleMute}
     />
   );
 
@@ -161,6 +194,14 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
           </View>
         ) : null}
 
+        {actionError ? (
+          <Pressable onPress={() => setActionError(null)} style={styles.errorStrip}>
+            <AppText color="error" style={styles.errorText} variant="caption">
+              {actionError}
+            </AppText>
+          </Pressable>
+        ) : null}
+
         {room?.error && messages.length > 0 ? (
           <View style={styles.errorStrip}>
             <AppText color="error" style={styles.errorText} variant="caption">
@@ -193,8 +234,10 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
             messages={messages}
             onDiscard={handleDiscard}
             onLoadOlder={handleLoadOlder}
+            onLongPressMessage={setActionMessage}
             onOpenAttachment={setViewerMessage}
             onRetry={handleRetry}
+            peerCursors={room?.peerCursors ?? NO_CURSORS}
             pending={pending}
           />
         )}
@@ -213,6 +256,16 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
       {header}
       <View style={[styles.flex, { paddingBottom: keyboardOverlap }]}>{body}</View>
       <ChatAttachmentViewer groupId={groupId} message={viewerMessage} onClose={handleCloseViewer} />
+      <MessageActionsSheet
+        canDelete={
+          actionMessage !== null &&
+          (canModerate || String(actionMessage.sender) === String(currentUserId))
+        }
+        message={actionMessage}
+        onClose={handleCloseActions}
+        onDelete={(message) => void handleDelete(message)}
+        onReact={handleReact}
+      />
     </AppScreen>
   );
 }

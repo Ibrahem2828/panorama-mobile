@@ -17,6 +17,7 @@ import {
   Stack,
   type IconName,
 } from '../../../components';
+import { useRefreshOnReconnect } from '../../../offline/useRefreshOnReconnect';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { formatTime } from '../../../utils/formatDateTime';
 import {
@@ -154,6 +155,9 @@ export function HomeScreen() {
   const handleRefresh = useCallback(() => {
     void refreshHome();
   }, [refreshHome]);
+
+  // Back online after showing saved data: update by itself.
+  useRefreshOnReconnect(handleRefresh);
 
   const handleOpenAnnouncement = useCallback(
     (id: string | number) =>

@@ -1,13 +1,28 @@
 import { buildGroupChatWebSocketUrl } from '../../../config/env';
 import { normalizeApiError } from '../../../api';
-import { normalizeChatMessage, parseDeletedFrame } from '../logic/messages';
-import type { ChatConnectionStatus, ChatMessage, Id } from '../types';
+import {
+  normalizeChatMessage,
+  parseDeletedFrame,
+  parseReactionFrame,
+  parseReceiptFrame,
+} from '../logic/messages';
+import type {
+  ChatConnectionStatus,
+  ChatMessage,
+  ChatReactionFrame,
+  ChatReceiptFrame,
+  Id,
+} from '../types';
 import { useLocaleStore } from '../../../i18n';
 
 export type ChatWebSocketHandlers = {
   onMessage?: (message: ChatMessage) => void;
   /** A moderator or the author removed a message; `id` is its server id. */
   onMessageDeleted?: (id: number) => void;
+  /** Another member's device received / read the chat up to these message ids (drives the ticks). */
+  onReceipt?: (receipt: ChatReceiptFrame) => void;
+  /** The reaction totals of one message changed. */
+  onReaction?: (reaction: ChatReactionFrame) => void;
   onStatusChange?: (status: ChatConnectionStatus) => void;
   onError?: (message: string) => void;
   /** The server refused this user for good (not a member / session invalid); no retry follows. */
@@ -45,6 +60,8 @@ export type ChatWebSocketClient = {
   disconnect: () => void;
   /** Returns false when the socket is not open (the caller should fall back to REST). */
   send: (message: string) => boolean;
+  /** Sends a control frame (`receipt`, `presence`, `typing`) as is; never shown as a chat message. */
+  sendFrame: (frame: Record<string, unknown>) => boolean;
 };
 
 export const RECONNECT_BASE_DELAY_MS = 1000;
@@ -264,6 +281,24 @@ export function createChatWebSocketClient({
           return;
         }
 
+        if (isRecord(payload) && payload.type === 'receipt') {
+          const receipt = parseReceiptFrame(payload);
+
+          if (receipt) {
+            handlers?.onReceipt?.(receipt);
+          }
+          return;
+        }
+
+        if (isRecord(payload) && payload.type === 'reaction') {
+          const reaction = parseReactionFrame(payload);
+
+          if (reaction) {
+            handlers?.onReaction?.(reaction);
+          }
+          return;
+        }
+
         const message = normalizeSocketMessage(payload, groupId);
 
         if (message) {
@@ -380,9 +415,20 @@ export function createChatWebSocketClient({
     return true;
   }
 
+  function sendFrame(frame: Record<string, unknown>): boolean {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      return false;
+    }
+
+    socket.send(JSON.stringify(frame));
+
+    return true;
+  }
+
   return {
     connect,
     disconnect,
     send,
+    sendFrame,
   };
 }

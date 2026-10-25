@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppButton, AppCard, AppText, AppTextInput, Stack } from '../../../components';
 import { colors, spacing } from '../../../theme';
 import { useFeedbackStore } from '../store';
 import { useTranslation } from '../../../i18n';
+import { AppModal } from '../../../components/overlay';
 
 export function FeedbackPromptModal() {
   const { t } = useTranslation();
@@ -24,7 +25,7 @@ export function FeedbackPromptModal() {
   if (!prompt) return null;
 
   return (
-    <Modal animationType="fade" onRequestClose={() => void dismissPrompt()} transparent visible>
+    <AppModal animationType="fade" onRequestClose={() => void dismissPrompt()} transparent visible>
       <View style={styles.backdrop}>
         <AppCard padding="lg" style={styles.card} variant="elevated">
           <Stack gap="lg">
@@ -82,7 +83,7 @@ export function FeedbackPromptModal() {
           </Stack>
         </AppCard>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

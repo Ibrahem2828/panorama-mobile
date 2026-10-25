@@ -8,6 +8,8 @@ import type { ApiRequestOptions } from './request';
 import { buildDefaultApiUrl, buildRequestHeaders } from './request';
 import { isApiResponseEnvelope, isApiSuccess } from './response';
 import { uploadWithProgress } from './uploadTransport';
+import { cachedGet, offlineError } from '../offline/cachedRequest';
+import { isDeviceOffline } from '../offline/networkStore';
 
 type ParsedResponse = {
   body: unknown;
@@ -255,12 +257,36 @@ async function requestWithAuthRetry<TData, TBody = unknown>(
   }
 }
 
-async function request<TData, TBody = unknown>(options: ApiRequestOptions<TBody>): Promise<TData> {
+function requestOnline<TData, TBody = unknown>(options: ApiRequestOptions<TBody>): Promise<TData> {
   if (shouldAttemptAuthRefresh(options.path, options.authToken)) {
     return requestWithAuthRetry<TData, TBody>(options);
   }
 
   return executeWithIdempotencyWait<TData, TBody>(options);
+}
+
+/**
+ * Reads of the data screens are kept on the device and answered from there when the connection is gone (see ../offline);
+ * writes are never cached and fail at once, with a clear message, when the device is offline instead of hanging until a
+ * timeout. The same Idempotency-Key is reused by the callers' retries, so a write that does go out is never doubled.
+ */
+async function request<TData, TBody = unknown>(options: ApiRequestOptions<TBody>): Promise<TData> {
+  const method = options.method ?? 'GET';
+
+  if (method !== 'GET') {
+    if (isDeviceOffline()) {
+      throw offlineError();
+    }
+
+    return requestOnline<TData, TBody>(options);
+  }
+
+  return cachedGet<TData>({
+    path: options.path,
+    query: options.query,
+    noCache: options.noCache,
+    fetcher: () => requestOnline<TData, TBody>(options),
+  });
 }
 
 export const apiClient = {

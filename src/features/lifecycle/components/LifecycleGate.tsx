@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import NetInfo from '@react-native-community/netinfo';
-import { AppState, Linking, Modal, StyleSheet, View } from 'react-native';
+import { AppState, Linking, StyleSheet, View } from 'react-native';
 
 import { AppButton, AppText } from '../../../components/common';
 import { AppScreen } from '../../../components/layout';
@@ -8,6 +8,7 @@ import { useLocaleStore } from '../../../i18n';
 import { colors, spacing } from '../../../theme';
 import { getMaintenancePollIntervalMs, useLifecycleStore } from '../store/lifecycleStore';
 import { resolveStoreUrl } from '../utils/storeUrl';
+import { AppModal } from '../../../components/overlay';
 
 const noop = () => undefined;
 
@@ -138,15 +139,9 @@ export function LifecycleGate() {
   const visible = hasUpdateRequired || hasMaintenance;
 
   return (
-    <Modal
-      animationType="fade"
-      onRequestClose={noop}
-      presentationStyle="fullScreen"
-      statusBarTranslucent
-      visible={visible}
-    >
+    <AppModal animationType="fade" onRequestClose={noop} visible={visible}>
       {hasUpdateRequired ? <UpdateRequiredScreen /> : <MaintenanceScreen />}
-    </Modal>
+    </AppModal>
   );
 }
 

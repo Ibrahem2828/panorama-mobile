@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import {
   AppButton,
@@ -13,9 +13,9 @@ import {
 import { useTranslation } from '../../../i18n';
 import { PrintingRoutes } from '../../../navigation/routes';
 import type { PrintingStackParamList } from '../../../navigation/types';
-import { spacing } from '../../../theme';
-import { PrintQuoteBreakdown, UploadProgressCard } from '../components';
-import { hasUploads, totalCopies } from '../services';
+import { colors, spacing } from '../../../theme';
+import { PrintQuoteBreakdown, PrintStickyBar, UploadProgressCard } from '../components';
+import { formatPrintMoney, hasUploads, totalCopies } from '../services';
 import { isQuoteFresh, usePrintingStore } from '../store';
 
 type Props = NativeStackScreenProps<PrintingStackParamList, 'PrintPriceSummary'>;
@@ -101,90 +101,117 @@ export function PrintPriceSummaryScreen({ navigation }: Props) {
     );
   }
 
+  const totalText = formatPrintMoney(quote.value.total_price, quote.value.currency);
+
   return (
-    <AppScreen contentContainerStyle={styles.content} scroll>
-      <Stack gap="xl">
-        {header}
+    <AppScreen horizontalPadding={false} style={styles.screen}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        style={styles.scroll}
+      >
+        <Stack gap="xl">
+          {header}
 
-        <AppCard variant="default">
-          <Stack gap="md">
-            <SummaryRow
-              label={t.printing.priceSummary.totalFiles}
-              value={String(draft.items.length)}
-            />
-            <SummaryRow
-              label={t.printing.priceSummary.totalCopies}
-              value={String(totalCopies(draft))}
-            />
-            {location ? (
-              <SummaryRow label={t.printing.priceSummary.pickupSummary} value={location.name} />
-            ) : null}
-            {notes ? (
-              <SummaryRow label={t.printing.priceSummary.notesSummary} value={notes} />
-            ) : null}
-          </Stack>
-        </AppCard>
-
-        {!fresh ? (
-          <AppCard variant="muted">
-            <Stack gap="sm">
-              <AppText color="error" variant="bodySmall" weight="700">
-                {t.printing.priceSummary.staleTitle}
-              </AppText>
-              <AppText color="secondary" variant="bodySmall">
-                {t.printing.priceSummary.staleMessage}
-              </AppText>
+          <AppCard variant="default">
+            <Stack gap="md">
+              <SummaryRow
+                label={t.printing.priceSummary.totalFiles}
+                value={String(draft.items.length)}
+              />
+              <SummaryRow
+                label={t.printing.priceSummary.totalCopies}
+                value={String(totalCopies(draft))}
+              />
+              {location ? (
+                <SummaryRow label={t.printing.priceSummary.pickupSummary} value={location.name} />
+              ) : null}
+              {notes ? (
+                <SummaryRow label={t.printing.priceSummary.notesSummary} value={notes} />
+              ) : null}
             </Stack>
           </AppCard>
-        ) : null}
 
-        <PrintQuoteBreakdown items={draft.items} names={quote.names} quote={quote.value} />
+          {!fresh ? (
+            <AppCard variant="muted">
+              <Stack gap="sm">
+                <AppText color="error" variant="bodySmall" weight="700">
+                  {t.printing.priceSummary.staleTitle}
+                </AppText>
+                <AppText color="secondary" variant="bodySmall">
+                  {t.printing.priceSummary.staleMessage}
+                </AppText>
+              </Stack>
+            </AppCard>
+          ) : null}
 
-        <AppText color="muted" variant="caption">
-          {t.printing.priceSummary.confirmNote}
-        </AppText>
+          <PrintQuoteBreakdown items={draft.items} names={quote.names} quote={quote.value} />
 
-        {draftError ? (
-          <AppCard variant="muted">
-            <AppText color="error" variant="bodySmall">
-              {draftError}
-            </AppText>
-          </AppCard>
-        ) : null}
+          <AppText color="muted" variant="caption">
+            {t.printing.priceSummary.confirmNote}
+          </AppText>
 
+          {draftError ? (
+            <AppCard variant="muted">
+              <AppText color="error" variant="bodySmall">
+                {draftError}
+              </AppText>
+            </AppCard>
+          ) : null}
+        </Stack>
+      </ScrollView>
+
+      <PrintStickyBar>
         {transfer && hasUploads(draft) ? (
           <UploadProgressCard onCancel={cancelTransfer} transfer={transfer} />
         ) : (
-          <Stack gap="sm">
-            <AppButton
-              disabled={!fresh || busy}
-              loading={isSubmitting}
-              onPress={() => void handleSubmit()}
-              title={draftError ? t.printing.errors.retry : t.printing.create.submit}
-            />
-            <Stack direction="horizontal" gap="sm" wrap>
-              <AppButton
-                disabled={busy}
-                onPress={() => navigation.goBack()}
-                title={t.printing.priceSummary.editOptions}
-                variant="outline"
-              />
+          <>
+            <View style={styles.barRow}>
+              <View style={styles.barText}>
+                <AppText color="muted" variant="caption">
+                  {t.printing.priceSummary.total}
+                </AppText>
+                <AppText color="brand" variant="h3">
+                  {totalText ?? ''}
+                </AppText>
+              </View>
               <AppButton
                 disabled={isSubmitting}
                 loading={isQuoting}
                 onPress={() => void calculateQuote()}
+                size="sm"
                 title={t.printing.priceSummary.recalculate}
                 variant="ghost"
               />
-            </Stack>
-          </Stack>
+            </View>
+            <AppButton
+              disabled={!fresh || busy}
+              fullWidth
+              loading={isSubmitting}
+              onPress={() => void handleSubmit()}
+              title={draftError ? t.printing.errors.retry : t.printing.create.submit}
+            />
+            <AppButton
+              disabled={busy}
+              fullWidth
+              onPress={() => navigation.goBack()}
+              size="sm"
+              title={t.printing.priceSummary.editOptions}
+              variant="outline"
+            />
+          </>
         )}
-      </Stack>
+      </PrintStickyBar>
     </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
   content: { gap: spacing.xl },
+  screen: { backgroundColor: colors.background.primary },
+  scroll: { flex: 1 },
+  scrollContent: { padding: spacing.lg, paddingBottom: spacing.xxl },
   rowValue: { flexShrink: 1 },
+  barRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  barText: { flex: 1, minWidth: 0, gap: 2 },
 });

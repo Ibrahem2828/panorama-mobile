@@ -111,7 +111,11 @@ const withReleaseSigning: ConfigPlugin = (config) => {
       }
     };
     set('android.enableMinifyInReleaseBuilds', 'true');
-    set('android.enableShrinkResourcesInReleaseBuilds', 'true');
+    // Off on purpose: the shrinker deletes the notification chime (it is only referenced by name at runtime), and the
+    // saving is under half a megabyte. Code shrinking (R8) stays on.
+    set('android.enableShrinkResourcesInReleaseBuilds', 'false');
+    // Compress the native libraries inside the APK: about a third smaller download (they are unpacked at install).
+    set('expo.useLegacyPackaging', 'true');
     return mod;
   });
 };
@@ -212,6 +216,22 @@ const withAppHardening: ConfigPlugin<{ production: boolean }> = (config, { produ
   ]);
 };
 
+// The notification chime is only referenced by name at runtime (channel sound "panorama.wav"), so resource shrinking would
+// delete it from release builds. This keep rule protects every raw resource.
+const withKeepRawResources: ConfigPlugin = (config) =>
+  withDangerousMod(config, [
+    'android',
+    async (mod) => {
+      const rawDir = path.join(mod.modRequest.platformProjectRoot, 'app/src/main/res/raw');
+      fs.mkdirSync(rawDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(rawDir, 'keep.xml'),
+        '<?xml version="1.0" encoding="utf-8"?>\n<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@raw/*" />\n',
+      );
+      return mod;
+    },
+  ]);
+
 function requiredReleaseValue(name: string, value: string | undefined, appEnv: string): string {
   const normalized = value?.trim();
   if (appEnv !== 'development' && !normalized) {
@@ -219,6 +239,12 @@ function requiredReleaseValue(name: string, value: string | undefined, appEnv: s
   }
   return normalized ?? '';
 }
+
+const googleServicesFile = (() => {
+  const candidate = process.env.PANORAMA_GOOGLE_SERVICES_FILE ?? './google-services.json';
+
+  return fs.existsSync(candidate) ? candidate : undefined;
+})();
 
 const EAS_PROJECT_ID = '3804d959-0d36-4747-aeb0-d3339ad57f90';
 const DEFAULT_PRIVACY_URL = 'https://app.xn--mgbaab0cxheq.tech/legal/privacy.html';
@@ -254,7 +280,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: 'Panorama',
     slug: 'panorama-mobile',
-    version: '2.8.3',
+    version: '2.9.0',
     orientation: 'portrait',
     scheme: 'panorama',
     icon: './src/assets/app/icon.png',
@@ -279,7 +305,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           ],
         },
       ],
-      'expo-notifications',
+      [
+        'expo-notifications',
+        {
+          color: '#3510A3',
+          // The distinctive Panorama chime; the Android channels reference it by file name (see notificationChannels.ts).
+          sounds: ['./src/assets/sounds/panorama.wav'],
+        },
+      ],
       'expo-updates',
       [
         'expo-splash-screen',
@@ -316,12 +349,15 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: {
       ...config.android,
       package: 'com.panorama.student',
-      versionCode: 283,
+      versionCode: 290,
       adaptiveIcon: {
         foregroundImage: './src/assets/app/adaptive-icon.png',
         monochromeImage: './src/assets/app/adaptive-icon-monochrome.png',
         backgroundColor: '#FFFFFF',
       },
+      // Closed-app push needs Firebase: put google-services.json next to this file (or point
+      // PANORAMA_GOOGLE_SERVICES_FILE at it). Without it the app still runs; it just cannot register a push token.
+      ...(googleServicesFile ? { googleServicesFile } : {}),
       permissions: ['POST_NOTIFICATIONS'],
       blockedPermissions: [
         'android.permission.READ_EXTERNAL_STORAGE',
@@ -335,6 +371,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     extra: {
       ...config.extra,
       appEnv,
+      allowScreenshots: process.env.EXPO_PUBLIC_ALLOW_SCREENSHOTS === 'true',
       apiBaseUrl,
       wsBaseUrl,
       supportEmail: process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? 'panoramacompany31@gmail.com',
@@ -348,13 +385,15 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   };
 
   return withReleaseSigning(
-    withAppHardening(
-      withDefaultRtl(
-        withWhatsAppPackageVisibility(
-          withAndroidCleartextTraffic(expoConfig, { enabled: allowDevelopmentCleartext }),
+    withKeepRawResources(
+      withAppHardening(
+        withDefaultRtl(
+          withWhatsAppPackageVisibility(
+            withAndroidCleartextTraffic(expoConfig, { enabled: allowDevelopmentCleartext }),
+          ),
         ),
+        { production: appEnv === 'production' },
       ),
-      { production: appEnv === 'production' },
     ),
   );
 };

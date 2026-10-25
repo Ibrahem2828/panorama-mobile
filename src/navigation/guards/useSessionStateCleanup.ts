@@ -6,7 +6,11 @@ import { useChatStore } from '../../features/chat/store';
 import { useFilesStore } from '../../features/files/store';
 import { useGroupsStore } from '../../features/groups/store';
 import { useHomeStore } from '../../features/home/store';
-import { useNotificationsStore } from '../../features/notifications/store';
+import {
+  useNotificationPrefsStore,
+  useNotificationsStore,
+} from '../../features/notifications/store';
+import { useChatUnreadStore } from '../../features/chat/store/unreadStore';
 import { usePoliciesStore } from '../../features/policies';
 import { usePrintingStore } from '../../features/printing/store';
 import { useProfileStore } from '../../features/profile/store';
@@ -24,6 +28,8 @@ export function useSessionStateCleanup() {
   const resetGroups = useGroupsStore((state) => state.reset);
   const resetHome = useHomeStore((state) => state.reset);
   const resetNotifications = useNotificationsStore((state) => state.reset);
+  const resetNotificationPrefs = useNotificationPrefsStore((state) => state.reset);
+  const resetChatUnread = useChatUnreadStore((state) => state.reset);
   const resetPolicies = usePoliciesStore((state) => state.reset);
   const resetPrinting = usePrintingStore((state) => state.reset);
   const resetProfile = useProfileStore((state) => state.reset);
@@ -44,6 +50,8 @@ export function useSessionStateCleanup() {
     resetGroups();
     resetHome();
     resetNotifications();
+    resetNotificationPrefs();
+    resetChatUnread();
     resetPolicies();
     resetPrinting();
     resetProfile();
@@ -59,6 +67,8 @@ export function useSessionStateCleanup() {
     resetGroups,
     resetHome,
     resetNotifications,
+    resetNotificationPrefs,
+    resetChatUnread,
     resetPolicies,
     resetPrinting,
     resetProfile,

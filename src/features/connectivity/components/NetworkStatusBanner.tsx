@@ -1,29 +1,81 @@
 import { useEffect, useState } from 'react';
 import NetInfo from '@react-native-community/netinfo';
 import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '../../../components';
 import { colors, spacing } from '../../../theme';
 import { useTranslation } from '../../../i18n';
+import { formatAgo } from '../../../offline/formatAgo';
+import { isOnlineFromNetInfo, useNetworkStore } from '../../../offline/networkStore';
 
-export function NetworkStatusBanner() {
-  const { t } = useTranslation();
-  const [isOffline, setIsOffline] = useState(false);
+/**
+ * Keeps the shared connectivity flag up to date. Mounted once at the root (the banner below renders it).
+ */
+function useNetworkMonitor() {
+  const setOnline = useNetworkStore((state) => state.setOnline);
 
   useEffect(
-    () =>
-      NetInfo.addEventListener((state) => {
-        setIsOffline(state.isConnected === false || state.isInternetReachable === false);
-      }),
-    [],
+    () => NetInfo.addEventListener((state) => setOnline(isOnlineFromNetInfo(state))),
+    [setOnline],
   );
+}
 
-  if (!isOffline) return null;
+function useMinuteClock(active: boolean): number {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!active) {
+      return undefined;
+    }
+
+    setNow(Date.now());
+    const timer = setInterval(() => setNow(Date.now()), 30_000);
+
+    return () => clearInterval(timer);
+  }, [active]);
+
+  return now;
+}
+
+/**
+ * One calm strip for both situations where the screen is showing saved data: the device is offline, or it is online but the
+ * server could not be reached and a saved copy was shown. It names how old the data is.
+ */
+export function NetworkStatusBanner() {
+  const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+
+  useNetworkMonitor();
+
+  const isOnline = useNetworkStore((state) => state.isOnline);
+  const savedAt = useNetworkStore((state) => state.lastCachedSavedAt);
+  const visible = !isOnline || savedAt !== null;
+  const now = useMinuteClock(visible);
+
+  if (!visible) {
+    return null;
+  }
+
+  const age = savedAt !== null ? formatAgo(savedAt, now, t.connectivity) : null;
+  const message = isOnline
+    ? t.connectivity.staleSaved
+    : savedAt !== null
+      ? t.connectivity.offlineSaved
+      : t.connectivity.offline;
 
   return (
-    <View accessibilityLiveRegion="polite" style={styles.banner}>
-      <AppText align="center" color="inverse" variant="caption">
-        {t.connectivity.offline}
+    <View
+      accessibilityLiveRegion="polite"
+      style={[
+        styles.banner,
+        isOnline ? styles.stale : null,
+        // The strip sits under the system status bar, not behind it.
+        { paddingTop: insets.top + spacing.xs },
+      ]}
+    >
+      <AppText align="center" color={isOnline ? 'primary' : 'inverse'} variant="caption">
+        {age ? `${message} · ${t.connectivity.lastUpdated(age)}` : message}
       </AppText>
     </View>
   );
@@ -31,8 +83,11 @@ export function NetworkStatusBanner() {
 
 const styles = StyleSheet.create({
   banner: {
-    backgroundColor: colors.semantic.error,
+    backgroundColor: colors.gray[700],
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  stale: {
+    backgroundColor: colors.semantic.warning,
   },
 });

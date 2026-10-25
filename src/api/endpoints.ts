@@ -61,9 +61,21 @@ export const endpoints = {
     files: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/files/`,
     messages: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/messages/`,
     chatTicket: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/chat-ticket/`,
+    chatReceipts: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/chat/receipts/`,
+    chatPreferences: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/chat/preferences/`,
+    messageReaction: (groupId: EndpointId, messageId: EndpointId) =>
+      `${API_PREFIX}/groups/${groupId}/messages/${messageId}/reaction/`,
+    messageDelete: (groupId: EndpointId, messageId: EndpointId) =>
+      `${API_PREFIX}/groups/${groupId}/messages/${messageId}/`,
+    chatUnread: `${API_PREFIX}/chat/unread/`,
     whatsappLaunch: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/whatsapp-launch/`,
     messageAttachmentTicket: (groupId: EndpointId, messageId: EndpointId) =>
       `${API_PREFIX}/groups/${groupId}/messages/${messageId}/attachment-ticket/`,
+  },
+  enrollment: {
+    subjects: `${API_PREFIX}/enrollment/subjects/`,
+    requests: `${API_PREFIX}/enrollment/requests/`,
+    cancel: (id: EndpointId) => `${API_PREFIX}/enrollment/requests/${id}/cancel/`,
   },
   files: {
     list: `${API_PREFIX}/files/`,
@@ -72,6 +84,8 @@ export const endpoints = {
   },
   printing: {
     quote: `${API_PREFIX}/printing/quote/`,
+    options: `${API_PREFIX}/printing/options/`,
+    products: `${API_PREFIX}/printing/products/`,
     convert: `${API_PREFIX}/printing/convert/`,
     convertDetail: (id: string) => `${API_PREFIX}/printing/convert/${id}/`,
     createOrder: `${API_PREFIX}/printing/orders/`,
@@ -85,6 +99,7 @@ export const endpoints = {
   notifications: {
     list: `${API_PREFIX}/notifications/`,
     unreadCount: `${API_PREFIX}/notifications/unread-count/`,
+    summary: `${API_PREFIX}/notifications/summary/`,
     markRead: (notificationId: EndpointId) => `${API_PREFIX}/notifications/${notificationId}/read/`,
     readAll: `${API_PREFIX}/notifications/read-all/`,
     preferences: `${API_PREFIX}/notifications/preferences/`,
@@ -115,6 +130,23 @@ export const endpoints = {
     notes: (lectureId: EndpointId) => `${API_PREFIX}/lectures/${lectureId}/notes/`,
     noteDetail: (lectureId: EndpointId, noteId: EndpointId) =>
       `${API_PREFIX}/lectures/${lectureId}/notes/${noteId}/`,
+  },
+  fileViewer: {
+    manifest: (fileId: EndpointId) => `${API_PREFIX}/files/${fileId}/viewer/manifest/`,
+    session: (fileId: EndpointId) => `${API_PREFIX}/files/${fileId}/viewer/session/`,
+    pageImage: (fileId: EndpointId, page: number) =>
+      `${API_PREFIX}/files/${fileId}/viewer/pages/${page}/`,
+    pageThumbnail: (fileId: EndpointId, page: number) =>
+      `${API_PREFIX}/files/${fileId}/viewer/pages/${page}/thumbnail/`,
+    pageText: (fileId: EndpointId, page: number) =>
+      `${API_PREFIX}/files/${fileId}/viewer/pages/${page}/text/`,
+  },
+  annotations: {
+    list: (kind: 'lectures' | 'files', id: EndpointId) =>
+      `${API_PREFIX}/annotations/${kind}/${id}/`,
+    sync: (kind: 'lectures' | 'files', id: EndpointId) =>
+      `${API_PREFIX}/annotations/${kind}/${id}/sync/`,
+    myNotes: `${API_PREFIX}/my-notes/`,
   },
   feedback: {
     submit: `${API_PREFIX}/feedback/`,

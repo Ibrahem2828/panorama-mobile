@@ -1,9 +1,23 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import * as ImagePicker from 'expo-image-picker';
-import { Image, Keyboard, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import {
+  Image,
+  Keyboard,
+  Linking,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIconButton, AppText, Icon } from '../../../components';
+import {
+  AttachmentSourceSheet,
+  CHAT_POLICY,
+  pickFromSource,
+  type AttachmentSource,
+} from '../../attachments';
 import {
   colors,
   inputThemeProps,
@@ -15,7 +29,7 @@ import {
 } from '../../../theme';
 import { useTranslation } from '../../../i18n';
 import { getIsRTL, isolateLtr } from '../../../utils/rtl';
-import { toChatAttachment, validateChatAttachment } from '../logic/attachments';
+import { localFileToChatAttachment, validateChatAttachment } from '../logic/attachments';
 import type { SendResult } from '../store/chatStore';
 import { MAX_MESSAGE_LENGTH, type ChatAttachment } from '../types';
 import { formatMegabytes } from './chatFormat';
@@ -62,6 +76,8 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
   const [text, setText] = useState(() => drafts.get(draftKey) ?? '');
   const [attachment, setAttachment] = useState<ChatAttachment | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [cameraDenied, setCameraDenied] = useState(false);
   const textRef = useRef(text);
 
   textRef.current = text;
@@ -84,26 +100,8 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
     setError((current) => (current ? null : current));
   }, []);
 
-  const handlePickImage = useCallback(async () => {
-    setError(null);
-
-    try {
-      // The system photo picker needs no storage permission on current Android / iOS.
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: 'images',
-        allowsMultipleSelection: false,
-        allowsEditing: false,
-        exif: false,
-        // JPEG re-encoding is the only downsizing available without extra packages.
-        quality: 0.8,
-      });
-      const asset = result.canceled ? null : result.assets[0];
-
-      if (!asset) {
-        return;
-      }
-
-      const picked = toChatAttachment(asset);
+  const accept = useCallback(
+    (picked: ChatAttachment) => {
       const problem = validateChatAttachment(picked);
 
       if (problem) {
@@ -118,10 +116,41 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
       }
 
       setAttachment(picked);
-    } catch {
-      setError(t.chat.attachment.pickError);
-    }
-  }, [t]);
+    },
+    [t],
+  );
+
+  const handleSource = useCallback(
+    async (source: AttachmentSource) => {
+      setError(null);
+      setCameraDenied(false);
+
+      const result = await pickFromSource(source, CHAT_POLICY, { quality: 0.8 });
+
+      if (result.status === 'picked') {
+        const file = result.files[0];
+
+        if (file) {
+          accept(localFileToChatAttachment(file));
+        }
+      } else if (result.status === 'invalid') {
+        setError(
+          result.problem === 'size'
+            ? t.chat.errors.attachmentSize
+            : result.problem === 'empty'
+              ? t.chat.errors.attachmentEmpty
+              : t.chat.errors.attachmentType,
+        );
+      } else if (result.status === 'permission_denied') {
+        setCameraDenied(true);
+      } else if (result.status === 'error') {
+        setError(
+          source === 'document' ? t.chat.attachment.documentError : t.chat.attachment.pickError,
+        );
+      }
+    },
+    [accept, t],
+  );
 
   const handleSend = useCallback(() => {
     const result = onSend({ text, attachment });
@@ -148,11 +177,17 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
     >
       {attachment ? (
         <View style={styles.attachmentPreview}>
-          <Image
-            accessibilityIgnoresInvertColors
-            source={{ uri: attachment.uri }}
-            style={styles.thumbnail}
-          />
+          {attachment.kind === 'image' ? (
+            <Image
+              accessibilityIgnoresInvertColors
+              source={{ uri: attachment.uri }}
+              style={styles.thumbnail}
+            />
+          ) : (
+            <View style={[styles.thumbnail, styles.documentThumb]}>
+              <Icon color={brand.primary} name="file" size={26} />
+            </View>
+          )}
           <View style={styles.attachmentInfo}>
             <AppText numberOfLines={1} variant="label">
               {isolateLtr(attachment.name)}
@@ -175,8 +210,8 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
       <View style={styles.inputRow}>
         <AppIconButton
           accessibilityLabel={t.chat.attachment.attach}
-          icon={<Icon color={brand.primary} name="image" />}
-          onPress={() => void handlePickImage()}
+          icon={<Icon color={brand.primary} name="paperclip" />}
+          onPress={() => setMenuOpen(true)}
         />
         <TextInput
           {...inputThemeProps}
@@ -210,6 +245,13 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
           {t.chat.charCount(text.length, MAX_MESSAGE_LENGTH)}
         </AppText>
       ) : null}
+      {cameraDenied ? (
+        <Pressable accessibilityRole="button" onPress={() => void Linking.openSettings()}>
+          <AppText color="error" variant="caption">
+            {t.chat.attachment.cameraDenied} {t.chat.attachment.openSettings}
+          </AppText>
+        </Pressable>
+      ) : null}
       {error ? (
         <Pressable accessibilityLiveRegion="polite" onPress={() => setError(null)}>
           <AppText color="error" variant="caption">
@@ -217,11 +259,23 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
           </AppText>
         </Pressable>
       ) : null}
+
+      <AttachmentSourceSheet
+        onClose={() => setMenuOpen(false)}
+        onSelect={(source) => void handleSource(source)}
+        sources={CHAT_POLICY.sources}
+        visible={menuOpen}
+      />
     </View>
   );
 });
 
 const styles = StyleSheet.create({
+  documentThumb: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.background.surface,
+  },
   container: {
     gap: spacing.xs,
     paddingTop: spacing.sm,

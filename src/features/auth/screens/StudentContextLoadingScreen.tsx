@@ -31,7 +31,7 @@ export function StudentContextLoadingScreen() {
 
   return (
     <AppScreen horizontalPadding={false}>
-      <LoadingState centered message={t.auth.bootstrap.preparingStudentAccount} title={t.appName} />
+      <LoadingState branded centered message={t.auth.bootstrap.preparingStudentAccount} />
     </AppScreen>
   );
 }
