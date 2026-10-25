@@ -44,10 +44,14 @@ export function isDeviceOffline(): boolean {
   return !useNetworkStore.getState().isOnline;
 }
 
-/** NetInfo state -> online flag (unknown = online). */
+/**
+ * NetInfo state -> online flag. Only "no network interface at all" counts as offline: NetInfo's own reachability probe can
+ * fail on networks that block or throttle its test address even though our server is reachable, and a wrong "offline"
+ * would block sign-in and every send. Real server outages are handled by the request itself (cache fallback on error).
+ */
 export function isOnlineFromNetInfo(state: {
   isConnected: boolean | null;
-  isInternetReachable: boolean | null;
+  isInternetReachable?: boolean | null;
 }): boolean {
-  return state.isConnected !== false && state.isInternetReachable !== false;
+  return state.isConnected !== false;
 }
