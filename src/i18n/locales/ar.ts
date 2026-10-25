@@ -321,6 +321,7 @@ export const ar = {
     typeIconAlt: 'أيقونة نوع الإشعار',
     channels: {
       default: 'إشعارات بانوراما',
+      general: 'إشعارات عامة',
       chat: 'رسائل المحادثات',
       groups: 'المجموعات وتسجيل المواد',
       printing: 'طلبات الطباعة',

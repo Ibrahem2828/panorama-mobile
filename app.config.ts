@@ -222,6 +222,12 @@ function requiredReleaseValue(name: string, value: string | undefined, appEnv: s
   return normalized ?? '';
 }
 
+const googleServicesFile = (() => {
+  const candidate = process.env.PANORAMA_GOOGLE_SERVICES_FILE ?? './google-services.json';
+
+  return fs.existsSync(candidate) ? candidate : undefined;
+})();
+
 const EAS_PROJECT_ID = '3804d959-0d36-4747-aeb0-d3339ad57f90';
 const DEFAULT_PRIVACY_URL = 'https://app.xn--mgbaab0cxheq.tech/legal/privacy.html';
 const DEFAULT_LEGAL_URL = 'https://app.xn--mgbaab0cxheq.tech/legal/';
@@ -256,7 +262,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: 'Panorama',
     slug: 'panorama-mobile',
-    version: '2.8.4',
+    version: '2.9.0',
     orientation: 'portrait',
     scheme: 'panorama',
     icon: './src/assets/app/icon.png',
@@ -281,7 +287,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           ],
         },
       ],
-      'expo-notifications',
+      [
+        'expo-notifications',
+        {
+          color: '#3510A3',
+          // The distinctive Panorama chime; the Android channels reference it by file name (see notificationChannels.ts).
+          sounds: ['./src/assets/sounds/panorama.wav'],
+        },
+      ],
       'expo-updates',
       [
         'expo-splash-screen',
@@ -318,12 +331,15 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: {
       ...config.android,
       package: 'com.panorama.student',
-      versionCode: 284,
+      versionCode: 290,
       adaptiveIcon: {
         foregroundImage: './src/assets/app/adaptive-icon.png',
         monochromeImage: './src/assets/app/adaptive-icon-monochrome.png',
         backgroundColor: '#FFFFFF',
       },
+      // Closed-app push needs Firebase: put google-services.json next to this file (or point
+      // PANORAMA_GOOGLE_SERVICES_FILE at it). Without it the app still runs; it just cannot register a push token.
+      ...(googleServicesFile ? { googleServicesFile } : {}),
       permissions: ['POST_NOTIFICATIONS'],
       blockedPermissions: [
         'android.permission.READ_EXTERNAL_STORAGE',

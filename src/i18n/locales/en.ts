@@ -305,6 +305,7 @@ export const en: TranslationCatalog = {
     typeIconAlt: 'Notification type icon',
     channels: {
       default: 'Panorama notifications',
+      general: 'General notifications',
       chat: 'Chat messages',
       groups: 'Groups and subject registration',
       printing: 'Print orders',
