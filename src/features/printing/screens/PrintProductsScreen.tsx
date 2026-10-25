@@ -73,45 +73,55 @@ export function PrintProductsScreen({ navigation }: Props) {
         {!isLoading && products.length === 0 ? (
           <EmptyState message={copy.emptyMessage} title={copy.emptyTitle} />
         ) : null}
-        {products.map((product) => (
-          <AppCard key={product.id} variant="elevated">
-            <Stack gap="md">
-              <Stack direction="horizontal" gap="md">
-                {product.image_url ? (
-                  <Image
-                    accessibilityIgnoresInvertColors
-                    resizeMode="cover"
-                    source={{ uri: product.image_url }}
-                    style={styles.image}
-                  />
-                ) : (
-                  <View
-                    style={[styles.image, styles.imageIcon, { backgroundColor: brand.primarySoft }]}
-                  >
-                    <Icon color={brand.primary} name="book" size={30} />
-                  </View>
-                )}
-                <Stack gap="xs" style={styles.body}>
-                  <AppText variant="title">{product.name}</AppText>
-                  {product.description ? (
-                    <AppText color="secondary" numberOfLines={3} variant="bodySmall">
-                      {product.description}
-                    </AppText>
-                  ) : null}
+        <View style={styles.grid}>
+          {products.map((product) => (
+            <View key={product.id} style={styles.cell}>
+              <AppCard variant="elevated" style={styles.card}>
+                <Stack gap="sm" style={styles.cardBody}>
+                  {product.image_url ? (
+                    <Image
+                      accessibilityIgnoresInvertColors
+                      resizeMode="cover"
+                      source={{ uri: product.image_url }}
+                      style={styles.image}
+                    />
+                  ) : (
+                    <View
+                      style={[
+                        styles.image,
+                        styles.imageIcon,
+                        { backgroundColor: brand.primarySoft },
+                      ]}
+                    >
+                      <Icon color={brand.primary} name="book" size={36} />
+                    </View>
+                  )}
+                  <AppText numberOfLines={2} variant="label" weight="700">
+                    {product.name}
+                  </AppText>
                   <AppText color="muted" variant="caption">
                     {copy.fixedSpec(product.pages_count, product.paper_size)}
                   </AppText>
+                  {product.description ? (
+                    <AppText color="secondary" numberOfLines={2} variant="caption">
+                      {product.description}
+                    </AppText>
+                  ) : null}
+                  <View style={styles.spacer} />
+                  <AppText color="brand" variant="title">
+                    {formatPrintMoney(product.price, product.currency) ?? String(product.price)}
+                  </AppText>
+                  <AppButton
+                    fullWidth
+                    onPress={() => order(product)}
+                    size="sm"
+                    title={copy.order}
+                  />
                 </Stack>
-              </Stack>
-              <Stack align="center" direction="horizontal" gap="md" justify="space-between">
-                <AppText color="brand" variant="h3">
-                  {formatPrintMoney(product.price, product.currency) ?? String(product.price)}
-                </AppText>
-                <AppButton onPress={() => order(product)} title={copy.order} />
-              </Stack>
-            </Stack>
-          </AppCard>
-        ))}
+              </AppCard>
+            </View>
+          ))}
+        </View>
       </Stack>
     </AppScreen>
   );
@@ -119,7 +129,11 @@ export function PrintProductsScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   content: { paddingBottom: spacing.xxl },
-  image: { width: 84, height: 84, borderRadius: radius.md },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+  cell: { flexGrow: 1, flexBasis: '46%', minWidth: 150 },
+  card: { flex: 1 },
+  cardBody: { flex: 1 },
+  spacer: { flexGrow: 1 },
+  image: { width: '100%', height: 120, borderRadius: radius.md },
   imageIcon: { alignItems: 'center', justifyContent: 'center' },
-  body: { flex: 1, minWidth: 0 },
 });

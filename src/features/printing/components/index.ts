@@ -11,6 +11,8 @@ export { PrintOrderStatusIcon } from './PrintOrderStatusIcon';
 export { getPrintOrderStatusArtwork } from './printOrderStatusArtwork';
 export { PrintPickupSelector } from './PrintPickupSelector';
 export { PrintQuoteBreakdown } from './PrintQuoteBreakdown';
+export { PrintOptionSection } from './PrintOptionSection';
+export { PrintStickyBar } from './PrintStickyBar';
 export { PrintStatusProgress } from './PrintStatusProgress';
 export { PrintStatusTimeline } from './PrintStatusTimeline';
 export { PrintingFutureOptionsCard } from './PrintingFutureOptionsCard';

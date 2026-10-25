@@ -90,7 +90,9 @@ export function PrintQuoteBreakdown({ quote, items, names }: PrintQuoteBreakdown
                   {line.pricing_snapshot?.wire_grams_per_copy ? (
                     <Row
                       label={t.printing.priceSummary.wire}
-                      value={`${line.pricing_snapshot.wire_grams_per_copy} g`}
+                      value={t.printing.priceSummary.wireGrams(
+                        line.pricing_snapshot.wire_grams_per_copy,
+                      )}
                     />
                   ) : null}
                   {line.pricing_snapshot?.cover_price_per_copy &&

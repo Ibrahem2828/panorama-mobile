@@ -1,0 +1,33 @@
+import { readdirSync, readFileSync } from 'fs';
+import { join } from 'path';
+
+const root = join(__dirname, '..');
+
+function sources(dir: string): string[] {
+  return readdirSync(join(root, dir))
+    .filter((name) => name.endsWith('.tsx'))
+    .map((name) => readFileSync(join(root, dir, name), 'utf8'));
+}
+
+describe('printing UI guards', () => {
+  it('never shows raw unit or currency codes (they come from the catalog or formatPrintMoney)', () => {
+    const all = [...sources('components'), ...sources('screens')].join('\n');
+
+    expect(all).not.toMatch(/\}\s?g`/u);
+    expect(all).not.toMatch(/>\s*(SYP|USD)\s*</u);
+  });
+
+  it('keeps Arabic text out of react-native-svg text (it cannot shape Arabic letters)', () => {
+    const files = sources('components').filter((text) => text.includes('SvgText'));
+
+    for (const text of files) {
+      expect(text).not.toMatch(/\{t\.printing\.[A-Za-z.]*(front|back|title|label)\b/u);
+    }
+  });
+
+  it('groups the options into collapsible sections', () => {
+    const options = readFileSync(join(root, 'components', 'PrintItemOptions.tsx'), 'utf8');
+
+    expect(options.match(/<PrintOptionSection/gu)?.length).toBe(3);
+  });
+});
