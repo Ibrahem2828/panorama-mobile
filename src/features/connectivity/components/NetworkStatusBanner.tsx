@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import NetInfo from '@react-native-community/netinfo';
 import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '../../../components';
 import { colors, spacing } from '../../../theme';
@@ -43,6 +44,7 @@ function useMinuteClock(active: boolean): number {
  */
 export function NetworkStatusBanner() {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   useNetworkMonitor();
 
@@ -63,7 +65,15 @@ export function NetworkStatusBanner() {
       : t.connectivity.offline;
 
   return (
-    <View accessibilityLiveRegion="polite" style={[styles.banner, isOnline ? styles.stale : null]}>
+    <View
+      accessibilityLiveRegion="polite"
+      style={[
+        styles.banner,
+        isOnline ? styles.stale : null,
+        // The strip sits under the system status bar, not behind it.
+        { paddingTop: insets.top + spacing.xs },
+      ]}
+    >
       <AppText align="center" color={isOnline ? 'primary' : 'inverse'} variant="caption">
         {age ? `${message} · ${t.connectivity.lastUpdated(age)}` : message}
       </AppText>
