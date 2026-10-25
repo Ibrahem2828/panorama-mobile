@@ -13,6 +13,7 @@ import {
   SkeletonList,
   Stack,
 } from '../../../components';
+import { useRefreshOnReconnect } from '../../../offline/useRefreshOnReconnect';
 import { useTranslation } from '../../../i18n';
 import { GroupsRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
@@ -73,6 +74,8 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
     void refreshAllGroups();
     void loadUnread();
   }, [loadUnread, refreshAllGroups]);
+
+  useRefreshOnReconnect(handleRefresh);
 
   const handleGroupPress = useCallback(
     (group: Group) => {

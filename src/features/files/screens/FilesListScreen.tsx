@@ -16,6 +16,7 @@ import {
   SkeletonList,
   Stack,
 } from '../../../components';
+import { useRefreshOnReconnect } from '../../../offline/useRefreshOnReconnect';
 import { useTranslation } from '../../../i18n';
 import { SharedRoutes } from '../../../navigation/routes';
 import type { HomeStackParamList } from '../../../navigation/types';
@@ -88,6 +89,8 @@ export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
     [navigation, setSelectedFile],
   );
   const handleRefresh = useCallback(() => void refreshList(), [refreshList]);
+
+  useRefreshOnReconnect(handleRefresh);
   const handleEndReached = useCallback(() => void loadMoreList(), [loadMoreList]);
   const handleClearSubject = useCallback(
     () => navigation.setParams({ subjectId: undefined, subjectName: undefined }),

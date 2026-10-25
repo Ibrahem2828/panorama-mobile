@@ -22,6 +22,8 @@ export type ApiRequestOptions<TBody = unknown> = {
    * pass the same key when that action is retried (see ./idempotency).
    */
   idempotencyKey?: string;
+  /** GET only: never read or write the offline copy of this response (use for data that must be live). */
+  noCache?: boolean;
   /** Lets the caller cancel an in-flight request (for example a long upload). */
   signal?: AbortSignal;
   /**

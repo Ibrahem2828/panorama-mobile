@@ -14,6 +14,7 @@ import {
   SkeletonList,
   Stack,
 } from '../../../components';
+import { useRefreshOnReconnect } from '../../../offline/useRefreshOnReconnect';
 import { useTranslation } from '../../../i18n';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { colors, layout, spacing, useBrand } from '../../../theme';
@@ -71,6 +72,11 @@ export function NotificationsScreen(_props: Props) {
     void loadNotifications();
     void loadUnreadCount();
   }, [loadNotifications, loadUnreadCount]);
+
+  useRefreshOnReconnect(() => {
+    void refreshNotifications();
+    void loadUnreadCount();
+  });
 
   const expiredCount = useMemo(
     () => notifications.filter((item) => isNotificationExpired(item)).length,

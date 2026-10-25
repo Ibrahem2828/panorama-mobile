@@ -7,6 +7,7 @@ import { UPLOAD_CANCELLED } from '../../../api/upload';
 import { useLocaleStore } from '../../../i18n';
 
 import { useAuthStore } from '../../auth/store';
+import { useNetworkStore } from '../../../offline/networkStore';
 import { groupsService as apiGroupsService } from '../../../api';
 import { useGroupsStore } from '../../groups/store';
 import type { Group } from '../../groups/types';
@@ -226,6 +227,7 @@ export const useChatStore = create<ChatState>((set, get) => {
 
     syncing.add(groupKey);
     const epochBefore = epochs.get(groupKey) ?? 0;
+    const startedAt = Date.now();
     const sessionBefore = session;
 
     try {
@@ -235,7 +237,10 @@ export const useChatStore = create<ChatState>((set, get) => {
         return;
       }
 
-      const canPrune = (epochs.get(groupKey) ?? 0) === epochBefore;
+      // A page served from the offline copy can be older than what is already on screen: never prune against it.
+      const canPrune =
+        (epochs.get(groupKey) ?? 0) === epochBefore &&
+        useNetworkStore.getState().lastCacheServeAt < startedAt;
       const deleted = deletedSet(groupKey);
 
       patchRoom(groupKey, (room) => {
@@ -414,16 +419,32 @@ export const useChatStore = create<ChatState>((set, get) => {
     unsubscribeNetInfo = NetInfo.addEventListener((state) => {
       const isOnline = state.isConnected !== false && state.isInternetReachable !== false;
 
+      // The shared flag must be current before anything below sends a request.
+      useNetworkStore.getState().setOnline(isOnline);
+
       if (get().isOnline !== isOnline) {
         set({ isOnline });
       }
 
       if (isOnline && wasOnline === false) {
         void syncLatest(groupId, 'poll');
+        resendOfflineFailures(groupId);
       }
 
       wasOnline = isOnline;
     });
+  }
+
+  /**
+   * Messages written while offline are kept as "failed" bubbles; when the connection returns they go out by themselves. They keep
+   * their Idempotency-Key (only a definitive server refusal burns it), so a message the server already stored is never doubled.
+   */
+  function resendOfflineFailures(groupId: Id) {
+    const room = get().rooms[keyOf(groupId)];
+
+    room?.pending
+      .filter((item) => item.status === 'failed' && !item.keyBurned)
+      .forEach((item) => get().retry(groupId, item.localId));
   }
 
   /** Sends (or re-sends) one pending bubble. Never throws; failures become a "failed" state. */
