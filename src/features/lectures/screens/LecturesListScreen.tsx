@@ -13,6 +13,7 @@ import {
   SkeletonList,
   Stack,
 } from '../../../components';
+import { useRefreshOnReconnect } from '../../../offline/useRefreshOnReconnect';
 import { useTranslation } from '../../../i18n';
 import { LecturesRoutes } from '../../../navigation/routes';
 import type { HomeStackParamList } from '../../../navigation/types';
@@ -78,6 +79,8 @@ export function LecturesListScreen({ navigation, route }: Props) {
   );
 
   const handleRefresh = useCallback(() => void refresh(), [refresh]);
+
+  useRefreshOnReconnect(handleRefresh);
   const clearFilters = useCallback(() => {
     setSearch('');
     setSubject('');

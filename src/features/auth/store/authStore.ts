@@ -8,6 +8,7 @@ import {
   toSafeAuthErrorMessage,
 } from '../services';
 import { useLocaleStore } from '../../../i18n';
+import { bindOfflineToAuth } from '../../../offline/authSync';
 import type { AuthStatus, AuthUser, AuthTokens, LoginCredentials } from '../types';
 
 function sessionExpiredMessage(): string {
@@ -189,3 +190,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ errorMessage: null });
   },
 }));
+
+// The offline cache follows the signed-in user and is wiped when they sign out or another account signs in.
+bindOfflineToAuth(useAuthStore);

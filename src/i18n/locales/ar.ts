@@ -41,6 +41,7 @@ export const ar = {
   /** Fallback copy for API error codes, used when the server sends no message. */
   apiErrors: {
     network: 'تعذر الاتصال. تحقق من الإنترنت وحاول مرة أخرى.',
+    offline: 'أنت غير متصل بالإنترنت. اتصل بالشبكة ثم أعد المحاولة.',
     timeout: 'استغرق الأمر وقتًا أطول من المعتاد. حاول مرة أخرى.',
     unauthorized: 'انتهت جلستك. سجّل الدخول مرة أخرى للمتابعة.',
     forbidden: 'لا تتوفر لك صلاحية تنفيذ هذا الإجراء.',
@@ -95,6 +96,13 @@ export const ar = {
   connectivity: {
     offline:
       'لا يوجد اتصال بالإنترنت. ستبقى البيانات التي حُمّلت ظاهرة، وسيُحدَّث كل شيء عند عودة الاتصال.',
+    offlineSaved: 'أنت غير متصل. تُعرض بيانات محفوظة على جهازك.',
+    staleSaved: 'تعذّر التحديث الآن. تُعرض بيانات محفوظة على جهازك.',
+    lastUpdated: (when: string) => `آخر تحديث ${when}`,
+    justNow: 'الآن',
+    minutesAgo: (count: number) => `قبل ${count} د`,
+    hoursAgo: (count: number) => `قبل ${count} س`,
+    daysAgo: (count: number) => `قبل ${count} يوم`,
   },
 
   navigation: {

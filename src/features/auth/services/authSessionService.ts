@@ -6,6 +6,11 @@ import type {
   RefreshTokenResponse,
 } from '../../../api';
 import { useLocaleStore } from '../../../i18n';
+import {
+  clearSessionSnapshot,
+  loadSessionSnapshot,
+  saveSessionSnapshot,
+} from '../../../offline/sessionSnapshot';
 import type { AuthSession, AuthTokens, AuthUser, LoginCredentials } from '../types';
 import { clearAuthTokens, getStoredAuthTokens, saveAuthTokens } from './authTokenStorage';
 
@@ -89,9 +94,39 @@ function isUnauthorizedError(error: unknown): boolean {
 }
 
 async function loadCurrentUser(accessToken: string): Promise<AuthUser> {
-  const user = await authService.getCurrentUser(accessToken);
+  const user = normalizeUser(await authService.getCurrentUser(accessToken));
 
-  return normalizeUser(user);
+  // Kept so a later cold start without a connection can still open the app (see offlineSession).
+  void saveSessionSnapshot(user);
+
+  return user;
+}
+
+/** The device cannot reach the server (no network, timeout, 5xx): that says nothing about whether the session is valid. */
+export function isUnreachableError(error: unknown): boolean {
+  const { code, status } = normalizeApiError(error);
+
+  return code === 'NETWORK_ERROR' || code === 'TIMEOUT' || (status !== undefined && status >= 500);
+}
+
+/**
+ * Opens the session from the saved profile when the server cannot be reached. The stored tokens are kept untouched: the
+ * first request that needs a fresh token refreshes it as soon as the connection is back, and until then the app shows its
+ * saved data. Returns null when nothing was saved (a first launch, or after sign-out).
+ */
+async function offlineSession(
+  error: unknown,
+  tokens: AuthTokens,
+): Promise<BootstrapSessionResult | null> {
+  if (!isUnreachableError(error)) {
+    return null;
+  }
+
+  const snapshot = await loadSessionSnapshot<AuthUser>();
+
+  return snapshot
+    ? { session: { user: snapshot.user, tokens }, sessionExpired: false, offline: true }
+    : null;
 }
 
 async function refreshStoredAccessToken(tokens: AuthTokens): Promise<AuthTokens> {
@@ -129,6 +164,8 @@ export async function loginWithCredentials(credentials: LoginCredentials): Promi
 export type BootstrapSessionResult = {
   session: AuthSession | null;
   sessionExpired: boolean;
+  /** True when the session was opened from the saved profile because the server was unreachable. */
+  offline?: boolean;
 };
 
 export async function bootstrapSession(): Promise<BootstrapSessionResult> {
@@ -153,6 +190,12 @@ export async function bootstrapSession(): Promise<BootstrapSessionResult> {
     };
   } catch (error) {
     if (!isUnauthorizedError(error)) {
+      const offline = await offlineSession(error, storedTokens);
+
+      if (offline) {
+        return offline;
+      }
+
       throw new Error(getAuthErrorMessage(error, 'session'));
     }
   }
@@ -170,11 +213,18 @@ export async function bootstrapSession(): Promise<BootstrapSessionResult> {
     };
   } catch (error) {
     if (!isDefinitiveRefreshRejection(error)) {
-      // Transient failure while refreshing: keep the tokens so the next launch can retry.
+      // Transient failure while refreshing: keep the tokens so the next launch can retry, and open from the saved profile.
+      const offline = await offlineSession(error, storedTokens);
+
+      if (offline) {
+        return offline;
+      }
+
       throw new Error(getAuthErrorMessage(error, 'session'));
     }
 
     await clearAuthTokens();
+    await clearSessionSnapshot();
     return {
       session: null,
       sessionExpired: true,
@@ -230,6 +280,7 @@ export async function logoutSession(currentTokens?: Partial<AuthTokens>): Promis
     // Local session cleanup must still complete if backend logout is unavailable.
   } finally {
     await clearAuthTokens();
+    await clearSessionSnapshot();
   }
 }
 

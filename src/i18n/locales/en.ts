@@ -36,6 +36,7 @@ export const en: TranslationCatalog = {
 
   apiErrors: {
     network: 'Could not connect. Check your internet and try again.',
+    offline: 'You are offline. Connect to the internet and try again.',
     timeout: 'That took longer than expected. Please try again.',
     unauthorized: 'Your session has ended. Sign in again to continue.',
     forbidden: 'You do not have permission to do this.',
@@ -80,6 +81,13 @@ export const en: TranslationCatalog = {
   connectivity: {
     offline:
       'You are offline. What you have already loaded stays visible, and everything updates when you reconnect.',
+    offlineSaved: 'You are offline. Showing data saved on your device.',
+    staleSaved: 'Could not refresh right now. Showing data saved on your device.',
+    lastUpdated: (when: string) => `Last updated ${when}`,
+    justNow: 'just now',
+    minutesAgo: (count: number) => `${count} min ago`,
+    hoursAgo: (count: number) => `${count} h ago`,
+    daysAgo: (count: number) => `${count} d ago`,
   },
 
   navigation: {
