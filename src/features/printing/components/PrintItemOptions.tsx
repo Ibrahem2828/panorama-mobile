@@ -15,6 +15,7 @@ import {
 import { usePrintingStore } from '../store';
 import type { PrintCartItem } from '../types';
 import { PrintChoiceChips, type PrintChoice } from './PrintChoiceChips';
+import { PrintOptionSection } from './PrintOptionSection';
 
 type PrintItemOptionsProps = {
   item: PrintCartItem;
@@ -80,126 +81,172 @@ export function PrintItemOptions({ item, pages = null, onChange }: PrintItemOpti
   const bindingType = options?.binding_types.find((type) => type.code === item.binding);
   const range = parsePageRange(item.pageRange, pages);
   const rangeProblem = item.pageRange.trim() && !range.ok ? range.reason : null;
+  const coverName = options?.covers.find((cover) => cover.code === item.cover)?.name;
+
+  const paperSummary = [
+    labels[item.colorMode],
+    labels[item.paperSize],
+    labels[item.sides],
+    double ? copy.flips[item.duplexFlip] : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  const layoutSummary = [
+    copy.sheetPages(item.pagesPerSheet),
+    copy.orientations[item.orientation],
+    item.pageRange.trim() ? item.pageRange.trim() : copy.allPages,
+    item.copies > 1 ? (item.collate ? copy.collated : copy.notCollated) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  const finishingSummary = [labels[item.binding] ?? item.binding, coverName]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
-    <Stack gap="lg">
-      <PrintChoiceChips
-        label={copy.color}
-        onChange={(colorMode) => onChange({ colorMode })}
-        options={choices(['black_white', 'color'] as const, labels)}
-        value={item.colorMode}
-      />
-      <PrintChoiceChips
-        label={copy.paperSize}
-        onChange={(paperSize) => onChange({ paperSize })}
-        options={choices(['A4', 'A3', 'A5'] as const, labels)}
-        value={item.paperSize}
-      />
-      <PrintChoiceChips
-        label={copy.sides}
-        onChange={(sides) => onChange({ sides })}
-        options={choices(['one_sided', 'double_sided'] as const, labels)}
-        value={item.sides}
-      />
-      {double ? (
+    <Stack gap="md">
+      <PrintOptionSection icon="printer" summary={paperSummary} title={copy.sectionPaper}>
         <PrintChoiceChips
-          label={copy.flip}
-          onChange={(duplexFlip) => onChange({ duplexFlip })}
-          options={DUPLEX_FLIPS.map((value) => ({ value, label: copy.flips[value] }))}
-          value={item.duplexFlip}
+          label={copy.color}
+          onChange={(colorMode) => onChange({ colorMode })}
+          options={choices(['black_white', 'color'] as const, labels)}
+          value={item.colorMode}
         />
-      ) : null}
-      <PrintChoiceChips
-        label={copy.pagesPerSheet}
-        onChange={(value) => onChange({ pagesPerSheet: Number(value) as PagesPerSheet })}
-        options={PAGES_PER_SHEET_VALUES.map((value) => ({
-          value: String(value),
-          label: String(value),
-        }))}
-        value={String(item.pagesPerSheet)}
-      />
-      {item.pagesPerSheet > 1 ? (
         <PrintChoiceChips
-          label={copy.direction}
-          onChange={(nUpDirection) => onChange({ nUpDirection })}
-          options={N_UP_DIRECTIONS.map((value) => ({ value, label: copy.directions[value] }))}
-          value={item.nUpDirection}
+          label={copy.paperSize}
+          onChange={(paperSize) => onChange({ paperSize })}
+          options={choices(['A4', 'A3', 'A5'] as const, labels)}
+          value={item.paperSize}
         />
-      ) : null}
-      <PrintChoiceChips
-        label={copy.orientation}
-        onChange={(orientation) => onChange({ orientation })}
-        options={ORIENTATIONS.map((value) => ({ value, label: copy.orientations[value] }))}
-        value={item.orientation}
-      />
-      <AppTextInput
-        autoCapitalize="none"
-        error={rangeProblem ? copy.rangeErrors[rangeProblem] : undefined}
-        helperText={
-          !rangeProblem ? (pages ? copy.rangeHintWithTotal(pages) : copy.rangeHint) : undefined
-        }
-        label={copy.pageRange}
-        onChangeText={(pageRange) => onChange({ pageRange })}
-        placeholder={copy.rangePlaceholder}
-        value={item.pageRange}
-      />
-      {item.copies > 1 ? (
-        <CheckboxRow
-          accessibilityLabel={copy.collate}
-          checked={item.collate}
-          label={copy.collateHint}
-          onToggle={() => onChange({ collate: !item.collate })}
+        <PrintChoiceChips
+          label={copy.sides}
+          onChange={(sides) => onChange({ sides })}
+          options={choices(['one_sided', 'double_sided'] as const, labels)}
+          value={item.sides}
         />
-      ) : null}
-      <PrintChoiceChips
-        label={copy.binding}
-        onChange={(binding) => onChange({ binding })}
-        options={choices(bindingValues, labels)}
-        value={item.binding}
-      />
-      {bindingType?.description ? (
-        <AppText color="muted" variant="caption">
-          {bindingType.description}
-        </AppText>
-      ) : null}
-      {bindingType?.price_mode === 'per_wire_kg' ? (
-        <AppText color="muted" variant="caption">
-          {copy.wirePriced}
-        </AppText>
-      ) : null}
-      {options && options.covers.length > 0 ? (
-        <Stack gap="sm">
-          <AppText variant="label">{copy.cover}</AppText>
-          <View style={styles.covers}>
-            {[{ code: '', name: copy.coverNone, color_hex: '' }, ...options.covers].map((cover) => {
-              const selected = item.cover === cover.code;
+        {double ? (
+          <PrintChoiceChips
+            label={copy.flip}
+            onChange={(duplexFlip) => onChange({ duplexFlip })}
+            options={DUPLEX_FLIPS.map((value) => ({ value, label: copy.flips[value] }))}
+            value={item.duplexFlip}
+          />
+        ) : null}
+      </PrintOptionSection>
 
-              return (
-                <Pressable
-                  accessibilityLabel={cover.name}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected }}
-                  key={cover.code || 'none'}
-                  onPress={() => onChange({ cover: cover.code })}
-                  style={[
-                    styles.cover,
-                    selected
-                      ? { borderColor: brand.primary, backgroundColor: brand.primarySoft }
-                      : null,
-                  ]}
-                >
-                  {cover.color_hex ? (
-                    <View style={[styles.swatch, { backgroundColor: cover.color_hex }]} />
-                  ) : null}
-                  <AppText color={selected ? 'brand' : 'primary'} variant="label">
-                    {cover.name}
-                  </AppText>
-                </Pressable>
-              );
-            })}
-          </View>
-        </Stack>
-      ) : null}
+      <PrintOptionSection
+        defaultOpen={false}
+        forceOpen={rangeProblem !== null}
+        icon="file"
+        summary={layoutSummary}
+        title={copy.sectionLayout}
+      >
+        <PrintChoiceChips
+          label={copy.pagesPerSheet}
+          onChange={(value) => onChange({ pagesPerSheet: Number(value) as PagesPerSheet })}
+          options={PAGES_PER_SHEET_VALUES.map((value) => ({
+            value: String(value),
+            label: String(value),
+          }))}
+          value={String(item.pagesPerSheet)}
+        />
+        {item.pagesPerSheet > 1 ? (
+          <PrintChoiceChips
+            label={copy.direction}
+            onChange={(nUpDirection) => onChange({ nUpDirection })}
+            options={N_UP_DIRECTIONS.map((value) => ({ value, label: copy.directions[value] }))}
+            value={item.nUpDirection}
+          />
+        ) : null}
+        <PrintChoiceChips
+          label={copy.orientation}
+          onChange={(orientation) => onChange({ orientation })}
+          options={ORIENTATIONS.map((value) => ({ value, label: copy.orientations[value] }))}
+          value={item.orientation}
+        />
+        <AppTextInput
+          autoCapitalize="none"
+          error={rangeProblem ? copy.rangeErrors[rangeProblem] : undefined}
+          helperText={
+            !rangeProblem ? (pages ? copy.rangeHintWithTotal(pages) : copy.rangeHint) : undefined
+          }
+          label={copy.pageRange}
+          onChangeText={(pageRange) => onChange({ pageRange })}
+          placeholder={copy.rangePlaceholder}
+          value={item.pageRange}
+        />
+        {item.copies > 1 ? (
+          <CheckboxRow
+            accessibilityLabel={copy.collate}
+            checked={item.collate}
+            label={copy.collateHint}
+            onToggle={() => onChange({ collate: !item.collate })}
+          />
+        ) : null}
+      </PrintOptionSection>
+
+      <PrintOptionSection
+        defaultOpen={false}
+        icon="bookmark"
+        summary={finishingSummary}
+        title={copy.sectionFinishing}
+      >
+        <PrintChoiceChips
+          label={copy.binding}
+          onChange={(binding) => onChange({ binding })}
+          options={choices(bindingValues, labels)}
+          value={item.binding}
+        />
+        {bindingType?.description ? (
+          <AppText color="muted" variant="caption">
+            {bindingType.description}
+          </AppText>
+        ) : null}
+        {bindingType?.price_mode === 'per_wire_kg' ? (
+          <AppText color="muted" variant="caption">
+            {copy.wirePriced}
+          </AppText>
+        ) : null}
+        {options && options.covers.length > 0 ? (
+          <Stack gap="sm">
+            <AppText variant="label">{copy.cover}</AppText>
+            <View style={styles.covers}>
+              {[{ code: '', name: copy.coverNone, color_hex: '' }, ...options.covers].map(
+                (cover) => {
+                  const selected = item.cover === cover.code;
+
+                  return (
+                    <Pressable
+                      accessibilityLabel={cover.name}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected }}
+                      key={cover.code || 'none'}
+                      onPress={() => onChange({ cover: cover.code })}
+                      style={[
+                        styles.cover,
+                        selected
+                          ? {
+                              borderColor: brand.primary,
+                              backgroundColor: brand.primarySoft,
+                              borderWidth: 2,
+                            }
+                          : null,
+                      ]}
+                    >
+                      {cover.color_hex ? (
+                        <View style={[styles.swatch, { backgroundColor: cover.color_hex }]} />
+                      ) : null}
+                      <AppText color={selected ? 'brand' : 'primary'} variant="label">
+                        {cover.name}
+                      </AppText>
+                    </Pressable>
+                  );
+                },
+              )}
+            </View>
+          </Stack>
+        ) : null}
+      </PrintOptionSection>
     </Stack>
   );
 }

@@ -50,9 +50,7 @@ function PrintItemCardComponent({
   const isStudent = useAuthStore((state) => state.user?.role?.toLowerCase() === 'student');
   const [pickerProblem, setPickerProblem] = useState<
     UploadProblem | 'error' | 'convert' | 'camera' | null
-  >(
-    null,
-  );
+  >(null);
   const [isPicking, setIsPicking] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
 
@@ -201,9 +199,12 @@ function PrintItemCardComponent({
           </Stack>
         ) : (
           <Stack gap="sm">
-            <Stack direction="horizontal" gap="sm" wrap>
+            <AppText variant="label">{t.printing.create.sourceTitle}</AppText>
+            <View style={styles.sources}>
               {isStudent ? (
                 <AppButton
+                  fullWidth
+                  style={styles.sourceButton}
                   leftIcon={<Icon color={brand.primary} name="folder" size={18} />}
                   onPress={() => setLibraryOpen(true)}
                   size="sm"
@@ -212,6 +213,8 @@ function PrintItemCardComponent({
                 />
               ) : null}
               <AppButton
+                fullWidth
+                style={styles.sourceButton}
                 leftIcon={<Icon color={brand.primary} name="image" size={18} />}
                 loading={isPicking}
                 onPress={() => void handlePickFromDevice()}
@@ -220,6 +223,8 @@ function PrintItemCardComponent({
                 variant="outline"
               />
               <AppButton
+                fullWidth
+                style={styles.sourceButton}
                 leftIcon={<Icon color={brand.primary} name="camera" size={18} />}
                 loading={isPicking}
                 onPress={() => void handlePickFromDevice(pickPrintPhoto)}
@@ -228,6 +233,8 @@ function PrintItemCardComponent({
                 variant="outline"
               />
               <AppButton
+                fullWidth
+                style={styles.sourceButton}
                 leftIcon={<Icon color={brand.primary} name="file" size={18} />}
                 loading={isPicking || isConverting}
                 onPress={() => void handlePickFromDevice(pickPrintDocument)}
@@ -235,7 +242,7 @@ function PrintItemCardComponent({
                 title={t.printing.create.pickPdf}
                 variant="outline"
               />
-            </Stack>
+            </View>
             {isConverting ? (
               <AppText color="secondary" variant="bodySmall">
                 {t.printing.create.converting}
@@ -334,6 +341,8 @@ function PrintItemCardComponent({
 export const PrintItemCard = memo(PrintItemCardComponent);
 
 const styles = StyleSheet.create({
+  sources: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  sourceButton: { flexGrow: 1, flexBasis: '46%' },
   thumb: { width: THUMB_SIZE, height: THUMB_SIZE, borderRadius: radius.md },
   thumbIcon: { alignItems: 'center', justifyContent: 'center' },
   sourceBody: { flex: 1, minWidth: 0, paddingHorizontal: spacing.xs },
