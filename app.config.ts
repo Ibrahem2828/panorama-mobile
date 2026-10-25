@@ -214,6 +214,22 @@ const withAppHardening: ConfigPlugin<{ production: boolean }> = (config, { produ
   ]);
 };
 
+// The notification chime is only referenced by name at runtime (channel sound "panorama.wav"), so resource shrinking would
+// delete it from release builds. This keep rule protects every raw resource.
+const withKeepRawResources: ConfigPlugin = (config) =>
+  withDangerousMod(config, [
+    'android',
+    async (mod) => {
+      const rawDir = path.join(mod.modRequest.platformProjectRoot, 'app/src/main/res/raw');
+      fs.mkdirSync(rawDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(rawDir, 'keep.xml'),
+        '<?xml version="1.0" encoding="utf-8"?>\n<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@raw/*" />\n',
+      );
+      return mod;
+    },
+  ]);
+
 function requiredReleaseValue(name: string, value: string | undefined, appEnv: string): string {
   const normalized = value?.trim();
   if (appEnv !== 'development' && !normalized) {
@@ -367,13 +383,15 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   };
 
   return withReleaseSigning(
-    withAppHardening(
-      withDefaultRtl(
-        withWhatsAppPackageVisibility(
-          withAndroidCleartextTraffic(expoConfig, { enabled: allowDevelopmentCleartext }),
+    withKeepRawResources(
+      withAppHardening(
+        withDefaultRtl(
+          withWhatsAppPackageVisibility(
+            withAndroidCleartextTraffic(expoConfig, { enabled: allowDevelopmentCleartext }),
+          ),
         ),
+        { production: appEnv === 'production' },
       ),
-      { production: appEnv === 'production' },
     ),
   );
 };
