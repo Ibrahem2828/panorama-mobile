@@ -193,11 +193,16 @@ export function PushNotificationsProvider() {
     const timer = setInterval(() => {
       tries += 1;
 
-      if (navigationRef.isReady()) {
+      const appMounted =
+        navigationRef.isReady() &&
+        (navigationRef.getRootState()?.routes ?? []).some((route) => route.name === RootRoutes.App);
+
+      if (appMounted) {
         clearInterval(timer);
         handledResponses.add(id);
-        openNotificationTarget(lastResponse.notification.request.content.data);
-      } else if (tries > 40) {
+        // Give the signed-in stack a moment to settle so its initial route cannot overwrite the jump.
+        setTimeout(() => openNotificationTarget(lastResponse.notification.request.content.data), 700);
+      } else if (tries > 80) {
         clearInterval(timer);
       }
     }, 250);
