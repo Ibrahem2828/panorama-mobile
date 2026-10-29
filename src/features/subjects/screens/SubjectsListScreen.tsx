@@ -17,6 +17,8 @@ import { SubjectsRoutes } from '../../../navigation/routes';
 import type { SubjectsStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { SubjectCard, SubjectLevelFilter, SubjectSearchBar } from '../components';
+import { CurrentTermCard } from '../../academic-term/components/CurrentTermCard';
+import { useTermStore } from '../../academic-term/termStore';
 import { useStudentProfileStore } from '../../student-profile';
 import { filterSubjectsBySearch } from '../services';
 import { useSubjectsStore } from '../store';
@@ -44,6 +46,7 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
   const semesterId = useSubjectsStore((state) => state.semesterId);
   const years = useStudentProfileStore((state) => state.academicYears);
   const semesters = useStudentProfileStore((state) => state.semesters);
+  const currentSemesterId = useTermStore((state) => state.currentTerm?.semester.id ?? null);
   const filteredSubjects = useMemo(
     () => filterSubjectsBySearch(subjects, search, t.subjects),
     [subjects, search, t.subjects],
@@ -75,8 +78,10 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
     return (
       <Stack gap="lg">
         <AppHeader subtitle={t.subjects.subtitle} title={t.subjects.title} />
+        <CurrentTermCard />
         <SubjectLevelFilter
           academicYearId={academicYearId}
+          currentSemesterId={currentSemesterId}
           onChange={setLevelFilter}
           semesterId={semesterId}
           semesters={semesters}

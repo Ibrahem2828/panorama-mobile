@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { AppText, Chip } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { spacing } from '../../../theme';
+import { orderSemesters, sameId as sameTermId } from '../../academic-term/termPresentation';
 import type { Id } from '../types';
 
 type Option = { id: Id; name: string };
@@ -12,6 +13,8 @@ type SubjectLevelFilterProps = {
   semesters: Option[];
   academicYearId: Id | null;
   semesterId: Id | null;
+  /** The semester the university is in now: listed first and marked. */
+  currentSemesterId?: Id | null;
   onChange: (filter: { academicYearId?: Id | null; semesterId?: Id | null }) => void;
 };
 
@@ -25,6 +28,7 @@ export function SubjectLevelFilter({
   semesters,
   academicYearId,
   semesterId,
+  currentSemesterId,
   onChange,
 }: SubjectLevelFilterProps) {
   const { t } = useTranslation();
@@ -69,10 +73,14 @@ export function SubjectLevelFilter({
             onPress={() => onChange({ semesterId: null })}
             selected={semesterId === null}
           />
-          {semesters.map((semester) => (
+          {orderSemesters(semesters, currentSemesterId).map((semester) => (
             <Chip
               key={String(semester.id)}
-              label={semester.name}
+              label={
+                sameTermId(semester.id, currentSemesterId)
+                  ? `${semester.name} · ${t.subjects.filters.currentTerm}`
+                  : semester.name
+              }
               onPress={() => onChange({ semesterId: semester.id })}
               selected={sameId(semesterId, semester.id)}
             />

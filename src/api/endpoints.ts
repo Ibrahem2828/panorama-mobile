@@ -26,11 +26,14 @@ export const endpoints = {
   students: {
     profile: `${API_PREFIX}/students/me/profile/`,
     parseStudentNumber: `${API_PREFIX}/students/student-number/parse/`,
+    termConfirmation: `${API_PREFIX}/students/me/term-confirmation/`,
   },
   academic: {
     universities: `${API_PREFIX}/universities/`,
     academicYears: `${API_PREFIX}/academic-years/`,
     semesters: `${API_PREFIX}/semesters/`,
+    /** The semester the university is in right now, plus the other one. Any signed-in user may read it. */
+    currentTerm: `${API_PREFIX}/academic/current-term/`,
     facultiesForUniversity: (universityId: EndpointId) =>
       `${API_PREFIX}/universities/${universityId}/faculties/`,
     majorsForFaculty: (facultyId: EndpointId) => `${API_PREFIX}/faculties/${facultyId}/majors/`,

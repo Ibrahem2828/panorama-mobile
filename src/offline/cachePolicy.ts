@@ -8,6 +8,8 @@ const ALLOW: readonly RegExp[] = [
   /^\/api\/v1\/auth\/me\/$/u,
   /^\/api\/v1\/students\/me\/profile\/$/u,
   /^\/api\/v1\/(?:universities|academic-years|semesters)\/$/u,
+  // The current semester is read-only reference data the home and subjects screens need offline too.
+  /^\/api\/v1\/academic\/current-term\/$/u,
   /^\/api\/v1\/universities\/\d+\/faculties\/$/u,
   /^\/api\/v1\/(?:faculties|majors)\/\d+\/(?:majors|subjects)\/$/u,
   /^\/api\/v1\/verification\/me\/$/u,
