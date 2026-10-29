@@ -9,6 +9,7 @@ import { navigationRef } from '../../../navigation/navigationRef';
 import { ProfileRoutes, RootRoutes, TabRoutes } from '../../../navigation/routes';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { groupsService } from '../../../api';
+import { env } from '../../../config/env';
 import { logger } from '../../../utils/logger';
 import { useAuthStore } from '../../auth/store';
 import { useChatStore } from '../../chat/store';
@@ -72,7 +73,8 @@ async function registerCurrentDevice(
   authToken: string,
   catalog: TranslationCatalog['notifications'],
 ): Promise<void> {
-  if (!Device.isDevice) return;
+  // Emulators cannot receive production pushes, but non-production builds register them so the push chain can be tested.
+  if (!Device.isDevice && env.appEnv === 'production') return;
 
   const currentPermissions = await Notifications.getPermissionsAsync();
   const permissions = currentPermissions.granted
