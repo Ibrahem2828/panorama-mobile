@@ -8,6 +8,7 @@ export type AuthUser = {
   phone_number?: string;
   full_name?: string;
   username?: string | null;
+  job_title?: string;
   role?: UserRole;
   is_phone_verified?: boolean;
   is_email_verified?: boolean;

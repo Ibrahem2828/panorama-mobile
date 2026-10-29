@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 import { useLocaleStore } from '../../../i18n';
 
+import { useTermStore } from '../../academic-term/termStore';
 import { useAuthStore } from '../../auth/store';
 import { getStudentProfileAcademicYear, useStudentProfileStore } from '../../student-profile';
 import { loadSubjectsForFaculty, toSafeSubjectsErrorMessage } from '../services';
@@ -128,11 +129,18 @@ export const useSubjectsStore = create<SubjectsState>((set, get) => {
     const identity = getAcademicIdentity();
     const { facultyId, majorId, source } = identity;
 
-    // First load starts at the student's own year/semester; the student can widen it to every level.
+    // First load shows the semester the university is in now, for every year: students may take subjects of any
+    // year or semester, so their own level never narrows the list. Without a known term nothing is narrowed.
     if (!get().filtersReady) {
+      const term = await useTermStore.getState().loadCurrentTerm();
+
+      if (requestId !== latestRequest) {
+        return;
+      }
+
       set({
-        academicYearId: identity.academicYearId,
-        semesterId: identity.semesterId,
+        academicYearId: null,
+        semesterId: term ? term.semester.id : null,
         filtersReady: true,
       });
     }

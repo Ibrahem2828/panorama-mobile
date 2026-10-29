@@ -22,6 +22,8 @@ export type CurrentUser = ApiEntity & {
   phone?: string;
   phone_number?: string;
   username?: string | null;
+  /** المسمى الوظيفي: returned for every account, edited only by staff in the app. */
+  job_title?: string;
   role?: string;
   is_phone_verified?: boolean;
   is_email_verified?: boolean;
@@ -71,6 +73,7 @@ export type RefreshTokenRequest = {
 export type UpdateCurrentUserRequest = {
   full_name?: string;
   username?: string;
+  job_title?: string;
 };
 
 export type ChangePasswordRequest = {
@@ -443,9 +446,7 @@ export type NotificationPreferences = {
   push_enabled: boolean;
   disabled_types: string[];
   /** Per-category switches; absent on a backend that predates them. */
-  channels?: Partial<
-    Record<'chat' | 'groups' | 'printing' | 'verification' | 'support', boolean>
-  >;
+  channels?: Partial<Record<'chat' | 'groups' | 'printing' | 'verification' | 'support', boolean>>;
   /** Do-not-disturb window; absent on a backend that predates it. */
   quiet_hours?: { enabled: boolean; start: string; end: string; timezone?: string };
 };

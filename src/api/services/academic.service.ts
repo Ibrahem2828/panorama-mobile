@@ -88,3 +88,33 @@ export function listSubjectsForMajor(
     },
   );
 }
+
+export type TermSemester = { id: number; name: string; order: number };
+
+export type CurrentTermResponse = {
+  semester: TermSemester;
+  other_semester: TermSemester | null;
+  term_started_at: string | null;
+  term_label: string;
+};
+
+export type TermConfirmationRequest = {
+  promoted: boolean;
+  academic_year: EntityId | null;
+  semester: EntityId | null;
+};
+
+export function getCurrentTerm(authToken?: string | null) {
+  return apiClient.get<CurrentTermResponse>(endpoints.academic.currentTerm, { authToken });
+}
+
+/** The student answers "did you move to the next year?". Never cached and never queued: it needs the server. */
+export function submitTermConfirmation(input: TermConfirmationRequest, authToken?: string | null) {
+  return apiClient.post<unknown, TermConfirmationRequest>(
+    endpoints.students.termConfirmation,
+    input,
+    {
+      authToken,
+    },
+  );
+}

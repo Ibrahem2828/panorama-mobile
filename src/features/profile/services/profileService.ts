@@ -40,6 +40,7 @@ function normalizeProfileUser(user: CurrentUser): ProfileUser {
     id: user.id,
     full_name: toText(user.full_name ?? user.name),
     username: toNullableText(user.username),
+    job_title: toText(user.job_title),
     email: toText(user.email),
     phone_number: toText(user.phone_number ?? user.phone),
     role: toText(user.role),
@@ -53,6 +54,7 @@ export function toAuthUser(user: ProfileUser): AuthUser {
     id: user.id,
     full_name: user.full_name,
     username: user.username,
+    job_title: user.job_title,
     email: user.email,
     phone_number: user.phone_number,
     role: user.role,
@@ -216,6 +218,10 @@ export async function updateCurrentProfile(
 
   if (typeof input.username === 'string') {
     payload.username = input.username;
+  }
+
+  if (typeof input.job_title === 'string') {
+    payload.job_title = input.job_title;
   }
 
   return normalizeProfileUser(await authService.updateCurrentUser(payload, authToken));

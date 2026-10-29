@@ -8,6 +8,7 @@ import {
   getProfileContactLabel,
   getProfileDisplayName,
   getProfileRoleLabel,
+  isStaffRole,
 } from '../services';
 import type { ProfileUser } from '../types';
 
@@ -34,7 +35,9 @@ export function ProfileSummaryCard({ user, facultyName }: ProfileSummaryCardProp
               {getProfileContactLabel(user, t.profile)}
             </AppText>
             <AppText color="muted" variant="caption">
-              {getProfileRoleLabel(user?.role, t.profile)}
+              {isStaffRole(user?.role) && user?.job_title
+                ? user.job_title
+                : getProfileRoleLabel(user?.role, t.profile)}
             </AppText>
           </View>
         </View>

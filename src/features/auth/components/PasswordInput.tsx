@@ -8,6 +8,7 @@ import { colors } from '../../../theme';
 type PasswordInputProps = {
   value: string;
   onChangeText: (value: string) => void;
+  onBlur?: () => void;
   error?: string;
   disabled?: boolean;
   label?: string;
@@ -20,6 +21,7 @@ type PasswordInputProps = {
 export function PasswordInput({
   value,
   onChangeText,
+  onBlur,
   error,
   disabled = false,
   label,
@@ -39,6 +41,7 @@ export function PasswordInput({
       error={error}
       helperText={helperText}
       label={label ?? t.auth.fields.password}
+      onBlur={onBlur}
       onChangeText={onChangeText}
       placeholder={placeholder ?? t.auth.fields.passwordPlaceholder}
       rightIcon={

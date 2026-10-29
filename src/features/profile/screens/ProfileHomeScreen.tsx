@@ -148,6 +148,12 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
             icon="user"
             title={t.profile.accountSection.editProfile}
           />
+          <ProfileActionItem
+            onPress={() => navigation.navigate(ProfileRoutes.ChangePassword)}
+            subtitle={t.profile.accountSection.changePasswordSubtitle}
+            icon="lock"
+            title={t.profile.accountSection.changePassword}
+          />
           {isStudent ? (
             <ProfileActionItem
               badge={cardVerificationSummary.label}

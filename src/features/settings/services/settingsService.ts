@@ -20,6 +20,10 @@ export function validateChangePasswordInput(
     validation.new_password = t.changePassword.newRequired;
   } else if (input.new_password.length < 8) {
     validation.new_password = t.changePassword.tooShort;
+  } else if (/^\d+$/u.test(input.new_password)) {
+    validation.new_password = t.changePassword.numericOnly;
+  } else if (input.new_password === input.old_password) {
+    validation.new_password = t.changePassword.sameAsCurrent;
   }
 
   if (!input.new_password_confirm.trim()) {
@@ -29,6 +33,10 @@ export function validateChangePasswordInput(
   }
 
   return validation;
+}
+
+export function isPasswordDraftDirty(input: ChangePasswordInput): boolean {
+  return Boolean(input.old_password || input.new_password || input.new_password_confirm);
 }
 
 export function hasChangePasswordValidationErrors(validation: ChangePasswordValidation): boolean {

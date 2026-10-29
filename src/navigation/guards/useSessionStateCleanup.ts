@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 
+import { useTermStore } from '../../features/academic-term/termStore';
 import { useAnnouncementsStore } from '../../features/announcements/store';
 import { useAuthStore } from '../../features/auth/store';
 import { useChatStore } from '../../features/chat/store';
@@ -22,6 +23,7 @@ import { useVerificationStore } from '../../features/verification';
 
 export function useSessionStateCleanup() {
   const status = useAuthStore((state) => state.status);
+  const resetTerm = useTermStore((state) => state.reset);
   const resetAnnouncements = useAnnouncementsStore((state) => state.reset);
   const resetChat = useChatStore((state) => state.reset);
   const resetFiles = useFilesStore((state) => state.reset);
@@ -44,6 +46,7 @@ export function useSessionStateCleanup() {
       return;
     }
 
+    resetTerm();
     resetAnnouncements();
     resetChat();
     resetFiles();
@@ -61,6 +64,7 @@ export function useSessionStateCleanup() {
     resetSupport();
     resetVerification();
   }, [
+    resetTerm,
     resetAnnouncements,
     resetChat,
     resetFiles,

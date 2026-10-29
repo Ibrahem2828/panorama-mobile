@@ -12,6 +12,7 @@ import { useLocaleStore } from '../i18n';
 import { useBrandStore } from '../theme';
 import { useSecureScreen } from '../hooks/useSecureScreen';
 import { OverlayHost } from '../components/overlay';
+import { ToastHost } from '../components/feedback/ToastHost';
 
 type AppProvidersProps = { children: ReactNode };
 
@@ -48,6 +49,7 @@ export function AppProviders({ children }: AppProvidersProps) {
         <LifecycleGate />
         <PushNotificationsProvider />
         <OverlayHost />
+        <ToastHost />
       </FeedbackProvider>
     </SafeAreaProvider>
   );

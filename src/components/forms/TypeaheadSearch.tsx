@@ -22,6 +22,8 @@ type TypeaheadSearchProps<T> = {
   /** Rows that must not be offered again (already chosen). */
   excludeKeys?: ReadonlySet<string>;
   disabled?: boolean;
+  /** Optional group title: a heading is drawn whenever it changes from one visible row to the next. */
+  sectionOf?: (item: T) => string;
 };
 
 /**
@@ -38,6 +40,7 @@ export function TypeaheadSearch<T>({
   accessibilityLabel,
   excludeKeys,
   disabled = false,
+  sectionOf,
 }: TypeaheadSearchProps<T>) {
   const { t } = useTranslation();
   const brand = useBrand();
@@ -138,19 +141,32 @@ export function TypeaheadSearch<T>({
         </AppText>
       ) : null}
 
-      {visible.map((item) => (
-        <Pressable
-          accessibilityRole="button"
-          key={keyExtractor(item)}
-          onPress={() => {
-            onSelect(item);
-            setText('');
-          }}
-          style={({ pressed }) => [styles.row, pressed ? styles.pressed : null]}
-        >
-          {renderItem(item)}
-        </Pressable>
-      ))}
+      {visible.map((item, index) => {
+        const section = sectionOf?.(item);
+        const showSection =
+          section !== undefined &&
+          (index === 0 || section !== sectionOf?.(visible[index - 1] as T));
+
+        return (
+          <View key={keyExtractor(item)} style={styles.container}>
+            {showSection ? (
+              <AppText accessibilityRole="header" color="muted" variant="caption" weight="700">
+                {section}
+              </AppText>
+            ) : null}
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                onSelect(item);
+                setText('');
+              }}
+              style={({ pressed }) => [styles.row, pressed ? styles.pressed : null]}
+            >
+              {renderItem(item)}
+            </Pressable>
+          </View>
+        );
+      })}
     </View>
   );
 }

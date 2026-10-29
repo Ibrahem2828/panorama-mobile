@@ -21,6 +21,7 @@ import { IMAGE_ONLY_POLICY, pickFromSource } from '../../attachments';
 import { useTranslation } from '../../../i18n';
 import type { GroupsStackParamList } from '../../../navigation/types';
 import { colors, radius, spacing, useBrand } from '../../../theme';
+import { sortSubjectsCurrentTermFirst } from '../../academic-term/termPresentation';
 import { useAuthStore } from '../../auth/store';
 
 type Props = NativeStackScreenProps<GroupsStackParamList, 'Enrollment'>;
@@ -151,7 +152,10 @@ export function EnrollmentScreen({ navigation }: Props) {
   const search = useCallback(
     async (query: string) => {
       if (!accessToken) return [];
-      return enrollmentService.searchEnrollmentSubjects(query, accessToken);
+      // Never narrowed to the student's own year or semester; the current semester's subjects come first.
+      return sortSubjectsCurrentTermFirst(
+        await enrollmentService.searchEnrollmentSubjects(query, accessToken),
+      );
     },
     [accessToken],
   );
@@ -299,6 +303,11 @@ export function EnrollmentScreen({ navigation }: Props) {
                 </View>
               )}
               search={search}
+              sectionOf={(item) =>
+                item.in_current_term === true
+                  ? copy.step2.currentTermSection
+                  : copy.step2.otherTermSection
+              }
             />
             <AppText color="muted" variant="caption">
               {copy.step2.count(subjects.length)}

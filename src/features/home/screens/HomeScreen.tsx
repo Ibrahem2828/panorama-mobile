@@ -33,6 +33,7 @@ import {
 import type { AppTabsParamList, HomeStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { createEntranceAnim } from '../../../utils/motion';
+import { CurrentTermCard } from '../../academic-term/components/CurrentTermCard';
 import { useAuthStore } from '../../auth/store';
 import { isStudentProfileComplete, useStudentProfileStore } from '../../student-profile';
 import { getVerificationStatus, useVerificationStore } from '../../verification';
@@ -184,8 +185,8 @@ export function HomeScreen() {
 
   const facultyName = profile?.faculty?.name ?? null;
   const yearName = profile?.academic_year?.name ?? profile?.academicYear?.name ?? null;
-  const semesterName = profile?.semester?.name ?? null;
-  const levelLabel = [yearName, semesterName].filter(Boolean).join(' - ') || null;
+  // The semester comes from the current-term card: it is the university's, not the student's own.
+  const levelLabel = yearName;
 
   const hero = (
     <HomeHero
@@ -251,6 +252,8 @@ export function HomeScreen() {
             verificationStatus={verificationStatus}
           />
         ) : null}
+
+        {isStudent ? <CurrentTermCard /> : null}
 
         <Animated.View
           style={{

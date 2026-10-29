@@ -24,6 +24,7 @@ describe('isCacheablePath', () => {
     '/api/v1/my-notes/',
     '/api/v1/support/tickets/my/',
     '/api/v1/support/tickets/9/',
+    '/api/v1/academic/current-term/',
   ])('keeps %s', (path) => {
     expect(isCacheablePath(path)).toBe(true);
   });
@@ -43,6 +44,8 @@ describe('isCacheablePath', () => {
     '/api/v1/auth/token/refresh/',
     '/api/v1/notifications/device-tokens/',
     '/api/v1/account/deletion/status/',
+    '/api/v1/students/me/term-confirmation/',
+    '/api/v1/dashboard/academic/current-term/',
     '/api/v1/protected-files/abc/',
     '/api/v1/unknown/thing/',
   ])('never keeps %s', (path) => {

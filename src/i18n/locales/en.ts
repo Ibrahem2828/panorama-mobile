@@ -32,6 +32,12 @@ export const en: TranslationCatalog = {
     searchNoResultsMessage: 'Try different words, or adjust the filters.',
     searchClear: 'Clear search',
     errorTitle: 'Something went wrong',
+    unsavedChanges: {
+      title: 'Unsaved changes',
+      message: 'You have changes that are not saved. Leave and discard them?',
+      stay: 'Keep editing',
+      discard: 'Discard changes',
+    },
   },
 
   apiErrors: {
@@ -441,6 +447,7 @@ export const en: TranslationCatalog = {
       year: 'Year',
       semester: 'Semester',
       all: 'All',
+      currentTerm: 'Current',
     },
     locked: {
       title: 'Lectures and files are for subject group members',
@@ -461,7 +468,7 @@ export const en: TranslationCatalog = {
     general: 'General subject',
     resultsCount: (count: number) => `${count} subjects`,
     levelHint:
-      'Subjects are shown for your year and semester by default. Choose “All” to browse any year or semester, for example retakes.',
+      'Subjects of the current semester are shown for every year. You can register subjects from any year or semester; choose “All” or a specific year to browse others.',
     codeBadge: (code: string) => `Code ${code}`,
     filesCount: (count: number) => `${count} files`,
     groupsCount: (count: number) => `${count} groups`,
@@ -725,7 +732,9 @@ export const en: TranslationCatalog = {
     },
     step2: {
       title: 'Your subjects',
-      body: 'Type a subject name or code and suggestions appear as you type.',
+      body: 'Type a subject name or code and suggestions appear as you type. You can pick subjects from any year or semester; current-semester subjects come first.',
+      currentTermSection: 'Current semester',
+      otherTermSection: 'Other semester',
       searchLabel: 'Search for a subject',
       placeholder: 'Type the subject name...',
       count: (count: number) =>
@@ -760,6 +769,39 @@ export const en: TranslationCatalog = {
       partially_approved: 'See the reason for the subjects that were not approved below.',
       rejected: 'See the reason below, then send a new request.',
       cancelled: 'You can send a new request at any time.',
+    },
+  },
+
+  academicTerm: {
+    card: {
+      title: 'Semester',
+      current: 'Current semester',
+      other: 'Other semester',
+      anyLevel: 'You can register subjects from any year or semester.',
+    },
+    sheet: {
+      title: 'Did you move up to the next year?',
+      body: (label: string) =>
+        label
+          ? `${label} has started. Tell us so we can update your level in Panorama.`
+          : 'A new semester has started. Tell us so we can update your level in Panorama.',
+      yes: 'Yes, I moved up',
+      no: 'No, I am still in the same year',
+      pickTitle: 'Choose your new level',
+      pickBody: 'We picked the next year for you. Adjust it if needed, then confirm.',
+      year: 'Academic year',
+      yearPlaceholder: 'Choose the year',
+      semester: 'Semester',
+      semesterPlaceholder: 'Choose the semester',
+      confirm: 'Confirm',
+      back: 'Back',
+      saving: 'Saving...',
+      retry: 'Try again',
+      later: 'Not now',
+      networkError:
+        'Could not reach the server, so your answer was not saved. Check your internet and try again.',
+      genericError: 'Could not save your answer. Please try again.',
+      saved: 'Your answer was saved. Thank you.',
     },
   },
 
@@ -1332,7 +1374,9 @@ export const en: TranslationCatalog = {
       title: 'Account',
       subtitle: 'Your details and account services',
       editProfile: 'Edit profile',
-      editProfileSubtitle: 'Name and username',
+      editProfileSubtitle: 'Name, username and job title',
+      changePassword: 'Change password',
+      changePasswordSubtitle: 'Choose a new password for your account',
       academicInfo: 'Academic information',
       academicInfoSubtitle: 'Your university and verification details',
       settings: 'Settings',
@@ -1380,6 +1424,22 @@ export const en: TranslationCatalog = {
       fullNamePlaceholder: 'Enter your full name',
       username: 'Username',
       usernamePlaceholder: 'Enter your username',
+      usernameHelper:
+        'English letters, digits and _ . - only, no spaces. Leave empty if you do not need one.',
+      jobTitle: 'Job title',
+      jobTitlePlaceholder: 'For example: Print shop supervisor',
+      jobTitleHelper: 'Shown to colleagues next to your name in chats.',
+      noticeStaff:
+        'You can edit your full name, username and job title. Email, phone and account type are display only.',
+      fullNameTooShort: 'The name is too short. Enter your full name.',
+      fullNameTooLong: 'The name is too long (150 characters at most).',
+      usernameInvalid:
+        'The username accepts English letters, digits and _ . - only, with no spaces.',
+      usernameTooShort: 'The username must be at least 3 characters.',
+      usernameTooLong: 'The username is too long (30 characters at most).',
+      jobTitleTooLong: 'The job title is too long (120 characters at most).',
+      saving: 'Saving...',
+      nothingToSave: 'There is nothing to save.',
       readOnlyTitle: 'Display-only details',
       email: (value: string) => `Email: ${value}`,
       phone: (value: string) => `Phone: ${value}`,
@@ -2316,7 +2376,8 @@ export const en: TranslationCatalog = {
       sectionPaper: 'Paper and printing',
       sectionLayout: 'Page layout and copies',
       sectionFinishing: 'Binding and cover',
-      sheetPages: (count: number) => (count === 1 ? '1 page per sheet' : `${count} pages per sheet`),
+      sheetPages: (count: number) =>
+        count === 1 ? '1 page per sheet' : `${count} pages per sheet`,
       allPages: 'All pages',
       collated: 'Collated',
       notCollated: 'Not collated',
@@ -2561,6 +2622,19 @@ export const en: TranslationCatalog = {
       confirmRequired: 'Confirm your new password.',
       tooShort: 'The new password must be at least 8 characters.',
       mismatch: 'The two passwords do not match.',
+      rulesTitle: 'New password rules',
+      rules: [
+        'At least 8 characters',
+        'Not digits only',
+        'Different from the current password',
+        'Not used for any other service',
+      ],
+      numericOnly: 'The password cannot be digits only.',
+      sameAsCurrent: 'The new password must differ from the current one.',
+      signOutNote:
+        'After the change your sessions on every device end, and you return to the sign-in screen to sign in with the new password.',
+      successSignedOut: 'Your password has been changed. Sign in again with the new password.',
+      saving: 'Saving...',
     },
 
     errors: {

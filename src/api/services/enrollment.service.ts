@@ -8,6 +8,8 @@ export type EnrollmentSubject = {
   code: string;
   academic_year_name: string;
   semester_name: string;
+  /** True when the subject belongs to the semester the university is in now (it is listed first). */
+  in_current_term?: boolean;
 };
 
 export type EnrollmentItemRecord = {

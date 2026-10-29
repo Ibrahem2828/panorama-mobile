@@ -29,6 +29,8 @@ export type StudentProfile = {
   verification_status?: StudentProfileVerificationStatus | null;
   is_academic_profile_complete?: boolean;
   isAcademicProfileComplete?: boolean;
+  /** True after a semester rollover until the student answers "did you move to the next year?". */
+  needs_term_confirmation?: boolean;
 };
 
 export type StudentProfileUpdateInput = {
