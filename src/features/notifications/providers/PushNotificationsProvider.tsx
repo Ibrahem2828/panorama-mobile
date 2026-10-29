@@ -24,6 +24,9 @@ import {
 } from '../services';
 import { useNotificationPrefsStore } from '../store/notificationPrefsStore';
 
+/** Pushes whose tap was already routed (the cold-start path and the listener must not both open the screen). */
+const handledResponses = new Set<string>();
+
 function chatPushOf(data: Record<string, unknown> | null | undefined) {
   const groupId = Number(data?.group_id);
   const messageId = Number(data?.message_id);
@@ -169,10 +172,38 @@ export function PushNotificationsProvider() {
 
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      handledResponses.add(response.notification.request.identifier);
       openNotificationTarget(response.notification.request.content.data);
     });
     return () => subscription.remove();
   }, []);
+
+  // A tap that launched the app from a closed state is delivered before any listener exists: read it once the session and
+  // the navigator are ready, so the push lands on its screen instead of the home screen.
+  const lastResponse = Notifications.useLastNotificationResponse();
+
+  useEffect(() => {
+    if (status !== 'authenticated' || !lastResponse) return undefined;
+
+    const id = lastResponse.notification.request.identifier;
+
+    if (handledResponses.has(id)) return undefined;
+
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries += 1;
+
+      if (navigationRef.isReady()) {
+        clearInterval(timer);
+        handledResponses.add(id);
+        openNotificationTarget(lastResponse.notification.request.content.data);
+      } else if (tries > 40) {
+        clearInterval(timer);
+      }
+    }, 250);
+
+    return () => clearInterval(timer);
+  }, [lastResponse, status]);
 
   return null;
 }
