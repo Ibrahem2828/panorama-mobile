@@ -201,7 +201,10 @@ export function PushNotificationsProvider() {
         clearInterval(timer);
         handledResponses.add(id);
         // Give the signed-in stack a moment to settle so its initial route cannot overwrite the jump.
-        setTimeout(() => openNotificationTarget(lastResponse.notification.request.content.data), 700);
+        setTimeout(
+          () => openNotificationTarget(lastResponse.notification.request.content.data),
+          700,
+        );
       } else if (tries > 80) {
         clearInterval(timer);
       }
