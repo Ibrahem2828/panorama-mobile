@@ -9,6 +9,7 @@ import { navigationRef } from '../../../navigation/navigationRef';
 import { ProfileRoutes, RootRoutes, TabRoutes } from '../../../navigation/routes';
 import { useTranslation, type TranslationCatalog } from '../../../i18n';
 import { groupsService } from '../../../api';
+import { env } from '../../../config/env';
 import { logger } from '../../../utils/logger';
 import { useAuthStore } from '../../auth/store';
 import { useChatStore } from '../../chat/store';
@@ -22,6 +23,9 @@ import {
   resolveNotificationIntent,
 } from '../services';
 import { useNotificationPrefsStore } from '../store/notificationPrefsStore';
+
+/** Pushes whose tap was already routed (the cold-start path and the listener must not both open the screen). */
+const handledResponses = new Set<string>();
 
 function chatPushOf(data: Record<string, unknown> | null | undefined) {
   const groupId = Number(data?.group_id);
@@ -72,7 +76,8 @@ async function registerCurrentDevice(
   authToken: string,
   catalog: TranslationCatalog['notifications'],
 ): Promise<void> {
-  if (!Device.isDevice) return;
+  // Emulators cannot receive production pushes, but non-production builds register them so the push chain can be tested.
+  if (!Device.isDevice && env.appEnv === 'production') return;
 
   const currentPermissions = await Notifications.getPermissionsAsync();
   const permissions = currentPermissions.granted
@@ -167,10 +172,43 @@ export function PushNotificationsProvider() {
 
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      handledResponses.add(response.notification.request.identifier);
       openNotificationTarget(response.notification.request.content.data);
     });
     return () => subscription.remove();
   }, []);
+
+  // A tap that launched the app from a closed state is delivered before any listener exists: read it once the session and
+  // the navigator are ready, so the push lands on its screen instead of the home screen.
+  const lastResponse = Notifications.useLastNotificationResponse();
+
+  useEffect(() => {
+    if (status !== 'authenticated' || !lastResponse) return undefined;
+
+    const id = lastResponse.notification.request.identifier;
+
+    if (handledResponses.has(id)) return undefined;
+
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries += 1;
+
+      const appMounted =
+        navigationRef.isReady() &&
+        (navigationRef.getRootState()?.routes ?? []).some((route) => route.name === RootRoutes.App);
+
+      if (appMounted) {
+        clearInterval(timer);
+        handledResponses.add(id);
+        // Give the signed-in stack a moment to settle so its initial route cannot overwrite the jump.
+        setTimeout(() => openNotificationTarget(lastResponse.notification.request.content.data), 700);
+      } else if (tries > 80) {
+        clearInterval(timer);
+      }
+    }, 250);
+
+    return () => clearInterval(timer);
+  }, [lastResponse, status]);
 
   return null;
 }
