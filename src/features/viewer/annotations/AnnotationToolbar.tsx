@@ -1,5 +1,5 @@
 import { memo, useCallback } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppButton, AppIconButton, AppText, Icon } from '../../../components';
 import type { IconName } from '../../../components/icons/Icon';
@@ -86,11 +86,7 @@ export const AnnotationToolbar = memo(function AnnotationToolbar({
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.row}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-      >
+      <View style={styles.row}>
         {TOOLS.map((entry) => (
           <AppIconButton
             accessibilityLabel={t.docViewer.tools[entry.tool]}
@@ -107,6 +103,16 @@ export const AnnotationToolbar = memo(function AnnotationToolbar({
           />
         ))}
         <View style={styles.divider} />
+        <AppIconButton
+          accessibilityLabel={t.docViewer.menuTitle}
+          disabled={total === 0}
+          icon={<Icon color={colors.text.secondary} name="more" size={20} />}
+          onPress={openMenu}
+          variant="ghost"
+        />
+      </View>
+
+      <View style={styles.row}>
         <AppButton
           accessibilityLabel={t.docViewer.undo}
           disabled={!canUndo}
@@ -129,15 +135,7 @@ export const AnnotationToolbar = memo(function AnnotationToolbar({
           title={t.docViewer.redo}
           variant="ghost"
         />
-        <View style={styles.divider} />
-        <AppIconButton
-          accessibilityLabel={t.docViewer.menuTitle}
-          disabled={total === 0}
-          icon={<Icon color={colors.text.secondary} name="more" size={20} />}
-          onPress={openMenu}
-          variant="ghost"
-        />
-      </ScrollView>
+      </View>
 
       {palette.length > 0 || tool === 'pen' ? (
         <View style={styles.row}>
