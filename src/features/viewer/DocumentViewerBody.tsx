@@ -22,6 +22,7 @@ import { useLectureNotes } from '../lectures/hooks/useLectureNotes';
 import { useViewerPages } from '../lectures/hooks/useViewerPages';
 import { applyPageNav, clampPage, stepZoom, ZOOM_FIT } from '../lectures/logic';
 import { bookmarkForPage } from '../lectures/notesLogic';
+import { showToast } from '../../components/feedback/toastStore';
 import { AnnotationLayer, type Tool } from './annotations/AnnotationLayer';
 import { AnnotationToolbar, defaultColorFor } from './annotations/AnnotationToolbar';
 import { NoteEditorModal } from './annotations/NoteEditorModal';
@@ -113,6 +114,14 @@ export function DocumentViewerBody({ doc, title, pageCount, initialPage, onBack 
     },
     [annotations],
   );
+
+  const resetFile = useCallback(() => {
+    void annotations.reset().then((result) => {
+      showToast(result === 'synced' ? t.docViewer.resetDone : t.docViewer.resetQueued, {
+        tone: result === 'synced' ? 'success' : 'info',
+      });
+    });
+  }, [annotations, t]);
 
   const saveNote = useCallback(
     (text: string) => {
@@ -257,10 +266,12 @@ export function DocumentViewerBody({ doc, title, pageCount, initialPage, onBack 
           color={color}
           onColor={setColor}
           onRedo={annotations.redo}
+          onReset={resetFile}
           onTool={pickTool}
           onUndo={annotations.undo}
           onWidth={setWidth}
           tool={tool}
+          total={annotations.total}
           width={width}
         />
       ) : null}
