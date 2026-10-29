@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { showToast } from '../../../components/feedback/toastStore';
 import { useLocaleStore } from '../../../i18n';
 
 import { useAuthStore } from '../../auth/store';
@@ -108,13 +109,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
     try {
       await changeCurrentPassword(passwordDraft, accessToken);
-      set({
-        passwordDraft: EMPTY_PASSWORD_DRAFT,
-        passwordValidation: {},
-        isChangingPassword: false,
-        successMessage: settingsCatalog().changePassword.success,
-      });
-      return true;
     } catch (error) {
       set({
         isChangingPassword: false,
@@ -122,6 +116,24 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       });
       return false;
     }
+
+    // The server ends every session of this account after a password change, so the tokens held here are dead.
+    // Say so, then sign out cleanly instead of leaving the user on a screen whose requests would all fail.
+    set({
+      passwordDraft: { ...EMPTY_PASSWORD_DRAFT },
+      passwordValidation: {},
+      isChangingPassword: false,
+      successMessage: null,
+    });
+    showToast(settingsCatalog().changePassword.successSignedOut, { durationMs: 7000 });
+
+    try {
+      await useAuthStore.getState().logout();
+    } catch {
+      // logout always clears the local session in its own `finally`; nothing more to do.
+    }
+
+    return true;
   },
 
   resetPasswordDraft() {

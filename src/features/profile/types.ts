@@ -5,12 +5,14 @@ export type Id = string | number;
 export type EditableProfileFields = {
   full_name?: string;
   username?: string;
+  job_title?: string;
 };
 
 export type ProfileUser = {
   id: Id;
   full_name?: string;
   username?: string | null;
+  job_title?: string;
   email?: string;
   phone_number?: string;
   role?: string;
@@ -28,4 +30,5 @@ export type ProfileStatusSummary = {
 export type ProfileEditDraft = {
   full_name: string;
   username: string;
+  job_title: string;
 };

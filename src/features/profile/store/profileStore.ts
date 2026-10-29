@@ -1,12 +1,16 @@
 import { create } from 'zustand';
 
+import { showToast } from '../../../components/feedback/toastStore';
 import { useLocaleStore } from '../../../i18n';
 import { useAuthStore } from '../../auth/store';
 import {
+  hasProfileDraftErrors,
+  isStaffRole,
   loadCurrentProfile,
   toAuthUser,
   toSafeProfileErrorMessage,
   updateCurrentProfile,
+  validateProfileDraft,
 } from '../services';
 import type { ProfileEditDraft, ProfileUser } from '../types';
 
@@ -23,6 +27,7 @@ type ProfileState = {
   updateProfile: () => Promise<ProfileUser | null>;
   setFullName: (value: string) => void;
   setUsername: (value: string) => void;
+  setJobTitle: (value: string) => void;
   syncDraftFromUser: () => void;
   resetDraft: () => void;
   clearError: () => void;
@@ -33,6 +38,7 @@ type ProfileState = {
 const EMPTY_DRAFT: ProfileEditDraft = {
   full_name: '',
   username: '',
+  job_title: '',
 };
 
 function getInitialProfileState() {
@@ -60,6 +66,7 @@ function buildDraft(user: ProfileUser | null): ProfileEditDraft {
   return {
     full_name: user?.full_name ?? '',
     username: user?.username ?? '',
+    job_title: user?.job_title ?? '',
   };
 }
 
@@ -119,8 +126,11 @@ export const useProfileStore = create<ProfileState>((set, get) => {
 
       const draft = get().editDraft;
 
-      if (!draft.full_name.trim()) {
-        set({ errorMessage: profileCatalog().edit.fullNameRequired });
+      const isStaff = isStaffRole(get().user?.role ?? useAuthStore.getState().user?.role);
+      const errors = validateProfileDraft(draft, { isStaff }, profileCatalog().edit);
+
+      if (hasProfileDraftErrors(errors)) {
+        set({ errorMessage: Object.values(errors).find(Boolean) ?? null });
         return null;
       }
 
@@ -137,6 +147,8 @@ export const useProfileStore = create<ProfileState>((set, get) => {
           {
             full_name: draft.full_name.trim(),
             username: draft.username.trim(),
+            // Only staff have a job title; for everyone else the field is neither shown nor sent.
+            ...(isStaff ? { job_title: draft.job_title.trim() } : {}),
           },
           accessToken,
         );
@@ -147,10 +159,11 @@ export const useProfileStore = create<ProfileState>((set, get) => {
           user,
           editDraft: buildDraft(user),
           isSubmitting: false,
-          successMessage: profileCatalog().edit.updateSuccess,
+          successMessage: null,
           lastLoadedAt: new Date().toISOString(),
         });
 
+        showToast(profileCatalog().edit.updateSuccess);
         return user;
       } catch (error) {
         set({
@@ -171,6 +184,13 @@ export const useProfileStore = create<ProfileState>((set, get) => {
     setUsername(value) {
       set((state) => ({
         editDraft: { ...state.editDraft, username: value },
+        errorMessage: null,
+      }));
+    },
+
+    setJobTitle(value) {
+      set((state) => ({
+        editDraft: { ...state.editDraft, job_title: value },
         errorMessage: null,
       }));
     },

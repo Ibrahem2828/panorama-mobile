@@ -58,6 +58,7 @@ export function updateCurrentUser(input: UpdateCurrentUserRequest, authToken: st
   const allowedInput: UpdateCurrentUserRequest = {};
   if (typeof input.full_name === 'string') allowedInput.full_name = input.full_name;
   if (typeof input.username === 'string') allowedInput.username = input.username;
+  if (typeof input.job_title === 'string') allowedInput.job_title = input.job_title;
   return apiClient.patch<CurrentUser, UpdateCurrentUserRequest>(endpoints.auth.me, allowedInput, {
     authToken,
   });
