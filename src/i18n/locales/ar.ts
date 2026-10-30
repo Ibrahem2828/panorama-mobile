@@ -1057,6 +1057,12 @@ export const ar = {
     kindLabel: 'نوع المشاركة',
     ratingLabel: 'التقييم',
     ratingOf: (value: number) => `${value} من 5`,
+    ratingScale: {
+      words: ['حزين جدًا', 'سيئ', 'مقبول', 'جيد', 'رائع'],
+      valueText: (word: string, value: number) => `التقييم: ${word}، ${value} من 5`,
+      placeholder: 'اختر وجهًا يعبّر عن تجربتك',
+      hint: 'اسحب أو اضغط لاختيار التقييم',
+    },
     suggestionTitleLabel: 'عنوان الاقتراح',
     suggestionTitlePlaceholder: 'مثال: تحسين البحث داخل المحاضرات',
     suggestionDetailsLabel: 'تفاصيل الاقتراح',
