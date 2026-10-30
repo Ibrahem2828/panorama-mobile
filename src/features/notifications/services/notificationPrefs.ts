@@ -31,6 +31,8 @@ export type NormalizedPreferences = {
   channels: Record<NotificationCategory, boolean> | null;
   /** null when the server has no quiet hours. */
   quietHours: QuietHours | null;
+  /** Chat notifications of every community are muted; null when the server has no such setting (switch hidden). */
+  muteCommunities: boolean | null;
 };
 
 export const DEFAULT_QUIET_HOURS: QuietHours = { enabled: false, start: '22:00', end: '07:00' };
@@ -76,7 +78,13 @@ export function normalizePreferences(raw: unknown): NormalizedPreferences {
     push: source.push_enabled !== false,
     channels,
     quietHours,
+    muteCommunities: typeof source.mute_communities === 'boolean' ? source.mute_communities : null,
   };
+}
+
+/** PATCH body for the «mute communities» switch. */
+export function muteCommunitiesPatch(value: boolean) {
+  return { mute_communities: value };
 }
 
 /** PATCH body that flips one category; sends the whole channels object so a partial server merge cannot lose the others. */
@@ -163,16 +171,18 @@ export function pushCategory(
 export type BannerPolicy = { show: boolean; sound: boolean; badge: boolean };
 
 /**
- * What to do with a push that arrives while the app is open: nothing for a category the user switched off or for the chat
- * they are reading; shown but silent during quiet hours; otherwise the normal banner.
+ * What to do with a push that arrives while the app is open: nothing for a category the user switched off, for a muted chat
+ * or for the chat they are reading; shown but silent during quiet hours; otherwise the normal banner.
  */
 export function foregroundBannerPolicy(input: {
   category: NotificationCategory | null;
   prefs: NormalizedPreferences | null;
   now: Date;
   readingThisChat: boolean;
+  /** This push belongs to a chat the user muted (timed or forever, or by the communities switch). */
+  chatMuted?: boolean;
 }): BannerPolicy {
-  if (input.readingThisChat) {
+  if (input.readingThisChat || input.chatMuted) {
     return { show: false, sound: false, badge: false };
   }
 

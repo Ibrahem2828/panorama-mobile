@@ -9,6 +9,7 @@ import {
   AppScreen,
   AppText,
   ErrorState,
+  ListRow,
   LoadingState,
   Stack,
 } from '../../../components';
@@ -125,6 +126,7 @@ export function NotificationSettingsScreen({ navigation }: Props) {
   const setPush = useNotificationPrefsStore((state) => state.setPush);
   const setChannel = useNotificationPrefsStore((state) => state.setChannel);
   const setQuietHours = useNotificationPrefsStore((state) => state.setQuietHours);
+  const setMuteCommunities = useNotificationPrefsStore((state) => state.setMuteCommunities);
   const [permission, setPermission] = useState<PermissionStatus>('undetermined');
 
   const refreshPermission = useCallback(async () => {
@@ -208,6 +210,26 @@ export function NotificationSettingsScreen({ navigation }: Props) {
                 </Stack>
               </AppCard>
             ) : null}
+
+            <AppCard variant="outlined">
+              <Stack gap="md">
+                <AppText variant="title">{t.chat.mute.list.title}</AppText>
+                {prefs.muteCommunities !== null ? (
+                  <SwitchRow
+                    description={copy.muteCommunitiesDescription}
+                    label={copy.muteCommunities}
+                    onChange={(value) => void setMuteCommunities(value)}
+                    value={prefs.muteCommunities}
+                  />
+                ) : null}
+                <ListRow
+                  icon="bellOff"
+                  onPress={() => navigation.navigate(ProfileRoutes.MutedChats)}
+                  subtitle={t.chat.mute.list.entryHint}
+                  title={t.chat.mute.list.entry}
+                />
+              </Stack>
+            </AppCard>
 
             {prefs.quietHours ? (
               <AppCard variant="outlined">

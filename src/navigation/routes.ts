@@ -76,6 +76,7 @@ export const ProfileRoutes = {
   DeleteAccount: 'DeleteAccount',
   Notifications: 'Notifications',
   NotificationSettings: 'NotificationSettings',
+  MutedChats: 'MutedChats',
   Permissions: 'Permissions',
   MyNotes: 'MyNotes',
   SupportTickets: 'SupportTickets',

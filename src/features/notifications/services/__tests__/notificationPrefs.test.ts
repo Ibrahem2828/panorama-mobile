@@ -4,6 +4,7 @@ import {
   intentFromPushData,
   isValidTime,
   isWithinQuietHours,
+  muteCommunitiesPatch,
   normalizePreferences,
   normalizeSummary,
   pushCategory,
@@ -25,6 +26,14 @@ describe('normalizePreferences', () => {
     expect(prefs.push).toBe(false);
     expect(prefs.channels).toBeNull();
     expect(prefs.quietHours).toBeNull();
+    expect(prefs.muteCommunities).toBeNull();
+  });
+
+  it('reads the communities switch and builds its PATCH body', () => {
+    expect(normalizePreferences({ mute_communities: true }).muteCommunities).toBe(true);
+    expect(normalizePreferences({ mute_communities: false }).muteCommunities).toBe(false);
+    expect(normalizePreferences({ mute_communities: 'yes' }).muteCommunities).toBeNull();
+    expect(muteCommunitiesPatch(true)).toEqual({ mute_communities: true });
   });
 
   it('reads channels (missing means on) and quiet hours', () => {
@@ -130,6 +139,18 @@ describe('push categories and the foreground policy', () => {
     expect(
       foregroundBannerPolicy({ category: 'chat', prefs, now: at(12), readingThisChat: true }).show,
     ).toBe(false);
+  });
+
+  it('hides the banner of a muted chat', () => {
+    expect(
+      foregroundBannerPolicy({
+        category: 'chat',
+        prefs,
+        now: at(12),
+        readingThisChat: false,
+        chatMuted: true,
+      }),
+    ).toEqual({ show: false, sound: false, badge: false });
   });
 
   it('is silent but visible in quiet hours, and normal otherwise', () => {

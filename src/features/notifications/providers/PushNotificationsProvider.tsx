@@ -13,6 +13,7 @@ import { env } from '../../../config/env';
 import { logger } from '../../../utils/logger';
 import { useAuthStore } from '../../auth/store';
 import { useChatStore } from '../../chat/store';
+import { isChatMutedNow, useChatMuteStore } from '../../chat/store/chatMuteStore';
 import { useChatUnreadStore } from '../../chat/store/unreadStore';
 import {
   foregroundBannerPolicy,
@@ -48,6 +49,8 @@ Notifications.setNotificationHandler({
       prefs: useNotificationPrefsStore.getState().prefs,
       now: new Date(),
       readingThisChat: reading,
+      // Only the in-memory copy is read (no network in the handler); the server also filters muted chats.
+      chatMuted: chat !== null && isChatMutedNow(chat.groupId),
     });
 
     return {
@@ -63,6 +66,7 @@ Notifications.setNotificationHandler({
 function refreshBadges() {
   void useNotificationPrefsStore.getState().loadSummary();
   void useChatUnreadStore.getState().load();
+  void useChatMuteStore.getState().loadAll();
 }
 
 function getProjectId(): string | undefined {

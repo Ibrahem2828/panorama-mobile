@@ -4,6 +4,7 @@ import { useTermStore } from '../../features/academic-term/termStore';
 import { useAnnouncementsStore } from '../../features/announcements/store';
 import { useAuthStore } from '../../features/auth/store';
 import { useChatStore } from '../../features/chat/store';
+import { useChatMuteStore } from '../../features/chat/store/chatMuteStore';
 import { useFilesStore } from '../../features/files/store';
 import { useGroupsStore } from '../../features/groups/store';
 import { useHomeStore } from '../../features/home/store';
@@ -31,6 +32,7 @@ export function useSessionStateCleanup() {
   const resetHome = useHomeStore((state) => state.reset);
   const resetNotifications = useNotificationsStore((state) => state.reset);
   const resetNotificationPrefs = useNotificationPrefsStore((state) => state.reset);
+  const resetChatMute = useChatMuteStore((state) => state.reset);
   const resetChatUnread = useChatUnreadStore((state) => state.reset);
   const resetPolicies = usePoliciesStore((state) => state.reset);
   const resetPrinting = usePrintingStore((state) => state.reset);
@@ -55,6 +57,7 @@ export function useSessionStateCleanup() {
     resetNotifications();
     resetNotificationPrefs();
     resetChatUnread();
+    resetChatMute();
     resetPolicies();
     resetPrinting();
     resetProfile();
@@ -73,6 +76,7 @@ export function useSessionStateCleanup() {
     resetNotifications,
     resetNotificationPrefs,
     resetChatUnread,
+    resetChatMute,
     resetPolicies,
     resetPrinting,
     resetProfile,

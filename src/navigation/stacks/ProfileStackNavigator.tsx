@@ -15,6 +15,7 @@ import { EditProfileScreen } from '../../features/profile/screens/EditProfileScr
 import { PrivacyPolicyScreen } from '../../features/profile/screens/PrivacyPolicyScreen';
 import { ProfileHomeScreen } from '../../features/profile/screens/ProfileHomeScreen';
 import { TermsScreen } from '../../features/profile/screens/TermsScreen';
+import { MutedChatsScreen } from '../../features/chat/screens/MutedChatsScreen';
 import { PermissionsSettingsScreen } from '../../features/permissions';
 import { NotificationSettingsScreen } from '../../features/notifications/screens/NotificationSettingsScreen';
 import { DeleteAccountScreen } from '../../features/settings/screens/DeleteAccountScreen';
@@ -47,6 +48,7 @@ export function ProfileStackNavigator() {
         component={NotificationSettingsScreen}
         name={ProfileRoutes.NotificationSettings}
       />
+      <Stack.Screen component={MutedChatsScreen} name={ProfileRoutes.MutedChats} />
       <Stack.Screen component={PermissionsSettingsScreen} name={ProfileRoutes.Permissions} />
       <Stack.Screen component={MyNotesScreen} name={ProfileRoutes.MyNotes} />
       <Stack.Screen component={LectureViewerScreen} name={LecturesRoutes.LectureViewer} />
