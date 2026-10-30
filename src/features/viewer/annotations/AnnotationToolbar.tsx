@@ -1,7 +1,7 @@
-import { memo } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { memo, useCallback } from 'react';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
-import { AppIconButton, AppText, Icon } from '../../../components';
+import { AppButton, AppIconButton, AppText, Icon } from '../../../components';
 import type { IconName } from '../../../components/icons/Icon';
 import { useTranslation } from '../../../i18n';
 import { colors, radius, spacing, useBrand } from '../../../theme';
@@ -14,11 +14,14 @@ type Props = {
   width: number;
   canUndo: boolean;
   canRedo: boolean;
+  /** Live marks on the file; the reset action is disabled at 0 and the confirmation states the number. */
+  total: number;
   onTool: (tool: Tool) => void;
   onColor: (color: string) => void;
   onWidth: (width: number) => void;
   onUndo: () => void;
   onRedo: () => void;
+  onReset: () => void;
 };
 
 const TOOLS: { tool: Tool; icon: IconName }[] = [
@@ -40,11 +43,13 @@ export const AnnotationToolbar = memo(function AnnotationToolbar({
   width,
   canUndo,
   canRedo,
+  total,
   onTool,
   onColor,
   onWidth,
   onUndo,
   onRedo,
+  onReset,
 }: Props) {
   const { t } = useTranslation();
   const brand = useBrand();
@@ -54,6 +59,26 @@ export const AnnotationToolbar = memo(function AnnotationToolbar({
       : tool === 'highlight' || tool === 'underline'
         ? Object.keys(HIGHLIGHT_COLORS)
         : [];
+  // Overflow menu: the destructive reset lives behind two taps (menu, then a confirmation with the count).
+  const openMenu = useCallback(() => {
+    Alert.alert(t.docViewer.menuTitle, undefined, [
+      {
+        text: t.docViewer.reset,
+        style: 'destructive',
+        onPress: () => {
+          if (total === 0) {
+            return;
+          }
+
+          Alert.alert(t.docViewer.reset, t.docViewer.resetConfirm(total), [
+            { text: t.docViewer.resetCancel, style: 'cancel' },
+            { text: t.docViewer.resetDelete, style: 'destructive', onPress: onReset },
+          ]);
+        },
+      },
+      { text: t.docViewer.resetCancel, style: 'cancel' },
+    ]);
+  }, [onReset, t, total]);
   const swatch = (name: string) =>
     (HIGHLIGHT_COLORS as Record<string, string>)[name] ??
     (PEN_COLORS as Record<string, string>)[name] ??
@@ -61,11 +86,7 @@ export const AnnotationToolbar = memo(function AnnotationToolbar({
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.row}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-      >
+      <View style={styles.row}>
         {TOOLS.map((entry) => (
           <AppIconButton
             accessibilityLabel={t.docViewer.tools[entry.tool]}
@@ -83,24 +104,38 @@ export const AnnotationToolbar = memo(function AnnotationToolbar({
         ))}
         <View style={styles.divider} />
         <AppIconButton
-          accessibilityLabel={t.docViewer.undo}
-          disabled={!canUndo}
-          icon={<Icon color={colors.text.secondary} name="refresh" size={20} />}
-          onPress={onUndo}
+          accessibilityLabel={t.docViewer.menuTitle}
+          disabled={total === 0}
+          icon={<Icon color={colors.text.secondary} name="more" size={20} />}
+          onPress={openMenu}
           variant="ghost"
         />
-        <AppIconButton
+      </View>
+
+      <View style={styles.row}>
+        <AppButton
+          accessibilityLabel={t.docViewer.undo}
+          disabled={!canUndo}
+          leftIcon={<Icon color={colors.text.secondary} name="refresh" size={18} />}
+          onPress={onUndo}
+          size="sm"
+          title={t.docViewer.undo}
+          variant="outline"
+        />
+        <AppButton
           accessibilityLabel={t.docViewer.redo}
           disabled={!canRedo}
-          icon={
+          leftIcon={
             <View style={styles.mirrored}>
-              <Icon color={colors.text.secondary} name="refresh" size={20} />
+              <Icon color={colors.text.secondary} name="refresh" size={18} />
             </View>
           }
           onPress={onRedo}
+          size="sm"
+          title={t.docViewer.redo}
           variant="ghost"
         />
-      </ScrollView>
+      </View>
 
       {palette.length > 0 || tool === 'pen' ? (
         <View style={styles.row}>

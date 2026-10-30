@@ -117,6 +117,29 @@ export function editAnnotation(
   return touch({ ...state, items: { ...state.items, [id]: { ...item, ...change } } }, id);
 }
 
+/**
+ * "Back to the original file": every live mark of this student becomes a tombstone (one change counter per mark, so each
+ * is sent as a delete and stays dirty until the server confirmed it), and the undo/redo history is cleared.
+ * Idempotent: marks that are already deleted are untouched, so running it again changes nothing.
+ */
+export function resetAll(state: DocumentState): DocumentState {
+  const items = { ...state.items };
+  const dirty = { ...state.dirty };
+  let stamp = state.stamp;
+
+  for (const id of state.order) {
+    const item = items[id];
+
+    if (item && !item.deleted) {
+      stamp += 1;
+      items[id] = { ...item, deleted: true };
+      dirty[id] = stamp;
+    }
+  }
+
+  return { ...state, items, dirty, stamp, undoStack: [], redoStack: [] };
+}
+
 export function canUndo(state: DocumentState): boolean {
   return state.undoStack.length > 0;
 }
@@ -350,12 +373,31 @@ export function mergeServerItems(
 export type PersistedState = Pick<
   DocumentState,
   'items' | 'order' | 'dirty' | 'stamp' | 'revision'
->;
+> &
+  Partial<Pick<DocumentState, 'undoStack' | 'redoStack'>>;
 
 export function toPersisted(state: DocumentState): PersistedState {
-  const { items, order, dirty, stamp, revision } = state;
+  const { items, order, dirty, stamp, revision, undoStack, redoStack } = state;
 
-  return { items, order, dirty, stamp, revision };
+  return { items, order, dirty, stamp, revision, undoStack, redoStack };
+}
+
+/** Keeps only well-formed history entries that still point at a known mark. */
+function sanitizeHistory(value: unknown, items: Record<string, Annotation>): Command[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter(
+      (entry): entry is Command =>
+        typeof entry === 'object' &&
+        entry !== null &&
+        (entry.type === 'add' || entry.type === 'remove') &&
+        typeof entry.id === 'string' &&
+        entry.id in items,
+    )
+    .slice(-MAX_HISTORY);
 }
 
 export function fromPersisted(value: unknown): DocumentState {
@@ -382,5 +424,7 @@ export function fromPersisted(value: unknown): DocumentState {
     dirty: raw.dirty,
     stamp: typeof raw.stamp === 'number' ? raw.stamp : 0,
     revision: typeof raw.revision === 'number' ? raw.revision : 0,
+    undoStack: sanitizeHistory(raw.undoStack, raw.items),
+    redoStack: sanitizeHistory(raw.redoStack, raw.items),
   };
 }

@@ -216,7 +216,7 @@ describe('persistence', () => {
 
     expect(restored.items.a).toBeDefined();
     expect(hasPendingChanges(restored)).toBe(true);
-    expect(canUndo(restored)).toBe(false); // history is per session
+    expect(canUndo(restored)).toBe(true); // history is saved with the marks
     expect(fromPersisted(null)).toEqual(emptyState());
     expect(fromPersisted({ items: 5 })).toEqual(emptyState());
   });

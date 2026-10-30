@@ -17,9 +17,11 @@ import {
   emptyState,
   fromPersisted,
   hasPendingChanges,
+  MAX_OPS_PER_SYNC,
   mergeServerItems,
   redo,
   removeAnnotation,
+  resetAll,
   toPersisted,
   undo,
   visibleOnPage,
@@ -29,6 +31,11 @@ import {
 
 const SYNC_DELAY_MS = 1500;
 const MAX_ANNOTATIONS = 5000;
+// Enough rounds of MAX_OPS_PER_SYNC changes to push a whole file's worth of deletions in one go.
+const MAX_SYNC_ROUNDS = Math.ceil(MAX_ANNOTATIONS / MAX_OPS_PER_SYNC) + 5;
+
+/** 'synced': the server confirmed the deletions; 'queued': saved on the device and sent when online. */
+export type ResetResult = 'synced' | 'queued';
 
 export type AnnotationsApi = {
   /** Marks of one page in draw order. */
@@ -38,6 +45,8 @@ export type AnnotationsApi = {
   edit: (clientId: string, change: Partial<Pick<Annotation, 'color' | 'width' | 'data'>>) => void;
   undo: () => void;
   redo: () => void;
+  /** Deletes every mark of this file (locally at once, on the server through the sync queue). */
+  reset: () => Promise<ResetResult>;
   canUndo: boolean;
   canRedo: boolean;
   /** Changes made here that have not reached the server yet. */
@@ -64,6 +73,7 @@ export function useAnnotations(doc: DocRef): AnnotationsApi {
   const [, setTick] = useState(0);
   const [syncError, setSyncError] = useState(false);
   const inFlight = useRef(false);
+  const running = useRef<Promise<void> | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const loaded = useRef(false);
   const docRef = useRef(doc);
@@ -78,7 +88,7 @@ export function useAnnotations(doc: DocRef): AnnotationsApi {
     );
   }, [key]);
 
-  const flush = useCallback(async () => {
+  const flushOnce = useCallback(async () => {
     if (inFlight.current || !loaded.current || !hasPendingChanges(stateRef.current)) {
       return;
     }
@@ -86,8 +96,12 @@ export function useAnnotations(doc: DocRef): AnnotationsApi {
     inFlight.current = true;
 
     try {
-      // Several rounds when a lot was drawn offline (200 changes per request).
-      for (let round = 0; round < 10 && hasPendingChanges(stateRef.current); round += 1) {
+      // Several rounds when a lot was drawn offline (MAX_OPS_PER_SYNC changes per request).
+      for (
+        let round = 0;
+        round < MAX_SYNC_ROUNDS && hasPendingChanges(stateRef.current);
+        round += 1
+      ) {
         const snapshot = buildSyncSnapshot(stateRef.current);
 
         if (snapshot.payload.upserts.length + snapshot.payload.deletes.length === 0) {
@@ -113,6 +127,18 @@ export function useAnnotations(doc: DocRef): AnnotationsApi {
       persist();
     }
   }, [persist, rerender]);
+
+  const flush = useCallback((): Promise<void> => {
+    const run = flushOnce().finally(() => {
+      if (running.current === run) {
+        running.current = null;
+      }
+    });
+
+    running.current = run;
+
+    return run;
+  }, [flushOnce]);
 
   const schedule = useCallback(() => {
     if (timer.current) {
@@ -214,6 +240,32 @@ export function useAnnotations(doc: DocRef): AnnotationsApi {
       edit: (clientId, change) => commit(editAnnotation(stateRef.current, clientId, change)),
       undo: () => commit(undo(stateRef.current)),
       redo: () => commit(redo(stateRef.current)),
+      reset: async () => {
+        // Local state first: the file looks clean immediately and nothing can bring the marks back, because a pending
+        // delete is dirty and pulls never overwrite dirty marks.
+        stateRef.current = resetAll(stateRef.current);
+        rerender();
+        persist();
+
+        if (timer.current) {
+          clearTimeout(timer.current);
+        }
+
+        // Wait for an upload already running, then push the deletions now (rather than after the usual delay).
+        if (running.current) {
+          await running.current.catch(() => undefined);
+        }
+
+        await flush();
+
+        if (hasPendingChanges(stateRef.current)) {
+          schedule(); // offline: keep retrying in the background
+
+          return 'queued';
+        }
+
+        return 'synced';
+      },
       canUndo: canUndo(state),
       canRedo: canRedo(state),
       pending: hasPendingChanges(state),
@@ -222,5 +274,5 @@ export function useAnnotations(doc: DocRef): AnnotationsApi {
       version: state.stamp + state.revision,
     };
     // `state` is read from the ref on purpose: every commit re-renders, and the memo key below changes with it.
-  }, [commit, syncError, stateRef.current]);
+  }, [commit, flush, persist, rerender, schedule, syncError, stateRef.current]);
 }
