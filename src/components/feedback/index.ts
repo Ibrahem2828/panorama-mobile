@@ -1,5 +1,7 @@
 export { BrandedLoading } from './BrandedLoading';
 export { BrandRefreshControl } from './BrandRefreshControl';
+export { EmojiRatingDisplay, EmojiRatingScale } from './EmojiRatingScale';
+export type { EmojiRatingSize } from './EmojiRatingScale';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
 export { LoadingState } from './LoadingState';
