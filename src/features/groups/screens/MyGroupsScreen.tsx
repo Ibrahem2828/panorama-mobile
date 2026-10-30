@@ -18,9 +18,12 @@ import { useTranslation } from '../../../i18n';
 import { GroupsRoutes } from '../../../navigation/routes';
 import type { GroupsStackParamList } from '../../../navigation/types';
 import { colors, layout, spacing, useBrand } from '../../../theme';
+import { ChatMuteSheet, type MuteSheetTarget } from '../../chat/components/ChatMuteSheet';
+import { canOpenGroupChat } from '../../chat/services';
+import { useChatMuteStore } from '../../chat/store/chatMuteStore';
 import { GroupCard } from '../components';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
-import { getGroupSubjectId, matchesGroupSearch } from '../services';
+import { getGroupDisplayName, getGroupSubjectId, matchesGroupSearch } from '../services';
 import { useChatUnreadStore } from '../../chat/store/unreadStore';
 import { useGroupsStore } from '../store';
 import type { Group } from '../types';
@@ -46,12 +49,15 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
   const clearError = useGroupsStore((state) => state.clearError);
 
   const loadUnread = useChatUnreadStore((state) => state.load);
+  const loadMuted = useChatMuteStore((state) => state.loadAll);
+  const [muteTarget, setMuteTarget] = useState<MuteSheetTarget | null>(null);
 
   useEffect(() => {
     void loadMyGroups();
     void loadSubjectLabels();
     void loadUnread();
-  }, [loadMyGroups, loadSubjectLabels, loadUnread]);
+    void loadMuted();
+  }, [loadMuted, loadMyGroups, loadSubjectLabels, loadUnread]);
 
   useEffect(() => clearError, [clearError]);
 
@@ -73,7 +79,8 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
   const handleRefresh = useCallback(() => {
     void refreshAllGroups();
     void loadUnread();
-  }, [loadUnread, refreshAllGroups]);
+    void loadMuted();
+  }, [loadMuted, loadUnread, refreshAllGroups]);
 
   useRefreshOnReconnect(handleRefresh);
 
@@ -85,6 +92,17 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
     [navigation, setSelectedGroup],
   );
 
+  const handleGroupLongPress = useCallback(
+    (group: Group) =>
+      setMuteTarget({
+        groupId: group.id,
+        name: getGroupDisplayName(group, t.groups),
+        kind: getGroupSubjectId(group) ? 'subject' : 'community',
+      }),
+    [t.groups],
+  );
+  const handleCloseMute = useCallback(() => setMuteTarget(null), []);
+
   const renderItem = useCallback(
     ({ item }: { item: Group }) => {
       const subjectKey = getGroupSubjectId(item);
@@ -92,12 +110,13 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
       return (
         <GroupCard
           group={item}
+          onLongPress={canOpenGroupChat(item) ? handleGroupLongPress : undefined}
           onPress={handleGroupPress}
           subject={subjectKey ? subjectLabels[subjectKey] : null}
         />
       );
     },
-    [handleGroupPress, subjectLabels],
+    [handleGroupLongPress, handleGroupPress, subjectLabels],
   );
 
   const showInitialLoading = isLoading && myGroups.length === 0;
@@ -199,6 +218,7 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
         showsVerticalScrollIndicator={false}
         style={styles.list}
       />
+      <ChatMuteSheet onClose={handleCloseMute} target={muteTarget} />
     </AppScreen>
   );
 }

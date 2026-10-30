@@ -17,6 +17,7 @@ import type { GroupsStackParamList } from '../../../navigation/types';
 import { colors, spacing } from '../../../theme';
 import { useTranslation } from '../../../i18n';
 import { useAuthStore } from '../../auth/store';
+import { getGroupDisplayName, getGroupSubjectId } from '../../groups/services';
 import { useGroupsStore } from '../../groups/store';
 import {
   ChatAttachmentViewer,
@@ -24,11 +25,15 @@ import {
   ChatEmptyState,
   ChatMessageList,
   ChatPermissionNotice,
+  ChatMuteSheet,
   ChatRoomHeader,
   MessageActionsSheet,
 } from '../components';
+import { isEffectivelyMuted } from '../logic/mute';
+import { useMuteNow } from '../components/useMuteExpiry';
 import { canOpenGroupChat, canSendMessageToGroup } from '../services';
 import { useChatStore } from '../store';
+import { useChatMuteStore } from '../store/chatMuteStore';
 import type { ChatAttachment, ChatMessage } from '../types';
 
 type ChatRoomScreenProps = NativeStackScreenProps<GroupsStackParamList, 'ChatRoom'>;
@@ -64,7 +69,10 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
   const discard = useChatStore((state) => state.discard);
   const react = useChatStore((state) => state.react);
   const deleteMessage = useChatStore((state) => state.deleteMessage);
-  const setMuted = useChatStore((state) => state.setMuted);
+  const mutePref = useChatMuteStore((state) => state.byGroup[groupKey]);
+  const loadMute = useChatMuteStore((state) => state.loadOne);
+  const muteNow = useMuteNow(mutePref);
+  const [muteOpen, setMuteOpen] = useState(false);
   const [viewerMessage, setViewerMessage] = useState<ChatMessage | null>(null);
   const [actionMessage, setActionMessage] = useState<ChatMessage | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -89,6 +97,10 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
   useEffect(() => {
     void loadGroupDetail(groupId);
   }, [groupId, loadGroupDetail]);
+
+  useEffect(() => {
+    void loadMute(groupId);
+  }, [groupId, loadMute]);
 
   useEffect(() => {
     if (canOpen !== true) {
@@ -128,10 +140,8 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
     },
     [deleteMessage, groupId, t.chat.actions.deleteFailed],
   );
-  const handleToggleMute = useCallback(
-    () => void setMuted(groupId, !(room?.isMuted ?? false)),
-    [groupId, room?.isMuted, setMuted],
-  );
+  const handleOpenMute = useCallback(() => setMuteOpen(true), []);
+  const handleCloseMute = useCallback(() => setMuteOpen(false), []);
   // Members may delete their own messages; moderators and group admins may delete any.
   const canModerate = ['moderator', 'group_admin', 'admin'].includes(
     String(group?.current_user_group_role ?? ''),
@@ -141,10 +151,10 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
     <ChatRoomHeader
       connectionStatus={connectionStatus}
       group={group}
-      isMuted={room?.isMuted ?? false}
+      isMuted={isEffectivelyMuted(mutePref, muteNow)}
       isOnline={isOnline}
       onBack={handleBack}
-      onToggleMute={handleToggleMute}
+      onOpenMute={handleOpenMute}
     />
   );
 
@@ -256,6 +266,18 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
       {header}
       <View style={[styles.flex, { paddingBottom: keyboardOverlap }]}>{body}</View>
       <ChatAttachmentViewer groupId={groupId} message={viewerMessage} onClose={handleCloseViewer} />
+      <ChatMuteSheet
+        onClose={handleCloseMute}
+        target={
+          muteOpen
+            ? {
+                groupId,
+                name: group ? getGroupDisplayName(group, t.groups) : t.chat.title,
+                kind: group && getGroupSubjectId(group) ? 'subject' : 'community',
+              }
+            : null
+        }
+      />
       <MessageActionsSheet
         canDelete={
           actionMessage !== null &&
