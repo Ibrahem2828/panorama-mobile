@@ -157,8 +157,9 @@ export function EmojiRatingScale({
         style={[styles.track, { height }, disabled ? styles.disabled : null]}
         {...responder.panHandlers}
       >
+        {/* React Native swaps left/right under RTL; the geometry below is in physical pixels, so this layer is pinned to LTR. */}
         {width > 0 ? (
-          <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+          <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.physical]}>
             {/* Track line through the five stops. */}
             <View style={[styles.line, { left: slot / 2, right: slot / 2, top: height / 2 - 2 }]} />
             {selected !== null ? (
@@ -245,6 +246,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: colors.border.default,
   },
+  physical: { direction: 'ltr' },
   thumb: { position: 'absolute', left: 0, borderWidth: 2.5, backgroundColor: 'transparent' },
   slot: { position: 'absolute', top: 0, alignItems: 'center', justifyContent: 'center' },
   display: { flexDirection: 'row', alignItems: 'center', gap: 6 },
