@@ -8,6 +8,7 @@ describe('isCacheablePath', () => {
     '/api/v1/groups/12/',
     '/api/v1/groups/12/files/',
     '/api/v1/groups/12/messages/',
+    '/api/v1/chat/preferences/',
     '/api/v1/files/',
     '/api/v1/files/7/',
     '/api/v1/files/7/viewer/manifest/',
@@ -32,6 +33,7 @@ describe('isCacheablePath', () => {
   it.each([
     '/api/v1/files/7/access-ticket/',
     '/api/v1/groups/12/chat-ticket/',
+    '/api/v1/groups/12/chat/preferences/',
     '/api/v1/groups/12/messages/5/attachment-ticket/',
     '/api/v1/groups/12/whatsapp-launch/',
     '/api/v1/support/messages/5/attachment-ticket/',

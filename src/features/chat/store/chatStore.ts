@@ -72,8 +72,6 @@ export type ChatRoomState = {
   forbidden: boolean;
   /** How far each other member has received / read the chat (live, from receipt frames). */
   peerCursors: Record<number, { delivered: number; read: number }>;
-  /** This member muted the chat's notifications. */
-  isMuted: boolean;
 };
 
 export type SendResult = { ok: true } | { ok: false; error: string };
@@ -93,7 +91,6 @@ type ChatState = {
   /** Sets (or, with `null`, clears) the member's reaction; the bubble updates at once. */
   react: (groupId: Id, messageId: number, emoji: string | null) => void;
   deleteMessage: (groupId: Id, messageId: number) => Promise<boolean>;
-  setMuted: (groupId: Id, muted: boolean) => Promise<void>;
   /** Tells the server (and so every sender) that this device now has / has read everything loaded. */
   reportRead: (groupId: Id) => void;
   discard: (groupId: Id, localId: string) => void;
@@ -146,7 +143,6 @@ function emptyRoom(): ChatRoomState {
     error: null,
     forbidden: false,
     peerCursors: {},
-    isMuted: false,
   };
 }
 
@@ -760,23 +756,6 @@ export const useChatStore = create<ChatState>((set, get) => {
         return true;
       } catch {
         return false;
-      }
-    },
-
-    async setMuted(groupId, muted) {
-      const groupKey = keyOf(groupId);
-      const accessToken = getAccessToken();
-
-      if (!accessToken) {
-        return;
-      }
-
-      patchRoom(groupKey, () => ({ isMuted: muted }));
-
-      try {
-        await apiGroupsService.setChatMuted(groupId, muted, accessToken);
-      } catch {
-        patchRoom(groupKey, () => ({ isMuted: !muted }));
       }
     },
 

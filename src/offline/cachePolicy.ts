@@ -18,6 +18,7 @@ const ALLOW: readonly RegExp[] = [
   /^\/api\/v1\/groups\/(?:available|my)\/$/u,
   /^\/api\/v1\/groups\/\d+\/(?:files|messages)?\/?$/u,
   /^\/api\/v1\/chat\/unread\/$/u,
+  /^\/api\/v1\/chat\/preferences\/$/u,
   /^\/api\/v1\/enrollment\/requests\/$/u,
   /^\/api\/v1\/files\/(?:\d+\/)?$/u,
   /^\/api\/v1\/files\/\d+\/viewer\/manifest\/$/u,
