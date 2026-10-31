@@ -1,6 +1,3 @@
 export { SubjectCard } from './SubjectCard';
-export { SubjectDetailHeader } from './SubjectDetailHeader';
+export { SubjectFilters } from './SubjectFilters';
 export { SubjectLinkedSectionCard } from './SubjectLinkedSectionCard';
-export { SubjectMetaRow } from './SubjectMetaRow';
-export { SubjectSearchBar } from './SubjectSearchBar';
-export { SubjectLevelFilter } from './SubjectLevelFilter';

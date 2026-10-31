@@ -163,7 +163,7 @@ export const ar = {
       },
       {
         imageLabel: 'رسم يوضح مجموعات المواد الجامعية',
-        title: 'انضم إلى مجموعات موادك',
+        title: 'مجموعات موادك في مكان واحد',
         description: 'تابع النقاشات والإعلانات والملفات الخاصة بموادك وجامعتك بسهولة.',
       },
       {
@@ -313,8 +313,9 @@ export const ar = {
 
     guard: {
       title: 'المحادثة للأعضاء فقط',
-      message: 'انضم إلى المجموعة وانتظر الموافقة لتقرأ الرسائل وتشارك في المحادثة.',
-      pendingMessage: 'طلب انضمامك قيد المراجعة. ستفتح المحادثة فور الموافقة عليه.',
+      message:
+        'المحادثة لأعضاء المجموعة. تُضاف إلى مجموعات موادك تلقائيًا بعد قبول طلب تسجيل المواد.',
+      pendingMessage: 'طلب قديم قيد المراجعة. تُفتح المحادثة عند اعتماد تسجيل موادك.',
       removedTitle: 'لم يعد بإمكانك فتح هذه المحادثة',
       removedMessage: 'تغيّرت عضويتك في هذه المجموعة. ارجع إلى المجموعة لمعرفة التفاصيل.',
       back: 'العودة إلى المجموعة',
@@ -468,72 +469,55 @@ export const ar = {
 
   subjects: {
     title: 'المواد',
-    subtitle: 'مواد كليتك',
-    loading: 'جارٍ تحميل المواد...',
-    listTitle: 'قائمة المواد',
-    listSubtitle: 'تُعرض المواد افتراضيًا حسب سنتك وفصلك، ويمكنك تغيير ذلك من الفلاتر.',
+    subtitle: 'كل مواد كليتك: الفصل الحالي والفصل الآخر',
+    searchLabel: 'بحث في المواد',
     searchPlaceholder: 'ابحث باسم المادة أو رمزها',
-    searchNote: (shown: number, total: number) =>
-      `يشمل البحث المواد المعروضة فقط. النتائج: ${shown} من ${total}.`,
-    emptyTitle: 'لا توجد مواد',
-    emptyMessage: 'لا توجد مواد متاحة الآن.',
-    emptyIllustrationAlt: 'رسم يوضح عدم وجود مواد',
-    untitled: 'مادة بدون اسم',
-    badge: 'مادة',
-    codeLabel: (code: string) => `رمز المادة: ${code}`,
-    filters: {
-      year: 'السنة',
-      semester: 'الفصل',
+    currentTermChip: (name: string) => `الفصل الحالي: ${name}`,
+    termFilterLabel: 'عرض المواد',
+    termFilters: {
+      current: 'الفصل الحالي',
+      other: 'الفصل الآخر',
       all: 'الكل',
-      currentTerm: 'الحالي',
     },
-    locked: {
-      title: 'المحاضرات والملفات لأعضاء مجموعة المادة',
-      message: 'انضم إلى مجموعة هذه المادة وانتظر موافقة المشرف لتفتح لك المحاضرات والملفات.',
-      pending: 'طلب انضمامك قيد المراجعة. ستفتح لك المحاضرات والملفات فور الموافقة عليه.',
-      join: 'الانضمام إلى مجموعة المادة',
-      openGroup: 'عرض مجموعة المادة',
-      rejected:
-        'تم رفض طلب انضمامك إلى مجموعة المادة. يمكنك إرسال طلب جديد لفتح المحاضرات والملفات.',
-      blocked:
-        'تم حظرك من مجموعة هذه المادة، لذلك لا يمكنك الوصول إلى المحاضرات والملفات. تواصل مع الدعم إن كان هذا خطأً.',
-      left: 'غادرت مجموعة هذه المادة. انضم إليها من جديد لتفتح لك المحاضرات والملفات.',
-      rejoin: 'إرسال طلب انضمام جديد',
-      loadError: 'تعذر التحقق من عضويتك في مجموعة المادة. تحقق من الاتصال وحاول مرة أخرى.',
+    yearFilterLabel: 'السنة',
+    allYears: 'كل السنوات',
+    badges: {
+      enrolled: 'مسجَّل',
+      currentTerm: 'الفصل الحالي',
     },
-    general: 'مادة عامة',
+    emptyTitle: 'لا توجد مواد',
+    emptyMessage: 'لا توجد مواد لعرضها الآن.',
+    emptyFilteredMessage: 'لا توجد مواد تطابق اختيارك. غيّر الفصل أو السنة أو البحث.',
+    emptyIllustrationAlt: 'رسم يوضح عدم وجود مواد',
+    resetFilters: 'عرض كل المواد',
+    untitled: 'مادة بدون اسم',
+    codeBadge: (code: string) => `رمز ${code}`,
     resultsCount: (count: number) =>
       count === 1
         ? 'مادة واحدة'
         : count === 2
           ? 'مادتان'
           : `${count} ${count >= 3 && count <= 10 ? 'مواد' : 'مادة'}`,
-    levelHint:
-      'تُعرض مواد الفصل الحالي من كل السنوات. يمكنك تسجيل مواد من أي سنة أو فصل؛ اختر «الكل» أو سنة محددة لتصفح غيرها.',
-    codeBadge: (code: string) => `رمز ${code}`,
-    filesCount: (count: number) => `ملفات ${count}`,
-    groupsCount: (count: number) => `مجموعات ${count}`,
-    lecturesCount: (count: number) => `محاضرات ${count}`,
+    offlineNote: 'تُعرض نسخة محفوظة من المواد، وستتحدّث عند عودة الاتصال.',
     academicYear: (name: string) => `السنة ${name}`,
     semester: (name: string) => `الفصل ${name}`,
 
     details: {
-      subtitle: 'تفاصيل المادة',
-      listSubtitle: 'تفاصيل المادة',
-      loading: 'جارٍ تحميل بيانات المادة...',
-      unavailableTitle: 'المادة غير متاحة',
-      unavailableMessage: 'تعذر العثور على هذه المادة.',
+      title: 'تفاصيل المقرر',
+      codeLabel: 'رمز المقرر',
       academicYearLabel: 'السنة الدراسية',
       semesterLabel: 'الفصل',
       majorLabel: 'الاختصاص',
-      orderLabel: 'الترتيب',
-      linkedTitle: 'محتوى المادة',
+      facultyLabel: 'الكلية',
+      descriptionTitle: 'وصف المقرر',
+      noDescription: 'لا يوجد وصف لهذا المقرر بعد',
+      descriptionError: 'تعذر تحميل وصف المقرر. حاول مرة أخرى.',
+      enrolledStatus: 'مسجَّل في هذا المقرر',
+      unavailableTitle: 'المادة غير متاحة',
+      unavailableMessage: 'تعذر العثور على هذه المادة.',
+      linkedTitle: 'محتوى المقرر',
       filesTitle: 'الملفات',
       filesDescription: 'تصفح ملفات المادة وملخصاتها المتاحة لك.',
-      groupsTitle: 'المجموعات',
-      groupsDescription: 'انضم إلى مجموعات هذه المادة وتابع النقاش مع زملائك.',
-      announcementsTitle: 'الإعلانات',
-      announcementsDescription: 'لا توجد إعلانات خاصة بهذه المادة حاليًا.',
       chatTitle: 'دردشة المجموعة',
       chatDescription: 'تحدّث مع زملائك وأعضاء مجموعة المادة.',
     },
@@ -542,7 +526,6 @@ export const ar = {
       network: 'تعذر تحميل المواد. تحقق من اتصال الإنترنت وحاول مرة أخرى.',
       unauthorized: 'انتهت جلستك. سجّل الدخول مرة أخرى للمتابعة.',
       generic: 'تعذر تحميل المواد. حاول مرة أخرى.',
-      missingFaculty: 'أكمل بياناتك الدراسية أولًا لتظهر لك المواد.',
     },
   },
 
@@ -752,8 +735,6 @@ export const ar = {
     subtitle: 'ارفع لقطة ليرناتا واختر موادك',
     cardTitle: 'سجّل موادك لهذا الفصل',
     cardBody: 'بعد اعتماد تسجيلك تُفتح لك مجموعات موادك ودردشتها وملفاتها.',
-    joinByRegistration:
-      'تُفتح مجموعات المواد بعد تسجيل موادك واعتماده. اضغط «سجّل موادك لهذا الفصل» من صفحة المجموعات.',
     loading: 'جارٍ التحميل...',
     loadError: 'تعذر تحميل حالة التسجيل. حاول مرة أخرى.',
     stepOf: (step: number, total: number) => `الخطوة ${step} من ${total}`,
@@ -845,9 +826,9 @@ export const ar = {
     failed: 'تعذر البحث. حاول مرة أخرى.',
     noMatches: 'لا نتائج مطابقة.',
     title: 'البحث',
-    subtitle: 'ابحث في موادك ومجموعاتك وملفاتك',
+    subtitle: 'ابحث في موادك وملفاتك وإعلاناتك',
     label: 'عبارة البحث',
-    placeholder: 'اسم مادة أو مجموعة أو ملف أو إعلان',
+    placeholder: 'اسم مادة أو ملف أو إعلان',
     loading: 'جارٍ البحث...',
     partialResults: 'بعض النتائج لم تظهر لتعذر البحث في أحد الأقسام. حاول مرة أخرى.',
     filterLabel: 'نوع النتائج',
@@ -870,15 +851,11 @@ export const ar = {
           ? 'نتيجتان'
           : `${count} ${count >= 3 && count <= 10 ? 'نتائج' : 'نتيجة'}`,
     subjectsSection: 'المواد',
-    groupsSection: 'المجموعات',
     filesSection: 'الملفات',
     kindSubject: 'مادة',
-    kindGroup: 'مجموعة',
     kindFile: 'ملف',
     untitledSubject: 'مادة بدون اسم',
     subjectSubtitle: 'مادة دراسية',
-    untitledGroup: 'مجموعة بدون اسم',
-    groupSubtitle: 'مجموعة دراسية',
     untitledFile: 'ملف بدون عنوان',
     fileSubtitle: 'ملف متاح داخل التطبيق',
 
@@ -1692,7 +1669,7 @@ export const ar = {
       welcome: 'أهلا بك',
       guest: 'عزيزي الطالب',
       notifications: 'الإشعارات',
-      searchPlaceholder: 'ابحث عن مادة أو مجموعة أو ملف',
+      searchPlaceholder: 'ابحث عن مادة أو ملف',
     },
 
     greeting: {
@@ -1746,13 +1723,13 @@ export const ar = {
       subjects: 'المواد',
       subjectsDescription: 'تصفح مواد كليتك.',
       groups: 'المجموعات',
-      groupsDescription: 'انضم إلى مجموعات موادك وتابع النقاش.',
+      groupsDescription: 'تابع مجموعات موادك والنقاش مع زملائك.',
       lectures: 'المحاضرات',
       lecturesDescription: 'اقرأ محاضرات موادك والمحاضرات العامة داخل التطبيق.',
       files: 'الملفات',
       filesDescription: 'افتح ملفات موادك داخل التطبيق.',
       search: 'البحث',
-      searchDescription: 'ابحث في المواد والمجموعات والملفات.',
+      searchDescription: 'ابحث في المواد والملفات والإعلانات.',
       printing: 'الطباعة',
       printingDescription: 'اطلب طباعة ملفاتك وتابع طلباتك.',
       support: 'الدعم',
@@ -2016,25 +1993,18 @@ export const ar = {
 
     overview: {
       subtitle: 'المجموعات الأكاديمية',
-      intro: 'انضم إلى مجموعات موادك وتابع النقاش والملفات مع زملائك.',
+      intro:
+        'تُضاف إلى مجموعات موادك تلقائيًا بعد قبول طلب تسجيل المواد، وهناك تتابع النقاش والملفات مع زملائك.',
       destinationsTitle: 'ابدأ من هنا',
-      destinationsSubtitle: 'تابع مجموعاتك أو تصفح المجموعات المتاحة في كليتك.',
-      myGroupsDescription: 'مجموعاتك وطلبات الانضمام التي أرسلتها.',
-      availableDescription: 'مجموعات يمكنك طلب الانضمام إليها.',
+      destinationsSubtitle: 'سجّل موادك لهذا الفصل أو تابع مجموعاتك.',
+      myGroupsDescription: 'مجموعات موادك ودردشتها وملفاتها.',
     },
 
     mine: {
       title: 'مجموعاتي',
       subtitle: 'المجموعات التي تنتمي إليها',
       loading: 'جارٍ تحميل مجموعاتك...',
-      emptyMessage: 'لم تنضم إلى أي مجموعة بعد.',
-    },
-
-    available: {
-      title: 'المجموعات المتاحة',
-      subtitle: 'المجموعات التي يمكنك طلب الانضمام إليها',
-      loading: 'جارٍ تحميل المجموعات المتاحة...',
-      emptyMessage: 'لا توجد مجموعات متاحة حاليًا.',
+      emptyMessage: 'ستظهر مجموعاتك هنا بعد قبول طلب تسجيل موادك.',
     },
 
     list: {
@@ -2051,7 +2021,6 @@ export const ar = {
       backToGroups: 'رجوع إلى المجموعات',
       unavailableTitle: 'المجموعة غير متاحة',
       unavailableMessage: 'تعذر تحميل تفاصيل المجموعة. حاول مرة أخرى.',
-      join: 'طلب الانضمام',
       leave: 'مغادرة المجموعة',
       contentTitle: 'محتوى المجموعة',
       contentSubtitle: 'المحادثة والملفات لأعضاء المجموعة.',
@@ -2079,7 +2048,7 @@ export const ar = {
     },
 
     membership: {
-      pending: 'بانتظار الموافقة',
+      pending: 'طلب قديم قيد المراجعة',
       member: 'عضو',
       rejected: 'مرفوض',
       blocked: 'محظور',
@@ -2107,16 +2076,11 @@ export const ar = {
     },
 
     messages: {
-      joinSuccess: 'تم إرسال طلب الانضمام.',
-      joinApproved: 'تم انضمامك إلى المجموعة.',
       leaveSuccess: 'تمت مغادرة المجموعة.',
-      joinError: 'تعذر إرسال طلب الانضمام. حاول مرة أخرى.',
       leaveError: 'تعذرت مغادرة المجموعة. حاول مرة أخرى.',
     },
 
     available2: {
-      subjectFilterActive: 'تُعرض مجموعات مادة واحدة فقط.',
-      showAllGroups: 'عرض كل المجموعات',
       resultsCount: (count: number) =>
         count === 1
           ? 'مجموعة واحدة'
@@ -2124,28 +2088,23 @@ export const ar = {
             ? 'مجموعتان'
             : `${count} ${count >= 3 && count <= 10 ? 'مجموعات' : 'مجموعة'}`,
       searchLabel: 'بحث',
-      loadMore: 'عرض المزيد',
-      loadingMore: 'جارٍ تحميل المزيد...',
     },
 
     card: {
       subjectCode: (code: string) => `رمز المادة ${code}`,
       whatsAppAvailable: 'واتساب متاح',
-      joinShort: 'طلب الانضمام',
-      pendingShort: 'بانتظار الموافقة',
       openGroup: (name: string) => `فتح المجموعة ${name}`,
     },
 
     notices: {
-      pending: 'طلبك قيد المراجعة، وسنُعلمك عند الموافقة عليه.',
-      rejected: 'لم يُقبل طلبك السابق. يمكنك إرسال طلب جديد.',
-      blocked: 'لا يمكنك الانضمام إلى هذه المجموعة حاليًا.',
+      legacyPending: 'طلب قديم قيد المراجعة',
+      blocked: 'لا يمكنك الوصول إلى هذه المجموعة حاليًا.',
       membersOnly: 'المحادثة والملفات وواتساب لأعضاء المجموعة فقط.',
     },
 
     leaveConfirm: {
       title: 'مغادرة المجموعة؟',
-      message: 'ستفقد الوصول إلى محادثة المجموعة وملفاتها، ويمكنك طلب الانضمام مرة أخرى لاحقًا.',
+      message: 'ستفقد الوصول إلى محادثة المجموعة وملفاتها.',
       confirm: 'مغادرة',
     },
 
@@ -2163,7 +2122,6 @@ export const ar = {
 
     emptyMine: {
       title: 'لا توجد مجموعات بعد',
-      action: 'تصفح المجموعات المتاحة',
     },
 
     errors: {

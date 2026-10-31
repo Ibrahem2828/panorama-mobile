@@ -4,32 +4,32 @@ import { useLocaleStore } from '../../../i18n';
 
 import { useTermStore } from '../../academic-term/termStore';
 import { useAuthStore } from '../../auth/store';
-import { getStudentProfileAcademicYear, useStudentProfileStore } from '../../student-profile';
-import { loadSubjectsForFaculty, toSafeSubjectsErrorMessage } from '../services';
-import type { Id, Subject, SubjectListStateSource } from '../types';
+import { loadSubjectCatalog, loadSubjectDetail, toSafeSubjectsErrorMessage } from '../services';
+import type { CatalogSubject, Id, TermFilter } from '../types';
 
 type SubjectsState = {
-  subjects: Subject[];
-  selectedSubject: Subject | null;
+  /** The whole catalogue of the student's faculty; filters are applied on screen. */
+  subjects: CatalogSubject[];
   search: string;
+  term: TermFilter;
+  /** null = every year. */
+  academicYearId: Id | null;
   isLoading: boolean;
   isRefreshing: boolean;
   errorMessage: string | null;
   lastLoadedAt: string | null;
-  lastLoadKey: string | null;
   totalCount: number;
-  stateSource: SubjectListStateSource;
-  /** null = every year / semester of the faculty (retakes), otherwise the chosen level. */
-  academicYearId: Id | null;
-  semesterId: Id | null;
-  filtersReady: boolean;
+  /** Subjects whose full description has been loaded, by id. */
+  details: Record<string, CatalogSubject>;
+  detailLoadingId: string | null;
+  detailErrors: Record<string, string>;
 
-  setLevelFilter: (filter: { academicYearId?: Id | null; semesterId?: Id | null }) => void;
   loadSubjects: () => Promise<void>;
   refreshSubjects: () => Promise<void>;
+  loadSubjectDetail: (subjectId: Id) => Promise<void>;
   setSearch: (value: string) => void;
-  setSelectedSubject: (subject: Subject | null) => void;
-  getSubjectById: (subjectId: Id) => Subject | null;
+  setTerm: (term: TermFilter) => void;
+  setAcademicYear: (academicYearId: Id | null) => void;
   clearError: () => void;
   reset: () => void;
 };
@@ -39,177 +39,67 @@ function subjectsCatalog() {
   return useLocaleStore.getState().t.subjects;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-function toId(value: unknown): Id | null {
-  if (typeof value === 'string' || typeof value === 'number') {
-    return value;
-  }
-
-  if (isRecord(value)) {
-    const id = value.id;
-
-    if (typeof id === 'string' || typeof id === 'number') {
-      return id;
-    }
-  }
-
-  return null;
-}
-
-function isSameId(left: Id, right: Id): boolean {
-  return String(left) === String(right);
-}
-
-function getAcademicIdentity() {
-  const studentProfileState = useStudentProfileStore.getState();
-  const profile = studentProfileState.profile;
-  const facultyId = toId(profile?.faculty) ?? studentProfileState.selectedFacultyId;
-  const majorId = toId(profile?.major) ?? studentProfileState.selectedMajorId;
-  const academicYearId =
-    toId(getStudentProfileAcademicYear(profile)) ?? studentProfileState.selectedAcademicYearId;
-  const semesterId = toId(profile?.semester) ?? studentProfileState.selectedSemesterId;
-
-  return {
-    facultyId,
-    majorId,
-    academicYearId,
-    semesterId,
-    source: facultyId ? ('studentProfile' as const) : ('unknown' as const),
-  };
-}
-
-function buildLoadKey(input: {
-  userId: Id | null;
-  facultyId: Id;
-  majorId?: Id | null;
-  academicYearId?: Id | null;
-  semesterId?: Id | null;
-}) {
-  return [
-    input.userId ?? 'anonymous',
-    input.facultyId,
-    input.majorId ?? 'no-major',
-    input.academicYearId ?? 'all-years',
-    input.semesterId ?? 'all-semesters',
-  ].join(':');
-}
-
 const initialSubjectsState = {
-  subjects: [],
-  selectedSubject: null,
+  subjects: [] as CatalogSubject[],
   search: '',
+  term: 'all' as TermFilter,
+  academicYearId: null as Id | null,
   isLoading: false,
   isRefreshing: false,
-  errorMessage: null,
-  lastLoadedAt: null,
-  lastLoadKey: null,
+  errorMessage: null as string | null,
+  lastLoadedAt: null as string | null,
   totalCount: 0,
-  stateSource: 'unknown' as const,
-  academicYearId: null,
-  semesterId: null,
-  filtersReady: false,
+  details: {} as Record<string, CatalogSubject>,
+  detailLoadingId: null as string | null,
+  detailErrors: {} as Record<string, string>,
 };
 
 let latestRequest = 0;
 
 export const useSubjectsStore = create<SubjectsState>((set, get) => {
   async function load(mode: 'load' | 'refresh') {
-    const { isLoading, isRefreshing, lastLoadedAt, lastLoadKey } = get();
+    const { isLoading, isRefreshing, lastLoadedAt } = get();
 
-    if (mode === 'load' && (isLoading || isRefreshing)) {
+    if (mode === 'load' && (isLoading || isRefreshing || lastLoadedAt)) {
       return;
     }
+    if (mode === 'refresh' && isRefreshing) {
+      return;
+    }
+
     latestRequest += 1;
     const requestId = latestRequest;
-
-    const { accessToken, user } = useAuthStore.getState();
-    const identity = getAcademicIdentity();
-    const { facultyId, majorId, source } = identity;
-
-    // First load shows the semester the university is in now, for every year: students may take subjects of any
-    // year or semester, so their own level never narrows the list. Without a known term nothing is narrowed.
-    if (!get().filtersReady) {
-      const term = await useTermStore.getState().loadCurrentTerm();
-
-      if (requestId !== latestRequest) {
-        return;
-      }
-
-      set({
-        academicYearId: null,
-        semesterId: term ? term.semester.id : null,
-        filtersReady: true,
-      });
-    }
-    const { academicYearId, semesterId } = get();
-
-    if (!facultyId) {
-      set({
-        subjects: [],
-        selectedSubject: null,
-        isLoading: false,
-        isRefreshing: false,
-        errorMessage: subjectsCatalog().errors.missingFaculty,
-        lastLoadedAt: null,
-        lastLoadKey: null,
-        totalCount: 0,
-        stateSource: source,
-      });
-      return;
-    }
-
-    const nextLoadKey = buildLoadKey({
-      userId: user?.id ?? null,
-      facultyId,
-      majorId,
-      academicYearId,
-      semesterId,
-    });
-
-    if (mode === 'load' && lastLoadedAt && lastLoadKey === nextLoadKey) {
-      return;
-    }
+    const { accessToken } = useAuthStore.getState();
 
     set({
       isLoading: mode === 'load',
       isRefreshing: mode === 'refresh',
       errorMessage: null,
-      stateSource: source,
     });
 
+    // The header chip and the section order need the current term; without it the list still works.
+    void useTermStore.getState().loadCurrentTerm();
+
     try {
-      const response = await loadSubjectsForFaculty({
-        facultyId,
-        majorId,
-        academicYearId,
-        semesterId,
-        authToken: accessToken,
-      });
+      const { subjects, count } = await loadSubjectCatalog(accessToken);
+
       if (requestId !== latestRequest) {
-        return; // a newer filter change superseded this response
+        return;
       }
-      const selectedSubject = get().selectedSubject;
-      const nextSelectedSubject = selectedSubject
-        ? (response.results.find((subject) => isSameId(subject.id, selectedSubject.id)) ?? null)
-        : null;
 
       set({
-        subjects: response.results,
-        selectedSubject: nextSelectedSubject,
+        subjects,
+        totalCount: count,
         isLoading: false,
         isRefreshing: false,
         errorMessage: null,
         lastLoadedAt: new Date().toISOString(),
-        lastLoadKey: nextLoadKey,
-        totalCount: response.count,
       });
     } catch (error) {
       if (requestId !== latestRequest) {
         return;
       }
+
       set({
         isLoading: false,
         isRefreshing: false,
@@ -229,26 +119,44 @@ export const useSubjectsStore = create<SubjectsState>((set, get) => {
       await load('refresh');
     },
 
-    setLevelFilter(filter) {
-      set((state) => ({
-        academicYearId:
-          filter.academicYearId === undefined ? state.academicYearId : filter.academicYearId,
-        semesterId: filter.semesterId === undefined ? state.semesterId : filter.semesterId,
-        filtersReady: true,
-      }));
-      void load('refresh');
+    async loadSubjectDetail(subjectId) {
+      const key = String(subjectId);
+      const { accessToken } = useAuthStore.getState();
+
+      set((state) => {
+        const detailErrors = { ...state.detailErrors };
+        delete detailErrors[key];
+        return { detailLoadingId: key, detailErrors };
+      });
+
+      try {
+        const subject = await loadSubjectDetail(subjectId, accessToken);
+
+        set((state) => ({
+          details: { ...state.details, [key]: subject },
+          detailLoadingId: state.detailLoadingId === key ? null : state.detailLoadingId,
+        }));
+      } catch (error) {
+        set((state) => ({
+          detailLoadingId: state.detailLoadingId === key ? null : state.detailLoadingId,
+          detailErrors: {
+            ...state.detailErrors,
+            [key]: toSafeSubjectsErrorMessage(error, subjectsCatalog()),
+          },
+        }));
+      }
     },
 
     setSearch(value) {
       set({ search: value });
     },
 
-    setSelectedSubject(subject) {
-      set({ selectedSubject: subject });
+    setTerm(term) {
+      set({ term });
     },
 
-    getSubjectById(subjectId) {
-      return get().subjects.find((subject) => isSameId(subject.id, subjectId)) ?? null;
+    setAcademicYear(academicYearId) {
+      set({ academicYearId });
     },
 
     clearError() {
@@ -256,6 +164,7 @@ export const useSubjectsStore = create<SubjectsState>((set, get) => {
     },
 
     reset() {
+      latestRequest += 1;
       set(initialSubjectsState);
     },
   };

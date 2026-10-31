@@ -2,43 +2,27 @@ import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppBadge, AppText, Icon } from '../../../components';
-import { useTranslation, type TranslationCatalog } from '../../../i18n';
+import { useTranslation } from '../../../i18n';
 import { colors, radius, shadows, useBrand } from '../../../theme';
-import { getSubjectCode, getSubjectDisplayName, parseSubjectMeta } from '../services';
-import type { Subject } from '../types';
-import { useSubjectLabels } from '../useSubjectLabels';
 import { getIsRTL, isolateLtr } from '../../../utils/rtl';
+import { formatLevelChip, getSubjectBadges } from '../services';
+import type { CatalogSubject } from '../types';
 
 type SubjectCardProps = {
-  subject: Subject;
+  subject: CatalogSubject;
   onPress?: () => void;
 };
 
-function getCountBadges(subject: Subject, t: TranslationCatalog) {
-  return [
-    typeof subject.files_count === 'number' ? t.subjects.filesCount(subject.files_count) : null,
-    typeof subject.groups_count === 'number' ? t.subjects.groupsCount(subject.groups_count) : null,
-    typeof subject.lectures_count === 'number'
-      ? t.subjects.lecturesCount(subject.lectures_count)
-      : null,
-  ].filter((value): value is string => Boolean(value));
-}
-
+/** A read-only catalogue card: name, code, year and semester, and the student's own state. Tapping opens the details. */
 function SubjectCardComponent({ subject, onPress }: SubjectCardProps) {
   const { t } = useTranslation();
   const brand = useBrand();
-  const title = getSubjectDisplayName(subject, t.subjects);
-  const code = getSubjectCode(subject);
-  const { credits, category, englishName } = parseSubjectMeta(subject);
-  const labels = useSubjectLabels();
-  const academicYear = labels.year(subject.academic_year);
-  const semester = labels.semester(subject.semester);
-  const major = labels.major(subject.major);
-  const countBadges = getCountBadges(subject, t);
+  const level = formatLevelChip(subject, t.subjects);
+  const badges = getSubjectBadges(subject);
 
   return (
     <Pressable
-      accessibilityLabel={title}
+      accessibilityLabel={subject.name}
       accessibilityRole="button"
       android_ripple={{ color: brand.primarySoft }}
       disabled={!onPress}
@@ -53,31 +37,23 @@ function SubjectCardComponent({ subject, onPress }: SubjectCardProps) {
           </View>
           <View style={styles.titleBlock}>
             <AppText numberOfLines={2} variant="title">
-              {title}
+              {subject.name}
             </AppText>
-            {englishName ? (
+            {subject.code ? (
               <AppText color="muted" numberOfLines={1} style={styles.ltr} variant="caption">
-                {englishName}
+                {isolateLtr(subject.code)}
               </AppText>
             ) : null}
           </View>
-          {code ? (
-            <View style={[styles.codeBox, { backgroundColor: brand.primarySoft }]}>
-              <AppText style={{ color: brand.primary }} variant="caption" weight="700">
-                {isolateLtr(code)}
-              </AppText>
-            </View>
-          ) : null}
         </View>
         <View style={styles.badges}>
-          {academicYear ? <AppBadge label={academicYear} variant="info" /> : null}
-          {semester ? <AppBadge label={semester} variant="neutral" /> : null}
-          {credits ? <AppBadge label={credits} variant="neutral" /> : null}
-          {category ? <AppBadge label={category} variant="brand" /> : null}
-          <AppBadge label={major ?? t.subjects.general} variant={major ? 'warning' : 'success'} />
-          {countBadges.map((label) => (
-            <AppBadge key={label} label={label} variant="neutral" />
-          ))}
+          {level ? <AppBadge label={level} variant="info" /> : null}
+          {badges.includes('enrolled') ? (
+            <AppBadge label={t.subjects.badges.enrolled} variant="success" />
+          ) : null}
+          {badges.includes('currentTerm') ? (
+            <AppBadge label={t.subjects.badges.currentTerm} variant="brand" />
+          ) : null}
         </View>
       </View>
     </Pressable>
@@ -110,6 +86,5 @@ const styles = StyleSheet.create({
   titleBlock: { flex: 1, minWidth: 0, gap: 2 },
   // Latin text keeps its own order but stays on the same edge as the Arabic title.
   ltr: { writingDirection: 'ltr', textAlign: getIsRTL() ? 'right' : 'left' },
-  codeBox: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.full },
   badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
 });

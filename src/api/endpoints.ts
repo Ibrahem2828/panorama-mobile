@@ -39,6 +39,9 @@ export const endpoints = {
     majorsForFaculty: (facultyId: EndpointId) => `${API_PREFIX}/faculties/${facultyId}/majors/`,
     subjectsForFaculty: (facultyId: EndpointId) => `${API_PREFIX}/faculties/${facultyId}/subjects/`,
     subjectsForMajor: (majorId: EndpointId) => `${API_PREFIX}/majors/${majorId}/subjects/`,
+    /** Read-only catalogue of the student's faculty: every year and semester, with the enrolled flag. */
+    subjectCatalog: `${API_PREFIX}/subjects/`,
+    subjectCatalogDetail: (subjectId: EndpointId) => `${API_PREFIX}/subjects/${subjectId}/`,
   },
   verification: {
     submit: `${API_PREFIX}/verification/submit/`,
@@ -56,10 +59,8 @@ export const endpoints = {
     detail: (announcementId: EndpointId) => `${API_PREFIX}/announcements/${announcementId}/`,
   },
   groups: {
-    available: `${API_PREFIX}/groups/available/`,
     my: `${API_PREFIX}/groups/my/`,
     detail: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/`,
-    join: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/join/`,
     leave: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/leave/`,
     files: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/files/`,
     messages: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/messages/`,

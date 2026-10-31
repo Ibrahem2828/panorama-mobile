@@ -1,11 +1,14 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import {
+  AppBadge,
+  AppCard,
   AppHeader,
   AppScreen,
+  AppText,
   BrandRefreshControl,
   ErrorState,
   SectionHeader,
@@ -13,74 +16,69 @@ import {
   SkeletonList,
   Stack,
 } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { GroupsRoutes, SharedRoutes, TabRoutes } from '../../../navigation/routes';
 import type { AppTabsParamList, SubjectsStackParamList } from '../../../navigation/types';
-import { spacing } from '../../../theme';
-import { SubjectDetailHeader, SubjectLinkedSectionCard } from '../components';
-import { useSubjectsStore } from '../store';
-import type { Subject } from '../types';
-import { useTranslation } from '../../../i18n';
+import { colors, radius, spacing } from '../../../theme';
+import { isolateLtr } from '../../../utils/rtl';
 import { GroupWhatsAppCard, useSubjectGroupAccess } from '../../groups';
 import { SubjectLecturesSection } from '../../lectures';
-import { SubjectLockedCard } from '../components/SubjectLockedCard';
-import { getSubjectDisplayName } from '../services';
+import { SubjectLinkedSectionCard } from '../components';
+import { formatSemesterName, formatYearName, sameId } from '../services';
+import { useSubjectsStore } from '../store';
 
 type SubjectDetailsScreenProps = NativeStackScreenProps<SubjectsStackParamList, 'SubjectDetails'>;
 type AppTabsNavigation = BottomTabNavigationProp<AppTabsParamList>;
 
-function isSameSubjectId(subject: Subject, subjectId: string | number) {
-  return String(subject.id) === String(subjectId);
+function InfoRow({ label, value }: { label: string; value: string | null }) {
+  if (!value) {
+    return null;
+  }
+
+  return (
+    <View style={styles.infoRow}>
+      <AppText color="muted" variant="caption">
+        {label}
+      </AppText>
+      <AppText style={styles.infoValue} variant="bodySmall" weight="600">
+        {value}
+      </AppText>
+    </View>
+  );
 }
 
+/**
+ * Read-only subject information: name, code, year and semester, specialization, faculty and the full course
+ * description, plus a plain "enrolled" status. Nothing on this screen starts a join, a registration or a request.
+ * Students who are already members of the subject's group also see its chat, files and lectures.
+ */
 export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreenProps) {
   const { t } = useTranslation();
   const { subjectId } = route.params;
-  const selectedSubject = useSubjectsStore((state) => state.selectedSubject);
-  const subjects = useSubjectsStore((state) => state.subjects);
-  const isLoading = useSubjectsStore((state) => state.isLoading);
-  const isRefreshing = useSubjectsStore((state) => state.isRefreshing);
-  const errorMessage = useSubjectsStore((state) => state.errorMessage);
-  const refreshSubjects = useSubjectsStore((state) => state.refreshSubjects);
-  const setSelectedSubject = useSubjectsStore((state) => state.setSelectedSubject);
-  const didAttemptReload = useRef(false);
-  const subject =
-    selectedSubject && isSameSubjectId(selectedSubject, subjectId)
-      ? selectedSubject
-      : (subjects.find((item) => isSameSubjectId(item, subjectId)) ?? null);
+  const listRow = useSubjectsStore((state) =>
+    state.subjects.find((item) => sameId(item.id, subjectId)),
+  );
+  const detail = useSubjectsStore((state) => state.details[String(subjectId)]);
+  const detailLoading = useSubjectsStore((state) => state.detailLoadingId === String(subjectId));
+  const detailError = useSubjectsStore((state) => state.detailErrors[String(subjectId)]);
+  const loadSubjectDetail = useSubjectsStore((state) => state.loadSubjectDetail);
+  const subject = detail ?? listRow ?? null;
   const access = useSubjectGroupAccess(subjectId);
-  const isBusy = isLoading || isRefreshing;
 
   useEffect(() => {
-    if (!subject || selectedSubject?.id !== subject.id) {
-      setSelectedSubject(subject);
-    }
-  }, [selectedSubject?.id, setSelectedSubject, subject]);
+    void loadSubjectDetail(subjectId);
+  }, [loadSubjectDetail, subjectId]);
 
-  useEffect(() => {
-    if (!subject && !didAttemptReload.current && !isBusy) {
-      didAttemptReload.current = true;
-      void refreshSubjects();
-    }
-  }, [isBusy, refreshSubjects, subject]);
-
-  function handleRetry() {
-    didAttemptReload.current = true;
-    void refreshSubjects();
+  function handleRefresh() {
+    void loadSubjectDetail(subjectId);
     void access.reload();
-  }
-
-  function handleOpenGroups() {
-    navigation.getParent<AppTabsNavigation>()?.navigate(TabRoutes.Groups, {
-      screen: GroupsRoutes.AvailableGroups,
-      params: { subjectId: subject?.id },
-    });
   }
 
   function handleOpenFiles() {
     // Pushed onto the Subjects stack so Back returns to this subject.
     navigation.navigate(SharedRoutes.FilesList, {
       subjectId: subject?.id,
-      subjectName: subject ? getSubjectDisplayName(subject, t.subjects) : undefined,
+      subjectName: subject?.name,
     });
   }
 
@@ -93,11 +91,11 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
     });
   }
 
-  if (!subject && isBusy) {
+  if (!subject && detailLoading) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
-        <AppHeader title={t.subjects.title} />
-        <Skeleton height={180} borderRadius={24} />
+        <AppHeader title={t.subjects.details.title} />
+        <Skeleton borderRadius={24} height={160} />
         <SkeletonList count={2} />
       </AppScreen>
     );
@@ -107,10 +105,10 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         <Stack gap="lg">
-          <AppHeader subtitle={t.subjects.details.subtitle} title={t.subjects.title} />
+          <AppHeader title={t.subjects.details.title} />
           <ErrorState
-            message={errorMessage ?? t.subjects.details.unavailableMessage}
-            onRetry={handleRetry}
+            message={detailError ?? t.subjects.details.unavailableMessage}
+            onRetry={handleRefresh}
             title={t.subjects.details.unavailableTitle}
           />
         </Stack>
@@ -118,27 +116,86 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
     );
   }
 
+  const description = detail?.description ?? null;
+  const descriptionPending = !detail && detailLoading;
+  const descriptionFailed = !detail && Boolean(detailError);
+
   return (
     <AppScreen
       contentContainerStyle={styles.content}
-      refreshControl={<BrandRefreshControl onRefresh={handleRetry} refreshing={isRefreshing} />}
+      refreshControl={<BrandRefreshControl onRefresh={handleRefresh} refreshing={detailLoading} />}
       scroll
     >
       <Stack gap="xl">
-        <AppHeader subtitle={t.subjects.details.listSubtitle} title={t.subjects.title} />
+        <AppHeader title={t.subjects.details.title} />
 
-        <SubjectDetailHeader subject={subject} />
+        <AppCard variant="elevated">
+          <Stack gap="md">
+            <AppText variant="h2">{subject.name}</AppText>
+            {subject.code ? (
+              <AppText color="secondary" style={styles.code} variant="bodySmall">
+                {t.subjects.details.codeLabel}: {isolateLtr(subject.code)}
+              </AppText>
+            ) : null}
+            <View style={styles.badges}>
+              {subject.isEnrolled ? (
+                <AppBadge label={t.subjects.badges.enrolled} variant="success" />
+              ) : null}
+              {subject.inCurrentTerm ? (
+                <AppBadge label={t.subjects.badges.currentTerm} variant="brand" />
+              ) : null}
+            </View>
+            {subject.isEnrolled ? (
+              <AppText color="success" variant="bodySmall" weight="600">
+                {t.subjects.details.enrolledStatus}
+              </AppText>
+            ) : null}
+          </Stack>
+        </AppCard>
+
+        <AppCard variant="muted">
+          <Stack gap="xs">
+            <InfoRow
+              label={t.subjects.details.academicYearLabel}
+              value={
+                subject.academicYear ? formatYearName(subject.academicYear.name, t.subjects) : null
+              }
+            />
+            <InfoRow
+              label={t.subjects.details.semesterLabel}
+              value={
+                subject.semester ? formatSemesterName(subject.semester.name, t.subjects) : null
+              }
+            />
+            <InfoRow label={t.subjects.details.majorLabel} value={subject.major?.name ?? null} />
+            <InfoRow
+              label={t.subjects.details.facultyLabel}
+              value={subject.faculty?.name ?? null}
+            />
+          </Stack>
+        </AppCard>
 
         <Stack gap="md">
-          <SectionHeader title={t.subjects.details.linkedTitle} />
-          <SubjectLinkedSectionCard
-            description={t.subjects.details.groupsDescription}
-            icon="users"
-            onPress={handleOpenGroups}
-            title={t.subjects.details.groupsTitle}
-          />
-          {access.status === 'member' ? (
-            <>
+          <SectionHeader title={t.subjects.details.descriptionTitle} />
+          {descriptionPending ? (
+            <Skeleton borderRadius={radius.lg} height={96} />
+          ) : descriptionFailed && subject.hasDescription ? (
+            <ErrorState message={t.subjects.details.descriptionError} onRetry={handleRefresh} />
+          ) : description ? (
+            <AppText color="secondary" variant="body">
+              {description}
+            </AppText>
+          ) : (
+            <AppText color="muted" variant="bodySmall">
+              {t.subjects.details.noDescription}
+            </AppText>
+          )}
+        </Stack>
+
+        {access.status === 'member' ? (
+          <>
+            <Stack gap="md">
+              <SectionHeader title={t.subjects.details.linkedTitle} />
               <SubjectLinkedSectionCard
                 description={t.subjects.details.chatDescription}
                 icon="chat"
@@ -151,19 +208,11 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
                 onPress={handleOpenFiles}
                 title={t.subjects.details.filesTitle}
               />
-            </>
-          ) : null}
-        </Stack>
-        {access.status === 'member' && access.group ? (
-          <GroupWhatsAppCard canLaunch groupId={access.group.id} />
+            </Stack>
+            {access.group ? <GroupWhatsAppCard canLaunch groupId={access.group.id} /> : null}
+            <SubjectLecturesSection subjectId={subject.id} />
+          </>
         ) : null}
-        {access.status === 'member' ? (
-          <SubjectLecturesSection subjectId={subject.id} />
-        ) : access.status === 'loading' ? null : access.status === 'error' ? (
-          <ErrorState message={t.subjects.locked.loadError} onRetry={() => void access.reload()} />
-        ) : (
-          <SubjectLockedCard membership={access.membership} onOpenGroups={handleOpenGroups} />
-        )}
       </Stack>
     </AppScreen>
   );
@@ -172,5 +221,26 @@ export function SubjectDetailsScreen({ navigation, route }: SubjectDetailsScreen
 const styles = StyleSheet.create({
   content: {
     gap: spacing.xl,
+  },
+  code: {
+    writingDirection: 'ltr',
+  },
+  badges: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+    minHeight: 28,
+    paddingVertical: spacing.xs,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border.default,
+  },
+  infoValue: {
+    flexShrink: 1,
   },
 });

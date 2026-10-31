@@ -149,7 +149,7 @@ export const en: TranslationCatalog = {
       },
       {
         imageLabel: 'Illustration of subject groups',
-        title: 'Join your subject groups',
+        title: 'Your subject groups in one place',
         description:
           'Follow the discussions, announcements and files for your subjects and university.',
       },
@@ -295,9 +295,10 @@ export const en: TranslationCatalog = {
 
     guard: {
       title: 'Chat is for members only',
-      message: 'Join the group and wait for approval to read and take part in the chat.',
+      message:
+        'Chat is for group members. You are added to your subjects’ groups automatically once your subject registration is approved.',
       pendingMessage:
-        'Your join request is under review. The chat opens as soon as it is approved.',
+        'An old request is under review. The chat opens when your subject registration is approved.',
       removedTitle: 'You can no longer open this chat',
       removedMessage:
         'Your membership in this group has changed. Go back to the group for details.',
@@ -454,71 +455,50 @@ export const en: TranslationCatalog = {
 
   subjects: {
     title: 'Subjects',
-    subtitle: 'The subjects of your faculty',
-    loading: 'Loading subjects...',
-    listTitle: 'Subject list',
-    listSubtitle:
-      'Subjects are shown for your year and semester by default. Use the filters to change that.',
+    subtitle: 'Every subject of your faculty: the current and the other semester',
+    searchLabel: 'Search subjects',
     searchPlaceholder: 'Search by subject name or code',
-    searchNote: (shown: number, total: number) =>
-      `Search covers the subjects shown. Results: ${shown} of ${total}.`,
-    emptyTitle: 'No subjects',
-    emptyMessage: 'No subjects are available right now.',
-    emptyIllustrationAlt: 'Illustration showing no subjects',
-    untitled: 'Unnamed subject',
-    badge: 'Subject',
-    codeLabel: (code: string) => `Subject code: ${code}`,
-    filters: {
-      year: 'Year',
-      semester: 'Semester',
+    currentTermChip: (name: string) => `Current semester: ${name}`,
+    termFilterLabel: 'Show subjects',
+    termFilters: {
+      current: 'Current semester',
+      other: 'Other semester',
       all: 'All',
-      currentTerm: 'Current',
     },
-    locked: {
-      title: 'Lectures and files are for subject group members',
-      message: 'Join this subject’s group and wait for approval to unlock its lectures and files.',
-      pending:
-        'Your join request is under review. Lectures and files unlock as soon as it is approved.',
-      join: 'Join the subject group',
-      openGroup: 'View the subject group',
-      rejected:
-        'Your request to join the subject group was declined. You can send a new request to unlock lectures and files.',
-      blocked:
-        'You are blocked from this subject’s group, so lectures and files are unavailable. Contact support if this is a mistake.',
-      left: 'You left this subject’s group. Join again to unlock lectures and files.',
-      rejoin: 'Send a new join request',
-      loadError:
-        'We could not check your membership in the subject group. Check your connection and try again.',
+    yearFilterLabel: 'Year',
+    allYears: 'All years',
+    badges: {
+      enrolled: 'Enrolled',
+      currentTerm: 'Current semester',
     },
-    general: 'General subject',
-    resultsCount: (count: number) => `${count} subjects`,
-    levelHint:
-      'Subjects of the current semester are shown for every year. You can register subjects from any year or semester; choose “All” or a specific year to browse others.',
+    emptyTitle: 'No subjects',
+    emptyMessage: 'There are no subjects to show right now.',
+    emptyFilteredMessage: 'No subjects match your selection. Change the semester, year or search.',
+    emptyIllustrationAlt: 'Illustration showing no subjects',
+    resetFilters: 'Show all subjects',
+    untitled: 'Unnamed subject',
     codeBadge: (code: string) => `Code ${code}`,
-    filesCount: (count: number) => `${count} files`,
-    groupsCount: (count: number) => `${count} groups`,
-    lecturesCount: (count: number) => `${count} lectures`,
+    resultsCount: (count: number) => `${count} subjects`,
+    offlineNote: 'Showing a saved copy of the subjects. It updates when you are back online.',
     academicYear: (name: string) => `Year: ${name}`,
     semester: (name: string) => `Semester: ${name}`,
 
     details: {
-      subtitle: 'Subject details',
-      listSubtitle: 'Subject details',
-      loading: 'Loading subject details...',
-      unavailableTitle: 'Subject unavailable',
-      unavailableMessage: 'This subject could not be found.',
+      title: 'Subject details',
+      codeLabel: 'Subject code',
       academicYearLabel: 'Academic year',
       semesterLabel: 'Semester',
       majorLabel: 'Specialization',
-      orderLabel: 'Order',
+      facultyLabel: 'Faculty',
+      descriptionTitle: 'Course description',
+      noDescription: 'This course has no description yet',
+      descriptionError: 'Could not load the course description. Please try again.',
+      enrolledStatus: 'You are enrolled in this course',
+      unavailableTitle: 'Subject unavailable',
+      unavailableMessage: 'This subject could not be found.',
       linkedTitle: 'Subject content',
       filesTitle: 'Files',
       filesDescription: 'Browse the files and summaries available for this subject.',
-      groupsTitle: 'Groups',
-      groupsDescription:
-        'Join this subject’s groups and follow the discussion with your classmates.',
-      announcementsTitle: 'Announcements',
-      announcementsDescription: 'There are no announcements for this subject right now.',
       chatTitle: 'Group chat',
       chatDescription: 'Talk with your classmates and the subject group members.',
     },
@@ -527,7 +507,6 @@ export const en: TranslationCatalog = {
       network: 'Could not load subjects. Check your connection and try again.',
       unauthorized: 'Your session has ended. Sign in again to continue.',
       generic: 'Could not load subjects. Please try again.',
-      missingFaculty: 'Complete your academic details first to see your subjects.',
     },
   },
 
@@ -739,8 +718,6 @@ export const en: TranslationCatalog = {
     subtitle: 'Upload your Learnata screenshot and pick your subjects',
     cardTitle: 'Register your subjects for this term',
     cardBody: 'Once approved, your subjects’ groups, chat and files open up.',
-    joinByRegistration:
-      'Subject groups open after your subject registration is approved. Tap “Register your subjects” on the Groups page.',
     loading: 'Loading...',
     loadError: 'Could not load your registration status. Please try again.',
     stepOf: (step: number, total: number) => `Step ${step} of ${total}`,
@@ -843,9 +820,9 @@ export const en: TranslationCatalog = {
     failed: 'Search failed. Please try again.',
     noMatches: 'No matches.',
     title: 'Search',
-    subtitle: 'Search your subjects, groups and files',
+    subtitle: 'Search your subjects, files and announcements',
     label: 'Search term',
-    placeholder: 'A subject, group or file name',
+    placeholder: 'A subject, file or announcement name',
     loading: 'Searching...',
     partialResults:
       'Some results are missing because one section could not be searched. Try again.',
@@ -864,15 +841,11 @@ export const en: TranslationCatalog = {
     noResultsMessage: 'Try fewer words, or a different name.',
     resultsCount: (count: number) => (count === 1 ? '1 result' : `${count} results`),
     subjectsSection: 'Subjects',
-    groupsSection: 'Groups',
     filesSection: 'Files',
     kindSubject: 'Subject',
-    kindGroup: 'Group',
     kindFile: 'File',
     untitledSubject: 'Unnamed subject',
     subjectSubtitle: 'Academic subject',
-    untitledGroup: 'Unnamed group',
-    groupSubtitle: 'Study group',
     untitledFile: 'Untitled file',
     fileSubtitle: 'File available in the app',
 
@@ -1695,7 +1668,7 @@ export const en: TranslationCatalog = {
       welcome: 'Welcome',
       guest: 'Student',
       notifications: 'Notifications',
-      searchPlaceholder: 'Search subjects, groups or files',
+      searchPlaceholder: 'Search subjects or files',
     },
 
     greeting: {
@@ -1751,13 +1724,13 @@ export const en: TranslationCatalog = {
       subjects: 'Subjects',
       subjectsDescription: 'Browse your faculty’s subjects.',
       groups: 'Groups',
-      groupsDescription: 'Join your subjects’ groups and follow the discussion.',
+      groupsDescription: 'Follow your subjects’ groups and the discussion with your classmates.',
       lectures: 'Lectures',
       lecturesDescription: 'Read your subject lectures and general lectures in the app.',
       files: 'Files',
       filesDescription: 'Open your subject files inside the app.',
       search: 'Search',
-      searchDescription: 'Search subjects, groups and files.',
+      searchDescription: 'Search subjects, files and announcements.',
       printing: 'Printing',
       printingDescription: 'Request file printing and track your orders.',
       support: 'Support',
@@ -2022,25 +1995,18 @@ export const en: TranslationCatalog = {
 
     overview: {
       subtitle: 'Academic groups',
-      intro: 'Join your subjects’ groups and follow discussions and files with your classmates.',
+      intro:
+        'You are added to your subjects’ groups automatically once your subject registration is approved, and follow discussions and files with your classmates there.',
       destinationsTitle: 'Start here',
-      destinationsSubtitle: 'Follow your groups, or browse the groups available in your faculty.',
-      myGroupsDescription: 'Your groups and the join requests you sent.',
-      availableDescription: 'Groups you can request to join.',
+      destinationsSubtitle: 'Register your subjects for this semester, or follow your groups.',
+      myGroupsDescription: 'Your subjects’ groups, chat and files.',
     },
 
     mine: {
       title: 'My groups',
       subtitle: 'Groups you belong to',
       loading: 'Loading your groups...',
-      emptyMessage: 'You have not joined any group yet.',
-    },
-
-    available: {
-      title: 'Available groups',
-      subtitle: 'Groups you can request to join',
-      loading: 'Loading available groups...',
-      emptyMessage: 'No groups are available right now.',
+      emptyMessage: 'Your groups will appear here once your subject registration is approved.',
     },
 
     list: {
@@ -2057,7 +2023,6 @@ export const en: TranslationCatalog = {
       backToGroups: 'Back to groups',
       unavailableTitle: 'Group unavailable',
       unavailableMessage: 'Could not load this group. Please try again.',
-      join: 'Request to join',
       leave: 'Leave group',
       contentTitle: 'Group content',
       contentSubtitle: 'Chat and files for the members of this group.',
@@ -2085,7 +2050,7 @@ export const en: TranslationCatalog = {
     },
 
     membership: {
-      pending: 'Awaiting approval',
+      pending: 'Old request under review',
       member: 'Member',
       rejected: 'Rejected',
       blocked: 'Blocked',
@@ -2113,41 +2078,30 @@ export const en: TranslationCatalog = {
     },
 
     messages: {
-      joinSuccess: 'Your join request has been sent.',
-      joinApproved: 'You have joined the group.',
       leaveSuccess: 'You have left the group.',
-      joinError: 'Could not send the join request. Please try again.',
       leaveError: 'Could not leave the group. Please try again.',
     },
 
     available2: {
-      subjectFilterActive: 'Showing the groups of one subject only.',
-      showAllGroups: 'Show all groups',
       resultsCount: (count: number) => (count === 1 ? '1 group' : `${count} groups`),
       searchLabel: 'Search',
-      loadMore: 'Show more',
-      loadingMore: 'Loading more...',
     },
 
     card: {
       subjectCode: (code: string) => `Subject code ${code}`,
       whatsAppAvailable: 'WhatsApp available',
-      joinShort: 'Request to join',
-      pendingShort: 'Awaiting approval',
       openGroup: (name: string) => `Open group ${name}`,
     },
 
     notices: {
-      pending: 'Your request is being reviewed. You will be notified once it is approved.',
-      rejected: 'Your previous request was not accepted. You can send a new one.',
-      blocked: 'You cannot join this group right now.',
+      legacyPending: 'Old request under review',
+      blocked: 'You cannot access this group right now.',
       membersOnly: 'Chat, files and WhatsApp are available to group members only.',
     },
 
     leaveConfirm: {
       title: 'Leave this group?',
-      message:
-        'You will lose access to the group chat and files. You can request to join again later.',
+      message: 'You will lose access to the group chat and files.',
       confirm: 'Leave',
     },
 
@@ -2167,7 +2121,6 @@ export const en: TranslationCatalog = {
 
     emptyMine: {
       title: 'No groups yet',
-      action: 'Browse available groups',
     },
 
     errors: {
