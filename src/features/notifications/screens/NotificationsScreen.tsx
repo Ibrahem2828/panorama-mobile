@@ -20,10 +20,7 @@ import { ProfileRoutes } from '../../../navigation/routes';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { colors, layout, spacing, useBrand } from '../../../theme';
 import { formatDate } from '../../../utils/formatDateTime';
-import {
-  NotificationCard,
-  NotificationsHeaderActions,
-} from '../components';
+import { NotificationCard, NotificationsHeaderActions } from '../components';
 import {
   groupNotificationsByDay,
   isNotificationExpired,
