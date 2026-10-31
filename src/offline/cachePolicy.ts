@@ -15,7 +15,9 @@ const ALLOW: readonly RegExp[] = [
   /^\/api\/v1\/verification\/me\/$/u,
   /^\/api\/v1\/policies\/(?:current|status)\/$/u,
   /^\/api\/v1\/announcements\/(?:\d+\/)?$/u,
-  /^\/api\/v1\/groups\/(?:available|my)\/$/u,
+  /^\/api\/v1\/groups\/my\/$/u,
+  // The read-only subject catalogue and one subject's details (course description). Only ever read, never a POST.
+  /^\/api\/v1\/subjects\/(?:\d+\/)?$/u,
   /^\/api\/v1\/groups\/\d+\/(?:files|messages)?\/?$/u,
   /^\/api\/v1\/chat\/unread\/$/u,
   /^\/api\/v1\/chat\/preferences\/$/u,

@@ -5,7 +5,6 @@ import { EnrollmentScreen } from '../../features/enrollment/screens/EnrollmentSc
 import { FileDetailsScreen } from '../../features/files/screens/FileDetailsScreen';
 import { GroupFilesScreen } from '../../features/files/screens/GroupFilesScreen';
 import { PdfViewerScreen } from '../../features/files/screens/PdfViewerScreen';
-import { AvailableGroupsScreen } from '../../features/groups/screens/AvailableGroupsScreen';
 import { GroupDetailsScreen } from '../../features/groups/screens/GroupDetailsScreen';
 import { GroupsOverviewScreen } from '../../features/groups/screens/GroupsOverviewScreen';
 import { MyGroupsScreen } from '../../features/groups/screens/MyGroupsScreen';
@@ -22,7 +21,6 @@ export function GroupsStackNavigator() {
       screenOptions={hiddenStackScreenOptions}
     >
       <Stack.Screen component={GroupsOverviewScreen} name={GroupsRoutes.GroupsOverview} />
-      <Stack.Screen component={AvailableGroupsScreen} name={GroupsRoutes.AvailableGroups} />
       <Stack.Screen component={MyGroupsScreen} name={GroupsRoutes.MyGroups} />
       <Stack.Screen component={GroupDetailsScreen} name={GroupsRoutes.GroupDetails} />
       <Stack.Screen component={GroupFilesScreen} name={GroupsRoutes.GroupFiles} />

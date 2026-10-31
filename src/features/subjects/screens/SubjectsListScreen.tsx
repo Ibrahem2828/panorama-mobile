@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { SectionList, StyleSheet, View } from 'react-native';
 
 import {
+  AppBadge,
   AppButton,
   AppHeader,
   AppScreen,
@@ -13,44 +14,57 @@ import {
   SkeletonList,
   Stack,
 } from '../../../components';
+import { useTranslation } from '../../../i18n';
 import { SubjectsRoutes } from '../../../navigation/routes';
 import type { SubjectsStackParamList } from '../../../navigation/types';
+import { useNetworkStore } from '../../../offline/networkStore';
 import { spacing } from '../../../theme';
-import { SubjectCard, SubjectLevelFilter, SubjectSearchBar } from '../components';
-import { CurrentTermCard } from '../../academic-term/components/CurrentTermCard';
-import { useTermStore } from '../../academic-term/termStore';
-import { useStudentProfileStore } from '../../student-profile';
-import { filterSubjectsBySearch } from '../services';
-import { useSubjectsStore } from '../store';
-import type { Subject } from '../types';
-import { useTranslation } from '../../../i18n';
 import { formatTime } from '../../../utils/formatDateTime';
+import { useTermStore } from '../../academic-term/termStore';
+import { SubjectCard, SubjectFilters } from '../components';
+import {
+  buildSemesterSections,
+  collectYears,
+  filterSubjects,
+  formatSemesterName,
+} from '../services';
+import { useSubjectsStore } from '../store';
+import type { CatalogSubject, SubjectSection } from '../types';
 
 type SubjectsListScreenProps = NativeStackScreenProps<SubjectsStackParamList, 'SubjectsList'>;
 
+/**
+ * The read-only subject catalogue: every subject of the student's faculty, grouped by semester with the current term
+ * first. There is no join or registration action here; a card only opens the subject's details.
+ */
 export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
   const { t, locale } = useTranslation();
   const subjects = useSubjectsStore((state) => state.subjects);
   const search = useSubjectsStore((state) => state.search);
+  const term = useSubjectsStore((state) => state.term);
+  const academicYearId = useSubjectsStore((state) => state.academicYearId);
   const isLoading = useSubjectsStore((state) => state.isLoading);
   const isRefreshing = useSubjectsStore((state) => state.isRefreshing);
   const errorMessage = useSubjectsStore((state) => state.errorMessage);
   const lastLoadedAt = useSubjectsStore((state) => state.lastLoadedAt);
-  const totalCount = useSubjectsStore((state) => state.totalCount);
   const loadSubjects = useSubjectsStore((state) => state.loadSubjects);
   const refreshSubjects = useSubjectsStore((state) => state.refreshSubjects);
   const setSearch = useSubjectsStore((state) => state.setSearch);
-  const setSelectedSubject = useSubjectsStore((state) => state.setSelectedSubject);
-  const setLevelFilter = useSubjectsStore((state) => state.setLevelFilter);
-  const academicYearId = useSubjectsStore((state) => state.academicYearId);
-  const semesterId = useSubjectsStore((state) => state.semesterId);
-  const years = useStudentProfileStore((state) => state.academicYears);
-  const semesters = useStudentProfileStore((state) => state.semesters);
-  const currentSemesterId = useTermStore((state) => state.currentTerm?.semester.id ?? null);
-  const filteredSubjects = useMemo(
-    () => filterSubjectsBySearch(subjects, search, t.subjects),
-    [subjects, search, t.subjects],
+  const setTerm = useSubjectsStore((state) => state.setTerm);
+  const setAcademicYear = useSubjectsStore((state) => state.setAcademicYear);
+  const currentTerm = useTermStore((state) => state.currentTerm);
+  const isOnline = useNetworkStore((state) => state.isOnline);
+
+  const years = useMemo(() => collectYears(subjects), [subjects]);
+  const sections = useMemo(
+    () =>
+      buildSemesterSections(
+        filterSubjects(subjects, { term, academicYearId, search }),
+        currentTerm?.semester.id ?? null,
+      ),
+    [subjects, term, academicYearId, search, currentTerm],
   );
+  const hasActiveFilter = term !== 'all' || academicYearId !== null || search.trim().length > 0;
   const showInitialLoading = isLoading && !lastLoadedAt;
   const showInitialError = Boolean(errorMessage && !lastLoadedAt);
 
@@ -58,47 +72,44 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
     void loadSubjects();
   }, [loadSubjects]);
 
-  function handleRefresh() {
+  const handleRefresh = useCallback(() => {
     void refreshSubjects();
-  }
+  }, [refreshSubjects]);
 
-  function handleSubjectPress(subject: Subject) {
-    setSelectedSubject(subject);
-    navigation.navigate(SubjectsRoutes.SubjectDetails, { subjectId: subject.id });
-  }
+  const handleResetFilters = useCallback(() => {
+    setTerm('all');
+    setAcademicYear(null);
+    setSearch('');
+  }, [setAcademicYear, setSearch, setTerm]);
 
   const renderItem = useCallback(
-    ({ item }: { item: Subject }) => (
-      <SubjectCard onPress={() => handleSubjectPress(item)} subject={item} />
+    ({ item }: { item: CatalogSubject }) => (
+      <SubjectCard
+        onPress={() => navigation.navigate(SubjectsRoutes.SubjectDetails, { subjectId: item.id })}
+        subject={item}
+      />
     ),
-    [],
+    [navigation],
   );
 
-  function renderHeader() {
-    return (
-      <Stack gap="lg">
-        <AppHeader subtitle={t.subjects.subtitle} title={t.subjects.title} />
-        <CurrentTermCard />
-        <SubjectLevelFilter
-          academicYearId={academicYearId}
-          currentSemesterId={currentSemesterId}
-          onChange={setLevelFilter}
-          semesterId={semesterId}
-          semesters={semesters}
-          years={years}
-        />
-        <AppText color="muted" variant="caption">
-          {t.subjects.levelHint}
+  const renderSectionHeader = useCallback(
+    ({ section }: { section: SubjectSection }) => (
+      <View style={styles.sectionHeader}>
+        <AppText variant="h3">
+          {section.semester
+            ? formatSemesterName(section.semester.name, t.subjects)
+            : t.subjects.untitled}
         </AppText>
-        <SubjectSearchBar
-          onChangeText={setSearch}
-          resultCount={filteredSubjects.length}
-          totalCount={subjects.length || totalCount}
-          value={search}
-        />
-      </Stack>
-    );
-  }
+        {section.isCurrent ? (
+          <AppBadge label={t.subjects.badges.currentTerm} variant="brand" />
+        ) : null}
+        <AppText color="muted" variant="caption">
+          {t.subjects.resultsCount(section.data.length)}
+        </AppText>
+      </View>
+    ),
+    [t],
+  );
 
   if (showInitialLoading) {
     return (
@@ -120,7 +131,22 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
 
   const listHeader = (
     <Stack gap="lg" style={styles.listHeader}>
-      {renderHeader()}
+      <AppHeader subtitle={t.subjects.subtitle} title={t.subjects.title} />
+      {!isOnline ? (
+        <AppText color="muted" variant="caption">
+          {t.subjects.offlineNote}
+        </AppText>
+      ) : null}
+      <SubjectFilters
+        academicYearId={academicYearId}
+        currentTermName={currentTerm?.semester.name ?? null}
+        onSearchChange={setSearch}
+        onTermChange={setTerm}
+        onYearChange={setAcademicYear}
+        search={search}
+        term={term}
+        years={years}
+      />
       {errorMessage ? <ErrorState message={errorMessage} onRetry={handleRefresh} /> : null}
     </Stack>
   );
@@ -128,8 +154,12 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
   const emptyView = errorMessage ? null : (
     <EmptyState
       action={
-        search ? (
-          <AppButton onPress={() => setSearch('')} title={t.common.searchClear} variant="outline" />
+        hasActiveFilter ? (
+          <AppButton
+            onPress={handleResetFilters}
+            title={t.subjects.resetFilters}
+            variant="outline"
+          />
         ) : (
           <AppButton
             loading={isRefreshing}
@@ -139,16 +169,18 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
           />
         )
       }
-      illustrationLabel={search ? t.common.noSearchResultsAlt : t.subjects.emptyIllustrationAlt}
-      artwork={search ? 'search' : 'subjects'}
-      message={search ? t.common.searchNoResultsMessage : t.subjects.emptyMessage}
-      title={search ? t.common.searchNoResultsTitle : t.subjects.emptyTitle}
+      artwork={hasActiveFilter ? 'search' : 'subjects'}
+      illustrationLabel={
+        hasActiveFilter ? t.common.noSearchResultsAlt : t.subjects.emptyIllustrationAlt
+      }
+      message={hasActiveFilter ? t.subjects.emptyFilteredMessage : t.subjects.emptyMessage}
+      title={hasActiveFilter ? t.common.searchNoResultsTitle : t.subjects.emptyTitle}
     />
   );
 
   return (
     <AppScreen safeArea scroll={false}>
-      <FlatList
+      <SectionList
         ItemSeparatorComponent={ListGap}
         ListEmptyComponent={emptyView}
         ListFooterComponent={
@@ -160,14 +192,15 @@ export function SubjectsListScreen({ navigation }: SubjectsListScreenProps) {
         }
         ListHeaderComponent={listHeader}
         contentContainerStyle={styles.listContent}
-        data={filteredSubjects}
         initialNumToRender={10}
         keyExtractor={keyExtractor}
         keyboardShouldPersistTaps="handled"
         maxToRenderPerBatch={10}
         refreshControl={<BrandRefreshControl onRefresh={handleRefresh} refreshing={isRefreshing} />}
-        removeClippedSubviews
         renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
+        sections={sections}
+        stickySectionHeadersEnabled={false}
         windowSize={7}
       />
     </AppScreen>
@@ -178,7 +211,7 @@ function ListGap() {
   return <View style={styles.gap} />;
 }
 
-function keyExtractor(subject: Subject) {
+function keyExtractor(subject: CatalogSubject) {
   return String(subject.id);
 }
 
@@ -192,6 +225,14 @@ const styles = StyleSheet.create({
   },
   listHeader: {
     marginBottom: spacing.lg,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+    marginTop: spacing.lg,
   },
   gap: { height: spacing.md },
   footer: { marginTop: spacing.lg },

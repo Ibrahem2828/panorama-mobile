@@ -4,8 +4,6 @@ export type MembershipKind = 'notMember' | 'pending' | 'member' | 'rejected' | '
 
 export type MembershipState = {
   kind: MembershipKind;
-  /** The student may send a (new) join request. */
-  canRequestJoin: boolean;
   canLeave: boolean;
   /** Chat, files and WhatsApp are for approved members only. */
   canOpenContent: boolean;
@@ -13,7 +11,11 @@ export type MembershipState = {
 
 const MEMBER_ROLES = new Set(['member', 'moderator', 'group_admin']);
 
-/** Single source of truth for what a student can do with a group, from the backend membership fields. */
+/**
+ * What a student can do with a group, from the backend membership fields. Joining is not one of the options: the
+ * server adds students to their subjects' groups when a subject-registration request is approved, and a `pending`
+ * status can only be a legacy request that is shown read-only.
+ */
 export function resolveMembershipState(
   group: Pick<Group, 'current_user_membership_status' | 'current_user_group_role'>,
 ): MembershipState {
@@ -21,31 +23,24 @@ export function resolveMembershipState(
   const role = group.current_user_group_role;
 
   if (status === 'blocked') {
-    return { kind: 'blocked', canRequestJoin: false, canLeave: false, canOpenContent: false };
+    return { kind: 'blocked', canLeave: false, canOpenContent: false };
   }
 
   if (status === 'approved' || (!status && role != null && MEMBER_ROLES.has(role))) {
-    return { kind: 'member', canRequestJoin: false, canLeave: true, canOpenContent: true };
+    return { kind: 'member', canLeave: true, canOpenContent: true };
   }
 
   if (status === 'pending') {
-    return { kind: 'pending', canRequestJoin: false, canLeave: false, canOpenContent: false };
+    return { kind: 'pending', canLeave: false, canOpenContent: false };
   }
 
   if (status === 'rejected') {
-    return { kind: 'rejected', canRequestJoin: true, canLeave: false, canOpenContent: false };
+    return { kind: 'rejected', canLeave: false, canOpenContent: false };
   }
 
   if (status === 'left') {
-    return { kind: 'left', canRequestJoin: true, canLeave: false, canOpenContent: false };
+    return { kind: 'left', canLeave: false, canOpenContent: false };
   }
 
-  return { kind: 'notMember', canRequestJoin: true, canLeave: false, canOpenContent: false };
-}
-
-/** Optimistic status after a join request (the backend answers pending when approval is required). */
-export function optimisticJoinStatus(
-  group: Pick<Group, 'requires_approval'>,
-): 'pending' | 'approved' {
-  return group.requires_approval === false ? 'approved' : 'pending';
+  return { kind: 'notMember', canLeave: false, canOpenContent: false };
 }

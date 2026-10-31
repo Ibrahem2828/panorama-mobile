@@ -26,7 +26,7 @@ describe('clampLimit', () => {
 
 describe('buildTypesParam', () => {
   it('always names the offered types so lectures are never requested', () => {
-    expect(buildTypesParam([])).toBe('subjects,groups,files,announcements');
+    expect(buildTypesParam([])).toBe('subjects,files,announcements');
     expect(buildTypesParam(['file', 'subject'])).toBe('subjects,files');
   });
 });
@@ -56,13 +56,14 @@ describe('normalizeSearchResponse', () => {
       title: 'تشريح',
       subtitle: 'ANA101 · الأولى · الأول',
     });
-    expect(result.groups[0]?.id).toBe('2');
+    // Groups are never searched: students do not browse groups to join them.
+    expect(result).not.toHaveProperty('groups');
     expect(result.files.map((file) => file.id)).toEqual([3, 4]);
     expect(result.files[0]).toMatchObject({ subtitle: 'تشريح · PDF', inGroup: false });
     expect(result.files[1]?.inGroup).toBe(true);
     expect(result.announcements).toHaveLength(1);
     expect(result.counts.file).toBe(12);
-    expect(result.total).toBe(15);
+    expect(result.total).toBe(14);
   });
 
   it('falls back to the returned count when the declared one is smaller or missing', () => {

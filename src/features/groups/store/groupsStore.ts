@@ -3,59 +3,39 @@ import { create } from 'zustand';
 import { useLocaleStore } from '../../../i18n';
 
 import { useAuthStore } from '../../auth/store';
-import { useFeedbackStore } from '../../feedback/store';
 import { useStudentProfileStore } from '../../student-profile';
 import {
-  loadAvailableGroups,
   loadGroupDetail,
   loadMyGroups,
   loadSubjectLabels,
-  optimisticJoinStatus,
-  requestJoinGroup,
   requestLeaveGroup,
   toSafeGroupsErrorMessage,
 } from '../services';
 import type { Group, GroupMembershipStatus, Id, SubjectLabel } from '../types';
 
-export type AvailableGroupsQuery = {
-  search: string;
-  /** Only the groups of this subject; null = every group of the student's faculty. */
-  subjectId: string | null;
-};
-
 type GroupsState = {
-  availableGroups: Group[];
   myGroups: Group[];
   selectedGroup: Group | null;
-  isLoadingAvailable: boolean;
-  isLoadingMoreAvailable: boolean;
   isLoadingMyGroups: boolean;
   /** The last my-groups load failed (so an empty list does not mean 'not a member'). */
   myGroupsLoadFailed: boolean;
   isLoadingDetail: boolean;
   isRefreshing: boolean;
   isSubmittingMembership: boolean;
-  /** Per-group in-flight membership action, so only the touched row shows a spinner. */
-  pendingActions: Record<string, 'join' | 'leave'>;
+  /** Per-group in-flight leave, so only the touched row shows a spinner. */
+  pendingActions: Record<string, 'leave'>;
   errorMessage: string | null;
-  /** Failure of a join/leave action (the lists stay visible). */
+  /** Failure of a leave action (the lists stay visible). */
   actionError: string | null;
   successMessage: string | null;
   lastLoadedAt: string | null;
-  availableCount: number;
   myGroupsCount: number;
-  availablePage: number;
-  availableHasMore: boolean;
-  availableQuery: AvailableGroupsQuery;
   subjectLabels: Record<string, SubjectLabel>;
 
-  loadAvailableGroups: (query?: Partial<AvailableGroupsQuery>) => Promise<void>;
-  loadMoreAvailableGroups: () => Promise<void>;
   loadMyGroups: () => Promise<void>;
   loadGroupDetail: (groupId: Id) => Promise<void>;
   loadSubjectLabels: () => Promise<void>;
   refreshAllGroups: () => Promise<void>;
-  joinGroup: (groupId: Id) => Promise<void>;
   leaveGroup: (groupId: Id) => Promise<void>;
   setSelectedGroup: (group: Group | null) => void;
   clearError: () => void;
@@ -118,41 +98,24 @@ function patchStatus(
   );
 }
 
-function mergeUnique(current: Group[], incoming: Group[]): Group[] {
-  const seen = new Set(current.map((group) => String(group.id)));
-
-  return [...current, ...incoming.filter((group) => !seen.has(String(group.id)))];
-}
-
-const initialQuery: AvailableGroupsQuery = { search: '', subjectId: null };
-
 const initialGroupsState = {
-  availableGroups: [] as Group[],
   myGroups: [] as Group[],
   selectedGroup: null as Group | null,
-  isLoadingAvailable: false,
-  isLoadingMoreAvailable: false,
   isLoadingMyGroups: false,
   myGroupsLoadFailed: false,
   isLoadingDetail: false,
   isRefreshing: false,
   isSubmittingMembership: false,
-  pendingActions: {} as Record<string, 'join' | 'leave'>,
+  pendingActions: {} as Record<string, 'leave'>,
   errorMessage: null as string | null,
   actionError: null as string | null,
   successMessage: null as string | null,
   lastLoadedAt: null as string | null,
-  availableCount: 0,
   myGroupsCount: 0,
-  availablePage: 0,
-  availableHasMore: false,
-  availableQuery: initialQuery,
   subjectLabels: {} as Record<string, SubjectLabel>,
 };
 
 export const useGroupsStore = create<GroupsState>((set, get) => {
-  // Bumped on every first-page request so a slow older answer can never overwrite a newer one.
-  let availableRequestId = 0;
   let subjectLabelsRequested = false;
 
   function requireToken(): string | null {
@@ -161,7 +124,6 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
     if (!accessToken) {
       set({
         errorMessage: groupsCatalog().errors.unauthorized,
-        isLoadingAvailable: false,
         isLoadingMyGroups: false,
         isLoadingDetail: false,
         isRefreshing: false,
@@ -170,27 +132,6 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
     }
 
     return accessToken;
-  }
-
-  async function fetchFirstAvailablePage(accessToken: string, query: AvailableGroupsQuery) {
-    const requestId = (availableRequestId += 1);
-    const response = await loadAvailableGroups(accessToken, {
-      page: 1,
-      search: query.search,
-      subject: query.subjectId,
-    });
-
-    if (requestId !== availableRequestId) {
-      return;
-    }
-
-    set({
-      availableGroups: response.results,
-      availableCount: response.count,
-      availablePage: 1,
-      availableHasMore: Boolean(response.next),
-      lastLoadedAt: new Date().toISOString(),
-    });
   }
 
   async function reloadMyGroups(accessToken: string) {
@@ -207,12 +148,11 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
         state.selectedGroup === null || isSameId(state.selectedGroup.id, groupId)
           ? group
           : state.selectedGroup,
-      availableGroups: replaceGroup(state.availableGroups, group),
       myGroups: replaceGroup(state.myGroups, group),
     }));
   }
 
-  function setPending(groupId: Id, action: 'join' | 'leave' | null) {
+  function setPending(groupId: Id, action: 'leave' | null) {
     set((state) => {
       const pendingActions = { ...state.pendingActions };
 
@@ -230,20 +170,19 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
     const state = get();
 
     return (
-      [state.selectedGroup, ...state.availableGroups, ...state.myGroups].find(
+      [state.selectedGroup, ...state.myGroups].find(
         (group): group is Group => group != null && isSameId(group.id, groupId),
       ) ?? null
     );
   }
 
-  /** Applies a membership status everywhere the group is shown (lists and detail). */
+  /** Applies a membership status everywhere the group is shown (list and detail). */
   function applyStatus(
     groupId: Id,
     status: GroupMembershipStatus,
     role?: Group['current_user_group_role'],
   ) {
     set((state) => ({
-      availableGroups: patchStatus(state.availableGroups, groupId, status, role),
       myGroups: patchStatus(state.myGroups, groupId, status, role),
       selectedGroup:
         state.selectedGroup && isSameId(state.selectedGroup.id, groupId)
@@ -254,91 +193,6 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
 
   return {
     ...initialGroupsState,
-
-    async loadAvailableGroups(query) {
-      const accessToken = requireToken();
-
-      if (!accessToken) {
-        return;
-      }
-
-      const nextQuery = { ...get().availableQuery, ...query };
-
-      set({
-        availableQuery: nextQuery,
-        isLoadingAvailable: true,
-        isLoadingMoreAvailable: false,
-        errorMessage: null,
-        successMessage: null,
-      });
-
-      try {
-        await fetchFirstAvailablePage(accessToken, nextQuery);
-
-        if (get().availableQuery === nextQuery) {
-          set({ isLoadingAvailable: false });
-        }
-      } catch (error) {
-        // A newer request owns the loading flag, so an outdated failure stays silent.
-        if (get().availableQuery === nextQuery) {
-          set({
-            isLoadingAvailable: false,
-            errorMessage: toSafeGroupsErrorMessage(error, groupsCatalog()),
-          });
-        }
-      }
-    },
-
-    async loadMoreAvailableGroups() {
-      const state = get();
-
-      if (
-        state.isLoadingAvailable ||
-        state.isLoadingMoreAvailable ||
-        !state.availableHasMore ||
-        state.availablePage < 1
-      ) {
-        return;
-      }
-
-      const accessToken = requireToken();
-
-      if (!accessToken) {
-        return;
-      }
-
-      const query = state.availableQuery;
-      const requestId = availableRequestId;
-
-      set({ isLoadingMoreAvailable: true, errorMessage: null });
-
-      try {
-        const response = await loadAvailableGroups(accessToken, {
-          page: state.availablePage + 1,
-          search: query.search,
-          subject: query.subjectId,
-        });
-
-        if (requestId !== availableRequestId) {
-          return;
-        }
-
-        set((current) => ({
-          availableGroups: mergeUnique(current.availableGroups, response.results),
-          availablePage: current.availablePage + 1,
-          availableHasMore: Boolean(response.next),
-          availableCount: response.count,
-          isLoadingMoreAvailable: false,
-        }));
-      } catch (error) {
-        if (requestId === availableRequestId) {
-          set({
-            isLoadingMoreAvailable: false,
-            errorMessage: toSafeGroupsErrorMessage(error, groupsCatalog()),
-          });
-        }
-      }
-    },
 
     async loadMyGroups() {
       if (get().isLoadingMyGroups) {
@@ -383,7 +237,6 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
 
         set((state) => ({
           selectedGroup: group,
-          availableGroups: replaceGroup(state.availableGroups, group),
           myGroups: replaceGroup(state.myGroups, group),
           isLoadingDetail: false,
           lastLoadedAt: new Date().toISOString(),
@@ -435,7 +288,6 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
         const selectedGroup = get().selectedGroup;
 
         await Promise.all([
-          fetchFirstAvailablePage(accessToken, get().availableQuery),
           reloadMyGroups(accessToken),
           selectedGroup ? reloadDetail(selectedGroup.id, accessToken) : Promise.resolve(),
         ]);
@@ -446,63 +298,6 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
           isRefreshing: false,
           errorMessage: toSafeGroupsErrorMessage(error, groupsCatalog()),
         });
-      }
-    },
-
-    async joinGroup(groupId) {
-      if (get().pendingActions[String(groupId)]) {
-        return;
-      }
-
-      const accessToken = requireToken();
-
-      if (!accessToken) {
-        return;
-      }
-
-      const previous = findGroup(groupId);
-      const optimistic = previous ? optimisticJoinStatus(previous) : 'pending';
-
-      set({ actionError: null, successMessage: null });
-      setPending(groupId, 'join');
-      applyStatus(groupId, optimistic);
-
-      try {
-        const result = await requestJoinGroup(groupId, accessToken);
-
-        if (result.status) {
-          applyStatus(groupId, result.status);
-        }
-
-        const approved = (result.status ?? optimistic) === 'approved';
-
-        set({
-          successMessage: approved
-            ? groupsCatalog().messages.joinApproved
-            : groupsCatalog().messages.joinSuccess,
-        });
-        void useFeedbackStore.getState().requestPrompt({
-          context: 'group',
-          actionKey: 'group.joined',
-          objectType: 'group',
-          objectId: groupId,
-        });
-        // Quiet resync: the server is the source of truth for status, role and members.
-        void Promise.all([reloadDetail(groupId, accessToken), reloadMyGroups(accessToken)]).catch(
-          () => undefined,
-        );
-      } catch (error) {
-        applyStatus(
-          groupId,
-          previous?.current_user_membership_status ?? 'none',
-          previous?.current_user_group_role,
-        );
-        set({
-          actionError:
-            toSafeGroupsErrorMessage(error, groupsCatalog()) || groupsCatalog().messages.joinError,
-        });
-      } finally {
-        setPending(groupId, null);
       }
     },
 
@@ -565,7 +360,6 @@ export const useGroupsStore = create<GroupsState>((set, get) => {
     },
 
     reset() {
-      availableRequestId += 1;
       subjectLabelsRequested = false;
       set(initialGroupsState);
     },

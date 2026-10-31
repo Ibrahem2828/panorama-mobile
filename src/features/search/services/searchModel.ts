@@ -7,10 +7,10 @@ export const DEFAULT_LIMIT = 5;
 export const MAX_LIMIT = 20;
 export const LIMIT_STEP = 5;
 
-/** Response keys of the unified search, per result kind. Lectures are not offered here yet. */
+/** Response keys of the unified search, per result kind. Lectures are not offered here yet, and groups are not
+ * searched at all: students reach their groups from «مجموعاتي», never as something to join. */
 const RESPONSE_KEY: Record<SearchResultKind, string> = {
   subject: 'subjects',
-  group: 'groups',
   file: 'files',
   announcement: 'announcements',
 };
@@ -79,8 +79,6 @@ function toItem(kind: SearchResultKind, raw: unknown): SearchResultItem | null {
           .filter(Boolean)
           .join(' · '),
       };
-    case 'group':
-      return { id, kind, title: text(raw.name), subtitle: text(raw.description) };
     case 'file':
       return {
         id,
@@ -117,7 +115,7 @@ export function normalizeSearchResponse(data: unknown): GlobalSearchResult {
         ? declared
         : items.length;
 
-    result[`${key}` as 'subjects' | 'groups' | 'files' | 'announcements'] = items;
+    result[`${key}` as 'subjects' | 'files' | 'announcements'] = items;
     result.counts[kind] = count;
     result.total += count;
   }

@@ -1,17 +1,36 @@
-import { optimisticJoinStatus, resolveMembershipState } from '../membership';
+import { resolveMembershipState } from '../membership';
 
 describe('resolveMembershipState', () => {
-  it('lets a student without membership request to join', () => {
-    expect(resolveMembershipState({})).toMatchObject({ kind: 'notMember', canRequestJoin: true });
-    expect(resolveMembershipState({ current_user_membership_status: 'none' }).canRequestJoin).toBe(
-      true,
+  it('never offers a way to join: there is no join capability in the state at all', () => {
+    for (const status of [
+      undefined,
+      'none',
+      'pending',
+      'approved',
+      'rejected',
+      'left',
+      'blocked',
+    ]) {
+      expect(resolveMembershipState({ current_user_membership_status: status })).not.toHaveProperty(
+        'canRequestJoin',
+      );
+    }
+  });
+
+  it('treats a student without membership as not a member, with no content', () => {
+    expect(resolveMembershipState({})).toEqual({
+      kind: 'notMember',
+      canLeave: false,
+      canOpenContent: false,
+    });
+    expect(resolveMembershipState({ current_user_membership_status: 'none' }).kind).toBe(
+      'notMember',
     );
   });
 
-  it('treats a pending request as waiting: no join, no leave, no content', () => {
+  it('keeps a legacy pending request read-only: no leave, no content', () => {
     expect(resolveMembershipState({ current_user_membership_status: 'pending' })).toEqual({
       kind: 'pending',
-      canRequestJoin: false,
       canLeave: false,
       canOpenContent: false,
     });
@@ -20,41 +39,32 @@ describe('resolveMembershipState', () => {
   it('gives approved members content access and leave', () => {
     expect(resolveMembershipState({ current_user_membership_status: 'approved' })).toEqual({
       kind: 'member',
-      canRequestJoin: false,
       canLeave: true,
       canOpenContent: true,
     });
   });
 
-  it('allows a new request after rejection or leaving', () => {
-    expect(resolveMembershipState({ current_user_membership_status: 'rejected' })).toMatchObject({
+  it('keeps rejected and left groups closed', () => {
+    expect(resolveMembershipState({ current_user_membership_status: 'rejected' })).toEqual({
       kind: 'rejected',
-      canRequestJoin: true,
+      canLeave: false,
       canOpenContent: false,
     });
-    expect(resolveMembershipState({ current_user_membership_status: 'left' }).canRequestJoin).toBe(
-      true,
+    expect(resolveMembershipState({ current_user_membership_status: 'left' }).canOpenContent).toBe(
+      false,
     );
   });
 
-  it('never lets a blocked student join, leave or open content', () => {
+  it('never lets a blocked student leave or open content', () => {
     expect(
       resolveMembershipState({
         current_user_membership_status: 'blocked',
         current_user_group_role: 'member',
       }),
-    ).toEqual({ kind: 'blocked', canRequestJoin: false, canLeave: false, canOpenContent: false });
+    ).toEqual({ kind: 'blocked', canLeave: false, canOpenContent: false });
   });
 
   it('falls back to the role when the status is missing', () => {
     expect(resolveMembershipState({ current_user_group_role: 'moderator' }).kind).toBe('member');
-  });
-});
-
-describe('optimisticJoinStatus', () => {
-  it('is pending unless approval is explicitly not required', () => {
-    expect(optimisticJoinStatus({})).toBe('pending');
-    expect(optimisticJoinStatus({ requires_approval: true })).toBe('pending');
-    expect(optimisticJoinStatus({ requires_approval: false })).toBe('approved');
   });
 });

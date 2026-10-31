@@ -2,18 +2,14 @@ import {
   academicService,
   groupsService as apiGroupsService,
   normalizeApiError,
-  runIdempotentAction,
   type EmptyResponse,
-  type GroupJoinResult as ApiGroupJoinResult,
   type GroupRecord,
   type PaginatedResult,
 } from '../../../api';
-import type { AvailableGroupsParams } from '../../../api/services/groups.service';
 import { useLocaleStore, type TranslationCatalog } from '../../../i18n';
 import { resolveMembershipState } from './membership';
 import type {
   Group,
-  GroupJoinResult,
   GroupMembershipStatus,
   GroupRole,
   Id,
@@ -146,10 +142,6 @@ export function getEntityLabel(value: unknown): string | null {
   );
 }
 
-export function canRequestJoin(group: Group): boolean {
-  return resolveMembershipState(group).canRequestJoin;
-}
-
 export function canLeaveGroup(group: Group): boolean {
   return resolveMembershipState(group).canLeave;
 }
@@ -191,25 +183,10 @@ export function toSafeGroupsErrorMessage(error: unknown, t: GroupsCatalog): stri
   return normalizedError.message || t.errors.generic;
 }
 
-export const AVAILABLE_GROUPS_PAGE_SIZE = 20;
 const MY_GROUPS_PAGE_SIZE = 100;
 const MY_GROUPS_MAX_PAGES = 10;
 const SUBJECTS_PAGE_SIZE = 100;
 const SUBJECTS_MAX_PAGES = 10;
-
-/** One page of the groups the student can request to join; search and subject run on the server. */
-export async function loadAvailableGroups(
-  authToken: string,
-  params: AvailableGroupsParams = {},
-): Promise<PaginatedResult<Group>> {
-  return normalizeGroupList(
-    await apiGroupsService.listAvailableGroups(authToken, {
-      pageSize: AVAILABLE_GROUPS_PAGE_SIZE,
-      ...params,
-      search: params.search?.trim() || undefined,
-    }),
-  );
-}
 
 /** "My groups" is small and membership-bound, so it is read completely (bounded) and searched locally. */
 export async function loadMyGroups(authToken: string): Promise<PaginatedResult<Group>> {
@@ -274,21 +251,6 @@ export function getGroupSubjectId(group: Group): string | null {
 
 export async function loadGroupDetail(groupId: Id, authToken: string): Promise<Group> {
   return normalizeGroup(await apiGroupsService.getGroupDetail(groupId, authToken));
-}
-
-export async function requestJoinGroup(groupId: Id, authToken: string): Promise<GroupJoinResult> {
-  const response: ApiGroupJoinResult = await runIdempotentAction(
-    `group:join:${String(groupId)}`,
-    { groupId },
-    (idempotencyKey) => apiGroupsService.joinGroup(groupId, authToken, idempotencyKey),
-  );
-  const maybeGroup = response.group;
-
-  return {
-    ...response,
-    status: toGroupMembershipStatus(response.status),
-    group: maybeGroup ? normalizeGroup(maybeGroup) : undefined,
-  };
 }
 
 export function requestLeaveGroup(groupId: Id, authToken: string): Promise<EmptyResponse> {

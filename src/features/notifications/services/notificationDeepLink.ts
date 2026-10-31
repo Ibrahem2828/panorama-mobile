@@ -29,7 +29,9 @@ const MATCHERS: readonly Matcher[] = [
     pattern: /^\/printing\/orders\/(\d{1,12})$/u,
     build: ([id]) => ({ kind: 'printingOrder', orderId: id as string }),
   },
-  { pattern: /^\/groups(\/my|\/available)?$/u, build: () => ({ kind: 'groups' }) },
+  { pattern: /^\/groups$/u, build: () => ({ kind: 'groups' }) },
+  // Students no longer browse or request groups: the old "available groups" link lands on their own groups.
+  { pattern: /^\/groups\/(?:my|available)$/u, build: () => ({ kind: 'myGroups' }) },
   {
     pattern: /^\/groups\/(\d{1,12})$/u,
     build: ([id]) => ({ kind: 'group', groupId: id as string }),

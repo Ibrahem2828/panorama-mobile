@@ -37,14 +37,6 @@ export type Group = {
   [key: string]: unknown;
 };
 
-export type GroupListType = 'available' | 'my';
-
-export type GroupJoinResult = {
-  status?: GroupMembershipStatus;
-  group?: Group;
-  [key: string]: unknown;
-};
-
 /** Display data of a subject, looked up by the id a group carries. */
 export type SubjectLabel = { name: string; code: string | null };
 
