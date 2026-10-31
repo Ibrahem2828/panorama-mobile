@@ -2572,6 +2572,7 @@ export const ar = {
     settingsTitle: 'الأذونات',
     settingsSubtitle: 'ما يستعمله التطبيق على هاتفك',
     footnote: 'تغييرات النظام تظهر هنا عند عودتك إلى التطبيق.',
+    manageNotifications: 'إعدادات الإشعارات',
   },
 
   settings: {

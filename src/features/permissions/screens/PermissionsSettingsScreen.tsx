@@ -2,6 +2,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { AppHeader, AppScreen, AppText, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
+import { ProfileRoutes } from '../../../navigation/routes';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { PermissionsPanel } from '../components/PermissionsPanel';
 import { usePermissions } from '../usePermissions';
@@ -25,6 +26,7 @@ export function PermissionsSettingsScreen({ navigation }: Props) {
         <PermissionsPanel
           busyKey={busyKey}
           onAllowAll={() => void allowAll()}
+          onOpenNotificationSettings={() => navigation.navigate(ProfileRoutes.NotificationSettings)}
           onRequest={(key) => void request(key)}
           snapshot={snapshot}
         />

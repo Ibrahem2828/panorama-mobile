@@ -33,6 +33,8 @@ type PermissionsPanelProps = {
   busyKey: PermissionKey | 'all' | null;
   onRequest: (key: PermissionKey) => void;
   onAllowAll: () => void;
+  /** Settings only: the notifications row hands over to the one notification-settings screen instead of owning an allow button. */
+  onOpenNotificationSettings?: () => void;
 };
 
 function badgeVariant(status: PermissionStatus): 'success' | 'warning' | 'error' | 'neutral' {
@@ -55,6 +57,7 @@ export function PermissionsPanel({
   busyKey,
   onRequest,
   onAllowAll,
+  onOpenNotificationSettings,
 }: PermissionsPanelProps) {
   const { t } = useTranslation();
   const brand = useBrand();
@@ -82,7 +85,14 @@ export function PermissionsPanel({
               </View>
               <View style={styles.foot}>
                 <AppBadge label={copy.status[status]} variant={badgeVariant(status)} />
-                {canRequest(status) ? (
+                {definition.key === 'notifications' && onOpenNotificationSettings ? (
+                  <AppButton
+                    onPress={onOpenNotificationSettings}
+                    size="sm"
+                    title={copy.manageNotifications}
+                    variant="outline"
+                  />
+                ) : canRequest(status) ? (
                   <AppButton
                     loading={busyKey === definition.key}
                     onPress={() => onRequest(definition.key)}
