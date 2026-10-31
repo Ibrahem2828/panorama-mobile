@@ -2562,6 +2562,7 @@ export const en: TranslationCatalog = {
     settingsTitle: 'Permissions',
     settingsSubtitle: 'What the app uses on your phone',
     footnote: 'Changes you make in the system settings show here when you come back to the app.',
+    manageNotifications: 'Notification settings',
   },
 
   settings: {
