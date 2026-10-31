@@ -16,7 +16,8 @@ type ChatRoomHeaderProps = {
   isOnline: boolean;
   isMuted: boolean;
   onBack: () => void;
-  onToggleMute: () => void;
+  /** Opens the mute sheet (8 hours / a week / always / unmute). */
+  onOpenMute: () => void;
 };
 
 export const ChatRoomHeader = memo(function ChatRoomHeader({
@@ -25,7 +26,7 @@ export const ChatRoomHeader = memo(function ChatRoomHeader({
   isOnline,
   isMuted,
   onBack,
-  onToggleMute,
+  onOpenMute,
 }: ChatRoomHeaderProps) {
   const { t } = useTranslation();
 
@@ -59,7 +60,7 @@ export const ChatRoomHeader = memo(function ChatRoomHeader({
             name={isMuted ? 'bellOff' : 'bell'}
           />
         }
-        onPress={onToggleMute}
+        onPress={onOpenMute}
       />
     </View>
   );

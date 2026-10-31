@@ -4,6 +4,10 @@ import type {
   ApiListParams,
   EmptyResponse,
   FileAccessTicket,
+  ChatMuteDuration,
+  ChatPreferenceItem,
+  ChatPreferences,
+  ChatPreferencesUpdate,
   GroupChatTicket,
   GroupJoinResult,
   GroupMessage,
@@ -194,22 +198,31 @@ export function deleteGroupMessage(
 export function getChatPreferences(
   groupId: string | number,
   authToken: string,
-): Promise<{ is_muted: boolean }> {
-  return apiClient.get<{ is_muted: boolean }>(endpoints.groups.chatPreferences(groupId), {
-    authToken,
-  });
+): Promise<ChatPreferences> {
+  return apiClient.get<ChatPreferences>(endpoints.groups.chatPreferences(groupId), { authToken });
+}
+
+/** Body of the mute PUT: `mute_for` only goes with `is_muted: true` (the old `{ is_muted }` body still works). */
+export function chatMuteBody(isMuted: boolean, muteFor?: ChatMuteDuration): ChatPreferencesUpdate {
+  return isMuted && muteFor ? { is_muted: true, mute_for: muteFor } : { is_muted: isMuted };
 }
 
 export function setChatMuted(
   groupId: string | number,
   isMuted: boolean,
   authToken: string,
-): Promise<{ is_muted: boolean }> {
-  return apiClient.put<{ is_muted: boolean }, { is_muted: boolean }>(
+  muteFor?: ChatMuteDuration,
+): Promise<ChatPreferences> {
+  return apiClient.put<ChatPreferences, ChatPreferencesUpdate>(
     endpoints.groups.chatPreferences(groupId),
-    { is_muted: isMuted },
+    chatMuteBody(isMuted, muteFor),
     { authToken },
   );
+}
+
+/** Mute state of every chat the user belongs to (cacheable for offline reading). */
+export function getAllChatPreferences(authToken: string): Promise<ChatPreferenceItem[]> {
+  return apiClient.get<ChatPreferenceItem[]>(endpoints.groups.chatPreferencesAll, { authToken });
 }
 
 export function getChatUnread(

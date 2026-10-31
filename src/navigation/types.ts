@@ -79,6 +79,7 @@ export type ProfileStackParamList = {
   DeleteAccount: undefined;
   Notifications: undefined;
   NotificationSettings: undefined;
+  MutedChats: undefined;
   Permissions: undefined;
   MyNotes: undefined;
   LectureViewer: LectureViewerParams;

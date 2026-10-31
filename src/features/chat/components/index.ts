@@ -3,6 +3,7 @@ export * from './ChatComposer';
 export * from './ChatConnectionStatus';
 export * from './ChatEmptyState';
 export * from './ChatMessageList';
+export * from './ChatMuteSheet';
 export * from './ChatMessageRow';
 export * from './ChatPermissionNotice';
 export * from './ChatRoomHeader';

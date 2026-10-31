@@ -2,8 +2,10 @@ import { create } from 'zustand';
 
 import { notificationsService } from '../../../api';
 import { useAuthStore } from '../../auth/store';
+import { useChatMuteStore } from '../../chat/store/chatMuteStore';
 import {
   channelPatch,
+  muteCommunitiesPatch,
   normalizePreferences,
   normalizeSummary,
   quietHoursPatch,
@@ -24,6 +26,7 @@ type PrefsState = {
   setPush: (value: boolean) => Promise<void>;
   setChannel: (category: NotificationCategory, value: boolean) => Promise<void>;
   setQuietHours: (next: QuietHours) => Promise<void>;
+  setMuteCommunities: (value: boolean) => Promise<void>;
   reset: () => void;
 };
 
@@ -57,7 +60,9 @@ export const useNotificationPrefsStore = create<PrefsState>((set, get) => {
       return;
     }
 
-    set({ prefs: optimistic(before), failed: false });
+    const expected = optimistic(before);
+
+    set({ prefs: expected, failed: false });
 
     try {
       const saved = await notificationsService.updateNotificationPreferences(
@@ -65,7 +70,15 @@ export const useNotificationPrefsStore = create<PrefsState>((set, get) => {
         accessToken,
       );
 
-      set({ prefs: normalizePreferences(saved) });
+      const next = normalizePreferences(saved);
+
+      // A PATCH answer that leaves the community switch out must not make the switch vanish.
+      set({
+        prefs:
+          next.muteCommunities === null
+            ? { ...next, muteCommunities: expected.muteCommunities }
+            : next,
+      });
     } catch {
       set({ prefs: before, failed: true });
     }
@@ -139,6 +152,22 @@ export const useNotificationPrefsStore = create<PrefsState>((set, get) => {
       }
 
       await save(patch, (current) => ({ ...current, quietHours: next }));
+    },
+
+    async setMuteCommunities(value) {
+      if (get().prefs?.muteCommunities == null) {
+        return;
+      }
+
+      await save(muteCommunitiesPatch(value), (current) => ({
+        ...current,
+        muteCommunities: value,
+      }));
+
+      // The effective mute of every community chat just changed on the server: refresh the local copy.
+      if (!get().failed) {
+        void useChatMuteStore.getState().loadAll();
+      }
     },
 
     reset() {

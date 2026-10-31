@@ -449,6 +449,30 @@ export type NotificationPreferences = {
   channels?: Partial<Record<'chat' | 'groups' | 'printing' | 'verification' | 'support', boolean>>;
   /** Do-not-disturb window; absent on a backend that predates it. */
   quiet_hours?: { enabled: boolean; start: string; end: string; timezone?: string };
+  /** Mutes the chat notifications of every community (a group with no subject); absent on an older backend. */
+  mute_communities?: boolean;
+};
+
+/** How long a chat is muted for; `forever` is the default when `mute_for` is left out. */
+export type ChatMuteDuration = '8h' | '1w' | 'forever';
+
+/** `GET/PUT groups/<id>/chat/preferences/`: `is_muted` is the effective state (an expired timed mute reads false). */
+export type ChatPreferences = {
+  is_muted: boolean;
+  muted_until: string | null;
+};
+
+export type ChatPreferencesUpdate = {
+  is_muted: boolean;
+  /** Only sent with `is_muted: true`. */
+  mute_for?: ChatMuteDuration;
+};
+
+/** One row of `GET chat/preferences/` (every approved chat of the user). */
+export type ChatPreferenceItem = ChatPreferences & {
+  group_id: number;
+  name: string;
+  kind: 'subject' | 'community';
 };
 
 /** `GET /notifications/summary/`: unread notifications per category (shape normalised by the notifications feature). */
