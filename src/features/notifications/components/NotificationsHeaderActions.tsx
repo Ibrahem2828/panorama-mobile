@@ -7,6 +7,8 @@ type NotificationsHeaderActionsProps = {
   isMarkingAllRead?: boolean;
   onRefresh: () => void;
   onMarkAllRead: () => void;
+  /** Opens the one notification-settings screen (types, mute, quiet hours). */
+  onOpenSettings?: () => void;
 };
 
 export function NotificationsHeaderActions({
@@ -15,6 +17,7 @@ export function NotificationsHeaderActions({
   isMarkingAllRead = false,
   onRefresh,
   onMarkAllRead,
+  onOpenSettings,
 }: NotificationsHeaderActionsProps) {
   const { t } = useTranslation();
   return (
@@ -51,6 +54,14 @@ export function NotificationsHeaderActions({
               size="sm"
               title={t.notifications.markAllRead}
               variant="primary"
+            />
+          ) : null}
+          {onOpenSettings ? (
+            <AppButton
+              onPress={onOpenSettings}
+              size="sm"
+              title={t.notifications.settingsLink}
+              variant="outline"
             />
           ) : null}
         </Stack>

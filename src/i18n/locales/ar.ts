@@ -361,6 +361,7 @@ export const ar = {
     unreadBadge: (count: number) => `${count} غير مقروء`,
     noNew: 'لا جديد',
     markAllRead: 'تعليم الكل كمقروء',
+    settingsLink: 'إعدادات الإشعارات',
     unread: 'غير مقروء',
     read: 'مقروء',
     noDetails: 'لا توجد تفاصيل إضافية لهذا الإشعار.',
@@ -426,17 +427,6 @@ export const ar = {
     loadMore: 'عرض المزيد',
     loadingMore: 'جارٍ تحميل المزيد...',
     openFailed: 'تعذر فتح هذا الإشعار.',
-
-    prefs: {
-      title: 'تفضيلات الإشعارات',
-      description: 'اختر أنواع الإشعارات التي تريد استلامها.',
-      show: 'عرض',
-      hide: 'إخفاء',
-      inApp: 'إشعارات التطبيق',
-      typesTitle: 'الأنواع',
-      loadFailed: 'تعذر تحميل تفضيلاتك. حاول مرة أخرى.',
-      saveFailed: 'تعذر حفظ تفضيلاتك. حاول مرة أخرى.',
-    },
 
     routeMessages: {
       verification: 'يمكنك متابعة حالة التوثيق من شاشة التوثيق.',

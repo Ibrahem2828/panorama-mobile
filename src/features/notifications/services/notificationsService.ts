@@ -286,17 +286,6 @@ export function resolveNotificationIntent(
   return resolveNotificationRouteIntent(getNotificationTarget(notification as NotificationRecord));
 }
 
-export async function loadNotificationPreferences(authToken: string) {
-  return apiNotificationsService.getNotificationPreferences(authToken);
-}
-
-export async function saveNotificationPreferences(
-  patch: Parameters<typeof apiNotificationsService.updateNotificationPreferences>[0],
-  authToken: string,
-) {
-  return apiNotificationsService.updateNotificationPreferences(patch, authToken);
-}
-
 export async function loadUnreadCount(authToken: string): Promise<UnreadCountResponse> {
   const response = await apiNotificationsService.getUnreadCount(authToken);
 
