@@ -8,7 +8,11 @@ describe('parseDeepLink', () => {
     ['/files/9?x=1#top', { kind: 'file', fileId: '9' }],
     ['/groups/4/chat', { kind: 'groupChat', groupId: '4' }],
     ['/groups/4/files', { kind: 'groupFiles', groupId: '4' }],
-    ['/groups/my', { kind: 'groups' }],
+    ['/groups', { kind: 'groups' }],
+    // The removed "available groups" screen falls back to the student's own groups.
+    ['/groups/my', { kind: 'myGroups' }],
+    ['/groups/available', { kind: 'myGroups' }],
+    ['/ar/groups/available', { kind: 'myGroups' }],
     ['/support/7/', { kind: 'supportTicket', ticketId: '7' }],
     ['/support/new', { kind: 'supportNew' }],
     ['/profile/settings', { kind: 'settings' }],

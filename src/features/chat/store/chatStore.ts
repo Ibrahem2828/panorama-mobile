@@ -122,11 +122,7 @@ function getKnownGroup(groupId: Id): Group | null {
     return groupsState.selectedGroup;
   }
 
-  return (
-    [...groupsState.myGroups, ...groupsState.availableGroups].find(
-      (group) => keyOf(group.id) === key,
-    ) ?? null
-  );
+  return groupsState.myGroups.find((group) => keyOf(group.id) === key) ?? null;
 }
 
 function emptyRoom(): ChatRoomState {

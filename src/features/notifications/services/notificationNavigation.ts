@@ -49,6 +49,8 @@ function destinationFor(intent: NotificationRouteIntent): Destination | null {
       };
     case 'groups':
       return { tab: TabRoutes.Groups, screen: GroupsRoutes.GroupsOverview };
+    case 'myGroups':
+      return { tab: TabRoutes.Groups, screen: GroupsRoutes.MyGroups };
     case 'group':
       return {
         tab: TabRoutes.Groups,

@@ -47,7 +47,6 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
   const subjectLabels = useGroupsStore((state) => state.subjectLabels);
   const loadGroupDetail = useGroupsStore((state) => state.loadGroupDetail);
   const loadSubjectLabels = useGroupsStore((state) => state.loadSubjectLabels);
-  const joinGroup = useGroupsStore((state) => state.joinGroup);
   const leaveGroup = useGroupsStore((state) => state.leaveGroup);
   const clearError = useGroupsStore((state) => state.clearError);
   const activeGroup = selectedGroup && isSameId(selectedGroup.id, groupId) ? selectedGroup : null;
@@ -62,13 +61,6 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
   const handleRefresh = useCallback(() => {
     void loadGroupDetail(groupId);
   }, [groupId, loadGroupDetail]);
-
-  const handleJoin = useCallback(
-    (id: Id) => {
-      void joinGroup(id);
-    },
-    [joinGroup],
-  );
 
   const handleLeave = useCallback(
     (id: Id) => {
@@ -137,7 +129,6 @@ export function GroupDetailsScreen({ navigation, route }: GroupDetailsScreenProp
 
           <GroupMembershipActions
             group={activeGroup}
-            onJoin={handleJoin}
             onLeave={handleLeave}
             pendingAction={pendingActions[String(activeGroup.id)]}
           />

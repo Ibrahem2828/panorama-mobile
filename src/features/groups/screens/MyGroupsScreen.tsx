@@ -151,13 +151,6 @@ export function MyGroupsScreen({ navigation }: MyGroupsScreenProps) {
     <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
   ) : myGroups.length === 0 ? (
     <EmptyState
-      action={
-        <AppButton
-          onPress={() => navigation.navigate(GroupsRoutes.AvailableGroups)}
-          title={t.groups.emptyMine.action}
-          variant="outline"
-        />
-      }
       illustrationLabel={t.groups.list.emptyIllustrationAlt}
       artwork="groups"
       message={t.groups.mine.emptyMessage}

@@ -1,11 +1,9 @@
 import {
   academicService,
   filesService,
-  groupsService,
   normalizeApiError,
   searchService as api,
   type FileRecord,
-  type GroupRecord,
   type SubjectRecord,
 } from '../../../api';
 import type { TranslationCatalog } from '../../../i18n';
@@ -43,15 +41,6 @@ function subjectItem(record: SubjectRecord): SearchResultItem {
   };
 }
 
-function groupItem(record: GroupRecord): SearchResultItem {
-  return {
-    id: record.id,
-    kind: 'group',
-    title: text(record.name, record.title),
-    subtitle: text(record.description),
-  };
-}
-
 function fileItem(record: FileRecord): SearchResultItem {
   return {
     id: record.id,
@@ -66,7 +55,7 @@ function fileItem(record: FileRecord): SearchResultItem {
  * per-feature lists. Subjects come from the student's faculty, never from a major.
  */
 async function runStitchedSearch(input: SearchInput, limit: number): Promise<GlobalSearchResult> {
-  const kinds = input.kinds?.length ? input.kinds : (['subject', 'group', 'file'] as const);
+  const kinds = input.kinds?.length ? input.kinds : (['subject', 'file'] as const);
   const wants = (kind: SearchResultKind) => kinds.includes(kind);
   const params = { search: input.query, pageSize: limit };
   const jobs: Array<Promise<{ kind: SearchResultKind; items: SearchResultItem[]; count: number }>> =
@@ -77,16 +66,6 @@ async function runStitchedSearch(input: SearchInput, limit: number): Promise<Glo
       filesService.listFiles(input.authToken, params).then((r) => ({
         kind: 'file' as const,
         items: r.results.map(fileItem),
-        count: r.count,
-      })),
-    );
-  }
-
-  if (input.isStudent && wants('group')) {
-    jobs.push(
-      groupsService.listAvailableGroups(input.authToken, params).then((r) => ({
-        kind: 'group' as const,
-        items: r.results.map(groupItem),
         count: r.count,
       })),
     );
@@ -117,7 +96,7 @@ async function runStitchedSearch(input: SearchInput, limit: number): Promise<Glo
     }
 
     const { kind, items, count } = entry.value;
-    const key = kind === 'subject' ? 'subjects' : kind === 'group' ? 'groups' : 'files';
+    const key = kind === 'subject' ? 'subjects' : 'files';
 
     result[key] = items;
     result.counts[kind] = Math.max(count, items.length);

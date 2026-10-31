@@ -62,31 +62,22 @@ const OverviewCard = memo(OverviewCardComponent);
 
 export function GroupsOverviewScreen({ navigation }: GroupsOverviewScreenProps) {
   const { t } = useTranslation();
-  const availableCount = useGroupsStore((state) => state.availableCount);
   const myGroupsCount = useGroupsStore((state) => state.myGroupsCount);
-  const availableGroups = useGroupsStore((state) => state.availableGroups);
   const myGroups = useGroupsStore((state) => state.myGroups);
   const errorMessage = useGroupsStore((state) => state.errorMessage);
   const isRefreshing = useGroupsStore((state) => state.isRefreshing);
-  const loadAvailableGroups = useGroupsStore((state) => state.loadAvailableGroups);
   const loadMyGroups = useGroupsStore((state) => state.loadMyGroups);
   const refreshAllGroups = useGroupsStore((state) => state.refreshAllGroups);
-  const resolvedAvailableCount = availableCount || availableGroups.length;
   const resolvedMyGroupsCount = myGroupsCount || myGroups.length;
 
   useEffect(() => {
-    void loadAvailableGroups({ search: '', subjectId: null });
     void loadMyGroups();
-  }, [loadAvailableGroups, loadMyGroups]);
+  }, [loadMyGroups]);
 
   const handleRefresh = useCallback(() => {
     void refreshAllGroups();
   }, [refreshAllGroups]);
   const openMyGroups = useCallback(() => navigation.navigate(GroupsRoutes.MyGroups), [navigation]);
-  const openAvailable = useCallback(
-    () => navigation.navigate(GroupsRoutes.AvailableGroups),
-    [navigation],
-  );
 
   return (
     <AppScreen
@@ -138,13 +129,6 @@ export function GroupsOverviewScreen({ navigation }: GroupsOverviewScreenProps) 
             icon="users"
             onPress={openMyGroups}
             title={t.groups.mine.title}
-          />
-          <OverviewCard
-            count={resolvedAvailableCount}
-            description={t.groups.overview.availableDescription}
-            icon="search"
-            onPress={openAvailable}
-            title={t.groups.available.title}
           />
         </Stack>
       </Stack>

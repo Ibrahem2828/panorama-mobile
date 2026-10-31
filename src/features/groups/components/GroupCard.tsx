@@ -1,20 +1,15 @@
 import { memo, useCallback } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { AppAvatar, AppButton, AppCard, AppText, Icon, Stack } from '../../../components';
+import { AppAvatar, AppCard, AppText, Icon, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { colors, opacity, radius, spacing, useBrand } from '../../../theme';
 import { useMuteNow } from '../../chat/components/useMuteExpiry';
 import { isEffectivelyMuted } from '../../chat/logic/mute';
 import { useChatMuteStore } from '../../chat/store/chatMuteStore';
 import { useChatUnreadStore } from '../../chat/store/unreadStore';
-import {
-  getGroupDisplayName,
-  getGroupImageUri,
-  getGroupSubjectId,
-  resolveMembershipState,
-} from '../services';
-import type { Group, Id, SubjectLabel } from '../types';
+import { getGroupDisplayName, getGroupImageUri } from '../services';
+import type { Group, SubjectLabel } from '../types';
 import { GroupMembershipBadge } from './GroupMembershipBadge';
 import { GroupStatsRow } from './GroupStatsRow';
 import { isolateLtr } from '../../../utils/rtl';
@@ -22,23 +17,12 @@ import { isolateLtr } from '../../../utils/rtl';
 type GroupCardProps = {
   group: Group;
   subject?: SubjectLabel | null;
-  /** In-flight join/leave for this group (disables the quick action). */
-  pendingAction?: 'join' | 'leave';
   onPress?: (group: Group) => void;
   /** Long-press opens the chat's mute sheet. */
   onLongPress?: (group: Group) => void;
-  /** When set, groups the student can still join show a quick "request to join" button. */
-  onJoin?: (groupId: Id) => void;
 };
 
-function GroupCardBase({
-  group,
-  subject,
-  pendingAction,
-  onPress,
-  onLongPress,
-  onJoin,
-}: GroupCardProps) {
+function GroupCardBase({ group, subject, onPress, onLongPress }: GroupCardProps) {
   const { t } = useTranslation();
   const brand = useBrand();
   const unread = useChatUnreadStore((state) => state.byGroup[String(group.id)] ?? 0);
@@ -46,10 +30,8 @@ function GroupCardBase({
   const muted = isEffectivelyMuted(mutePref, useMuteNow(mutePref));
   const title = getGroupDisplayName(group, t.groups);
   const imageUri = getGroupImageUri(group) ?? undefined;
-  const membership = resolveMembershipState(group);
   const handlePress = useCallback(() => onPress?.(group), [onPress, group]);
   const handleLongPress = useCallback(() => onLongPress?.(group), [onLongPress, group]);
-  const handleJoin = useCallback(() => onJoin?.(group.id), [onJoin, group.id]);
   // The subject name is shown on its own line only when it adds something to the group name.
   const subjectLine =
     subject && subject.name !== title
@@ -118,18 +100,6 @@ function GroupCardBase({
           <GroupStatsRow group={group} />
         </Stack>
       </Pressable>
-
-      {onJoin && membership.canRequestJoin && !getGroupSubjectId(group) ? (
-        <AppButton
-          fullWidth
-          loading={pendingAction === 'join'}
-          onPress={handleJoin}
-          size="sm"
-          style={styles.joinButton}
-          title={t.groups.card.joinShort}
-          variant="outline"
-        />
-      ) : null}
     </AppCard>
   );
 }
@@ -162,8 +132,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.xs,
     borderRadius: radius.full,
-  },
-  joinButton: {
-    marginTop: 12,
   },
 });

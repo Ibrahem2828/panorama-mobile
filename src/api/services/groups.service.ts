@@ -9,7 +9,6 @@ import type {
   ChatPreferences,
   ChatPreferencesUpdate,
   GroupChatTicket,
-  GroupJoinResult,
   GroupMessage,
   GroupRecord,
   GroupWhatsAppLaunch,
@@ -18,21 +17,6 @@ import type {
 import type { PaginatedResult } from '../pagination';
 import { toPaginationQuery } from '../pagination';
 import { uploadFormData, type UploadHandle } from '../upload';
-
-export type AvailableGroupsParams = ApiListParams & {
-  /** Subject id: only the groups of that subject. */
-  subject?: string | number | null;
-};
-
-export function listAvailableGroups(
-  authToken: string,
-  params?: AvailableGroupsParams,
-): Promise<PaginatedResult<GroupRecord>> {
-  return apiClient.get<PaginatedResult<GroupRecord>>(endpoints.groups.available, {
-    authToken,
-    query: { ...toPaginationQuery(params), subject: params?.subject ?? undefined },
-  });
-}
 
 export function listMyGroups(
   authToken: string,
@@ -48,18 +32,6 @@ export function getGroupDetail(groupId: string | number, authToken: string): Pro
   return apiClient.get<GroupRecord>(endpoints.groups.detail(groupId), {
     authToken,
   });
-}
-
-export function joinGroup(
-  groupId: string | number,
-  authToken: string,
-  idempotencyKey?: string,
-): Promise<GroupJoinResult> {
-  return apiClient.post<GroupJoinResult, EmptyResponse>(
-    endpoints.groups.join(groupId),
-    {},
-    { authToken, idempotencyKey },
-  );
 }
 
 export function leaveGroup(groupId: string | number, authToken: string): Promise<EmptyResponse> {

@@ -62,6 +62,7 @@ export type NotificationRouteIntent =
   | { kind: 'printingOrders' }
   | { kind: 'printingOrder'; orderId: Id }
   | { kind: 'groups' }
+  | { kind: 'myGroups' }
   | { kind: 'group'; groupId: Id }
   | { kind: 'groupChat'; groupId: Id }
   | { kind: 'groupFiles'; groupId: Id }
