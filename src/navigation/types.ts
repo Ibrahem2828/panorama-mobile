@@ -50,7 +50,6 @@ export type SubjectsStackParamList = {
 
 export type GroupsStackParamList = {
   GroupsOverview: undefined;
-  AvailableGroups: { subjectId?: string | number } | undefined;
   MyGroups: undefined;
   GroupDetails: { groupId: string | number };
   GroupFiles: { groupId: string | number };

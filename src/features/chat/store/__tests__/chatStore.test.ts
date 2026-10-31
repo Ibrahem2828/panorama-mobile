@@ -28,7 +28,6 @@ jest.mock('../../../groups/store', () => ({
         send_messages_permission: 'all_members',
       },
       myGroups: [],
-      availableGroups: [],
       loadGroupDetail: mockLoadGroupDetail,
     }),
   },

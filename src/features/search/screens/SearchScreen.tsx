@@ -17,13 +17,7 @@ import {
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import {
-  GroupsRoutes,
-  HomeRoutes,
-  SharedRoutes,
-  SubjectsRoutes,
-  TabRoutes,
-} from '../../../navigation/routes';
+import { HomeRoutes, SharedRoutes, SubjectsRoutes, TabRoutes } from '../../../navigation/routes';
 import type { AppTabsParamList, HomeStackParamList } from '../../../navigation/types';
 import { layout, opacity, spacing, useBrand } from '../../../theme';
 import { useAuthStore } from '../../auth/store';
@@ -151,14 +145,6 @@ export function SearchScreen({ navigation, route }: Props) {
 
       const tabs = navigation.getParent<BottomTabNavigationProp<AppTabsParamList>>();
 
-      if (item.kind === 'group') {
-        tabs?.navigate(TabRoutes.Groups, {
-          screen: GroupsRoutes.GroupDetails,
-          params: { groupId: item.id },
-        });
-        return;
-      }
-
       tabs?.navigate(TabRoutes.Subjects, {
         screen: SubjectsRoutes.SubjectDetails,
         params: { subjectId: item.id },
@@ -170,7 +156,6 @@ export function SearchScreen({ navigation, route }: Props) {
   const kindLabels = useMemo<Record<SearchResultKind, string>>(
     () => ({
       subject: t.search.kindSubject,
-      group: t.search.kindGroup,
       file: t.search.kindFile,
       announcement: t.search.kindAnnouncement,
     }),
@@ -178,14 +163,12 @@ export function SearchScreen({ navigation, route }: Props) {
   );
   const sectionTitles: Record<SearchResultKind, string> = {
     subject: t.search.subjectsSection,
-    group: t.search.groupsSection,
     file: t.search.filesSection,
     announcement: t.search.announcementsSection,
   };
   const sections: Section[] = (
     [
       ['subject', result.subjects],
-      ['group', result.groups],
       ['file', result.files],
       ['announcement', result.announcements],
     ] as const
@@ -196,7 +179,6 @@ export function SearchScreen({ navigation, route }: Props) {
     () => [
       { value: 'all' as KindFilter, label: t.search.filterAll },
       { value: 'subject' as KindFilter, label: t.search.subjectsSection },
-      { value: 'group' as KindFilter, label: t.search.groupsSection },
       { value: 'file' as KindFilter, label: t.search.filesSection },
       { value: 'announcement' as KindFilter, label: t.search.announcementsSection },
     ],
@@ -208,21 +190,17 @@ export function SearchScreen({ navigation, route }: Props) {
       const fallbackTitle =
         item.kind === 'subject'
           ? t.search.untitledSubject
-          : item.kind === 'group'
-            ? t.search.untitledGroup
-            : item.kind === 'file'
-              ? t.search.untitledFile
-              : t.search.untitledAnnouncement;
+          : item.kind === 'file'
+            ? t.search.untitledFile
+            : t.search.untitledAnnouncement;
       const fallbackSubtitle =
         item.kind === 'subject'
           ? t.search.subjectSubtitle
-          : item.kind === 'group'
-            ? t.search.groupSubtitle
-            : item.kind === 'file'
-              ? item.inGroup
-                ? t.search.fileInGroup
-                : t.search.fileSubtitle
-              : t.search.announcementSubtitle;
+          : item.kind === 'file'
+            ? item.inGroup
+              ? t.search.fileInGroup
+              : t.search.fileSubtitle
+            : t.search.announcementSubtitle;
       const title = item.title || fallbackTitle;
 
       return (

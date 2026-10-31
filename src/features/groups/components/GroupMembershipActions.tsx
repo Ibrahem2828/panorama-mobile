@@ -2,21 +2,22 @@ import { Alert } from 'react-native';
 
 import { AppButton, AppText, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import { getGroupSubjectId, resolveMembershipState } from '../services';
+import { resolveMembershipState } from '../services';
 import type { Group, Id } from '../types';
 
 type GroupMembershipActionsProps = {
   group: Group;
-  pendingAction?: 'join' | 'leave';
-  onJoin: (groupId: Id) => void;
+  pendingAction?: 'leave';
   onLeave: (groupId: Id) => void;
 };
 
-/** Clear join states: request / pending / member (leave, with confirmation) / rejected / blocked. */
+/**
+ * Read-only membership states plus leaving (with confirmation). There is deliberately no join action: students join
+ * their subjects' groups automatically when a subject-registration request is approved.
+ */
 export function GroupMembershipActions({
   group,
   pendingAction,
-  onJoin,
   onLeave,
 }: GroupMembershipActionsProps) {
   const { t } = useTranslation();
@@ -37,35 +38,13 @@ export function GroupMembershipActions({
     <Stack gap="md">
       {membership.kind === 'pending' ? (
         <AppText color="warning" variant="bodySmall">
-          {t.groups.notices.pending}
-        </AppText>
-      ) : null}
-      {membership.kind === 'rejected' ? (
-        <AppText color="warning" variant="bodySmall">
-          {t.groups.notices.rejected}
+          {t.groups.notices.legacyPending}
         </AppText>
       ) : null}
       {membership.kind === 'blocked' ? (
         <AppText color="error" variant="bodySmall">
           {t.groups.notices.blocked}
         </AppText>
-      ) : null}
-
-      {membership.canRequestJoin && getGroupSubjectId(group) ? (
-        <AppText color="secondary" variant="bodySmall">
-          {t.enrollment.joinByRegistration}
-        </AppText>
-      ) : null}
-      {membership.canRequestJoin && !getGroupSubjectId(group) ? (
-        <AppButton
-          fullWidth
-          loading={pendingAction === 'join'}
-          onPress={() => onJoin(group.id)}
-          title={t.groups.details.join}
-        />
-      ) : null}
-      {membership.kind === 'pending' ? (
-        <AppButton disabled fullWidth title={t.groups.card.pendingShort} variant="outline" />
       ) : null}
       {membership.canLeave ? (
         <AppButton

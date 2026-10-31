@@ -53,7 +53,6 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
   const groupKey = String(groupId);
   const currentUserId = useAuthStore((state) => state.user?.id ?? null);
   const selectedGroup = useGroupsStore((state) => state.selectedGroup);
-  const availableGroups = useGroupsStore((state) => state.availableGroups);
   const myGroups = useGroupsStore((state) => state.myGroups);
   const isLoadingDetail = useGroupsStore((state) => state.isLoadingDetail);
   const loadGroupDetail = useGroupsStore((state) => state.loadGroupDetail);
@@ -82,10 +81,8 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
       return selectedGroup;
     }
 
-    return (
-      [...myGroups, ...availableGroups].find((candidate) => isSameId(candidate.id, groupId)) ?? null
-    );
-  }, [availableGroups, groupId, myGroups, selectedGroup]);
+    return myGroups.find((candidate) => isSameId(candidate.id, groupId)) ?? null;
+  }, [groupId, myGroups, selectedGroup]);
 
   // Only approved members may open the chat. `null` while the group is still unknown.
   const canOpen = group ? canOpenGroupChat(group) : null;

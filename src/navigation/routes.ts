@@ -49,7 +49,6 @@ export const LecturesRoutes = {
 
 export const GroupsRoutes = {
   GroupsOverview: 'GroupsOverview',
-  AvailableGroups: 'AvailableGroups',
   MyGroups: 'MyGroups',
   GroupDetails: 'GroupDetails',
   GroupFiles: 'GroupFiles',

@@ -1,30 +1,16 @@
 # subjects
 
-Feature foundation for the authenticated Subjects experience.
+The read-only subject catalogue (bottom tab «المواد»).
 
-## Phase 8 scope
+- `GET /api/v1/subjects/` lists every subject of the student's faculty, all years and semesters, with
+  `in_current_term`, `is_enrolled` and `has_description`. The whole list is read (bounded paging) and the
+  term / year / search filters run on the device, so they also work on the saved copy while offline.
+- `GET /api/v1/subjects/<id>/` returns the same row plus the full course description.
+- The list is grouped by semester (current term first). Cards show name, code, «السنة · الفصل» and the
+  «مسجَّل» / «الفصل الحالي» badges. Tapping opens the details screen.
+- There is deliberately no join, enroll, register or request action or hint in this feature. Students get
+  into a subject's groups only through the subject-registration flow (`features/enrollment`), after which the
+  server adds them. A guard test (`src/__tests__/noGroupJoinGuards.test.ts`) keeps it that way.
+- Members of a subject's group still see that group's chat, files and lectures on the details screen.
 
-- Loads real subjects from `GET /api/v1/majors/{major_id}/subjects/`.
-- Determines `major`, `academic_year`, and `semester` from the current student profile state.
-- Sends `academic_year` and `semester` query params when those IDs are available.
-- Provides local search over loaded subject `name`, `title`, and `code`.
-- Shows a subject detail foundation derived from the loaded list data.
-- Keeps subject-specific files, chat, and subject announcements out of scope because their endpoints are not documented.
-
-## Files
-
-- `screens/SubjectsListScreen.tsx`: real subjects list UI.
-- `screens/SubjectDetailsScreen.tsx`: subject detail foundation from store/list data.
-- `services/subjectsService.ts`: feature service over `academicService.listSubjectsForMajor`.
-- `store/subjectsStore.ts`: Zustand state for subjects, selected subject, local search, loading, refresh, and errors.
-- `components/`: cards, search bar, detail header, meta rows, and linked-section placeholders.
-- `types.ts`: flexible typed subject model.
-
-## Boundaries
-
-- No subject detail endpoint is used or invented.
-- No subject-specific files endpoint is used or invented.
-- Phase 10 allows the subject detail files card to open the general accessible Files list.
-- No subject-specific groups endpoint is used or invented.
-- No chat, WebSocket, PDF viewer, printing, notifications list, or support logic is implemented here.
-- No new dependencies are introduced in Phase 8.
+Pure logic lives in `services/subjectsModel.ts` (normalising, filters, semester sections, badges).

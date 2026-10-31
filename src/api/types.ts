@@ -161,11 +161,6 @@ export type GroupChatTicket = {
 
 export type GroupSummary = GroupRecord;
 
-export type GroupJoinResult = Record<string, unknown> & {
-  status?: string;
-  group?: GroupRecord;
-};
-
 export type GroupMessageSenderDetail = {
   id: number;
   full_name?: string;
@@ -516,6 +511,26 @@ export type SubjectRecord = ApiEntity & {
   groups_count?: number;
   lectures_count?: number;
 };
+
+/** A year or semester as the subject catalogue returns it (`order` sorts, `name` is shown). */
+export type CatalogLevel = { id: number; name: string; order: number };
+
+/** One row of `GET subjects/`: read-only, never carries anything that could start a join. */
+export type CatalogSubjectRecord = {
+  id: number;
+  name: string;
+  code: string | null;
+  academic_year: CatalogLevel | null;
+  semester: CatalogLevel | null;
+  major: { id: number; name: string } | null;
+  faculty: { id: number; name: string } | null;
+  in_current_term: boolean;
+  is_enrolled: boolean;
+  has_description: boolean;
+};
+
+/** `GET subjects/<id>/`: the row plus the full course description. */
+export type CatalogSubjectDetailRecord = CatalogSubjectRecord & { description: string | null };
 
 export type UnreadCount = {
   count: number;

@@ -20,6 +20,10 @@ Groups feature foundation for verified students.
 - Phase 10 adds navigation from Group details to real Group files.
 - Phase 15 adds navigation from Group details to the real in-app ChatRoom.
 
+> Students cannot request to join a group. They are added to their subjects' groups automatically once a
+> subject-registration request is approved (`features/enrollment`); there is no available-groups screen and no join
+> call. A legacy `pending` membership is shown read-only as «طلب قديم قيد المراجعة».
+
 ## Structure
 
 - `components/`: reusable Groups UI components.
