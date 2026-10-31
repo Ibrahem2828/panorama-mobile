@@ -16,14 +16,11 @@ import {
 } from '../../../components';
 import { useRefreshOnReconnect } from '../../../offline/useRefreshOnReconnect';
 import { useTranslation } from '../../../i18n';
+import { ProfileRoutes } from '../../../navigation/routes';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { colors, layout, spacing, useBrand } from '../../../theme';
 import { formatDate } from '../../../utils/formatDateTime';
-import {
-  NotificationCard,
-  NotificationPreferencesCard,
-  NotificationsHeaderActions,
-} from '../components';
+import { NotificationCard, NotificationsHeaderActions } from '../components';
 import {
   groupNotificationsByDay,
   isNotificationExpired,
@@ -45,7 +42,7 @@ function Separator() {
   return <View style={styles.separator} />;
 }
 
-export function NotificationsScreen(_props: Props) {
+export function NotificationsScreen({ navigation }: Props) {
   const { t, locale } = useTranslation();
   const brand = useBrand();
   const [filter, setFilter] = useState<Filter>('all');
@@ -175,6 +172,7 @@ export function NotificationsScreen(_props: Props) {
         isMarkingAllRead={isMarkingAllRead}
         isRefreshing={isRefreshing}
         onMarkAllRead={() => void markAllAsRead()}
+        onOpenSettings={() => navigation.navigate(ProfileRoutes.NotificationSettings)}
         onRefresh={handleRefresh}
         unreadCount={unreadCount}
       />
@@ -281,7 +279,6 @@ export function NotificationsScreen(_props: Props) {
                 variant="outline"
               />
             ) : null}
-            <NotificationPreferencesCard />
           </Stack>
         }
         ListHeaderComponent={header}

@@ -345,6 +345,7 @@ export const en: TranslationCatalog = {
     unreadBadge: (count: number) => `${count} unread`,
     noNew: 'Nothing new',
     markAllRead: 'Mark all as read',
+    settingsLink: 'Notification settings',
     unread: 'Unread',
     read: 'Read',
     noDetails: 'There are no further details for this notification.',
@@ -412,17 +413,6 @@ export const en: TranslationCatalog = {
     loadMore: 'Load more',
     loadingMore: 'Loading more...',
     openFailed: 'Could not open this notification.',
-
-    prefs: {
-      title: 'Notification preferences',
-      description: 'Choose which kinds of notifications you receive.',
-      show: 'Show',
-      hide: 'Hide',
-      inApp: 'In-app notifications',
-      typesTitle: 'Types',
-      loadFailed: 'Could not load your preferences. Please try again.',
-      saveFailed: 'Could not save your preferences. Please try again.',
-    },
 
     routeMessages: {
       verification: 'You can follow your verification status from the verification screen.',
