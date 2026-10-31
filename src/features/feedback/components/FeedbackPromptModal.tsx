@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { AppButton, AppCard, AppText, AppTextInput, Stack } from '../../../components';
-import { colors, spacing } from '../../../theme';
+import {
+  AppButton,
+  AppCard,
+  AppText,
+  AppTextInput,
+  EmojiRatingScale,
+  Stack,
+} from '../../../components';
+import { spacing } from '../../../theme';
 import { useFeedbackStore } from '../store';
 import { useTranslation } from '../../../i18n';
 import { AppModal } from '../../../components/overlay';
@@ -37,20 +44,7 @@ export function FeedbackPromptModal() {
                 {prompt.policy.question || t.feedback.prompt.question}
               </AppText>
             </Stack>
-            <View accessibilityRole="radiogroup" style={styles.stars}>
-              {[1, 2, 3, 4, 5].map((value) => (
-                <Pressable
-                  accessibilityLabel={t.feedback.ratingOf(value)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: rating === value }}
-                  key={value}
-                  onPress={() => setRating(value)}
-                  style={[styles.starButton, rating === value ? styles.starSelected : null]}
-                >
-                  <AppText style={styles.starText}>★</AppText>
-                </Pressable>
-              ))}
-            </View>
+            <EmojiRatingScale onChange={setRating} value={rating} />
             {prompt.policy.allow_comment ? (
               <AppTextInput
                 label={t.feedback.prompt.noteLabel}
@@ -95,19 +89,4 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(8,13,34,0.62)',
   },
   card: { width: '100%', maxWidth: 520, alignSelf: 'center' },
-  stars: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sm },
-  starButton: {
-    minWidth: 46,
-    minHeight: 46,
-    borderRadius: 23,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.background.muted,
-  },
-  starSelected: {
-    backgroundColor: colors.semantic.warningSoft,
-    borderWidth: 1,
-    borderColor: colors.semantic.warning,
-  },
-  starText: { fontSize: 28, color: colors.semantic.warning },
 });

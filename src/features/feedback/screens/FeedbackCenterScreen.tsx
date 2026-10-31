@@ -9,6 +9,7 @@ import {
   AppScreen,
   AppText,
   AppTextInput,
+  EmojiRatingScale,
   ErrorState,
   Stack,
   SuccessState,
@@ -41,7 +42,8 @@ export function FeedbackCenterScreen({ navigation }: Props) {
   const brand = useBrand();
   const accessToken = useAuthStore((state) => state.accessToken);
   const [kind, setKind] = useState<FeedbackKind>('rating');
-  const [rating, setRating] = useState<number | null>(5);
+  // No face is pre-selected: a default would bias the ratings upwards.
+  const [rating, setRating] = useState<number | null>(null);
   const [title, setTitle] = useState('');
   const [details, setDetails] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,6 +59,10 @@ export function FeedbackCenterScreen({ navigation }: Props) {
     if (!accessToken || isSubmitting) return;
     if (kind === 'suggestion' && (!title.trim() || !details.trim())) {
       setErrorMessage(t.feedback.missingSuggestion);
+      return;
+    }
+    if (kind === 'rating' && rating === null) {
+      setErrorMessage(t.feedback.missingRating);
       return;
     }
     if (kind !== 'rating' && !details.trim()) {
@@ -108,7 +114,7 @@ export function FeedbackCenterScreen({ navigation }: Props) {
               setIsSuccess(false);
               setTitle('');
               setDetails('');
-              setRating(5);
+              setRating(null);
             }}
             title={t.feedback.sendAnother}
             variant="outline"
@@ -165,23 +171,13 @@ export function FeedbackCenterScreen({ navigation }: Props) {
 
         <Stack gap="sm">
           <AppText variant="label">{t.feedback.ratingLabel}</AppText>
-          <View accessibilityRole="radiogroup" style={styles.stars}>
-            {[1, 2, 3, 4, 5].map((value) => (
-              <Pressable
-                accessibilityLabel={t.feedback.ratingOf(value)}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: rating === value }}
-                key={value}
-                onPress={() => setRating(value)}
-                style={[
-                  styles.star,
-                  rating === value ? [styles.starSelected, { borderColor: brand.primary }] : null,
-                ]}
-              >
-                <AppText style={styles.starText}>★</AppText>
-              </Pressable>
-            ))}
-          </View>
+          <EmojiRatingScale
+            onChange={(next) => {
+              setRating(next);
+              setErrorMessage(null);
+            }}
+            value={rating}
+          />
         </Stack>
 
         {kind === 'suggestion' ? (
@@ -247,16 +243,4 @@ const styles = StyleSheet.create({
     borderColor: colors.brand.primary,
     backgroundColor: colors.background.muted,
   },
-  stars: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sm },
-  star: {
-    width: 48,
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.button,
-    borderWidth: 1,
-    borderColor: colors.border.default,
-  },
-  starSelected: { borderColor: colors.brand.primary, backgroundColor: colors.background.muted },
-  starText: { fontSize: 28, color: colors.semantic.warning },
 });

@@ -1057,6 +1057,12 @@ export const en: TranslationCatalog = {
     kindLabel: 'Type of feedback',
     ratingLabel: 'Rating',
     ratingOf: (value: number) => `${value} out of 5`,
+    ratingScale: {
+      words: ['Very sad', 'Poor', 'Okay', 'Good', 'Wonderful'],
+      valueText: (word: string, value: number) => `Rating: ${word}, ${value} of 5`,
+      placeholder: 'Pick the face that matches your experience',
+      hint: 'Drag or tap to choose a rating',
+    },
     suggestionTitleLabel: 'Suggestion title',
     suggestionTitlePlaceholder: 'For example: improve search inside lectures',
     suggestionDetailsLabel: 'Suggestion details',
@@ -1066,6 +1072,7 @@ export const en: TranslationCatalog = {
     publicSuggestions: 'Community suggestions',
     missingSuggestion: 'Enter a clear title and the details of your suggestion.',
     missingDetails: 'Write details that help the Panorama team understand your feedback.',
+    missingRating: 'Pick the face that matches your rating.',
     promptSuccess: 'Thank you for helping us improve Panorama.',
 
     kinds: {

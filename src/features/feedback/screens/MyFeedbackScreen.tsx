@@ -9,9 +9,9 @@ import {
   AppHeader,
   AppScreen,
   AppText,
+  EmojiRatingDisplay,
   EmptyState,
   ErrorState,
-  Icon,
   SkeletonList,
   Stack,
 } from '../../../components';
@@ -170,11 +170,10 @@ export function MyFeedbackScreen({ navigation }: Props) {
               </AppText>
             </Stack>
             {item.rating ? (
-              <Stack direction="horizontal" gap="xs">
-                {Array.from({ length: item.rating }, (_, index) => (
-                  <Icon color={colors.semantic.warning} filled key={index} name="star" size={16} />
-                ))}
-              </Stack>
+              <EmojiRatingDisplay
+                scoreText={t.feedback.ratingOf(item.rating)}
+                value={item.rating}
+              />
             ) : null}
             <AppText color="secondary" variant="bodySmall">
               {item.suggestion || item.comment || t.feedback.mine.sent}
