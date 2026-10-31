@@ -1,12 +1,1 @@
-[
-  {
-    "method": "GET",
-    "path": "/api/v1/subjects/",
-    "reason": "Backend branch feat/enrollment-only-joining adds the read-only subject catalogue; not in the pinned OpenAPI yet. Remove this entry when contracts:sync pulls it in."
-  },
-  {
-    "method": "GET",
-    "path": "/api/v1/subjects/{subjectId}/",
-    "reason": "Backend branch feat/enrollment-only-joining adds the subject details (full description); not in the pinned OpenAPI yet. Remove this entry when contracts:sync pulls it in."
-  }
-]
+[]
