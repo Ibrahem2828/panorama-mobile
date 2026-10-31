@@ -1072,6 +1072,7 @@ export const en: TranslationCatalog = {
     publicSuggestions: 'Community suggestions',
     missingSuggestion: 'Enter a clear title and the details of your suggestion.',
     missingDetails: 'Write details that help the Panorama team understand your feedback.',
+    missingRating: 'Pick the face that matches your rating.',
     promptSuccess: 'Thank you for helping us improve Panorama.',
 
     kinds: {

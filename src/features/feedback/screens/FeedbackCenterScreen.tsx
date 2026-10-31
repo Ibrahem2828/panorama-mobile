@@ -42,7 +42,8 @@ export function FeedbackCenterScreen({ navigation }: Props) {
   const brand = useBrand();
   const accessToken = useAuthStore((state) => state.accessToken);
   const [kind, setKind] = useState<FeedbackKind>('rating');
-  const [rating, setRating] = useState<number | null>(5);
+  // No face is pre-selected: a default would bias the ratings upwards.
+  const [rating, setRating] = useState<number | null>(null);
   const [title, setTitle] = useState('');
   const [details, setDetails] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,6 +59,10 @@ export function FeedbackCenterScreen({ navigation }: Props) {
     if (!accessToken || isSubmitting) return;
     if (kind === 'suggestion' && (!title.trim() || !details.trim())) {
       setErrorMessage(t.feedback.missingSuggestion);
+      return;
+    }
+    if (kind === 'rating' && rating === null) {
+      setErrorMessage(t.feedback.missingRating);
       return;
     }
     if (kind !== 'rating' && !details.trim()) {
@@ -109,7 +114,7 @@ export function FeedbackCenterScreen({ navigation }: Props) {
               setIsSuccess(false);
               setTitle('');
               setDetails('');
-              setRating(5);
+              setRating(null);
             }}
             title={t.feedback.sendAnother}
             variant="outline"
@@ -166,7 +171,13 @@ export function FeedbackCenterScreen({ navigation }: Props) {
 
         <Stack gap="sm">
           <AppText variant="label">{t.feedback.ratingLabel}</AppText>
-          <EmojiRatingScale onChange={setRating} value={rating} />
+          <EmojiRatingScale
+            onChange={(next) => {
+              setRating(next);
+              setErrorMessage(null);
+            }}
+            value={rating}
+          />
         </Stack>
 
         {kind === 'suggestion' ? (

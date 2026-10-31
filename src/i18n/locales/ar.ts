@@ -1072,6 +1072,7 @@ export const ar = {
     publicSuggestions: 'اقتراحات المجتمع',
     missingSuggestion: 'اكتب عنوانًا واضحًا وتفاصيل الاقتراح.',
     missingDetails: 'اكتب تفاصيل تساعد فريق بانوراما على فهم ملاحظتك.',
+    missingRating: 'اختر الوجه الذي يعبّر عن تقييمك.',
     promptSuccess: 'شكرًا لمساعدتنا في تطوير بانوراما.',
 
     kinds: {
