@@ -310,6 +310,8 @@ export type CreatePrintOrderItemInput = {
   orientation?: 'auto' | 'portrait' | 'landscape';
   page_range?: string;
   collate?: boolean;
+  /** Chosen paper option per section ({section: code}); sections left on "none" are not sent. */
+  extras?: Record<string, string>;
 };
 
 /** An item that is a ready-made product: its specification and price are fixed by the shop. */
@@ -371,6 +373,25 @@ export type PrintOptionsResponse = {
   n_up_directions: string[];
   binding_types: PrintBindingType[];
   covers: PrintCoverOption[];
+  /** Paper options by section of the shop's order form, in display order (absent on an older server). */
+  extras?: PrintExtraSection[];
+};
+
+export type PrintExtraPriceUnit = 'per_copy' | 'per_50_sheets' | 'per_sheet';
+
+export type PrintExtraOption = {
+  code: string;
+  name: string;
+  description: string;
+  price: string | number;
+  price_unit: PrintExtraPriceUnit;
+  color_hex: string;
+};
+
+export type PrintExtraSection = {
+  section: string;
+  label: string;
+  options: PrintExtraOption[];
 };
 
 export type PrintProduct = {

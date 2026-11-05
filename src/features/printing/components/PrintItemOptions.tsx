@@ -14,7 +14,9 @@ import {
 } from '../services/printOptions';
 import { usePrintingStore } from '../store';
 import type { PrintCartItem } from '../types';
+import { buildExtraGroups, describeExtras } from '../services/printExtras';
 import { PrintChoiceChips, type PrintChoice } from './PrintChoiceChips';
+import { PrintExtraChoices } from './PrintExtraChoices';
 import { PrintOptionSection } from './PrintOptionSection';
 
 type PrintItemOptionsProps = {
@@ -101,6 +103,11 @@ export function PrintItemOptions({ item, pages = null, onChange }: PrintItemOpti
     .join(' · ');
   const finishingSummary = [labels[item.binding] ?? item.binding, coverName]
     .filter(Boolean)
+    .join(' · ');
+
+  const extraGroups = buildExtraGroups(options?.extras);
+  const extrasSummary = describeExtras(item.extras, options?.extras)
+    .map((line) => line.name)
     .join(' · ');
 
   return (
@@ -247,6 +254,25 @@ export function PrintItemOptions({ item, pages = null, onChange }: PrintItemOpti
           </Stack>
         ) : null}
       </PrintOptionSection>
+
+      {extraGroups.length > 0 ? (
+        <PrintOptionSection
+          defaultOpen={false}
+          icon="tag"
+          summary={extrasSummary || copy.extras.none}
+          title={copy.sectionExtras}
+        >
+          {extraGroups.map((group) => (
+            <PrintExtraChoices
+              currency={options?.currency ?? 'SYP'}
+              group={group}
+              key={group.key}
+              onChange={(extras) => onChange({ extras })}
+              selection={item.extras}
+            />
+          ))}
+        </PrintOptionSection>
+      ) : null}
     </Stack>
   );
 }
