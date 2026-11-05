@@ -29,6 +29,7 @@ import {
 } from '../components';
 import {
   canCancelPrintOrder,
+  describeExtras,
   formatPrintMoney,
   formatPrintOrderDate,
   formatPrintOrderDateTime,
@@ -65,6 +66,14 @@ export function PrintOrderDetailsScreen({ navigation, route }: Props) {
   const loadOrderDetail = usePrintingStore((state) => state.loadOrderDetail);
   const cancelOrder = usePrintingStore((state) => state.cancelOrder);
   const clearMessages = usePrintingStore((state) => state.clearMessages);
+  const options = usePrintingStore((state) => state.options);
+  const refreshOptions = usePrintingStore((state) => state.refreshOptions);
+  const draftCurrency = usePrintingStore((state) => state.draft.currency);
+
+  // The receipt names the chosen paper options from the shop's list; fetch it when the order is opened directly.
+  useEffect(() => {
+    if (!options) refreshOptions(draftCurrency);
+  }, [options, refreshOptions, draftCurrency]);
   const cachedOrder = orders.find((order) => isSameId(order.id, orderId)) ?? null;
   const activeOrder: PrintOrder | null =
     selectedOrder && isSameId(selectedOrder.id, orderId) ? selectedOrder : cachedOrder;
@@ -279,6 +288,10 @@ export function PrintOrderDetailsScreen({ navigation, route }: Props) {
             ) : (
               activeOrder.items.map((item, index) => {
                 const itemPrice = formatPrintMoney(item.price, activeOrder.currency);
+                const extrasPrice =
+                  Number(item.extras_price) > 0
+                    ? formatPrintMoney(item.extras_price, activeOrder.currency)
+                    : null;
                 const fileLabel = getPrintOrderItemFileLabel(item, t.printing);
 
                 return (
@@ -317,6 +330,23 @@ export function PrintOrderDetailsScreen({ navigation, route }: Props) {
                             />
                           ))}
                       </Stack>
+                      {describeExtras(item.extras, options?.extras).length > 0 ? (
+                        <Stack gap="xs">
+                          <AppText color="muted" variant="caption" weight="700">
+                            {t.printing.details.paperOptions}
+                          </AppText>
+                          {describeExtras(item.extras, options?.extras).map((line) => (
+                            <AppText color="secondary" key={line.section} variant="caption">
+                              {`${line.label}: ${line.name}`}
+                            </AppText>
+                          ))}
+                          {extrasPrice ? (
+                            <AppText color="secondary" variant="caption" weight="600">
+                              {`${t.printing.priceSummary.extrasPrice}: ${extrasPrice}`}
+                            </AppText>
+                          ) : null}
+                        </Stack>
+                      ) : null}
                       {itemPrice ? (
                         <AppText color="brand" variant="caption" weight="600">
                           {`${t.printing.details.itemPrice}: ${itemPrice}`}

@@ -9,6 +9,7 @@ import {
   validateUploadCandidate,
 } from '../../attachments/services/localFile';
 import { parsePageRange } from './printOptions';
+import { buildExtrasPayload, extrasSignature } from './printExtras';
 import type {
   PrintCartItem,
   PrintCurrency,
@@ -43,6 +44,7 @@ export const DEFAULT_ITEM_OPTIONS = {
   sides: 'one_sided',
   binding: 'none',
   cover: '',
+  extras: {} as Record<string, string>,
   pagesPerSheet: 1,
   nUpDirection: 'ltr',
   duplexFlip: 'long_edge',
@@ -56,7 +58,12 @@ let itemCounter = 0;
 export function newCartItem(source: PrintSource = null): PrintCartItem {
   itemCounter += 1;
 
-  return { key: `item-${Date.now().toString(36)}-${itemCounter}`, source, ...DEFAULT_ITEM_OPTIONS };
+  return {
+    key: `item-${Date.now().toString(36)}-${itemCounter}`,
+    source,
+    ...DEFAULT_ITEM_OPTIONS,
+    extras: {},
+  };
 }
 
 export const DEFAULT_PRINT_CURRENCY: PrintCurrency = 'SYP';
@@ -111,7 +118,9 @@ export function totalCopies(draft: PrintDraft): number {
 }
 
 /** The print-dialog options of a file item. A ready-made product sends only itself and the copies. */
-function itemFields(item: PrintCartItem): Record<string, string | number | boolean> {
+function itemFields(
+  item: PrintCartItem,
+): Record<string, string | number | boolean | Record<string, string>> {
   if (item.source?.kind === 'product') {
     return { product: item.source.product.id, copies: item.copies };
   }
@@ -128,11 +137,12 @@ function itemFields(item: PrintCartItem): Record<string, string | number | boole
     orientation: item.orientation,
     collate: item.collate,
     ...(item.cover ? { cover: item.cover } : {}),
+    ...(buildExtrasPayload(item.extras) ? { extras: buildExtrasPayload(item.extras) } : {}),
     ...(item.pageRange.trim() ? { page_range: item.pageRange.trim() } : {}),
   };
 }
 
-type JsonItem = Record<string, string | number | boolean> &
+type JsonItem = Record<string, string | number | boolean | Record<string, string>> &
   ({ source_file: number | string } | { converted_upload: string } | { product: number });
 
 export type PrintQuoteJson = { items: JsonItem[]; currency: PrintCurrency };
@@ -194,7 +204,11 @@ export function buildQuoteBody(draft: PrintDraft): PrintQuoteJson | FormData {
     // (a product item has no file part: its own `product` field is in itemFields)
 
     Object.entries(itemFields(item)).forEach(([key, value]) => {
-      form.append(`items[${index}]${key}`, String(value));
+      // `extras` is a JSON string in multipart (the backend parses it); everything else is plain text.
+      form.append(
+        `items[${index}]${key}`,
+        typeof value === 'object' ? JSON.stringify(value) : String(value),
+      );
     });
   });
 
@@ -250,6 +264,7 @@ export function draftSignature(draft: PrintDraft): string {
       item.sides,
       item.binding,
       item.cover,
+      extrasSignature(item.extras),
       item.pagesPerSheet,
       item.nUpDirection,
       item.duplexFlip,

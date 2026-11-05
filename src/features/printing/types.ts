@@ -1,5 +1,5 @@
 import type { StatusVariant } from '../../types/common';
-import type { PrintProduct } from '../../api/types';
+import type { PrintExtraPriceUnit, PrintProduct } from '../../api/types';
 import type { LocalFile, UploadProblem } from '../attachments/services/localFile';
 import type {
   DuplexFlip,
@@ -56,6 +56,9 @@ export type PrintOrderItem = {
   binding?: PrintBinding;
   unit_price?: string | number | null;
   binding_price?: string | number | null;
+  /** Paper options chosen for this item ({section: code}) and what they cost in total. */
+  extras?: Record<string, string> | null;
+  extras_price?: string | number | null;
   price?: string | number | null;
   created_at?: string;
   [key: string]: unknown;
@@ -115,6 +118,8 @@ export type PrintCartItem = {
   sides: PrintSides;
   binding: PrintBinding;
   cover: string;
+  /** Chosen paper option per section ({section: code}); a section without an entry is "none". */
+  extras: Record<string, string>;
   pagesPerSheet: PagesPerSheet;
   nUpDirection: NUpDirection;
   duplexFlip: DuplexFlip;
@@ -146,6 +151,16 @@ export type PrintDraftValidation = {
 
 export type { UploadProblem };
 
+/** One paper option as priced by a quote (`pricing_snapshot.extras`). */
+export type PrintChosenExtra = {
+  section: string;
+  code: string;
+  name: string;
+  price: string | number;
+  price_unit: PrintExtraPriceUnit;
+  cost: string | number;
+};
+
 export type PrintQuoteItem = {
   pages_count: number;
   sheets_count: number;
@@ -154,9 +169,11 @@ export type PrintQuoteItem = {
     sheets_per_copy?: number;
     wire_grams_per_copy?: string | null;
     cover_price_per_copy?: string;
+    extras?: PrintChosenExtra[];
   } & Record<string, unknown>;
   unit_price: string | number;
   binding_price: string | number;
+  extras_price?: string | number | null;
   subtotal: string | number;
   currency: string;
 };

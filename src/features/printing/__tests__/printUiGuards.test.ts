@@ -20,6 +20,6 @@ describe('printing UI guards', () => {
   it('groups the options into collapsible sections', () => {
     const options = readFileSync(join(root, 'components', 'PrintItemOptions.tsx'), 'utf8');
 
-    expect(options.match(/<PrintOptionSection/gu)?.length).toBe(3);
+    expect(options.match(/<PrintOptionSection/gu)?.length).toBe(4);
   });
 });
