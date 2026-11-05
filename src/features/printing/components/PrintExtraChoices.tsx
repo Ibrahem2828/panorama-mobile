@@ -28,6 +28,9 @@ export function usePrintExtraUnitLabels(): PrintExtraUnitLabels {
   return { per_copy: copy.perCopy, per_50_sheets: copy.per50Sheets, per_sheet: copy.perSheet };
 }
 
+/** The catalog's own free «none» option duplicates the list's built-in «لا شيء» row, so it is not drawn a second time. */
+const isRealChoice = (option: PrintExtraOption) => option.code !== 'none';
+
 type RowProps = {
   label: string;
   price?: string;
@@ -123,7 +126,7 @@ export function PrintExtraChoices({
               {headings[entry.section] ?? entry.label}
             </AppText>
           ) : null}
-          {entry.options.map((option) => (
+          {entry.options.filter(isRealChoice).map((option) => (
             <ChoiceRow
               description={option.description}
               key={`${entry.section}:${option.code}`}
