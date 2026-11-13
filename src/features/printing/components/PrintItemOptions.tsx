@@ -12,8 +12,10 @@ import {
   parsePageRange,
   type PagesPerSheet,
 } from '../services/printOptions';
+import { PRINT_HELP_TOPICS } from '../services/printOptionHelp';
 import { usePrintingStore } from '../store';
 import type { PrintCartItem } from '../types';
+import { PrintLabelWithHelp, PrintHelpButton } from './PrintHelpButton';
 import { PrintChoiceChips, type PrintChoice } from './PrintChoiceChips';
 import { PrintOptionSection } from './PrintOptionSection';
 
@@ -107,18 +109,21 @@ export function PrintItemOptions({ item, pages = null, onChange }: PrintItemOpti
     <Stack gap="md">
       <PrintOptionSection icon="printer" summary={paperSummary} title={copy.sectionPaper}>
         <PrintChoiceChips
+          helpTopic={PRINT_HELP_TOPICS.colour}
           label={copy.color}
           onChange={(colorMode) => onChange({ colorMode })}
           options={choices(['black_white', 'color'] as const, labels)}
           value={item.colorMode}
         />
         <PrintChoiceChips
+          helpTopic={PRINT_HELP_TOPICS.size}
           label={copy.paperSize}
           onChange={(paperSize) => onChange({ paperSize })}
           options={choices(['A4', 'A3', 'A5'] as const, labels)}
           value={item.paperSize}
         />
         <PrintChoiceChips
+          helpTopic={PRINT_HELP_TOPICS.sides}
           label={copy.sides}
           onChange={(sides) => onChange({ sides })}
           options={choices(['one_sided', 'double_sided'] as const, labels)}
@@ -192,6 +197,7 @@ export function PrintItemOptions({ item, pages = null, onChange }: PrintItemOpti
         title={copy.sectionFinishing}
       >
         <PrintChoiceChips
+          helpTopic={PRINT_HELP_TOPICS.binding}
           label={copy.binding}
           onChange={(binding) => onChange({ binding })}
           options={choices(bindingValues, labels)}
@@ -203,13 +209,21 @@ export function PrintItemOptions({ item, pages = null, onChange }: PrintItemOpti
           </AppText>
         ) : null}
         {bindingType?.price_mode === 'per_wire_kg' ? (
-          <AppText color="muted" variant="caption">
-            {copy.wirePriced}
-          </AppText>
+          <View style={styles.wireNote}>
+            <AppText color="muted" style={styles.wireText} variant="caption">
+              {copy.wirePriced}
+            </AppText>
+            <PrintHelpButton topic={PRINT_HELP_TOPICS.spiralWire} />
+          </View>
         ) : null}
         {options && options.covers.length > 0 ? (
           <Stack gap="sm">
-            <AppText variant="label">{copy.cover}</AppText>
+            <PrintLabelWithHelp
+              label={copy.cover}
+              labels={Object.fromEntries(options.covers.map((cover) => [cover.code, cover.name]))}
+              selectedKey={item.cover}
+              topic={PRINT_HELP_TOPICS.cover}
+            />
             <View style={styles.covers}>
               {[{ code: '', name: copy.coverNone, color_hex: '' }, ...options.covers].map(
                 (cover) => {
@@ -252,6 +266,8 @@ export function PrintItemOptions({ item, pages = null, onChange }: PrintItemOpti
 }
 
 const styles = StyleSheet.create({
+  wireNote: { flexDirection: 'row', alignItems: 'center', gap: spacing.xxs },
+  wireText: { flex: 1 },
   covers: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   cover: {
     minHeight: 44,
