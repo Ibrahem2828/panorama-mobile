@@ -2330,6 +2330,16 @@ export const en: TranslationCatalog = {
       increase: 'Increase copies',
     },
 
+    // --- Print option help («i» buttons): keep this block together to ease merges. ---
+    help: {
+      sheetTitle: 'Explanation',
+      label: (title: string) => `Explanation: ${title}`,
+      hint: 'Opens a short explanation of this option',
+      close: 'Close',
+      imageFailed: 'The illustration could not be loaded',
+    },
+    // --- end print option help ---
+
     options: {
       color: 'Colour',
       sides: 'Sides',

@@ -2,6 +2,7 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import { AppText, Icon, Stack, type ChoiceChip } from '../../../components';
 import { colors, layout, opacity, radius, spacing, useBrand } from '../../../theme';
+import { PrintLabelWithHelp } from './PrintHelpButton';
 
 export type PrintChoice<T extends string> = ChoiceChip<T>;
 
@@ -12,6 +13,8 @@ type PrintChoiceChipsProps<T extends string> = {
   onChange: (value: T) => void;
   /** Hint under the group (what the option means). */
   hint?: string;
+  /** Help topic of this option: adds the «i» next to the label (only drawn when the server has help for it). */
+  helpTopic?: string;
 };
 
 /**
@@ -24,12 +27,22 @@ export function PrintChoiceChips<T extends string>({
   options,
   onChange,
   hint,
+  helpTopic,
 }: PrintChoiceChipsProps<T>) {
   const brand = useBrand();
 
   return (
     <Stack gap="sm">
-      <AppText variant="label">{label}</AppText>
+      {helpTopic ? (
+        <PrintLabelWithHelp
+          label={label}
+          labels={Object.fromEntries(options.map((option) => [option.value, option.label]))}
+          selectedKey={value}
+          topic={helpTopic}
+        />
+      ) : (
+        <AppText variant="label">{label}</AppText>
+      )}
       <Stack direction="horizontal" gap="sm" wrap>
         {options.map((option) => {
           const selected = option.value === value;

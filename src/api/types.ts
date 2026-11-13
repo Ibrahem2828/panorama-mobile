@@ -373,6 +373,26 @@ export type PrintOptionsResponse = {
   covers: PrintCoverOption[];
 };
 
+/** One explanation (توضيح) of a print option. A blank `key` is the help of the whole topic. */
+export type PrintOptionHelpItem = {
+  id: number;
+  topic: string;
+  key: string;
+  title: string;
+  body: string;
+  image_url: string | null;
+  image_caption: string;
+  sort_order: number;
+  updated_at: string;
+};
+
+export type PrintOptionHelpResponse = {
+  updated_at: string | null;
+  count: number;
+  items: PrintOptionHelpItem[];
+  by_topic?: Record<string, PrintOptionHelpItem[]>;
+};
+
 export type PrintProduct = {
   id: number;
   name: string;
