@@ -51,6 +51,9 @@ export function DeviceLockScreen() {
     return () => clearInterval(timer);
   }, [tickDeviceLock]);
 
+  // Leaving the screen (back gesture included) drops the pending switch offer: it must not outlive the visit.
+  useEffect(() => () => resetDeviceLock(), [resetDeviceLock]);
+
   // Nothing pending (for example after a successful switch the session replaces this stack): leave quietly.
   useEffect(() => {
     if (lock.phase === 'none' && navigation.canGoBack()) navigation.goBack();
