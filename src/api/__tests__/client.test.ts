@@ -222,4 +222,27 @@ describe('token refresh', () => {
       code: 'NETWORK_ERROR',
     });
   });
+
+  it("treats expo/fetch's plain 'fetch failed' Error as a network error", async () => {
+    fetchMock.mockRejectedValueOnce(new Error('fetch failed: Failed to connect to /10.0.2.2:8010'));
+
+    await expect(apiClient.get('/api/v1/groups/my/')).rejects.toMatchObject({
+      code: 'NETWORK_ERROR',
+    });
+  });
+
+  it('maps any rejection after our own timeout aborted the request to a timeout', async () => {
+    fetchMock.mockImplementationOnce(
+      (_url: unknown, init?: { signal?: AbortSignal }) =>
+        new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () =>
+            reject(new Error('fetch failed: Canceled')),
+          );
+        }),
+    );
+
+    await expect(apiClient.get('/api/v1/groups/my/', { timeoutMs: 5 })).rejects.toMatchObject({
+      code: 'TIMEOUT',
+    });
+  });
 });

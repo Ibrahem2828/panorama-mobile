@@ -170,7 +170,13 @@ async function executeRequest<TData, TBody = unknown>(
 
     return parsedResponse.body as TData;
   } catch (error) {
-    const normalizedError = normalizeApiError(error);
+    // expo/fetch rejects a cancelled request with a generic "fetch failed" Error, not an AbortError: our own controller
+    // knows that the timeout (or the caller) cancelled it.
+    const normalizedError = normalizeApiError(
+      controller.signal.aborted && !(error instanceof ApiClientError)
+        ? Object.assign(new Error('The operation was aborted.'), { name: 'AbortError' })
+        : error,
+    );
 
     // A request that never got an answer (and was not cancelled by the caller) feeds the "weak connection" banner.
     if (

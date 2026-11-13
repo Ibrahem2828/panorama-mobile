@@ -99,6 +99,16 @@ function isAbortError(error: unknown): boolean {
   return isRecord(error) && error.name === 'AbortError';
 }
 
+/**
+ * The app's global `fetch` is Expo's (expo/fetch), which rejects a failed connection with a plain `Error` whose message
+ * starts with "fetch failed", not with React Native's `TypeError`. Both mean the request never got an answer.
+ */
+function isFetchFailure(error: unknown): boolean {
+  return (
+    error instanceof TypeError || (error instanceof Error && /^fetch failed/i.test(error.message))
+  );
+}
+
 function toFieldErrors(errors: unknown): FieldErrors | undefined {
   if (!isRecord(errors)) {
     return undefined;
@@ -320,7 +330,7 @@ export function normalizeApiError(error: unknown): NormalizedApiError {
     };
   }
 
-  if (error instanceof TypeError) {
+  if (isFetchFailure(error)) {
     return {
       code: 'NETWORK_ERROR',
       message: defaultMessageFor('NETWORK_ERROR'),
