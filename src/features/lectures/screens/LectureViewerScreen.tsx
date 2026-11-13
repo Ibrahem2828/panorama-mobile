@@ -9,7 +9,7 @@ import { spacing } from '../../../theme';
 import { DocumentViewerBody } from '../../viewer/DocumentViewerBody';
 import { LectureProcessingView } from '../components/LectureProcessingView';
 import { useLecture } from '../hooks/useLecture';
-import { isViewable, lectureTitle } from '../logic';
+import { isViewable, lectureErrorStateKind, lectureTitle } from '../logic';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'LectureViewer'>;
 
@@ -45,9 +45,14 @@ export function LectureViewerScreen({ navigation, route }: Props) {
         <LoadingState message={t.lectures.detail.loading} />
       ) : (
         <ErrorState
-          message={t.lectures.errors[errorKind ?? 'unknown']}
+          fallbackMessage={t.lectures.errors[errorKind ?? 'unknown']}
+          kind={lectureErrorStateKind(errorKind ?? 'unknown')}
           onRetry={errorKind === 'notFound' || errorKind === 'forbidden' ? undefined : reload}
-          title={t.lectures.detail.unavailableTitle}
+          title={
+            lectureErrorStateKind(errorKind ?? 'unknown') === 'generic'
+              ? t.lectures.detail.unavailableTitle
+              : undefined
+          }
         />
       )}
     </AppScreen>

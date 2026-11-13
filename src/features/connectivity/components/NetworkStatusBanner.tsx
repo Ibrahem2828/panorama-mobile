@@ -7,17 +7,26 @@ import { AppText } from '../../../components';
 import { colors, spacing } from '../../../theme';
 import { useTranslation } from '../../../i18n';
 import { formatAgo } from '../../../offline/formatAgo';
-import { isOnlineFromNetInfo, useNetworkStore } from '../../../offline/networkStore';
+import {
+  connectionQuality,
+  isOnlineFromNetInfo,
+  useNetworkStore,
+} from '../../../offline/networkStore';
 
 /**
  * Keeps the shared connectivity flag up to date. Mounted once at the root (the banner below renders it).
  */
 function useNetworkMonitor() {
   const setOnline = useNetworkStore((state) => state.setOnline);
+  const setReachable = useNetworkStore((state) => state.setReachable);
 
   useEffect(
-    () => NetInfo.addEventListener((state) => setOnline(isOnlineFromNetInfo(state))),
-    [setOnline],
+    () =>
+      NetInfo.addEventListener((state) => {
+        setOnline(isOnlineFromNetInfo(state));
+        setReachable(state.isInternetReachable ?? null);
+      }),
+    [setOnline, setReachable],
   );
 }
 
@@ -50,7 +59,16 @@ export function NetworkStatusBanner() {
 
   const isOnline = useNetworkStore((state) => state.isOnline);
   const savedAt = useNetworkStore((state) => state.lastCachedSavedAt);
-  const visible = !isOnline || savedAt !== null;
+  const quality = useNetworkStore((state) =>
+    connectionQuality({
+      isOnline: state.isOnline,
+      internetReachable: state.internetReachable,
+      linkFailures: state.linkFailures,
+      okSinceUnreachable: state.okSinceUnreachable,
+    }),
+  );
+  const weak = quality === 'weak';
+  const visible = !isOnline || savedAt !== null || weak;
   const now = useMinuteClock(visible);
 
   if (!visible) {
@@ -58,11 +76,13 @@ export function NetworkStatusBanner() {
   }
 
   const age = savedAt !== null ? formatAgo(savedAt, now, t.connectivity) : null;
-  const message = isOnline
-    ? t.connectivity.staleSaved
-    : savedAt !== null
+  const message = !isOnline
+    ? savedAt !== null
       ? t.connectivity.offlineSaved
-      : t.connectivity.offline;
+      : t.connectivity.offline
+    : savedAt !== null
+      ? t.connectivity.staleSaved
+      : t.connectivity.weak;
 
   return (
     <View

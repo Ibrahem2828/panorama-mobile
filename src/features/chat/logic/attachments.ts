@@ -82,8 +82,13 @@ export function toChatDocument(asset: {
 export function buildMessageFormData(input: {
   content: string;
   attachment: ChatAttachment;
+  replyToId?: number | null;
 }): FormData {
   const form = new FormData();
+
+  if (input.replyToId != null) {
+    form.append('reply_to', String(input.replyToId));
+  }
 
   if (input.content) {
     form.append('content', input.content);

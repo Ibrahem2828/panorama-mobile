@@ -49,3 +49,5 @@ export type { PaginatedResult, PaginationParams } from './pagination';
 export type { ApiQueryParams, ApiRequestOptions } from './request';
 export type { ApiErrorResponse, ApiResponse, ApiSuccessResponse } from './response';
 export type * from './types';
+export { classifyApiError } from './errorKind';
+export type { ErrorKind } from './errorKind';

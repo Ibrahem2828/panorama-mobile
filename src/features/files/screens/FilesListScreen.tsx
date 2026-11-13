@@ -56,6 +56,7 @@ export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
   const isLoadingMore = useFilesStore((state) => state.isLoadingMoreList);
   const isRefreshing = useFilesStore((state) => state.isRefreshingList);
   const listError = useFilesStore((state) => state.listError);
+  const listErrorKind = useFilesStore((state) => state.listErrorKind);
   const loadMoreError = useFilesStore((state) => state.loadMoreError);
   const loadList = useFilesStore((state) => state.loadList);
   const refreshList = useFilesStore((state) => state.refreshList);
@@ -180,7 +181,11 @@ export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
     return (
       <AppScreen contentContainerStyle={styles.centerContent} scroll>
         {header}
-        <ErrorState message={listError} onRetry={() => void loadList(query)} />
+        <ErrorState
+          fallbackMessage={listError}
+          kind={listErrorKind ?? undefined}
+          onRetry={() => void loadList(query)}
+        />
       </AppScreen>
     );
   }
@@ -193,7 +198,11 @@ export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
           isLoading ? (
             <SkeletonList />
           ) : listError ? (
-            <ErrorState message={listError} onRetry={() => void loadList(query)} />
+            <ErrorState
+              fallbackMessage={listError}
+              kind={listErrorKind ?? undefined}
+              onRetry={() => void loadList(query)}
+            />
           ) : hasFilters || subjectId !== undefined ? (
             <EmptyState
               action={

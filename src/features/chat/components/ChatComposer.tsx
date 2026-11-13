@@ -31,12 +31,16 @@ import { useTranslation } from '../../../i18n';
 import { getIsRTL, isolateLtr } from '../../../utils/rtl';
 import { localFileToChatAttachment, validateChatAttachment } from '../logic/attachments';
 import type { SendResult } from '../store/chatStore';
-import { MAX_MESSAGE_LENGTH, type ChatAttachment } from '../types';
+import { MAX_MESSAGE_LENGTH, type ChatAttachment, type ChatReplyTarget } from '../types';
 import { formatMegabytes } from './chatFormat';
+import { ReplyBar } from './ReplyBar';
 
 type ChatComposerProps = {
   groupId: string | number;
   onSend: (input: { text: string; attachment: ChatAttachment | null }) => SendResult;
+  /** The message being answered; the bar above the input shows it. The screen owns this state. */
+  replyTo?: ChatReplyTarget | null;
+  onCancelReply?: () => void;
 };
 
 /** Unsent text survives leaving and re-entering the room (memory only, never persisted). */
@@ -67,7 +71,12 @@ function useKeyboardVisible(): boolean {
  * The composer owns its text, attachment and error state, so typing re-renders only this
  * component and never the message list.
  */
-export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: ChatComposerProps) {
+export const ChatComposer = memo(function ChatComposer({
+  groupId,
+  onSend,
+  replyTo = null,
+  onCancelReply,
+}: ChatComposerProps) {
   const { t } = useTranslation();
   const brand = useBrand();
   const insets = useSafeAreaInsets();
@@ -79,6 +88,8 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
   const [menuOpen, setMenuOpen] = useState(false);
   const [cameraDenied, setCameraDenied] = useState(false);
   const textRef = useRef(text);
+  const inputRef = useRef<TextInput>(null);
+  const replyId = replyTo?.id ?? null;
 
   textRef.current = text;
 
@@ -94,6 +105,11 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
     },
     [draftKey],
   );
+
+  // Choosing a message to reply to puts the cursor in the input right away.
+  useEffect(() => {
+    if (replyId !== null) inputRef.current?.focus();
+  }, [replyId]);
 
   const handleChangeText = useCallback((value: string) => {
     setText(value);
@@ -175,6 +191,8 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
         { paddingBottom: spacing.sm + (keyboardVisible ? 0 : insets.bottom) },
       ]}
     >
+      {replyTo && onCancelReply ? <ReplyBar onCancel={onCancelReply} target={replyTo} /> : null}
+
       {attachment ? (
         <View style={styles.attachmentPreview}>
           {attachment.kind === 'image' ? (
@@ -221,6 +239,7 @@ export const ChatComposer = memo(function ChatComposer({ groupId, onSend }: Chat
           onChangeText={handleChangeText}
           placeholder={t.chat.inputPlaceholder}
           placeholderTextColor={colors.text.muted}
+          ref={inputRef}
           style={styles.input}
           textAlign={getIsRTL() ? 'right' : 'left'}
           textAlignVertical="center"
