@@ -14,6 +14,7 @@ export type PublicStackParamList = {
   };
   ForgotPassword: undefined;
   ResetPassword: { identifier: string; channel: 'email' | 'phone' };
+  DeviceLock: undefined;
 };
 
 export type StudentSetupStackParamList = {
@@ -75,6 +76,7 @@ export type ProfileStackParamList = {
   AcademicInfo: undefined;
   Settings: undefined;
   ChangePassword: undefined;
+  PhoneVerification: undefined;
   DeleteAccount: undefined;
   Notifications: undefined;
   NotificationSettings: undefined;

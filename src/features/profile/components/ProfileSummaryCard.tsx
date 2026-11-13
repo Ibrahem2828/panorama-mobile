@@ -1,4 +1,4 @@
-import { Image, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppAvatar, AppBadge, AppCard, AppText } from '../../../components';
 import { useTranslation } from '../../../i18n';
@@ -16,9 +16,15 @@ type ProfileSummaryCardProps = {
   user: ProfileUser | null;
   /** Student's faculty; shown as a badge carrying the faculty logo. */
   facultyName?: string | null;
+  /** Makes the «phone not verified» chip a shortcut to the verification flow. */
+  onPressUnverifiedPhone?: () => void;
 };
 
-export function ProfileSummaryCard({ user, facultyName }: ProfileSummaryCardProps) {
+export function ProfileSummaryCard({
+  user,
+  facultyName,
+  onPressUnverifiedPhone,
+}: ProfileSummaryCardProps) {
   const { t } = useTranslation();
   const brand = useBrand();
   const displayName = getProfileDisplayName(user, t.profile);
@@ -69,14 +75,26 @@ export function ProfileSummaryCard({ user, facultyName }: ProfileSummaryCardProp
             />
           ) : null}
           {user?.is_phone_verified !== undefined ? (
-            <AppBadge
-              label={
-                user.is_phone_verified
-                  ? t.profile.summary.phoneVerified
-                  : t.profile.summary.phoneUnverified
-              }
-              variant={user.is_phone_verified ? 'success' : 'warning'}
-            />
+            user.is_phone_verified || !onPressUnverifiedPhone ? (
+              <AppBadge
+                label={
+                  user.is_phone_verified
+                    ? t.profile.summary.phoneVerified
+                    : t.profile.summary.phoneUnverified
+                }
+                variant={user.is_phone_verified ? 'success' : 'warning'}
+              />
+            ) : (
+              <Pressable
+                accessibilityHint={t.phoneVerify.entry.chipHint}
+                accessibilityLabel={t.profile.summary.phoneUnverified}
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={onPressUnverifiedPhone}
+              >
+                <AppBadge label={t.profile.summary.phoneUnverified} variant="warning" />
+              </Pressable>
+            )
           ) : null}
         </View>
       </View>

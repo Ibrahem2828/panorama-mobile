@@ -20,6 +20,7 @@ import { PermissionsSettingsScreen } from '../../features/permissions';
 import { NotificationSettingsScreen } from '../../features/notifications/screens/NotificationSettingsScreen';
 import { DeleteAccountScreen } from '../../features/settings/screens/DeleteAccountScreen';
 import { ChangePasswordScreen } from '../../features/settings/screens/ChangePasswordScreen';
+import { PhoneVerificationScreen } from '../../features/phone-verification/screens/PhoneVerificationScreen';
 import { SettingsScreen } from '../../features/settings/screens/SettingsScreen';
 import { CreateSupportTicketScreen } from '../../features/support/screens/CreateSupportTicketScreen';
 import { SupportTicketsScreen } from '../../features/support/screens/SupportTicketsScreen';
@@ -42,6 +43,7 @@ export function ProfileStackNavigator() {
       <Stack.Screen component={AcademicInfoScreen} name={ProfileRoutes.AcademicInfo} />
       <Stack.Screen component={SettingsScreen} name={ProfileRoutes.Settings} />
       <Stack.Screen component={ChangePasswordScreen} name={ProfileRoutes.ChangePassword} />
+      <Stack.Screen component={PhoneVerificationScreen} name={ProfileRoutes.PhoneVerification} />
       <Stack.Screen component={DeleteAccountScreen} name={ProfileRoutes.DeleteAccount} />
       <Stack.Screen component={NotificationsScreen} name={ProfileRoutes.Notifications} />
       <Stack.Screen

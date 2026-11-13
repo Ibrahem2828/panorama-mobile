@@ -4,6 +4,8 @@ import type {
   ChangePasswordRequest,
   ConfirmPasswordResetRequest,
   CurrentUser,
+  DeviceSwitchRequest,
+  DeviceSwitchResponse,
   EmptyResponse,
   LoginRequest,
   LoginResponse,
@@ -90,4 +92,11 @@ export function confirmPasswordReset(request: ConfirmPasswordResetRequest) {
     endpoints.auth.confirmPasswordReset,
     request,
   );
+}
+
+/** Takes the account over on this phone. No bearer token: the single-use switch token is the proof. */
+export function switchDevice(deviceSwitchToken: string) {
+  return apiClient.post<DeviceSwitchResponse, DeviceSwitchRequest>(endpoints.auth.deviceSwitch, {
+    device_switch_token: deviceSwitchToken,
+  });
 }

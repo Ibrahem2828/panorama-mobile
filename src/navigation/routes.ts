@@ -14,6 +14,7 @@ export const PublicRoutes = {
   OtpVerification: 'OtpVerification',
   ForgotPassword: 'ForgotPassword',
   ResetPassword: 'ResetPassword',
+  DeviceLock: 'DeviceLock',
 } as const;
 
 export const StudentSetupRoutes = {
@@ -72,6 +73,7 @@ export const ProfileRoutes = {
   AcademicInfo: 'AcademicInfo',
   Settings: 'Settings',
   ChangePassword: 'ChangePassword',
+  PhoneVerification: 'PhoneVerification',
   DeleteAccount: 'DeleteAccount',
   Notifications: 'Notifications',
   NotificationSettings: 'NotificationSettings',
