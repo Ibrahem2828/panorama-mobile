@@ -30,11 +30,12 @@ import {
   MessageActionsSheet,
 } from '../components';
 import { isEffectivelyMuted } from '../logic/mute';
+import { canReplyToMessage, isReplyTargetAvailable, replyTargetFromMessage } from '../logic/reply';
 import { useMuteNow } from '../components/useMuteExpiry';
 import { canOpenGroupChat, canSendMessageToGroup } from '../services';
 import { useChatStore } from '../store';
 import { useChatMuteStore } from '../store/chatMuteStore';
-import type { ChatAttachment, ChatMessage } from '../types';
+import type { ChatAttachment, ChatMessage, ChatReplyTarget } from '../types';
 
 type ChatRoomScreenProps = NativeStackScreenProps<GroupsStackParamList, 'ChatRoom'>;
 
@@ -75,6 +76,20 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
   const [viewerMessage, setViewerMessage] = useState<ChatMessage | null>(null);
   const [actionMessage, setActionMessage] = useState<ChatMessage | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [replyTo, setReplyTo] = useState<ChatReplyTarget | null>(null);
+
+  // The room changed, or the message being answered was deleted meanwhile: the pending reply no longer applies.
+  useEffect(() => {
+    setReplyTo(null);
+  }, [groupKey]);
+
+  const roomMessages = room?.messages;
+
+  useEffect(() => {
+    if (replyTo && roomMessages && !isReplyTargetAvailable(roomMessages, replyTo)) {
+      setReplyTo(null);
+    }
+  }, [replyTo, roomMessages]);
 
   const group = useMemo(() => {
     if (selectedGroup && isSameId(selectedGroup.id, groupId)) {
@@ -118,9 +133,30 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
     [discard, groupId],
   );
   const handleSend = useCallback(
-    (input: { text: string; attachment: ChatAttachment | null }) => sendMessage(groupId, input),
-    [groupId, sendMessage],
+    (input: { text: string; attachment: ChatAttachment | null }) => {
+      const result = sendMessage(groupId, { ...input, replyTo });
+
+      if (result.ok) setReplyTo(null);
+
+      return result;
+    },
+    [groupId, replyTo, sendMessage],
   );
+  const handleReply = useCallback(
+    (message: ChatMessage) => {
+      if (canReplyToMessage(message)) {
+        setReplyTo(
+          replyTargetFromMessage(message, {
+            unnamedSender: t.chat.unnamedSender,
+            image: t.chat.attachment.image,
+            file: t.chat.attachment.file,
+          }),
+        );
+      }
+    },
+    [t.chat.attachment.file, t.chat.attachment.image, t.chat.unnamedSender],
+  );
+  const handleCancelReply = useCallback(() => setReplyTo(null), []);
   const handleCloseViewer = useCallback(() => setViewerMessage(null), []);
   const handleCloseActions = useCallback(() => setActionMessage(null), []);
   const handleReact = useCallback(
@@ -243,6 +279,7 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
             onLoadOlder={handleLoadOlder}
             onLongPressMessage={setActionMessage}
             onOpenAttachment={setViewerMessage}
+            onReply={permission.allowed ? handleReply : undefined}
             onRetry={handleRetry}
             peerCursors={room?.peerCursors ?? NO_CURSORS}
             pending={pending}
@@ -250,7 +287,12 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
         )}
 
         {permission.allowed ? (
-          <ChatComposer groupId={groupId} onSend={handleSend} />
+          <ChatComposer
+            groupId={groupId}
+            onCancelReply={handleCancelReply}
+            onSend={handleSend}
+            replyTo={replyTo}
+          />
         ) : (
           <ChatPermissionNotice permission={permission.permission} reason={permission.reason} />
         )}
@@ -284,6 +326,11 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
         onClose={handleCloseActions}
         onDelete={(message) => void handleDelete(message)}
         onReact={handleReact}
+        onReply={
+          permission.allowed && actionMessage && canReplyToMessage(actionMessage)
+            ? handleReply
+            : undefined
+        }
       />
     </AppScreen>
   );

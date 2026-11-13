@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { classifyApiError, type ErrorKind } from '../../../api/errorKind';
 import { useLocaleStore } from '../../../i18n';
+import { useNetworkStore } from '../../../offline/networkStore';
 import { useAuthStore } from '../../auth/store';
 import { loadFilesPage, toSafeFilesErrorMessage } from '../../files/services';
 import type { FileResource } from '../../files/types';
@@ -13,6 +15,7 @@ type State = {
   isLoading: boolean;
   isLoadingMore: boolean;
   error: string | null;
+  errorKind: ErrorKind | null;
 };
 
 const INITIAL_STATE: State = {
@@ -21,6 +24,7 @@ const INITIAL_STATE: State = {
   isLoading: false,
   isLoadingMore: false,
   error: null,
+  errorKind: null,
 };
 
 /**
@@ -52,6 +56,7 @@ export function usePrintableFiles(search: string, enabled: boolean) {
       isLoading: !append,
       isLoadingMore: append,
       error: null,
+      errorKind: null,
     }));
 
     try {
@@ -73,6 +78,7 @@ export function usePrintableFiles(search: string, enabled: boolean) {
           isLoading: false,
           isLoadingMore: false,
           error: null,
+          errorKind: null,
         };
       });
     } catch (error) {
@@ -85,6 +91,7 @@ export function usePrintableFiles(search: string, enabled: boolean) {
         isLoading: false,
         isLoadingMore: false,
         error: toSafeFilesErrorMessage(error, useLocaleStore.getState().t.files),
+        errorKind: classifyApiError(error, { deviceOnline: useNetworkStore.getState().isOnline }),
       }));
     }
   }, []);

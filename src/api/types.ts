@@ -190,6 +190,8 @@ export type GroupMessage = ApiEntity & {
 export type SendGroupMessageRequest = {
   content: string;
   message_type?: 'text';
+  /** Id of the message this one replies to (same group, not deleted). */
+  reply_to?: number | null;
   /** Ignored by the backend; kept so older callers still type-check. */
   type?: 'message';
 };

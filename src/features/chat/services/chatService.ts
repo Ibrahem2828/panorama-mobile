@@ -194,10 +194,11 @@ export async function sendTextMessage(
   content: string,
   idempotencyKey: string,
   authToken: string,
+  replyToId?: number | null,
 ): Promise<ChatMessage | null> {
   const response = await apiGroupsService.sendGroupMessage(
     groupId,
-    { content },
+    replyToId != null ? { content, reply_to: replyToId } : { content },
     authToken,
     idempotencyKey,
   );
@@ -213,7 +214,7 @@ export type AttachmentUpload = {
 /** Sends an image message (multipart) with progress reporting and a cancel handle. */
 export function sendAttachmentMessage(
   groupId: Id,
-  input: { content: string; attachment: ChatAttachment },
+  input: { content: string; attachment: ChatAttachment; replyToId?: number | null },
   idempotencyKey: string,
   authToken: string,
   onProgress: (fraction: number) => void,

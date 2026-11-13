@@ -15,7 +15,7 @@ import { useTranslation } from '../../../i18n';
 import { LecturesRoutes } from '../../../navigation/routes';
 import type { SubjectsStackParamList } from '../../../navigation/types';
 import { spacing, useBrand } from '../../../theme';
-import { filterLectures } from '../logic';
+import { filterLectures, lectureErrorStateKind } from '../logic';
 import { useLecturesStore } from '../store';
 import type { Lecture } from '../types';
 import { LectureCard } from './LectureCard';
@@ -73,7 +73,13 @@ export function SubjectLecturesSection({ subjectId }: Props) {
       </View>
     );
   } else if (errorKind && lastLoadedAt === null) {
-    body = <ErrorState message={t.lectures.errors[errorKind]} onRetry={handleRetry} />;
+    body = (
+      <ErrorState
+        fallbackMessage={t.lectures.errors[errorKind]}
+        kind={lectureErrorStateKind(errorKind)}
+        onRetry={handleRetry}
+      />
+    );
   } else if (lectures.length === 0) {
     body = (
       <EmptyState

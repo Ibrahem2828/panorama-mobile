@@ -47,6 +47,9 @@ export type ChatReplyDetail = {
   preview?: string;
 };
 
+/** The message a reply answers, as the composer and the optimistic bubble show it. */
+export type ChatReplyTarget = { id: number; senderName: string; preview: string };
+
 export type ChatMessageType = 'text' | 'image' | 'file' | 'system';
 
 /** A server-confirmed message. Identity is the numeric server id. */
@@ -86,6 +89,8 @@ export type PendingMessage = {
   idempotencyKey: string;
   content: string;
   attachment: ChatAttachment | null;
+  /** The message this one replies to (sent as `reply_to`), if any. */
+  replyTo: ChatReplyTarget | null;
   status: PendingStatus;
   createdAt: string;
   /** Upload progress in [0, 1] while an attachment is being sent. */

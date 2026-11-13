@@ -25,6 +25,7 @@ import {
   GENERAL_LECTURES_FILTER,
   filterLectures,
   isGeneralLecture,
+  lectureErrorStateKind,
   uniqueSubjects,
 } from '../logic';
 import { useLecturesStore } from '../store';
@@ -101,7 +102,11 @@ export function LecturesListScreen({ navigation, route }: Props) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         {header}
-        <ErrorState message={t.lectures.errors[errorKind]} onRetry={handleRefresh} />
+        <ErrorState
+          fallbackMessage={t.lectures.errors[errorKind]}
+          kind={lectureErrorStateKind(errorKind)}
+          onRetry={handleRefresh}
+        />
       </AppScreen>
     );
   }
@@ -173,7 +178,11 @@ export function LecturesListScreen({ navigation, route }: Props) {
               </ScrollView>
             ) : null}
             {errorKind ? (
-              <ErrorState message={t.lectures.errors[errorKind]} onRetry={handleRefresh} />
+              <ErrorState
+                fallbackMessage={t.lectures.errors[errorKind]}
+                kind={lectureErrorStateKind(errorKind)}
+                onRetry={handleRefresh}
+              />
             ) : null}
             <AppText color="muted" variant="caption">
               {t.lectures.totalCount(filtered.length)}
