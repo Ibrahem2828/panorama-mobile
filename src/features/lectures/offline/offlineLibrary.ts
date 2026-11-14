@@ -1,3 +1,4 @@
+import { getRandomBytes } from 'expo-crypto';
 import { create } from 'zustand';
 
 import { isDeviceOffline } from '../../../offline/networkStore';
@@ -151,9 +152,7 @@ function setTransfer(key: LectureKey, transfer: TransferState): void {
 }
 
 function randomName(): string {
-  const bytes = new Uint8Array(12);
-
-  globalThis.crypto.getRandomValues(bytes);
+  const bytes = getRandomBytes(12);
 
   return `${Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')}.pnof`;
 }
@@ -309,10 +308,13 @@ function failureKind(error: unknown): OfflineErrorKind {
 
 /** Checks the stored package: header matches the license, size, whole-file hash (when it fits memory), first and last chunk. */
 async function verifyPackage(entry: OfflineEntry, license: ServerLicense): Promise<void> {
-  const file = packageFile(entry.fileName, false);
+  const file = packageFile(entry.fileName);
 
   if (!file.exists || file.size !== license.fileSize) {
-    throw new PnofError('size', 'file');
+    throw new PnofError(
+      'size',
+      `file exists=${file.exists} size=${file.size} expected=${license.fileSize}`,
+    );
   }
 
   if (license.fileSize <= MAX_HASHED_PACKAGE_BYTES) {
@@ -401,7 +403,7 @@ export async function downloadLecture(lecture: LectureRef): Promise<void> {
     const fileName = reuse?.fileName ?? randomName();
 
     ensurePackageDirectory();
-    writer = new PartWriter(packageFile(fileName, true));
+    writer = new PartWriter(packageFile(fileName));
 
     const verdict = checkStorage({
       usedBytes: usedBytes(
@@ -471,14 +473,6 @@ export async function downloadLecture(lecture: LectureRef): Promise<void> {
     part.close();
     setTransfer(key, { kind: 'verifying' });
 
-    const finalFile = packageFile(fileName, false);
-
-    if (finalFile.exists) {
-      finalFile.delete();
-    }
-
-    packageFile(fileName, true).move(finalFile);
-
     const finished: OfflineEntry = {
       ...draft,
       downloadedBytes: license.fileSize,
@@ -501,6 +495,8 @@ export async function downloadLecture(lecture: LectureRef): Promise<void> {
       setTransfer(key, { kind: 'idle' });
     } else {
       const kind = failureKind(error);
+
+      logger.warn('Offline lecture download failed', { kind, message: String(error) });
 
       if (kind === 'integrity') {
         await discardEntry(lecture.id, { release: false });
@@ -738,7 +734,7 @@ export async function openDownloadedLecture(
     throw new OfflineOpenError('expired');
   }
 
-  const source = packageFile(entry.fileName, false);
+  const source = packageFile(entry.fileName);
 
   if (!source.exists) {
     await discardEntry(lectureId, { release: false, notice: 'corrupt' });

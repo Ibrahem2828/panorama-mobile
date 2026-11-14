@@ -1,6 +1,6 @@
 /** "12.4 MB", "830 KB", "1.5 GB": short, locale independent units (Latin digits keep sizes aligned in both languages). */
 export function formatBytes(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes < 0) {
+  if (!Number.isFinite(bytes) || bytes <= 0) {
     return '0 KB';
   }
 

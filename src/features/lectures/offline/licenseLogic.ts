@@ -146,7 +146,7 @@ export type OfflineEntry = {
   sha256: string;
   /** Random name of the ciphertext file inside the private offline folder. */
   fileName: string;
-  /** Bytes of the package already on disk (the file name is `${fileName}.part` until complete). */
+  /** Bytes of the package already on disk (the same file grows until `status` becomes `complete`). */
   downloadedBytes: number;
   status: 'partial' | 'complete';
   etag: string | null;
@@ -514,7 +514,9 @@ export function classifyOfflineError(input: {
     return 'offline';
   }
 
-  if (input.status === 409 && (input.code ?? '').toLowerCase().includes('offline_limit')) {
+  // The license endpoint answers 409 only when the device/user limit is reached (the body code is the generic CONFLICT, the
+  // documented `offline_limit_reached` is not sent); idempotency conflicts carry their own IDEMPOTENCY_* code.
+  if (input.status === 409 && !(input.code ?? '').toUpperCase().startsWith('IDEMPOTENCY')) {
     return 'limitReached';
   }
 

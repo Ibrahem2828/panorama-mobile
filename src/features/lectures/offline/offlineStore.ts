@@ -7,7 +7,7 @@ import { emptyInventory, type Inventory, type OfflineEntry, type LectureKey } fr
 /**
  * Where downloaded lectures live (everything app-private, never external storage, `allowBackup` is off):
  *
- *   Paths.document/pano-offline/<random>.pnof(.part)   ciphertext packages exactly as the server sent them (PNOF v1)
+ *   Paths.document/pano-offline/<random>.pnof           ciphertext packages exactly as the server sent them (PNOF v1)
  *   encrypted store "lectures-offline", id "inventory"  JSON: license, content key, expiry, titles, clock guard. Sealed with
  *                                                        AES-256-GCM under the Keystore-backed master key, so the content key
  *                                                        never sits in plaintext storage
@@ -50,8 +50,9 @@ export function ensurePackageDirectory(): Directory {
   return directory;
 }
 
-export function packageFile(fileName: string, partial: boolean): File {
-  return new File(packageDirectory(), partial ? `${fileName}.part` : fileName);
+/** One file per lecture: it grows while downloading (inventory status `partial`) and is complete when the status says so. */
+export function packageFile(fileName: string): File {
+  return new File(packageDirectory(), fileName);
 }
 
 export function newTempFile(): File {
@@ -129,16 +130,14 @@ export async function writeInventory(inventory: Inventory): Promise<void> {
 }
 
 export function deleteEntryFiles(entry: Pick<OfflineEntry, 'fileName'>): void {
-  for (const partial of [false, true]) {
-    try {
-      const file = packageFile(entry.fileName, partial);
+  try {
+    const file = packageFile(entry.fileName);
 
-      if (file.exists) {
-        file.delete();
-      }
-    } catch {
-      // Already gone.
+    if (file.exists) {
+      file.delete();
     }
+  } catch {
+    // Already gone.
   }
 }
 
@@ -148,7 +147,6 @@ export function sweepOrphanPackages(keep: ReadonlySet<LectureKey> | OfflineEntry
 
   for (const entry of Array.isArray(keep) ? keep : []) {
     names.add(entry.fileName);
-    names.add(`${entry.fileName}.part`);
   }
 
   try {

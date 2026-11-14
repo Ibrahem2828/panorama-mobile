@@ -603,7 +603,7 @@ export const ar = {
     partial: (percent: number) => `التنزيل متوقف عند ${percent}%`,
     verifying: 'جارٍ التحقق من الملف…',
     renewing: 'جارٍ تجديد الترخيص…',
-    downloaded: (size: string) => `محفوظة للدراسة بدون إنترنت · ${size}`,
+    downloaded: (size: string) => `محفوظة للدراسة بدون إنترنت · ⁦${size}⁩`,
     availableUntil: (date: string) => `متاحة حتى ${date}`,
     renewSoon: 'ستحتاج إلى تجديد قريباً، اتصل بالإنترنت',
     openOffline: 'فتح بدون إنترنت',
@@ -640,7 +640,7 @@ export const ar = {
       retry: 'حاول مرة أخرى',
     },
     screen: {
-      usage: (used: string, budget: string) => `المساحة المستخدمة ${used} من ${budget}`,
+      usage: (used: string, budget: string) => `المساحة المستخدمة ⁦${used}⁩ من ⁦${budget}⁩`,
       budgetTitle: 'الحد الأقصى للتنزيلات',
       emptyTitle: 'لا توجد تنزيلات',
       emptyBody: 'افتح محاضرة واضغط «تنزيل للدراسة بدون إنترنت» لتجدها هنا.',

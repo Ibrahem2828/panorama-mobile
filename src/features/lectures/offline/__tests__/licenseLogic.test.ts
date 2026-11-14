@@ -419,6 +419,8 @@ describe('classifyOfflineError', () => {
     expect(classifyOfflineError({ status: 409, code: 'offline_limit_reached' })).toBe(
       'limitReached',
     );
+    expect(classifyOfflineError({ status: 409, code: 'CONFLICT' })).toBe('limitReached');
+    expect(classifyOfflineError({ status: 409, code: 'IDEMPOTENCY_IN_PROGRESS' })).toBe('unknown');
     expect(classifyOfflineError({ status: 404 })).toBe('notFound');
     expect(classifyOfflineError({ offline: true })).toBe('offline');
     expect(classifyOfflineError({ status: undefined })).toBe('network');

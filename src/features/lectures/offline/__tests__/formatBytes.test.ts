@@ -2,7 +2,8 @@ import { formatBytes, percentOf } from '../formatBytes';
 
 describe('formatBytes', () => {
   it('uses short units', () => {
-    expect(formatBytes(0)).toBe('1 KB');
+    expect(formatBytes(0)).toBe('0 KB');
+    expect(formatBytes(10)).toBe('1 KB');
     expect(formatBytes(2048)).toBe('2 KB');
     expect(formatBytes(5.5 * 1024 * 1024)).toBe('5.5 MB');
     expect(formatBytes(250 * 1024 * 1024)).toBe('250 MB');
