@@ -4,6 +4,8 @@
  * Parameterised strings are functions rather than templates with placeholders, so the
  * compiler checks the arguments and each locale can order or inflect them differently.
  */
+import { storeAr } from './store.ar';
+
 export const ar = {
   appName: 'بانوراما',
 
@@ -12,6 +14,7 @@ export const ar = {
     subjects: 'المواد',
     groups: 'المجموعات',
     printing: 'الطباعة',
+    store: 'المتجر',
     profile: 'حسابي',
   },
 
@@ -196,12 +199,15 @@ export const ar = {
         description: 'تابع النقاشات والإعلانات والملفات الخاصة بموادك وجامعتك بسهولة.',
       },
       {
-        imageLabel: 'رسم يوضح الملفات وطلبات الطباعة',
-        title: 'ملفاتك وطباعتك بخطوات بسيطة',
-        description: 'افتح ملفات موادك، واطلب طباعتها، وتابع طلبك من التطبيق.',
+        imageLabel: 'رسم يوضح الملفات والطباعة وحقيبة قرطاسية',
+        title: 'ملفاتك وطباعتك وقرطاسيتك',
+        description:
+          'افتح ملفات موادك، واطلب طباعتها، واختر قرطاسية بأفضل الماركات من متجر بانوراما.',
       },
     ],
   },
+
+  store: storeAr,
 
   chat: {
     title: 'المحادثة',

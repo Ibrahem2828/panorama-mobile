@@ -1,4 +1,5 @@
 import type { TranslationCatalog } from '../types';
+import { storeEn } from './store.en';
 
 export const en: TranslationCatalog = {
   appName: 'Panorama',
@@ -8,6 +9,7 @@ export const en: TranslationCatalog = {
     subjects: 'Subjects',
     groups: 'Groups',
     printing: 'Printing',
+    store: 'Store',
     profile: 'Account',
   },
 
@@ -184,12 +186,15 @@ export const en: TranslationCatalog = {
           'Follow the discussions, announcements and files for your subjects and university.',
       },
       {
-        imageLabel: 'Illustration of files and print orders',
-        title: 'Files and printing in a few steps',
-        description: 'Open your subject files, order prints, and track your order in the app.',
+        imageLabel: 'Illustration of files, printing and a stationery bag',
+        title: 'Your files, printing and stationery',
+        description:
+          'Open your subject files, order prints, and pick stationery from top brands in the Panorama store.',
       },
     ],
   },
+
+  store: storeEn,
 
   chat: {
     title: 'Chat',
