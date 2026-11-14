@@ -1,12 +1,6 @@
 {
   "platforms": ["android"],
   "android": {
-    "modules": ["expo.modules.panoramapdf.PanoramaPdfModule"],
-    "publication": {
-      "groupId": "com.panorama.pdf",
-      "artifactId": "panorama-pdf",
-      "version": "1.0.0",
-      "repository": "local-maven-repo"
-    }
+    "modules": ["expo.modules.panoramapdf.PanoramaPdfModule"]
   }
 }
