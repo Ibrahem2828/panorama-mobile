@@ -80,7 +80,7 @@ export function PrintItemOptions({ item, pages = null, onChange }: PrintItemOpti
   const copy = t.printing.options;
   const double = item.sides === 'double_sided';
   const bindingValues: readonly string[] = options
-    ? ['none', ...options.binding_types.map((type) => type.code)]
+    ? Array.from(new Set(['none', ...options.binding_types.map((type) => type.code)]))
     : FALLBACK_BINDINGS;
   const bindingType = options?.binding_types.find((type) => type.code === item.binding);
   const range = parsePageRange(item.pageRange, pages);
