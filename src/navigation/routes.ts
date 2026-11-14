@@ -78,6 +78,7 @@ export const ProfileRoutes = {
   MutedChats: 'MutedChats',
   Permissions: 'Permissions',
   MyNotes: 'MyNotes',
+  Downloads: 'Downloads',
   SupportTickets: 'SupportTickets',
   CreateSupportTicket: 'CreateSupportTicket',
   TicketDetails: 'TicketDetails',

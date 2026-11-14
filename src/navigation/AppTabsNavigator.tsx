@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import { useAuthStore } from '../features/auth/store';
 import { TermConfirmationGate } from '../features/academic-term';
+import { OfflineLibraryEffects } from '../features/lectures/offline/OfflineLibraryEffects';
 import { PolicyGate } from '../features/policies';
 import { AppTabBar } from './AppTabBar';
 import { bottomTabScreenOptions } from './config/tabOptions';
@@ -36,6 +37,7 @@ export function AppTabsNavigator() {
         <Tabs.Screen component={PrintingStackNavigator} name={TabRoutes.Printing} />
         <Tabs.Screen component={ProfileStackNavigator} name={TabRoutes.Profile} />
       </Tabs.Navigator>
+      {isStudent ? <OfflineLibraryEffects /> : null}
       <PolicyGate />
       <TermConfirmationGate />
     </>
