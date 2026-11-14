@@ -1,5 +1,7 @@
 import { logger } from '../utils/logger';
 import { getApiAuthBridge, refreshAccessTokenOnce, shouldAttemptAuthRefresh } from './authBridge';
+import { sessionEndReason } from './deviceBinding';
+import { ensureDeviceId, getCachedDeviceId } from './deviceIdentity';
 import { ACCEPT_JSON, DEFAULT_REQUEST_TIMEOUT_MS, type HttpHeaders } from './http';
 import { ApiClientError, createApiError, normalizeApiError, normalizeHttpError } from './errors';
 import { IDEMPOTENCY_IN_PROGRESS_DELAYS_MS } from './idempotency';
@@ -9,7 +11,7 @@ import { buildDefaultApiUrl, buildRequestHeaders } from './request';
 import { isApiResponseEnvelope, isApiSuccess } from './response';
 import { uploadWithProgress } from './uploadTransport';
 import { cachedGet, offlineError } from '../offline/cachedRequest';
-import { isDeviceOffline } from '../offline/networkStore';
+import { isDeviceOffline, useNetworkStore } from '../offline/networkStore';
 
 type ParsedResponse = {
   body: unknown;
@@ -110,6 +112,10 @@ async function executeRequest<TData, TBody = unknown>(
   const method = options.method ?? 'GET';
   const hasBody = options.body !== undefined && options.body !== null;
   const hasFormDataBody = isFormDataBody(options.body);
+  // The device id headers ride on every call (login, refresh and all authenticated requests).
+  if (!getCachedDeviceId()) {
+    await ensureDeviceId();
+  }
   const headers: HttpHeaders = buildRequestHeaders({
     headers: options.headers,
     authToken: options.authToken,
@@ -141,6 +147,9 @@ async function executeRequest<TData, TBody = unknown>(
             body: buildFetchBody(options.body),
             signal: controller.signal,
           });
+    // Any HTTP answer, even an error status, proves the link to the server works.
+    useNetworkStore.getState().noteRequestReachedServer();
+
     const parsedResponse = await parseResponse(response);
 
     if (!response.ok) {
@@ -167,7 +176,21 @@ async function executeRequest<TData, TBody = unknown>(
 
     return parsedResponse.body as TData;
   } catch (error) {
-    const normalizedError = normalizeApiError(error);
+    // expo/fetch rejects a cancelled request with a generic "fetch failed" Error, not an AbortError: our own controller
+    // knows that the timeout (or the caller) cancelled it.
+    const normalizedError = normalizeApiError(
+      controller.signal.aborted && !(error instanceof ApiClientError)
+        ? Object.assign(new Error('The operation was aborted.'), { name: 'AbortError' })
+        : error,
+    );
+
+    // A request that never got an answer (and was not cancelled by the caller) feeds the "weak connection" banner.
+    if (
+      !options.signal?.aborted &&
+      (normalizedError.code === 'NETWORK_ERROR' || normalizedError.code === 'TIMEOUT')
+    ) {
+      useNetworkStore.getState().noteRequestLostLink();
+    }
 
     logRequestFailure(normalizedError, method, options.path);
     reportLifecycleError(normalizedError);
@@ -217,6 +240,15 @@ async function requestWithAuthRetry<TData, TBody = unknown>(
     return await executeWithIdempotencyWait<TData, TBody>(options);
   } catch (error) {
     const normalizedError = normalizeApiError(error);
+
+    // Another phone took this account over (409, or 401 on an access token issued to the old phone). A refresh cannot
+    // help: sign out at once and let the login screen explain.
+    const endReason = sessionEndReason(error);
+
+    if (endReason && options.authToken) {
+      await getApiAuthBridge()?.onDeviceReplaced?.(endReason);
+      throw error instanceof ApiClientError ? error : new ApiClientError(normalizedError);
+    }
 
     if (
       normalizedError.code !== 'UNAUTHORIZED' ||
@@ -288,6 +320,9 @@ async function request<TData, TBody = unknown>(options: ApiRequestOptions<TBody>
     fetcher: () => requestOnline<TData, TBody>(options),
   });
 }
+
+// Read the device id from secure storage as soon as the client loads, so the first request rarely has to wait for it.
+void ensureDeviceId();
 
 export const apiClient = {
   request,

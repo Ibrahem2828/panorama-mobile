@@ -1,4 +1,13 @@
-import { ApiClientError, authService, containsArabic, normalizeApiError } from '../../../api';
+import {
+  ApiClientError,
+  authService,
+  containsArabic,
+  isSessionReplacedError,
+  sessionEndReason,
+  type SessionEndReason,
+  normalizeApiError,
+  parseDeviceMismatch,
+} from '../../../api';
 import type {
   AuthTokens as ApiAuthTokens,
   CurrentUser,
@@ -12,6 +21,11 @@ import {
   saveSessionSnapshot,
 } from '../../../offline/sessionSnapshot';
 import type { AuthSession, AuthTokens, AuthUser, LoginCredentials } from '../types';
+import {
+  DeviceMismatchLoginError,
+  DeviceSwitchError,
+  classifyDeviceSwitchError,
+} from './deviceLock';
 import { clearAuthTokens, getStoredAuthTokens, saveAuthTokens } from './authTokenStorage';
 
 function isNonEmptyString(value: unknown): value is string {
@@ -157,8 +171,44 @@ export async function loginWithCredentials(credentials: LoginCredentials): Promi
       throw error;
     }
   } catch (error) {
+    // Right password, but the account belongs to another phone: the caller shows the device screen.
+    const mismatch = parseDeviceMismatch(error);
+
+    if (mismatch) {
+      throw new DeviceMismatchLoginError(mismatch);
+    }
+
     throw new Error(getAuthErrorMessage(error, 'login'));
   }
+}
+
+/**
+ * Takes the account over on this phone with the single-use token of a refused login. Returns the signed-in session;
+ * a failure raises `DeviceSwitchError` so the screen can tell an expired link from a used-up allowance.
+ */
+export async function switchDeviceSession(switchToken: string): Promise<AuthSession> {
+  let tokens: AuthTokens;
+
+  try {
+    tokens = normalizeTokens(await authService.switchDevice(switchToken));
+  } catch (error) {
+    throw new DeviceSwitchError(classifyDeviceSwitchError(error));
+  }
+
+  await saveAuthTokens(tokens);
+
+  try {
+    return { user: await loadCurrentUser(tokens.accessToken), tokens };
+  } catch (error) {
+    await clearAuthTokens();
+    throw new DeviceSwitchError(classifyDeviceSwitchError(error));
+  }
+}
+
+/** Another phone replaced this one: forget the session (the tokens belong to a binding that no longer exists). */
+export async function endSessionReplacedByAnotherDevice(): Promise<void> {
+  await clearAuthTokens();
+  await clearSessionSnapshot();
 }
 
 export type BootstrapSessionResult = {
@@ -166,6 +216,8 @@ export type BootstrapSessionResult = {
   sessionExpired: boolean;
   /** True when the session was opened from the saved profile because the server was unreachable. */
   offline?: boolean;
+  /** Set when the server ended the session on purpose: another phone took the account, or staff reset it. */
+  endReason?: SessionEndReason;
 };
 
 export async function bootstrapSession(): Promise<BootstrapSessionResult> {
@@ -189,6 +241,15 @@ export async function bootstrapSession(): Promise<BootstrapSessionResult> {
       sessionExpired: false,
     };
   } catch (error) {
+    if (isSessionReplacedError(error)) {
+      await endSessionReplacedByAnotherDevice();
+      return {
+        session: null,
+        sessionExpired: false,
+        endReason: sessionEndReason(error) ?? undefined,
+      };
+    }
+
     if (!isUnauthorizedError(error)) {
       const offline = await offlineSession(error, storedTokens);
 
@@ -212,6 +273,15 @@ export async function bootstrapSession(): Promise<BootstrapSessionResult> {
       sessionExpired: false,
     };
   } catch (error) {
+    if (isSessionReplacedError(error)) {
+      await endSessionReplacedByAnotherDevice();
+      return {
+        session: null,
+        sessionExpired: false,
+        endReason: sessionEndReason(error) ?? undefined,
+      };
+    }
+
     if (!isDefinitiveRefreshRejection(error)) {
       // Transient failure while refreshing: keep the tokens so the next launch can retry, and open from the saved profile.
       const offline = await offlineSession(error, storedTokens);
@@ -258,6 +328,12 @@ export async function refreshAccessToken(): Promise<AuthTokens | null> {
   try {
     return await refreshStoredAccessToken(storedTokens);
   } catch (error) {
+    if (isSessionReplacedError(error)) {
+      // Rethrown so the store can tell "replaced by another phone" from "session expired".
+      await endSessionReplacedByAnotherDevice();
+      throw error;
+    }
+
     if (isDefinitiveRefreshRejection(error)) {
       await clearAuthTokens();
       return null;

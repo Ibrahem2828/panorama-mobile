@@ -8,7 +8,7 @@ import path from 'node:path';
  */
 const AUTHENTICATED_IMAGE_FILES = [
   'features/lectures/components/ViewerPageStage.tsx',
-  'features/chat/components/ChatAttachmentViewer.tsx',
+  'features/printing/components/PrintOptionHelpSheet.tsx',
 ];
 
 describe('authenticated Images', () => {

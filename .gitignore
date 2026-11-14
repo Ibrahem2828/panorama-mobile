@@ -8,8 +8,8 @@ build/
 .env.*.local
 *.log
 .DS_Store
-android/
-ios/
+/android/
+/ios/
 coverage/
 npm-debug.log*
 yarn-debug.log*

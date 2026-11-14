@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { PdfViewerScreen } from '../../features/files/screens/PdfViewerScreen';
+import { DownloadsScreen } from '../../features/lectures/offline/DownloadsScreen';
 import { LectureViewerScreen } from '../../features/lectures/screens/LectureViewerScreen';
 import { MyNotesScreen } from '../../features/viewer/screens/MyNotesScreen';
 import { NotificationsScreen } from '../../features/notifications/screens/NotificationsScreen';
@@ -20,6 +21,7 @@ import { PermissionsSettingsScreen } from '../../features/permissions';
 import { NotificationSettingsScreen } from '../../features/notifications/screens/NotificationSettingsScreen';
 import { DeleteAccountScreen } from '../../features/settings/screens/DeleteAccountScreen';
 import { ChangePasswordScreen } from '../../features/settings/screens/ChangePasswordScreen';
+import { PhoneVerificationScreen } from '../../features/phone-verification/screens/PhoneVerificationScreen';
 import { SettingsScreen } from '../../features/settings/screens/SettingsScreen';
 import { CreateSupportTicketScreen } from '../../features/support/screens/CreateSupportTicketScreen';
 import { SupportTicketsScreen } from '../../features/support/screens/SupportTicketsScreen';
@@ -42,6 +44,7 @@ export function ProfileStackNavigator() {
       <Stack.Screen component={AcademicInfoScreen} name={ProfileRoutes.AcademicInfo} />
       <Stack.Screen component={SettingsScreen} name={ProfileRoutes.Settings} />
       <Stack.Screen component={ChangePasswordScreen} name={ProfileRoutes.ChangePassword} />
+      <Stack.Screen component={PhoneVerificationScreen} name={ProfileRoutes.PhoneVerification} />
       <Stack.Screen component={DeleteAccountScreen} name={ProfileRoutes.DeleteAccount} />
       <Stack.Screen component={NotificationsScreen} name={ProfileRoutes.Notifications} />
       <Stack.Screen
@@ -51,6 +54,7 @@ export function ProfileStackNavigator() {
       <Stack.Screen component={MutedChatsScreen} name={ProfileRoutes.MutedChats} />
       <Stack.Screen component={PermissionsSettingsScreen} name={ProfileRoutes.Permissions} />
       <Stack.Screen component={MyNotesScreen} name={ProfileRoutes.MyNotes} />
+      <Stack.Screen component={DownloadsScreen} name={ProfileRoutes.Downloads} />
       <Stack.Screen component={LectureViewerScreen} name={LecturesRoutes.LectureViewer} />
       <Stack.Screen component={PdfViewerScreen} name={SharedRoutes.PdfViewer} />
       <Stack.Screen component={SupportTicketsScreen} name={ProfileRoutes.SupportTickets} />

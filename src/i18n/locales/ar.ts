@@ -63,6 +63,34 @@ export const ar = {
     idempotencyInProgress: 'طلبك قيد التنفيذ بالفعل. انتظر لحظات ثم تحقق من النتيجة.',
   },
 
+  /** Illustrated failure states (ErrorState): one title and one line per kind of failure. */
+  errorStates: {
+    offline: {
+      title: 'لا يوجد اتصال بالإنترنت',
+      message: 'تحقق من اتصالك بالشبكة ثم أعد المحاولة.',
+    },
+    weak: {
+      title: 'الاتصال ضعيف أو متقطع',
+      message: 'تعذّر إكمال الطلب بسبب ضعف الشبكة. انتقل إلى مكان أفضل تغطية وأعد المحاولة.',
+    },
+    timeout: {
+      title: 'استغرق الأمر وقتًا طويلًا',
+      message: 'لم يصلنا رد في الوقت المناسب. أعد المحاولة بعد لحظات.',
+    },
+    notFound: {
+      title: 'الملف غير موجود',
+      message: 'ربما نُقل أو حُذف، أو لم يعد متاحًا لك.',
+    },
+    server: {
+      title: 'مشكلة مؤقتة في الخادم',
+      message: 'نعمل على حلّها. حاول مرة أخرى بعد قليل.',
+    },
+    generic: {
+      title: 'حدث خطأ غير متوقع',
+      message: 'لم نتمكن من إكمال العملية. أعد المحاولة.',
+    },
+  },
+
   lifecycle: {
     maintenanceTitle: 'التطبيق قيد الصيانة',
     maintenanceMessage: 'نعمل على تحسين الخدمة. سيعمل التطبيق تلقائيًا فور انتهاء الصيانة.',
@@ -104,6 +132,7 @@ export const ar = {
       'لا يوجد اتصال بالإنترنت. ستبقى البيانات التي حُمّلت ظاهرة، وسيُحدَّث كل شيء عند عودة الاتصال.',
     offlineSaved: 'أنت غير متصل. تُعرض بيانات محفوظة على جهازك.',
     staleSaved: 'تعذّر التحديث الآن. تُعرض بيانات محفوظة على جهازك.',
+    weak: 'الاتصال ضعيف أو متقطع. قد يتأخر تحميل بعض المحتوى.',
     lastUpdated: (when: string) => `آخر تحديث ${when}`,
     justNow: 'الآن',
     minutesAgo: (count: number) => `قبل ${count} د`,
@@ -206,6 +235,16 @@ export const ar = {
         'لا يوجد اتصال بالإنترنت. يمكنك قراءة الرسائل المحفوظة، وسيعود التحديث عند عودة الاتصال.',
     },
 
+    reply: {
+      action: 'رد',
+      replyingTo: (name: string) => `الرد على ${name}`,
+      cancel: 'إلغاء الرد',
+      deletedMessage: 'رسالة محذوفة',
+      swipeHint: 'اسحب الرسالة للرد عليها',
+      openOriginal: 'الانتقال إلى الرسالة الأصلية',
+      originalNotLoaded: 'الرسالة الأصلية أقدم من المحمّل حاليًا. مرّر للأعلى لتحميل المزيد.',
+    },
+
     today: 'اليوم',
     yesterday: 'أمس',
     systemMessage: 'رسالة من بانوراما',
@@ -250,6 +289,67 @@ export const ar = {
       permissionDenied: 'اسمح للتطبيق بالوصول إلى الصور لتتمكن من اختيار صورة.',
       pickError: 'تعذر اختيار الصورة. حاول مرة أخرى.',
       sizeLabel: (megabytes: string) => `${megabytes} م.ب`,
+    },
+
+    media: {
+      attachAudio: 'ملف صوتي',
+      micLabel: 'تسجيل رسالة صوتية',
+      recordingLabel: (time: string) => `جارٍ التسجيل، ${time}`,
+      recording: 'جارٍ التسجيل',
+      cancelRecording: 'إلغاء التسجيل',
+      sendVoice: 'إرسال الرسالة الصوتية',
+      discardVoice: 'تجاهل التسجيل',
+      remaining: (time: string) => `المتبقي ${time}`,
+      nearLimit: (seconds: number) => `سينتهي التسجيل خلال ${seconds} ثانية`,
+      limitReached: 'بلغت الحد الأقصى للتسجيل (5 دقائق) وتوقف التسجيل تلقائياً. أرسله أو تجاهله.',
+      tooShort: 'التسجيل قصير جداً ولم يُرسل.',
+      recordFailed: 'تعذّر التسجيل. تأكد من الميكروفون وحاول مرة أخرى.',
+      micRationaleTitle: 'السماح باستخدام الميكروفون',
+      micRationale:
+        'نستخدم الميكروفون فقط أثناء تسجيلك رسالة صوتية في المحادثة. لا يبدأ التسجيل قبل أن تضغط زر الميكروفون.',
+      micAllow: 'السماح',
+      micDenied: 'الميكروفون غير مسموح. فعّله من إعدادات الهاتف لتسجيل رسائل صوتية.',
+      voiceMessage: 'رسالة صوتية',
+      audioFile: 'ملف صوتي',
+      play: 'تشغيل',
+      pause: 'إيقاف مؤقت',
+      speed: (speed: string) => `سرعة التشغيل ${speed}`,
+      seekLabel: 'موضع التشغيل',
+      playbackLoading: 'جارٍ التحميل…',
+      playbackError: 'تعذّر تشغيل المقطع. اضغط للمحاولة مرة أخرى.',
+      elapsedOf: (elapsed: string, total: string) => `${elapsed} من ${total}`,
+      viewer: {
+        imageLabel: 'صورة من المحادثة',
+        loadingFull: 'جارٍ تحميل الصورة بجودة كاملة…',
+        zoomHint: 'اضغط مرتين أو اسحب بإصبعين للتكبير',
+        page: (page: number, total: number) => `صفحة ${page} من ${total}`,
+        pdfFailed: 'تعذّر عرض ملف PDF هذا (قد يكون محمياً بكلمة مرور أو تالفاً).',
+        pdfLoading: 'جارٍ تجهيز المستند…',
+      },
+      openErrors: {
+        offline: 'لا يوجد اتصال بالإنترنت. اتصل ثم أعد المحاولة.',
+        gone: 'هذا المرفق لم يعد متاحاً.',
+        forbidden: 'ليست لديك صلاحية لعرض هذا المرفق.',
+        throttled: 'طلبات كثيرة في وقت قصير. انتظر قليلاً ثم أعد المحاولة.',
+        server: 'تعذّر فتح المرفق. حاول مرة أخرى.',
+      },
+      uploadErrors: {
+        voiceTooLong: 'الرسالة الصوتية أطول من 5 دقائق.',
+        audioInvalid: 'الملف الصوتي تالف أو بصيغة غير مدعومة (m4a وmp3 وaac وogg وwav).',
+        audioTooLarge: 'حجم الملف الصوتي أكبر من 25 م.ب.',
+        imageInvalid: 'الصورة غير صالحة أو تالفة.',
+        imageTooLarge: 'حجم الصورة كبير جداً (الحد 10 م.ب).',
+        waveformInvalid: 'تعذّر إرسال الرسالة الصوتية. أعد المحاولة.',
+      },
+      pick: {
+        audioSize: 'الملف الصوتي أكبر من 25 م.ب.',
+        audioType: 'الصيغة غير مدعومة. اختر ملف m4a أو mp3 أو aac أو ogg أو wav.',
+        audioWebm: 'ملفات WebM غير مدعومة. اختر m4a أو mp3.',
+        audioEmpty: 'الملف الصوتي فارغ.',
+        audioError: 'تعذّر اختيار الملف الصوتي. حاول مرة أخرى.',
+        imageTooLarge: 'الصورة كبيرة جداً حتى بعد الضغط (الحد 10 م.ب).',
+        preparingImage: 'جارٍ تجهيز الصورة…',
+      },
     },
 
     ticks: {
@@ -529,6 +629,72 @@ export const ar = {
     },
   },
 
+  offlineLectures: {
+    title: 'التنزيلات',
+    subtitle: 'محاضرات محفوظة على هاتفك لتدرس بدون إنترنت.',
+    profileSubtitle: 'المحاضرات المحفوظة للدراسة بدون إنترنت',
+    download: 'تنزيل للدراسة بدون إنترنت',
+    downloading: (percent: number) => `جارٍ التنزيل ${percent}%`,
+    downloadingPending: 'جارٍ التحضير…',
+    resume: 'متابعة التنزيل',
+    partial: (percent: number) => `التنزيل متوقف عند ${percent}%`,
+    verifying: 'جارٍ التحقق من الملف…',
+    renewing: 'جارٍ تجديد الترخيص…',
+    downloaded: (size: string) => `محفوظة للدراسة بدون إنترنت · ⁦${size}⁩`,
+    availableUntil: (date: string) => `متاحة حتى ${date}`,
+    renewSoon: 'ستحتاج إلى تجديد قريباً، اتصل بالإنترنت',
+    openOffline: 'فتح بدون إنترنت',
+    renew: 'تجديد',
+    cancelDownload: 'إلغاء التنزيل',
+    delete: 'حذف التنزيل',
+    deleteTitle: 'حذف التنزيل',
+    deleteMessage: 'سيُحذف الملف المحفوظ من هاتفك. يمكنك تنزيله مرة أخرى عند اتصالك بالإنترنت.',
+    expiredTitle: 'انتهت صلاحية التنزيل',
+    expired: 'انتهت صلاحية التنزيل، اتصل بالإنترنت للتجديد',
+    clockTitle: 'وقت الجهاز غير صحيح',
+    clockRollback:
+      'تبدو ساعة الجهاز متأخرة عن آخر استخدام. اضبط التاريخ والوقت تلقائياً ثم اتصل بالإنترنت للتجديد.',
+    renewFailedOffline: 'اتصل بالإنترنت لتجديد التنزيل.',
+    errors: {
+      limitReached:
+        'وصلت إلى الحد الأقصى للتنزيلات على هذا الجهاز. احذف تنزيلاً قديماً ثم أعد المحاولة.',
+      notFound: 'هذه المحاضرة لم تعد متاحة لحسابك.',
+      offline: 'تحتاج إلى اتصال بالإنترنت لتنزيل المحاضرة أو تجديدها.',
+      budget: 'مساحة التنزيلات ممتلئة. احذف محاضرة أو ارفع الحد من شاشة التنزيلات.',
+      disk: 'مساحة هاتفك لا تكفي لهذا التنزيل.',
+      integrity: 'الملف المُنزَّل غير سليم وتم حذفه. أعد التنزيل.',
+      network: 'انقطع الاتصال. يمكنك متابعة التنزيل لاحقاً من حيث توقف.',
+      unknown: 'تعذّر إتمام العملية. حاول مرة أخرى.',
+    },
+    viewer: {
+      banner: 'نسخة محفوظة على جهازك — تعمل بدون إنترنت',
+      opening: 'جارٍ فتح المحاضرة…',
+      openingProgress: (percent: number) => `جارٍ فتح المحاضرة… ${percent}%`,
+      missing: 'هذه المحاضرة غير محفوظة على جهازك.',
+      corrupt: 'الملف المحفوظ تالف وتم حذفه. نزّله من جديد عند اتصالك بالإنترنت.',
+      failed: 'تعذّر فتح المحاضرة.',
+      retry: 'حاول مرة أخرى',
+    },
+    screen: {
+      usage: (used: string, budget: string) => `المساحة المستخدمة ⁦${used}⁩ من ⁦${budget}⁩`,
+      budgetTitle: 'الحد الأقصى للتنزيلات',
+      emptyTitle: 'لا توجد تنزيلات',
+      emptyBody: 'افتح محاضرة واضغط «تنزيل للدراسة بدون إنترنت» لتجدها هنا.',
+      deleteAll: 'حذف كل التنزيلات',
+      deleteAllTitle: 'حذف كل التنزيلات؟',
+      deleteAllMessage: 'ستُحذف كل المحاضرات المحفوظة على هاتفك.',
+      removedRevoked: (title: string) => `أُزيلت «${title}» من جهازك لأنها لم تعد متاحة لحسابك.`,
+      removedCorrupt: (title: string) =>
+        `حُذفت «${title}» لأن الملف المحفوظ كان تالفاً. نزّلها من جديد.`,
+      dismiss: 'حسناً',
+      offlineNow: 'أنت بدون إنترنت. يمكنك فتح المحاضرات الصالحة وحذفها.',
+      stateReady: 'جاهزة',
+      stateExpired: 'منتهية الصلاحية',
+      stateClock: 'تحقق من وقت الجهاز',
+      statePartial: 'غير مكتملة',
+      stateDownloading: 'قيد التنزيل',
+    },
+  },
   lectures: {
     title: 'المحاضرات',
     subtitle: 'اقرأ محاضرات موادك والمحاضرات العامة داخل التطبيق، وأضف ملاحظاتك الخاصة.',
@@ -611,7 +777,6 @@ export const ar = {
       pageErrorTitle: 'تعذّر تحميل الصفحة',
       pageErrorMessage: 'تحقق من اتصالك بالإنترنت ثم أعد المحاولة.',
       retry: 'إعادة المحاولة',
-      protectedNotice: 'محتوى محمي: يُعرض داخل التطبيق فقط ولا يمكن حفظه أو مشاركته.',
       notes: 'الملاحظات',
       bookmarkAdd: 'وضع علامة على هذه الصفحة',
       bookmarkRemove: 'إزالة العلامة',
@@ -713,7 +878,7 @@ export const ar = {
     syncError: 'تعذر حفظ علاماتك الآن، سنحاول لاحقًا',
     limitReached: 'وصلت إلى الحد الأقصى من العلامات في هذا الملف.',
     processingTitle: 'الملف قيد التجهيز',
-    processingBody: 'نحوّل الملف إلى صفحات محمية للعرض. يستغرق ذلك دقائق قليلة.',
+    processingBody: 'نجهّز الملف للعرض. يستغرق ذلك دقائق قليلة.',
     notReadyTitle: 'الملف غير جاهز للعرض بعد',
     notReadyBody: 'لم يُجهَّز هذا الملف للعرض. أبلغ الإدارة إن استمر ذلك.',
     failedTitle: 'تعذر تجهيز الملف',
@@ -773,6 +938,7 @@ export const ar = {
     cancelRequest: 'إلغاء الطلب',
     cancelError: 'تعذر إلغاء الطلب. حاول مرة أخرى.',
     newRequest: 'تسجيل جديد',
+    backToStatus: 'العودة إلى حالة الطلب',
     status: {
       pending: 'طلبك قيد المراجعة',
       approved: 'تم اعتماد تسجيلك',
@@ -1639,7 +1805,7 @@ export const ar = {
     pickerFailed: 'تعذر فتح الاختيار. حاول مرة أخرى.',
     viewAttachment: 'عرض المرفق',
     viewerTitle: 'مرفق',
-    viewerSubtitle: 'يُعرض داخل التطبيق فقط',
+    viewerSubtitle: 'مرفق من الدعم',
   },
 
   policies: {
@@ -1931,19 +2097,14 @@ export const ar = {
       yes: 'نعم',
       no: 'لا',
       notPrintable: 'هذا الملف غير متاح للطباعة.',
-      protectionNote: 'الملفات محمية: تُعرض داخل التطبيق فقط ولا يمكن تنزيلها أو مشاركتها.',
-      inAppOnlyNote: 'يُفتح هذا الملف داخل التطبيق فقط.',
     },
 
     viewer: {
       fallbackTitle: 'عارض الملفات',
-      subtitle: 'يُعرض داخل التطبيق فقط',
+      subtitle: 'ملف المادة',
       issuingTicket: 'جارٍ تجهيز العرض...',
       loadError: 'تعذر عرض الملف. حاول مرة أخرى.',
-      notSupportedYet:
-        'عرض هذا النوع من الملفات داخل التطبيق قيد التطوير وسيتوفر في تحديث قريب. لا يمكن تنزيله لحماية المحتوى.',
-      securityNote:
-        'يُعرض الملف داخل التطبيق فقط ولا يمكن تنزيله أو مشاركته. وقد تُمنع لقطات الشاشة أثناء العرض.',
+      notSupportedYet: 'عرض هذا النوع من الملفات داخل التطبيق قيد التطوير وسيتوفر في تحديث قريب.',
       unavailableTitle: 'لا يمكن عرض الملف',
       unavailableAlt: 'رسم يوضح تعذر معاينة الملف',
       protectedReadyTitle: 'الملف جاهز للعرض',
@@ -2205,7 +2366,7 @@ export const ar = {
         'تعذر تحويل الملف إلى PDF. جرّب حفظه بصيغة PDF من تطبيق Word أو PowerPoint ثم ارفعه.',
       convertedLabel: 'ملف تم تحويله إلى PDF',
       convertedPages: (pages: number) => `${pages} صفحة`,
-      uploadNote: 'نفحص الملف قبل حساب السعر، ولا يمكن تنزيله لاحقًا.',
+      uploadNote: 'نفحص الملف قبل حساب السعر.',
       uploadSelected: 'ملف من هاتفك',
       uploadInvalidType:
         'صيغة الملف غير مدعومة. اختر PDF أو Word أو PowerPoint أو صورة بصيغة PNG أو JPG أو WEBP.',
@@ -2279,6 +2440,7 @@ export const ar = {
       wire: 'وزن السلك للنسخة',
       wireGrams: (grams: string | number) => `${grams} غ`,
       coverPrice: 'سعر الغلاف',
+      extrasPrice: 'خيارات الورق',
       subtotal: 'المجموع الفرعي',
       total: 'الإجمالي',
       rounding: 'التقريب',
@@ -2321,6 +2483,7 @@ export const ar = {
       pickupInstructions: 'تعليمات الاستلام',
       pickupReady: 'طلبك جاهز. توجه إلى نقطة الاستلام التالية:',
       itemPrice: 'سعر الملف',
+      paperOptions: 'خيارات الورق',
       viewFile: 'عرض الملف',
       viewFileLabel: (name: string) => `عرض الملف: ${name}`,
       autoRefresh: 'تتحدث الحالة تلقائيًا.',
@@ -2329,7 +2492,7 @@ export const ar = {
 
     itemViewer: {
       title: 'ملف الطلب',
-      subtitle: 'يُعرض داخل التطبيق فقط',
+      subtitle: 'معاينة الملف',
     },
 
     copies: {
@@ -2337,6 +2500,16 @@ export const ar = {
       decrease: 'إنقاص عدد النسخ',
       increase: 'زيادة عدد النسخ',
     },
+
+    // --- Print option help («i» buttons): keep this block together to ease merges. ---
+    help: {
+      sheetTitle: 'توضيح',
+      label: (title: string) => `توضيح: ${title}`,
+      hint: 'يفتح شرحاً مختصراً لهذا الخيار',
+      close: 'إغلاق',
+      imageFailed: 'تعذّر تحميل الصورة التوضيحية',
+    },
+    // --- end print option help ---
 
     options: {
       color: 'اللون',
@@ -2376,6 +2549,24 @@ export const ar = {
       sectionPaper: 'الورق والطباعة',
       sectionLayout: 'توزيع الصفحات والنسخ',
       sectionFinishing: 'التجليد والغلاف',
+      sectionExtras: 'خيارات الورق والتسليم',
+      extras: {
+        none: 'لا شيء',
+        free: 'بدون رسوم',
+        perCopy: 'للنسخة',
+        per50Sheets: 'لكل 50 ورقة',
+        perSheet: 'للورقة',
+        required: 'مطلوبة',
+        notRequired: 'غير مطلوبة',
+        groups: {
+          front_cover: 'نوع الغلاف الأمامي',
+          back_cover: 'نوع الغلاف الخلفي',
+          front_transparency: 'الشفافية الأمامية',
+          back_transparency: 'الشفافية الخلفية',
+          finishing: 'الإخراج الفني',
+          final_delivery: 'التسليم النهائي',
+        },
+      },
       sheetPages: (count: number) => (count === 1 ? 'صفحة في الورقة' : `${count} صفحات في الورقة`),
       allPages: 'كل الصفحات',
       collated: 'نسخ مرتّبة',
@@ -2649,6 +2840,135 @@ export const ar = {
       unauthorized: 'انتهت جلستك. سجّل الدخول مرة أخرى للمتابعة.',
       validation: 'راجع بيانات كلمة المرور وحاول مرة أخرى.',
       generic: 'تعذر تغيير كلمة المرور. حاول مرة أخرى.',
+    },
+  },
+
+  // --- Device lock + phone verification (feat/device-lock-phone-verify) ---
+
+  deviceLock: {
+    replacedNotice:
+      'تم تسجيل الدخول من جهاز آخر، فانتهت جلستك هنا. سجّل الدخول من جديد إن أردت استخدام حسابك على هذا الجوال.',
+    revokedNotice: 'أنهى فريق الدعم جلستك، سجّل الدخول من جديد.',
+    title: 'هذا الحساب مرتبط بجهاز آخر',
+    subtitle: 'كلمة المرور صحيحة، لكن حسابك مفعّل حاليًا على جوال آخر.',
+    otherDeviceTitle: 'الجهاز المرتبط حاليًا',
+    unknownDevice: 'جهاز غير معروف',
+    platformAndroid: 'أندرويد',
+    platformIos: 'آيفون',
+    lastSeen: (when: string) => `آخر استخدام: ${when}`,
+    policyTitle: 'كيف يعمل ربط الجهاز؟',
+    policy: [
+      'يُستخدم الحساب الواحد على جوال واحد فقط.',
+      'يمكنك تبديل الجهاز مرة واحدة في كل فصل دراسي.',
+      'بعد ذلك لا يمكنك التبديل بنفسك، وعليك التواصل مع الإدارة.',
+    ],
+    switchWarning: 'عند التبديل ينتهي دخولك على الجهاز الآخر فورًا.',
+    switchesRemaining: (value: number) =>
+      value === 1
+        ? 'لديك تبديل واحد متبقٍّ.'
+        : value === 2
+          ? 'لديك تبديلان متبقيان.'
+          : `لديك ${value} تبديلات متبقية.`,
+    switchAction: 'تبديل الجهاز إلى هذا الجوال',
+    switching: 'جارٍ التبديل...',
+    backToLogin: 'العودة لتسجيل الدخول',
+    errors: {
+      network: 'تعذر الاتصال بالخادم. تحقق من الإنترنت وحاول مرة أخرى.',
+      generic: 'تعذر تبديل الجهاز. حاول مرة أخرى.',
+      idRequired: 'يلزم تحديث التطبيق لإكمال التبديل.',
+    },
+    limit: {
+      title: 'استنفدت تبديلات الجهاز',
+      description:
+        'لا يمكنك تبديل الجهاز بنفسك الآن. تواصل مع الإدارة ليتم نقل حسابك إلى هذا الجوال.',
+      contact: 'تواصل مع الإدارة',
+      mailSubject: 'طلب نقل الحساب إلى جهاز جديد',
+      mailFailed: 'تعذر فتح البريد. راسل الإدارة على العنوان:',
+    },
+    expired: {
+      title: 'انتهت صلاحية رابط التبديل',
+      description: 'سجّل الدخول من جديد لتبديل الجهاز.',
+    },
+  },
+
+  phoneVerify: {
+    title: 'توثيق رقم الهاتف',
+    subtitle: 'اربط رقم واتساب بحسابك وانضم تلقائيًا إلى مجموعة المجتمع.',
+    entry: {
+      subtitleUnverified: 'اربط رقمك عبر رمز يصلك على واتساب',
+      subtitleWaiting: 'بانتظار إرسال الرمز إلى واتساب',
+      subtitleCode: 'أدخل الرمز الذي وصلك على واتساب',
+      badgeNeeded: 'مطلوب',
+      badgeWaiting: 'قيد المعالجة',
+      badgeCode: 'أدخل الرمز',
+      chipHint: 'افتح توثيق رقم الهاتف',
+    },
+    loading: 'جارٍ تحميل حالة التوثيق...',
+    loadFailed: 'تعذر تحميل حالة التوثيق',
+    form: {
+      intro: 'سيتم إرسال رمز التحقق عبر واتساب إلى رقمك.',
+      phoneLabel: 'رقم الهاتف',
+      phonePlaceholder: '0912345678',
+      phoneHint: 'أدخل رقمك السوري مثل 0912345678 أو 963912345678، أو رقمًا دوليًا يبدأ بـ +.',
+      passwordLabel: 'كلمة مرور الحساب',
+      passwordHint: 'نطلب كلمة المرور للتأكد أنك صاحب الحساب.',
+      submit: 'طلب رمز التحقق',
+      submitting: 'جارٍ إرسال الطلب...',
+      phoneRequired: 'أدخل رقم الهاتف.',
+      phoneInvalid:
+        'رقم الهاتف غير صالح. أدخل رقمًا سوريًا مثل 0912345678 أو رقمًا دوليًا يبدأ بـ +.',
+      passwordRequired: 'أدخل كلمة مرور الحساب.',
+      noticeExpired: 'انتهت صلاحية طلبك السابق. يمكنك طلب رمز جديد.',
+      noticeRejected: 'لم يُقبل طلبك السابق. يمكنك المحاولة من جديد.',
+    },
+    waiting: {
+      title: 'سيتم إرسال رمز التحقق عبر واتساب إلى رقمك',
+      description: (phone: string) =>
+        `طلبك للرقم ${phone} قيد المعالجة. سيصلك إشعار ورسالة واتساب عند إرسال الرمز، وستظهر هنا خانة إدخاله.`,
+      refresh: 'تحديث الحالة',
+      cancel: 'إلغاء الطلب',
+      cancelling: 'جارٍ الإلغاء...',
+    },
+    code: {
+      title: 'أدخل رمز التحقق',
+      description: (phone: string) => `أرسلنا رمزًا من 6 أرقام عبر واتساب إلى ${phone}.`,
+      label: 'رمز التحقق المكوّن من 6 أرقام',
+      countdown: (time: string) => `ينتهي الرمز خلال ${time}`,
+      lapsed: 'انتهت مهلة الرمز على جهازك. إن لم يُقبل رمزك فاطلب رمزًا جديدًا.',
+      attempts: (value: number) =>
+        value === 1
+          ? 'بقيت محاولة واحدة'
+          : value === 2
+            ? 'بقيت محاولتان'
+            : `المحاولات المتبقية: ${value}`,
+      confirm: 'تأكيد الرقم',
+      confirming: 'جارٍ التحقق...',
+      newRequest: 'طلب رمز جديد',
+      newRequestHint: 'لم يصلك الرمز أو أخطأت في الرقم؟ ألغِ الطلب وابدأ من جديد.',
+    },
+    success: {
+      title: 'تم توثيق رقم هاتفك',
+      description: (phone: string) => `تم ربط الرقم ${phone} بحسابك.`,
+      community:
+        'تمت إضافتك تلقائيًا إلى مجموعة المجتمع. ستجدها في تبويب المجموعات دون أي انضمام يدوي.',
+      done: 'تم',
+    },
+    errors: {
+      passwordIncorrect: 'كلمة المرور غير صحيحة.',
+      phoneInvalid:
+        'رقم الهاتف غير صالح. أدخل رقمًا سوريًا مثل 0912345678 أو رقمًا دوليًا يبدأ بـ +.',
+      phoneInUse: 'هذا الرقم مرتبط بحساب آخر. استخدم رقمك الخاص أو تواصل مع الدعم.',
+      alreadyOpen: 'لديك طلب توثيق قائم، وقد حدّثنا حالته.',
+      alreadyVerified: 'رقم هاتفك موثّق بالفعل.',
+      codeInvalid: (attempts: number | null) =>
+        attempts === null ? 'الرمز غير صحيح.' : `الرمز غير صحيح. المحاولات المتبقية: ${attempts}.`,
+      attemptsExceeded: 'تجاوزت عدد المحاولات. ابدأ طلبًا جديدًا.',
+      codeExpired: 'انتهت صلاحية الرمز. ابدأ طلبًا جديدًا.',
+      codeNotSent: 'لم يُرسل الرمز بعد. انتظر إشعار الإرسال.',
+      notFound: 'لا يوجد طلب قائم. حدّثنا الحالة.',
+      rateLimited: 'محاولات كثيرة. انتظر قليلًا ثم حاول مرة أخرى.',
+      network: 'تعذر الاتصال بالخادم. تحقق من الإنترنت وحاول مرة أخرى.',
+      generic: 'حدث خطأ غير متوقع. حاول مرة أخرى.',
     },
   },
 } as const;

@@ -94,10 +94,8 @@ export function PrintLibraryPicker({
   const { t } = useTranslation();
   const brand = useBrand();
   const [search, setSearch] = useState('');
-  const { files, isLoading, isLoadingMore, error, nextPage, loadMore, reload } = usePrintableFiles(
-    search,
-    visible,
-  );
+  const { files, isLoading, isLoadingMore, error, errorKind, nextPage, loadMore, reload } =
+    usePrintableFiles(search, visible);
 
   const handleSelect = useCallback(
     (file: FileResource) => {
@@ -133,7 +131,12 @@ export function PrintLibraryPicker({
         {isLoading && files.length === 0 ? (
           <LoadingState message={t.printing.library.loading} />
         ) : error && files.length === 0 ? (
-          <ErrorState message={error} onRetry={reload} title={t.printing.library.loadFailed} />
+          <ErrorState
+            fallbackMessage={error}
+            kind={errorKind ?? undefined}
+            onRetry={reload}
+            title={errorKind && errorKind !== 'generic' ? undefined : t.printing.library.loadFailed}
+          />
         ) : (
           <FlatList
             ItemSeparatorComponent={Separator}

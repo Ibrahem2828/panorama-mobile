@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { printingService as apiPrinting, type PrintOptionsResponse } from '../../../api';
 import type { PrintProduct } from '../types';
 
+import { usePrintOptionHelpStore } from './printOptionHelpStore';
 import { useAuthStore } from '../../auth/store';
 import { useFeedbackStore } from '../../feedback/store';
 import { useLocaleStore } from '../../../i18n';
@@ -84,6 +85,8 @@ type State = {
   setPickupLocation: (id: Id | null) => void;
   setNotes: (notes: string) => void;
   setCurrency: (currency: PrintCurrency) => void;
+  /** Fetches the shop's paper/binding options priced in this currency. */
+  refreshOptions: (currency: PrintCurrency) => void;
   loadStoredCurrency: () => Promise<void>;
   validateDraft: () => boolean;
   calculateQuote: () => Promise<boolean>;
@@ -270,9 +273,11 @@ export const usePrintingStore = create<State>((set, get) => {
       const authToken = token();
       if (!authToken || get().isLoadingPickupLocations) return;
       set({ isLoadingPickupLocations: true, pickupError: null });
+      // The explanations («i» buttons): optional, silent on failure, fetched once per session.
+      void usePrintOptionHelpStore.getState().ensureLoaded();
       // The shop's own binding types and covers: without them the built-in choices are shown and the server still prices them.
       void apiPrinting
-        .getPrintOptions(authToken)
+        .getPrintOptions(authToken, get().draft.currency)
         .then((options) => set({ options }))
         .catch(() => undefined);
       try {
@@ -367,10 +372,23 @@ export const usePrintingStore = create<State>((set, get) => {
       // A different currency changes the draft signature, so any earlier quote becomes stale.
       set((state) => ({ draft: { ...state.draft, currency }, draftError: null }));
       void storePrintCurrency(currency);
+      // Paper options are priced per currency, so the list is fetched again (the old one stays until it arrives).
+      get().refreshOptions(currency);
+    },
+    refreshOptions(currency) {
+      const authToken = token();
+      if (!authToken) return;
+      void apiPrinting
+        .getPrintOptions(authToken, currency)
+        .then((options) =>
+          set((state) => (state.draft.currency === currency ? { options } : state)),
+        )
+        .catch(() => undefined);
     },
     async loadStoredCurrency() {
       const stored = await readStoredPrintCurrency();
       if (stored) {
+        if (stored !== get().draft.currency) get().refreshOptions(stored);
         set((state) =>
           state.draft.currency === stored ? state : { draft: { ...state.draft, currency: stored } },
         );

@@ -1,4 +1,4 @@
-import type { ChatAttachment, ChatMessage, Id, PendingMessage } from '../types';
+import type { ChatAttachment, ChatMessage, ChatReplyTarget, Id, PendingMessage } from '../types';
 import { isOwnChatMessage } from './messages';
 
 /**
@@ -16,6 +16,7 @@ export function createPending(input: {
   idempotencyKey: string;
   content: string;
   attachment?: ChatAttachment | null;
+  replyTo?: ChatReplyTarget | null;
   now: Date;
 }): PendingMessage {
   return {
@@ -23,6 +24,7 @@ export function createPending(input: {
     idempotencyKey: input.idempotencyKey,
     content: input.content,
     attachment: input.attachment ?? null,
+    replyTo: input.replyTo ?? null,
     status: 'sending',
     createdAt: input.now.toISOString(),
     progress: 0,

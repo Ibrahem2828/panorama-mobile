@@ -12,7 +12,16 @@ type NetworkState = {
   lastCacheServeAt: number;
   /** When that cached copy was saved on the device, i.e. how old the shown data is. */
   lastCachedSavedAt: number | null;
+  /** NetInfo's own reachability verdict (null = unknown). Only a hint: it can be wrong on networks that block its probe. */
+  internetReachable: boolean | null;
+  /** Consecutive requests that never reached the server (network error or timeout); any response resets it. */
+  linkFailures: number;
+  /** A request got through since NetInfo last reported the internet unreachable. */
+  okSinceUnreachable: boolean;
   setOnline: (isOnline: boolean) => void;
+  setReachable: (reachable: boolean | null) => void;
+  noteRequestReachedServer: () => void;
+  noteRequestLostLink: () => void;
   markServedFromCache: (savedAt: number, now?: number) => void;
   markFresh: () => void;
 };
@@ -22,6 +31,29 @@ export const useNetworkStore = create<NetworkState>((set) => ({
   reconnects: 0,
   lastCacheServeAt: 0,
   lastCachedSavedAt: null,
+  internetReachable: null,
+  linkFailures: 0,
+  okSinceUnreachable: true,
+
+  setReachable(reachable) {
+    set((state) =>
+      state.internetReachable === reachable
+        ? state
+        : { internetReachable: reachable, okSinceUnreachable: reachable === false ? false : true },
+    );
+  },
+
+  noteRequestReachedServer() {
+    set((state) =>
+      state.linkFailures === 0 && state.okSinceUnreachable
+        ? state
+        : { linkFailures: 0, okSinceUnreachable: true },
+    );
+  },
+
+  noteRequestLostLink() {
+    set((state) => ({ linkFailures: state.linkFailures + 1 }));
+  },
 
   setOnline(isOnline) {
     set((state) =>
@@ -54,4 +86,27 @@ export function isOnlineFromNetInfo(state: {
   isInternetReachable?: boolean | null;
 }): boolean {
   return state.isConnected !== false;
+}
+
+export type ConnectionQuality = 'offline' | 'weak' | 'good';
+
+/** Two lost requests in a row mean the link is unusable for now, even if the device says it is connected. */
+export const WEAK_AFTER_FAILURES = 2;
+
+/**
+ * What the connectivity banner shows. Offline wins; "weak" is online but the requests are not getting through (consecutive
+ * lost requests), or NetInfo says the internet is unreachable and nothing has got through since. It clears itself the
+ * moment a request reaches the server again.
+ */
+export function connectionQuality(input: {
+  isOnline: boolean;
+  internetReachable: boolean | null;
+  linkFailures: number;
+  okSinceUnreachable: boolean;
+}): ConnectionQuality {
+  if (!input.isOnline) return 'offline';
+  if (input.linkFailures >= WEAK_AFTER_FAILURES) return 'weak';
+  if (input.internetReachable === false && !input.okSinceUnreachable) return 'weak';
+
+  return 'good';
 }

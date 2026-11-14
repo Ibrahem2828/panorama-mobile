@@ -38,7 +38,19 @@ export type ChatReactionFrame = {
   counts: Record<string, number>;
 };
 
-export type ChatAttachmentMeta = { name: string; size: number | null };
+export type ChatAttachmentMeta = {
+  name: string;
+  size: number | null;
+  /** Chat media (voice notes, audio files, pictures); older messages only carry name and size. */
+  mime?: string | null;
+  kind?: string | null;
+  duration_ms?: number | null;
+  waveform?: number[] | null;
+  width?: number | null;
+  height?: number | null;
+  has_thumbnail?: boolean;
+  etag?: string | null;
+};
 
 export type ChatReplyDetail = {
   id: number;
@@ -47,7 +59,10 @@ export type ChatReplyDetail = {
   preview?: string;
 };
 
-export type ChatMessageType = 'text' | 'image' | 'file' | 'system';
+/** The message a reply answers, as the composer and the optimistic bubble show it. */
+export type ChatReplyTarget = { id: number; senderName: string; preview: string };
+
+export type ChatMessageType = 'text' | 'image' | 'file' | 'voice' | 'audio' | 'system';
 
 /** A server-confirmed message. Identity is the numeric server id. */
 export type ChatMessage = {
@@ -73,8 +88,12 @@ export type ChatAttachment = {
   name: string;
   mimeType: string;
   size: number;
-  /** `image` is sent as a photo message, `file` as a document message. */
-  kind: 'image' | 'file';
+  /** `image` is sent as a photo message, `file` as a document, `voice` a recorded note, `audio` an uploaded recording. */
+  kind: 'image' | 'file' | 'voice' | 'audio';
+  /** Voice notes: recorded length (a hint; the server measures the real one). */
+  durationMs?: number;
+  /** Voice notes: up to 128 bars, 0..255. */
+  waveform?: number[];
 };
 
 export type PendingStatus = 'sending' | 'failed';
@@ -86,6 +105,8 @@ export type PendingMessage = {
   idempotencyKey: string;
   content: string;
   attachment: ChatAttachment | null;
+  /** The message this one replies to (sent as `reply_to`), if any. */
+  replyTo: ChatReplyTarget | null;
   status: PendingStatus;
   createdAt: string;
   /** Upload progress in [0, 1] while an attachment is being sent. */

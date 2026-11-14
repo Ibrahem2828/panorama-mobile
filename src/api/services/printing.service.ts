@@ -8,6 +8,7 @@ import type {
   EmptyResponse,
   FileAccessTicket,
   PrintConversion,
+  PrintOptionHelpResponse,
   PrintOptionsResponse,
   PrintOrder,
   PrintProduct,
@@ -69,6 +70,13 @@ export function getPrintOptions(authToken: string, currency?: string) {
   return apiClient.get<PrintOptionsResponse>(endpoints.printing.options, {
     authToken,
     query: { currency },
+  });
+}
+/** Optional explanations of the print options (the «i» buttons). Callers must treat any failure as "no help". */
+export function getPrintOptionHelp(authToken: string) {
+  return apiClient.get<PrintOptionHelpResponse>(endpoints.printing.optionHelp, {
+    authToken,
+    noCache: true,
   });
 }
 export function listPrintProducts(authToken: string) {

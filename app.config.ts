@@ -315,6 +315,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ],
       'expo-updates',
       [
+        // Voice messages: the microphone is used only while the student records in a chat. No background audio.
+        'expo-audio',
+        {
+          microphonePermission:
+            'يحتاج بانوراما إلى الميكروفون لتسجيل الرسائل الصوتية التي ترسلها في المحادثة.',
+          recordAudioAndroid: true,
+          enableBackgroundRecording: false,
+          enableBackgroundPlayback: false,
+        },
+      ],
+      [
         'expo-splash-screen',
         {
           image: './src/assets/app/splash.png',
@@ -330,7 +341,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           photosPermission:
             'يحتاج بانوراما للوصول إلى الصور لرفع البطاقة الجامعية أو المرفقات التي تختارها.',
           cameraPermission: 'يحتاج بانوراما إلى الكاميرا لالتقاط صورة بطاقتك الجامعية.',
-          microphonePermission: false,
+          // NOT false: that blocks RECORD_AUDIO app-wide (tools:node=remove) and breaks chat voice messages (expo-audio).
+          microphonePermission:
+            'يحتاج بانوراما إلى الميكروفون لتسجيل الرسائل الصوتية التي ترسلها في المحادثة.',
         },
       ],
     ],
@@ -363,7 +376,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         'android.permission.READ_EXTERNAL_STORAGE',
         'android.permission.WRITE_EXTERNAL_STORAGE',
         'android.permission.SYSTEM_ALERT_WINDOW',
-        'android.permission.RECORD_AUDIO',
         'android.permission.READ_PHONE_STATE',
       ],
     },

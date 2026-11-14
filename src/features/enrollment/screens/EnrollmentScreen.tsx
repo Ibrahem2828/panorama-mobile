@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -23,6 +23,8 @@ import type { GroupsStackParamList } from '../../../navigation/types';
 import { colors, radius, spacing, useBrand } from '../../../theme';
 import { sortSubjectsCurrentTermFirst } from '../../academic-term/termPresentation';
 import { useAuthStore } from '../../auth/store';
+import { useEnrollmentRefresh } from '../hooks/useEnrollmentRefresh';
+import { enrollmentPrimaryAction, pickLatestEnrollment } from '../logic';
 
 type Props = NativeStackScreenProps<GroupsStackParamList, 'Enrollment'>;
 type Picked = { uri: string; name: string; type: string };
@@ -107,22 +109,34 @@ export function EnrollmentScreen({ navigation }: Props) {
   const [progress, setProgress] = useState(0);
   const [idempotencyKey, setIdempotencyKey] = useState(() => generateIdempotencyKey());
 
+  const requestSeq = useRef(0);
+
+  /** Background refreshes (focus, foreground, polling) keep what is on screen if the network hiccups. */
   const load = useCallback(async () => {
     if (!accessToken) return;
-    setLoadError(false);
+    const seq = ++requestSeq.current;
+
     try {
-      setRecords(await enrollmentService.listMyEnrollments(accessToken));
+      const next = await enrollmentService.listMyEnrollments(accessToken);
+
+      // A slower, older response must never overwrite a newer one.
+      if (seq === requestSeq.current) {
+        setRecords(next);
+        setLoadError(false);
+      }
     } catch {
-      setLoadError(true);
+      if (seq === requestSeq.current) {
+        setLoadError(true);
+      }
     }
   }, [accessToken]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const latest = useMemo(() => pickLatestEnrollment(records), [records]);
 
-  const latest = records?.[0] ?? null;
-  const wizard = starting || !latest || latest.status === 'cancelled';
+  useEnrollmentRefresh(() => void load(), { latest, starting });
+
+  const primary = enrollmentPrimaryAction(latest, starting);
+  const wizard = primary === 'submit';
   const chosenKeys = useMemo(() => new Set(subjects.map((item) => String(item.id))), [subjects]);
 
   const pick = async (source: 'album' | 'camera') => {
@@ -197,7 +211,9 @@ export function EnrollmentScreen({ navigation }: Props) {
       await enrollmentService.cancelEnrollment(latest.id, accessToken);
       await load();
     } catch {
+      // Most likely the request was decided meanwhile: show the real state rather than a stale one.
       setError(copy.cancelError);
+      await load();
     } finally {
       setBusy(false);
     }
@@ -207,7 +223,7 @@ export function EnrollmentScreen({ navigation }: Props) {
 
   if (records === null && !loadError) {
     body = <LoadingState message={copy.loading} />;
-  } else if (loadError) {
+  } else if (loadError && records === null) {
     body = <ErrorState message={copy.loadError} onRetry={() => void load()} />;
   } else if (!wizard && latest) {
     body = (
@@ -218,7 +234,7 @@ export function EnrollmentScreen({ navigation }: Props) {
             {error}
           </AppText>
         ) : null}
-        {latest.status !== 'pending' ? (
+        {primary === 'new_request' ? (
           <AppButton onPress={() => setStarting(true)} title={copy.newRequest} />
         ) : null}
       </Stack>
@@ -276,6 +292,13 @@ export function EnrollmentScreen({ navigation }: Props) {
               </Pressable>
             ) : null}
             <AppButton disabled={!shot} onPress={() => setStep(2)} title={copy.next} />
+            {latest ? (
+              <AppButton
+                onPress={() => setStarting(false)}
+                title={copy.backToStatus}
+                variant="ghost"
+              />
+            ) : null}
           </Stack>
         ) : null}
 

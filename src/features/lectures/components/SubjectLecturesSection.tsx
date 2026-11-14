@@ -15,9 +15,10 @@ import { useTranslation } from '../../../i18n';
 import { LecturesRoutes } from '../../../navigation/routes';
 import type { SubjectsStackParamList } from '../../../navigation/types';
 import { spacing, useBrand } from '../../../theme';
-import { filterLectures } from '../logic';
+import { filterLectures, lectureErrorStateKind } from '../logic';
 import { useLecturesStore } from '../store';
 import type { Lecture } from '../types';
+import { OfflineDownloadButton } from '../offline/OfflineDownloadButton';
 import { LectureCard } from './LectureCard';
 
 type Props = { subjectId: string | number };
@@ -73,7 +74,13 @@ export function SubjectLecturesSection({ subjectId }: Props) {
       </View>
     );
   } else if (errorKind && lastLoadedAt === null) {
-    body = <ErrorState message={t.lectures.errors[errorKind]} onRetry={handleRetry} />;
+    body = (
+      <ErrorState
+        fallbackMessage={t.lectures.errors[errorKind]}
+        kind={lectureErrorStateKind(errorKind)}
+        onRetry={handleRetry}
+      />
+    );
   } else if (lectures.length === 0) {
     body = (
       <EmptyState
@@ -86,7 +93,10 @@ export function SubjectLecturesSection({ subjectId }: Props) {
     body = (
       <Stack gap="sm">
         {lectures.slice(0, PREVIEW_LIMIT).map((lecture) => (
-          <LectureCard compact key={lecture.id} lecture={lecture} onPress={openLecture} />
+          <View key={lecture.id}>
+            <LectureCard compact lecture={lecture} onPress={openLecture} />
+            <OfflineDownloadButton lecture={lecture} />
+          </View>
         ))}
         {lectures.length > PREVIEW_LIMIT ? (
           <AppButton

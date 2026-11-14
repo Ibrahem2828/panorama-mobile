@@ -99,6 +99,16 @@ function isAbortError(error: unknown): boolean {
   return isRecord(error) && error.name === 'AbortError';
 }
 
+/**
+ * The app's global `fetch` is Expo's (expo/fetch), which rejects a failed connection with a plain `Error` whose message
+ * starts with "fetch failed", not with React Native's `TypeError`. Both mean the request never got an answer.
+ */
+function isFetchFailure(error: unknown): boolean {
+  return (
+    error instanceof TypeError || (error instanceof Error && /^fetch failed/i.test(error.message))
+  );
+}
+
 function toFieldErrors(errors: unknown): FieldErrors | undefined {
   if (!isRecord(errors)) {
     return undefined;
@@ -275,6 +285,8 @@ export function normalizeHttpError({
   const errorCode = extractErrorCode(responseBody);
   const code = codeFromStatusAndBackendCode(status, errorCode);
   const isLifecycle = code === 'MAINTENANCE_MODE' || code === 'APP_UPDATE_REQUIRED';
+  // Device-binding and phone-verification refusals carry structured `errors` (bound device, attempts left, ...).
+  const isStructured = isLifecycle || /^(?:DEVICE_|PHONE_)/u.test(errorCode ?? '');
   const backendMessage = extractBackendMessage(responseBody);
   const requestId = extractRequestId(responseBody);
   const fieldErrors =
@@ -291,7 +303,7 @@ export function normalizeHttpError({
     fieldErrors,
     errorCode,
     retryAfterSeconds: extractRetryAfter(responseBody),
-    details: isLifecycle ? extractDetails(responseBody) : undefined,
+    details: isStructured ? extractDetails(responseBody) : undefined,
     raw: responseBody,
   };
 }
@@ -320,7 +332,7 @@ export function normalizeApiError(error: unknown): NormalizedApiError {
     };
   }
 
-  if (error instanceof TypeError) {
+  if (isFetchFailure(error)) {
     return {
       code: 'NETWORK_ERROR',
       message: defaultMessageFor('NETWORK_ERROR'),

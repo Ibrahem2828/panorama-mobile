@@ -101,7 +101,7 @@ export function CreateSupportTicketScreen({ navigation }: CreateSupportTicketScr
           uploadPercent={isCreating ? uploadPercent : null}
         />
 
-        {errorMessage ? <ErrorState kind="server" message={errorMessage} /> : null}
+        {errorMessage ? <ErrorState message={errorMessage} /> : null}
 
         <Stack gap="sm">
           <AppButton

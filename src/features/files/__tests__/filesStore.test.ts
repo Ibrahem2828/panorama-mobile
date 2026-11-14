@@ -14,6 +14,7 @@ jest.mock('../../../i18n', () => ({
     }),
   },
 }));
+jest.mock('../../../api/errorKind', () => ({ classifyApiError: () => 'generic' }));
 jest.mock('../services', () => ({
   loadFileDetail: jest.fn(),
   loadFiles: jest.fn(),

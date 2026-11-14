@@ -5,6 +5,8 @@ import { ActivityIndicator, FlatList, Platform, Pressable, StyleSheet, View } fr
 import { AppText, Icon } from '../../../components';
 import { radius, shadows, spacing, useBrand } from '../../../theme';
 import { useTranslation } from '../../../i18n';
+import { showToast } from '../../../components/feedback';
+import { findMessageItemIndex } from '../logic/reply';
 import { buildChatItems, countNewIncoming } from '../logic/timeline';
 import type { ChatListItem, ChatMessage, Id, PendingMessage } from '../types';
 import { ChatMessageRow } from './ChatMessageRow';
@@ -25,6 +27,8 @@ type ChatMessageListProps = {
   peerCursors: Readonly<Record<number, { delivered: number; read: number }>>;
   onOpenAttachment: (message: ChatMessage) => void;
   onLongPressMessage: (message: ChatMessage) => void;
+  /** Swipe-to-reply; absent when the member cannot post. */
+  onReply?: (message: ChatMessage) => void;
   onRetry: (localId: string) => void;
   onDiscard: (localId: string) => void;
 };
@@ -90,6 +94,7 @@ export const ChatMessageList = memo(function ChatMessageList({
   peerCursors,
   onOpenAttachment,
   onLongPressMessage,
+  onReply,
   onRetry,
   onDiscard,
 }: ChatMessageListProps) {
@@ -101,10 +106,22 @@ export const ChatMessageList = memo(function ChatMessageList({
   const previousPendingCountRef = useRef(pending.length);
   const [showJump, setShowJump] = useState(false);
   const [unseen, setUnseen] = useState(0);
+  const [highlightId, setHighlightId] = useState<number | null>(null);
+  const itemsRef = useRef<ChatListItem[]>([]);
+  const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const items = useMemo(
     () => buildChatItems(messages, pending, currentUserId, peerCursors),
     [messages, pending, currentUserId, peerCursors],
+  );
+
+  itemsRef.current = items;
+
+  useEffect(
+    () => () => {
+      if (highlightTimer.current) clearTimeout(highlightTimer.current);
+    },
+    [],
   );
 
   const newestId = messages.length > 0 ? (messages[messages.length - 1]?.id ?? null) : null;
@@ -158,6 +175,42 @@ export const ChatMessageList = memo(function ChatMessageList({
     setUnseen(0);
   }, []);
 
+  /** Scrolls to the quoted message and tints it for a moment; a message not loaded yet (older history) says so. */
+  const handleJumpToReply = useCallback(
+    (messageId: number) => {
+      const index = findMessageItemIndex(itemsRef.current, messageId);
+
+      if (index < 0) {
+        showToast(t.chat.reply.originalNotLoaded, { tone: 'info' });
+        return;
+      }
+
+      listRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated: true });
+      setHighlightId(messageId);
+
+      if (highlightTimer.current) clearTimeout(highlightTimer.current);
+
+      highlightTimer.current = setTimeout(() => setHighlightId(null), 1600);
+    },
+    [t.chat.reply.originalNotLoaded],
+  );
+
+  // Rows have variable height, so the list cannot compute offsets for far-away indices: scroll roughly there, then retry.
+  const handleScrollToIndexFailed = useCallback(
+    (info: { index: number; averageItemLength: number }) => {
+      listRef.current?.scrollToOffset({
+        offset: info.index * info.averageItemLength,
+        animated: false,
+      });
+      setTimeout(
+        () =>
+          listRef.current?.scrollToIndex({ index: info.index, viewPosition: 0.5, animated: true }),
+        120,
+      );
+    },
+    [],
+  );
+
   const handleEndReached = useCallback(() => {
     if (hasOlder && !isLoadingOlder && !loadOlderFailed) {
       onLoadOlder();
@@ -167,14 +220,25 @@ export const ChatMessageList = memo(function ChatMessageList({
   const renderItem = useCallback(
     ({ item }: { item: ChatListItem }) => (
       <ChatMessageRow
+        highlighted={item.kind === 'message' && item.message.id === highlightId}
         item={item}
         onDiscard={onDiscard}
+        onJumpToReply={handleJumpToReply}
         onLongPressMessage={onLongPressMessage}
         onOpenAttachment={onOpenAttachment}
+        onReply={onReply}
         onRetry={onRetry}
       />
     ),
-    [onDiscard, onLongPressMessage, onOpenAttachment, onRetry],
+    [
+      handleJumpToReply,
+      highlightId,
+      onDiscard,
+      onLongPressMessage,
+      onOpenAttachment,
+      onReply,
+      onRetry,
+    ],
   );
 
   const footer = useMemo(
@@ -204,6 +268,7 @@ export const ChatMessageList = memo(function ChatMessageList({
         maintainVisibleContentPosition={MAINTAIN_POSITION}
         maxToRenderPerBatch={10}
         onEndReached={handleEndReached}
+        onScrollToIndexFailed={handleScrollToIndexFailed}
         onEndReachedThreshold={0.6}
         onScroll={handleScroll}
         ref={listRef}

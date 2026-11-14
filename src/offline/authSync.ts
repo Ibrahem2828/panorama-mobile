@@ -1,3 +1,8 @@
+import {
+  clearChatMediaCache,
+  initChatMediaCache,
+} from '../features/chat/media/services/chatMediaStore';
+import { startOfflineLectures, wipeOfflineLectures } from '../features/lectures/offline/lifecycle';
 import { setCacheScope } from './cacheScope';
 import { clearAllCaches } from './responseCache';
 import { clearSessionSnapshot } from './sessionSnapshot';
@@ -23,6 +28,10 @@ export function bindOfflineToAuth(store: StoreLike): () => void {
 
     if (activeId !== null) {
       void clearAllCaches();
+      // Chat pictures and PDFs are encrypted on disk; signing out (or a device replacement) destroys them and their key.
+      void clearChatMediaCache();
+      // Downloaded lectures (ciphertext, content keys, inventory) never survive a sign-out or an account switch.
+      void wipeOfflineLectures();
 
       if (nextId === null) {
         void clearSessionSnapshot();
@@ -30,6 +39,11 @@ export function bindOfflineToAuth(store: StoreLike): () => void {
     }
 
     activeId = nextId;
+
+    if (nextId !== null) {
+      void initChatMediaCache(nextId);
+      startOfflineLectures(nextId);
+    }
     setCacheScope(nextId);
   };
 

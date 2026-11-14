@@ -31,12 +31,7 @@ export function FileDetailHeader({ file }: FileDetailHeaderProps) {
           {sizeLabel ? <AppBadge label={sizeLabel} variant="brand" /> : null}
           {visibilityLabel ? <AppBadge label={visibilityLabel} variant="info" /> : null}
         </Stack>
-        <Stack gap="xs">
-          <AppText variant="h2">{title}</AppText>
-          <AppText color="secondary" variant="bodySmall">
-            {t.files.details.inAppOnlyNote}
-          </AppText>
-        </Stack>
+        <AppText variant="h2">{title}</AppText>
       </Stack>
     </AppCard>
   );

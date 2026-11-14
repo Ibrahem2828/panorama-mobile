@@ -1,4 +1,4 @@
-export * from './ChatAttachmentViewer';
+export * from './ChatMediaViewer';
 export * from './ChatComposer';
 export * from './ChatConnectionStatus';
 export * from './ChatEmptyState';
@@ -8,3 +8,5 @@ export * from './ChatMessageRow';
 export * from './ChatPermissionNotice';
 export * from './ChatRoomHeader';
 export { MessageActionsSheet } from './MessageActionsSheet';
+export { ReplyBar } from './ReplyBar';
+export { ReplyQuote } from './ReplyQuote';

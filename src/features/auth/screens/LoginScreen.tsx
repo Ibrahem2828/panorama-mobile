@@ -9,6 +9,7 @@ import { PublicRoutes } from '../../../navigation/routes';
 import type { PublicStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { AuthScreen, PasswordInput } from '../components';
+import { DeviceMismatchLoginError } from '../services';
 import { useAuthStore } from '../store';
 
 type PublicNavigation = NativeStackNavigationProp<PublicStackParamList>;
@@ -46,8 +47,12 @@ export function LoginScreen() {
     }
     try {
       await login({ identifier: identifier.trim(), password });
-    } catch {
-      // Auth store owns the safe user-facing message.
+    } catch (error) {
+      // Right password, other phone: the device screen explains and offers the switch.
+      if (error instanceof DeviceMismatchLoginError) {
+        navigation.navigate(PublicRoutes.DeviceLock);
+      }
+      // Anything else: the auth store owns the safe user-facing message.
     }
   }
 

@@ -1,5 +1,6 @@
 import { buildApiUrl as buildConfiguredApiUrl } from '../config/env';
 import { getAppClientHeaders } from './appInfo';
+import { getDeviceHeaders } from './deviceIdentity';
 import type { HttpHeaders, HttpMethod } from './http';
 import { CONTENT_TYPE_JSON } from './http';
 import { buildQueryString } from './pagination';
@@ -80,6 +81,7 @@ export function buildRequestHeaders({
   return {
     Accept: CONTENT_TYPE_JSON,
     ...getAppClientHeaders(),
+    ...getDeviceHeaders(),
     ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
     ...(hasJsonBody && !hasFormDataBody ? { 'Content-Type': CONTENT_TYPE_JSON } : {}),
     ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),

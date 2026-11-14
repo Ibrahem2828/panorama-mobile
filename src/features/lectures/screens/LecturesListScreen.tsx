@@ -20,11 +20,13 @@ import type { HomeStackParamList } from '../../../navigation/types';
 import { getFlexDirection } from '../../../utils/rtl';
 import { colors, spacing, useBrand } from '../../../theme';
 import { FilterChip } from '../components/FilterChip';
+import { OfflineDownloadButton } from '../offline/OfflineDownloadButton';
 import { LectureCard } from '../components/LectureCard';
 import {
   GENERAL_LECTURES_FILTER,
   filterLectures,
   isGeneralLecture,
+  lectureErrorStateKind,
   uniqueSubjects,
 } from '../logic';
 import { useLecturesStore } from '../store';
@@ -74,7 +76,12 @@ export function LecturesListScreen({ navigation, route }: Props) {
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: Lecture }) => <LectureCard lecture={item} onPress={openLecture} />,
+    ({ item }: { item: Lecture }) => (
+      <View>
+        <LectureCard lecture={item} onPress={openLecture} />
+        <OfflineDownloadButton lecture={item} />
+      </View>
+    ),
     [openLecture],
   );
 
@@ -101,7 +108,11 @@ export function LecturesListScreen({ navigation, route }: Props) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         {header}
-        <ErrorState message={t.lectures.errors[errorKind]} onRetry={handleRefresh} />
+        <ErrorState
+          fallbackMessage={t.lectures.errors[errorKind]}
+          kind={lectureErrorStateKind(errorKind)}
+          onRetry={handleRefresh}
+        />
       </AppScreen>
     );
   }
@@ -173,7 +184,11 @@ export function LecturesListScreen({ navigation, route }: Props) {
               </ScrollView>
             ) : null}
             {errorKind ? (
-              <ErrorState message={t.lectures.errors[errorKind]} onRetry={handleRefresh} />
+              <ErrorState
+                fallbackMessage={t.lectures.errors[errorKind]}
+                kind={lectureErrorStateKind(errorKind)}
+                onRetry={handleRefresh}
+              />
             ) : null}
             <AppText color="muted" variant="caption">
               {t.lectures.totalCount(filtered.length)}

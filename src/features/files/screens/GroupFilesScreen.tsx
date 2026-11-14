@@ -38,6 +38,7 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
   const isLoadingGroupFiles = useFilesStore((state) => state.isLoadingGroupFiles);
   const isRefreshing = useFilesStore((state) => state.isRefreshing);
   const errorMessage = useFilesStore((state) => state.errorMessage);
+  const errorKind = useFilesStore((state) => state.errorKind);
   const lastLoadedAt = useFilesStore((state) => state.lastLoadedAt);
   const loadGroupFiles = useFilesStore((state) => state.loadGroupFiles);
   const refreshGroupFiles = useFilesStore((state) => state.refreshGroupFiles);
@@ -85,7 +86,11 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
     return (
       <AppScreen contentContainerStyle={styles.content} scroll>
         <AppHeader subtitle={t.files.groupFiles.subtitle} title={t.files.groupFiles.title} />
-        <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
+        <ErrorState
+          fallbackMessage={errorMessage ?? undefined}
+          kind={errorKind ?? undefined}
+          onRetry={handleRefresh}
+        />
       </AppScreen>
     );
   }
@@ -124,7 +129,11 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
         />
 
         {errorMessage ? (
-          <ErrorState message={errorMessage} onRetry={handleRefresh} />
+          <ErrorState
+            fallbackMessage={errorMessage}
+            kind={errorKind ?? undefined}
+            onRetry={handleRefresh}
+          />
         ) : groupFiles.length === 0 ? (
           <EmptyState
             action={

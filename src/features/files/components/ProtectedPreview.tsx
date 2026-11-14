@@ -3,15 +3,7 @@ import * as ScreenCapture from 'expo-screen-capture';
 import { StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
-import {
-  AppCard,
-  AppHeader,
-  AppScreen,
-  AppText,
-  ErrorState,
-  LoadingState,
-  Stack,
-} from '../../../components';
+import { AppHeader, AppScreen, ErrorState, LoadingState } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { colors, spacing } from '../../../theme';
 import { isTrustedBackendUrl } from '../../../utils/trustedUrl';
@@ -151,14 +143,6 @@ export function ProtectedPreview({
           style={styles.webView}
         />
       ) : null}
-
-      <AppCard padding="sm" style={styles.notice} variant="muted">
-        <Stack gap="xs">
-          <AppText color="secondary" variant="caption">
-            {t.files.viewer.securityNote}
-          </AppText>
-        </Stack>
-      </AppCard>
     </AppScreen>
   );
 }
@@ -167,5 +151,4 @@ const styles = StyleSheet.create({
   screen: { backgroundColor: colors.background.primary },
   header: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, gap: spacing.sm },
   webView: { flex: 1, backgroundColor: colors.background.surface },
-  notice: { margin: spacing.sm },
 });

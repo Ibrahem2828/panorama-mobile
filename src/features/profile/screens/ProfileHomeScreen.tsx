@@ -29,6 +29,7 @@ import {
 } from '../components';
 import { getStudentCardVerificationSummary, getVerificationStatusLabel } from '../services';
 import { useProfileStore } from '../store';
+import { PhoneVerificationEntry } from '../../phone-verification/components/PhoneVerificationEntry';
 import { useTranslation } from '../../../i18n';
 
 type ProfileHomeScreenProps = NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>;
@@ -104,6 +105,9 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
 
         <ProfileSummaryCard
           facultyName={isStudent ? (studentProfile?.faculty?.name ?? null) : null}
+          onPressUnverifiedPhone={
+            isStudent ? () => navigation.navigate(ProfileRoutes.PhoneVerification) : undefined
+          }
           user={user}
         />
 
@@ -154,6 +158,11 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
             icon="lock"
             title={t.profile.accountSection.changePassword}
           />
+          {isStudent && user?.is_phone_verified !== true ? (
+            <PhoneVerificationEntry
+              onPress={() => navigation.navigate(ProfileRoutes.PhoneVerification)}
+            />
+          ) : null}
           {isStudent ? (
             <ProfileActionItem
               badge={cardVerificationSummary.label}
@@ -194,6 +203,14 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
             icon="bookmark"
             title={t.docViewer.myNotes.title}
           />
+          {isStudent ? (
+            <ProfileActionItem
+              onPress={() => navigation.navigate(ProfileRoutes.Downloads)}
+              subtitle={t.offlineLectures.profileSubtitle}
+              icon="download"
+              title={t.offlineLectures.title}
+            />
+          ) : null}
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.SupportTickets)}
             subtitle={t.profile.servicesSection.supportSubtitle}

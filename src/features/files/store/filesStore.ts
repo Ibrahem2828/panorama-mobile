@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 
+import { classifyApiError, type ErrorKind } from '../../../api/errorKind';
 import { useLocaleStore } from '../../../i18n';
+import { useNetworkStore } from '../../../offline/networkStore';
 
 import { useAuthStore } from '../../auth/store';
 import {
@@ -21,6 +23,8 @@ type FilesState = {
   isLoadingGroupFiles: boolean;
   isRefreshing: boolean;
   errorMessage: string | null;
+  /** What kind of failure `errorMessage` describes (drives the illustrated error state). */
+  errorKind: ErrorKind | null;
   lastLoadedAt: string | null;
   filesCount: number;
   groupFilesCountByGroupId: Record<string, number>;
@@ -34,6 +38,7 @@ type FilesState = {
   isLoadingMoreList: boolean;
   isRefreshingList: boolean;
   listError: string | null;
+  listErrorKind: ErrorKind | null;
   loadMoreError: string | null;
 
   loadList: (query: FilesListQuery) => Promise<void>;
@@ -53,6 +58,10 @@ type FilesState = {
 // Read when the action runs so the message follows the current locale.
 function filesCatalog() {
   return useLocaleStore.getState().t.files;
+}
+
+function kindOf(error: unknown): ErrorKind {
+  return classifyApiError(error, { deviceOnline: useNetworkStore.getState().isOnline });
 }
 
 function isSameId(left: Id, right: Id): boolean {
@@ -86,6 +95,7 @@ const initialFilesState = {
   isLoadingGroupFiles: false,
   isRefreshing: false,
   errorMessage: null,
+  errorKind: null as ErrorKind | null,
   lastLoadedAt: null,
   filesCount: 0,
   groupFilesCountByGroupId: {},
@@ -98,6 +108,7 @@ const initialFilesState = {
   isLoadingMoreList: false,
   isRefreshingList: false,
   listError: null as string | null,
+  listErrorKind: null as ErrorKind | null,
   loadMoreError: null as string | null,
 };
 
@@ -111,6 +122,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
     if (!accessToken) {
       set({
         errorMessage: filesCatalog().errors.unauthorized,
+        errorKind: 'generic',
         isLoadingFiles: false,
         isLoadingDetail: false,
         isLoadingGroupFiles: false,
@@ -182,8 +194,14 @@ export const useFilesStore = create<FilesState>((set, get) => {
 
     set(
       mode === 'load'
-        ? { isLoadingList: true, isRefreshingList: false, listError: null, listQuery: query }
-        : { isRefreshingList: true, listError: null },
+        ? {
+            isLoadingList: true,
+            isRefreshingList: false,
+            listError: null,
+            listErrorKind: null,
+            listQuery: query,
+          }
+        : { isRefreshingList: true, listError: null, listErrorKind: null },
     );
 
     try {
@@ -212,6 +230,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
         isLoadingList: false,
         isRefreshingList: false,
         listError: toSafeFilesErrorMessage(error, filesCatalog()),
+        listErrorKind: kindOf(error),
       });
     }
   }
@@ -289,7 +308,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
         return;
       }
 
-      set({ isLoadingFiles: true, errorMessage: null });
+      set({ isLoadingFiles: true, errorMessage: null, errorKind: null });
 
       try {
         await reloadFiles(accessToken);
@@ -298,6 +317,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
         set({
           isLoadingFiles: false,
           errorMessage: toSafeFilesErrorMessage(error, filesCatalog()),
+          errorKind: kindOf(error),
         });
       }
     },
@@ -313,7 +333,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
         return;
       }
 
-      set({ isRefreshing: true, errorMessage: null });
+      set({ isRefreshing: true, errorMessage: null, errorKind: null });
 
       try {
         await reloadFiles(accessToken);
@@ -322,6 +342,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
         set({
           isRefreshing: false,
           errorMessage: toSafeFilesErrorMessage(error, filesCatalog()),
+          errorKind: kindOf(error),
         });
       }
     },
@@ -337,7 +358,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
         return;
       }
 
-      set({ isLoadingDetail: true, errorMessage: null });
+      set({ isLoadingDetail: true, errorMessage: null, errorKind: null });
 
       try {
         await reloadFileDetail(fileId, accessToken);
@@ -346,6 +367,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
         set({
           isLoadingDetail: false,
           errorMessage: toSafeFilesErrorMessage(error, filesCatalog()),
+          errorKind: kindOf(error),
         });
       }
     },
@@ -361,7 +383,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
         return;
       }
 
-      set({ isLoadingGroupFiles: true, errorMessage: null });
+      set({ isLoadingGroupFiles: true, errorMessage: null, errorKind: null });
 
       try {
         await reloadGroupFiles(groupId, accessToken);
@@ -370,6 +392,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
         set({
           isLoadingGroupFiles: false,
           errorMessage: toSafeFilesErrorMessage(error, filesCatalog()),
+          errorKind: kindOf(error),
         });
       }
     },
@@ -385,7 +408,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
         return;
       }
 
-      set({ isRefreshing: true, errorMessage: null });
+      set({ isRefreshing: true, errorMessage: null, errorKind: null });
 
       try {
         await reloadGroupFiles(groupId, accessToken);
@@ -394,6 +417,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
         set({
           isRefreshing: false,
           errorMessage: toSafeFilesErrorMessage(error, filesCatalog()),
+          errorKind: kindOf(error),
         });
       }
     },
@@ -424,7 +448,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
     },
 
     clearError() {
-      set({ errorMessage: null });
+      set({ errorMessage: null, errorKind: null });
     },
 
     reset() {

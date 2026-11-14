@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AppScreen, LoadingState } from '../components';
 import { AccountTypeChoiceScreen } from '../features/auth/screens/AccountTypeChoiceScreen';
+import { DeviceLockScreen } from '../features/auth/screens/DeviceLockScreen';
 import { ForgotPasswordScreen } from '../features/auth/screens/ForgotPasswordScreen';
 import { LoginScreen } from '../features/auth/screens/LoginScreen';
 import { NormalUserRegisterScreen } from '../features/auth/screens/NormalUserRegisterScreen';
@@ -72,6 +73,7 @@ export function PublicNavigator() {
       <Stack.Screen component={OtpVerificationScreen} name={PublicRoutes.OtpVerification} />
       <Stack.Screen component={ForgotPasswordScreen} name={PublicRoutes.ForgotPassword} />
       <Stack.Screen component={ResetPasswordScreen} name={PublicRoutes.ResetPassword} />
+      <Stack.Screen component={DeviceLockScreen} name={PublicRoutes.DeviceLock} />
     </Stack.Navigator>
   );
 }

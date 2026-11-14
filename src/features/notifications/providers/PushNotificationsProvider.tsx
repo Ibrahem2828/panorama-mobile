@@ -13,6 +13,8 @@ import { env } from '../../../config/env';
 import { logger } from '../../../utils/logger';
 import { useAuthStore } from '../../auth/store';
 import { useChatStore } from '../../chat/store';
+import { isEnrollmentPush } from '../../enrollment/logic';
+import { useEnrollmentSignalStore } from '../../enrollment/store/enrollmentSignalStore';
 import { isChatMutedNow, useChatMuteStore } from '../../chat/store/chatMuteStore';
 import { useChatUnreadStore } from '../../chat/store/unreadStore';
 import {
@@ -24,6 +26,8 @@ import {
   resolveNotificationIntent,
 } from '../services';
 import { useNotificationPrefsStore } from '../store/notificationPrefsStore';
+import { isPhoneVerificationPush } from '../../phone-verification/services/phoneVerificationLogic';
+import { usePhoneVerificationStore } from '../../phone-verification/store/phoneVerificationStore';
 
 /** Pushes whose tap was already routed (the cold-start path and the listener must not both open the screen). */
 const handledResponses = new Set<string>();
@@ -111,8 +115,21 @@ function openNotificationsScreen(): void {
   });
 }
 
+function openPhoneVerificationScreen(): void {
+  navigationRef.navigate(RootRoutes.App, {
+    screen: TabRoutes.Profile,
+    params: { screen: ProfileRoutes.PhoneVerification },
+  });
+}
+
 function openNotificationTarget(data: Record<string, unknown> | null | undefined): void {
   if (!navigationRef.isReady()) return;
+
+  if (isPhoneVerificationPush(data)) {
+    void usePhoneVerificationStore.getState().load({ silent: true });
+    openPhoneVerificationScreen();
+    return;
+  }
 
   const deepLink = typeof data?.deep_link === 'string' ? data.deep_link : undefined;
   const intent = resolveNotificationIntent({ deep_link: deepLink, data: data ?? null });
@@ -164,6 +181,16 @@ export function PushNotificationsProvider() {
       const token = useAuthStore.getState().accessToken;
 
       refreshBadges();
+
+      // A decision on the student's enrollment request: the open enrollment screen refetches immediately.
+      if (isEnrollmentPush(notification.request.content.data)) {
+        useEnrollmentSignalStore.getState().bump();
+      }
+
+      // Phone verification moved (code sent, verified, rejected, expired): re-read it so an open screen updates at once.
+      if (isPhoneVerificationPush(notification.request.content.data)) {
+        void usePhoneVerificationStore.getState().load({ silent: true });
+      }
 
       if (!chat || !token) return;
 

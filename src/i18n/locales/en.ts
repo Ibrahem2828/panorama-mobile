@@ -60,6 +60,35 @@ export const en: TranslationCatalog = {
       'Your request is already being processed. Wait a moment, then check the result.',
   },
 
+  /** Illustrated failure states (ErrorState): one title and one line per kind of failure. */
+  errorStates: {
+    offline: {
+      title: 'No internet connection',
+      message: 'Check your network connection and try again.',
+    },
+    weak: {
+      title: 'Weak or unstable connection',
+      message:
+        'The request could not finish because the network is weak. Move to better coverage and try again.',
+    },
+    timeout: {
+      title: 'This is taking too long',
+      message: 'We did not get a reply in time. Try again in a moment.',
+    },
+    notFound: {
+      title: 'File not found',
+      message: 'It may have been moved or deleted, or it is no longer available to you.',
+    },
+    server: {
+      title: 'Temporary server problem',
+      message: 'We are working on it. Please try again shortly.',
+    },
+    generic: {
+      title: 'Something unexpected happened',
+      message: 'We could not complete the action. Please try again.',
+    },
+  },
+
   lifecycle: {
     maintenanceTitle: 'Under maintenance',
     maintenanceMessage:
@@ -89,6 +118,7 @@ export const en: TranslationCatalog = {
       'You are offline. What you have already loaded stays visible, and everything updates when you reconnect.',
     offlineSaved: 'You are offline. Showing data saved on your device.',
     staleSaved: 'Could not refresh right now. Showing data saved on your device.',
+    weak: 'Weak or unstable connection. Some content may load slowly.',
     lastUpdated: (when: string) => `Last updated ${when}`,
     justNow: 'just now',
     minutesAgo: (count: number) => `${count} min ago`,
@@ -193,6 +223,17 @@ export const en: TranslationCatalog = {
         'You are offline. You can read saved messages, and updates resume when you reconnect.',
     },
 
+    reply: {
+      action: 'Reply',
+      replyingTo: (name: string) => `Replying to ${name}`,
+      cancel: 'Cancel reply',
+      deletedMessage: 'Deleted message',
+      swipeHint: 'Swipe a message to reply to it',
+      openOriginal: 'Go to the original message',
+      originalNotLoaded:
+        'The original message is older than what is loaded. Scroll up to load more.',
+    },
+
     today: 'Today',
     yesterday: 'Yesterday',
     systemMessage: 'Message from Panorama',
@@ -232,6 +273,70 @@ export const en: TranslationCatalog = {
       permissionDenied: 'Allow Panorama to access your photos so you can pick one.',
       pickError: 'Could not pick the photo. Please try again.',
       sizeLabel: (megabytes: string) => `${megabytes} MB`,
+    },
+
+    media: {
+      attachAudio: 'Audio file',
+      micLabel: 'Record a voice message',
+      recordingLabel: (time: string) => `Recording, ${time}`,
+      recording: 'Recording',
+      cancelRecording: 'Cancel recording',
+      sendVoice: 'Send the voice message',
+      discardVoice: 'Discard the recording',
+      remaining: (time: string) => `${time} left`,
+      nearLimit: (seconds: number) => `Recording ends in ${seconds} seconds`,
+      limitReached:
+        'You reached the recording limit (5 minutes) and recording stopped automatically. Send it or discard it.',
+      tooShort: 'The recording was too short and was not sent.',
+      recordFailed: 'Could not record. Check the microphone and try again.',
+      micRationaleTitle: 'Allow microphone access',
+      micRationale:
+        'The microphone is used only while you record a voice message in the chat. Nothing is recorded until you tap the microphone button.',
+      micAllow: 'Allow',
+      micDenied:
+        'Microphone access is off. Turn it on in your phone settings to record voice messages.',
+      voiceMessage: 'Voice message',
+      audioFile: 'Audio file',
+      play: 'Play',
+      pause: 'Pause',
+      speed: (speed: string) => `Playback speed ${speed}`,
+      seekLabel: 'Playback position',
+      playbackLoading: 'Loading…',
+      playbackError: 'Could not play the clip. Tap to try again.',
+      elapsedOf: (elapsed: string, total: string) => `${elapsed} of ${total}`,
+      viewer: {
+        imageLabel: 'Photo from the chat',
+        loadingFull: 'Loading the full-quality photo…',
+        zoomHint: 'Double-tap or pinch to zoom',
+        page: (page: number, total: number) => `Page ${page} of ${total}`,
+        pdfFailed: 'This PDF cannot be shown (it may be password protected or damaged).',
+        pdfLoading: 'Preparing the document…',
+      },
+      openErrors: {
+        offline: 'No internet connection. Connect and try again.',
+        gone: 'This attachment is no longer available.',
+        forbidden: 'You do not have permission to view this attachment.',
+        throttled: 'Too many requests. Wait a moment and try again.',
+        server: 'Could not open the attachment. Please try again.',
+      },
+      uploadErrors: {
+        voiceTooLong: 'The voice message is longer than 5 minutes.',
+        audioInvalid:
+          'The audio file is damaged or in an unsupported format (m4a, mp3, aac, ogg, wav).',
+        audioTooLarge: 'The audio file is larger than 25 MB.',
+        imageInvalid: 'The photo is invalid or damaged.',
+        imageTooLarge: 'The photo is too large (limit 10 MB).',
+        waveformInvalid: 'Could not send the voice message. Please try again.',
+      },
+      pick: {
+        audioSize: 'The audio file is larger than 25 MB.',
+        audioType: 'Unsupported format. Pick an m4a, mp3, aac, ogg or wav file.',
+        audioWebm: 'WebM files are not supported. Pick m4a or mp3.',
+        audioEmpty: 'The audio file is empty.',
+        audioError: 'Could not pick the audio file. Please try again.',
+        imageTooLarge: 'The photo is too large even after compression (limit 10 MB).',
+        preparingImage: 'Preparing the photo…',
+      },
     },
 
     ticks: {
@@ -510,6 +615,75 @@ export const en: TranslationCatalog = {
     },
   },
 
+  offlineLectures: {
+    title: 'Downloads',
+    subtitle: 'Lectures saved on your phone, to study without internet.',
+    profileSubtitle: 'Lectures saved to study without internet',
+    download: 'Download to study offline',
+    downloading: (percent: number) => `Downloading ${percent}%`,
+    downloadingPending: 'Preparing...',
+    resume: 'Resume download',
+    partial: (percent: number) => `Download paused at ${percent}%`,
+    verifying: 'Verifying the file...',
+    renewing: 'Renewing the license...',
+    downloaded: (size: string) => `Saved for offline study · ${size}`,
+    availableUntil: (date: string) => `Available until ${date}`,
+    renewSoon: 'Needs renewing soon, connect to the internet',
+    openOffline: 'Open offline',
+    renew: 'Renew',
+    cancelDownload: 'Cancel download',
+    delete: 'Delete download',
+    deleteTitle: 'Delete download',
+    deleteMessage:
+      'The saved file is removed from your phone. You can download it again when you are online.',
+    expiredTitle: 'Download expired',
+    expired: 'This download has expired. Connect to the internet to renew it.',
+    clockTitle: 'Device time is wrong',
+    clockRollback:
+      'Your device clock looks earlier than the last time you used the app. Set the date and time to automatic, then connect to the internet to renew.',
+    renewFailedOffline: 'Connect to the internet to renew this download.',
+    errors: {
+      limitReached:
+        'You reached the download limit for this device. Delete an old download and try again.',
+      notFound: 'This lecture is no longer available to your account.',
+      offline: 'You need an internet connection to download or renew a lecture.',
+      budget:
+        'Your download space is full. Delete a lecture or raise the limit on the Downloads screen.',
+      disk: 'Your phone does not have enough free space for this download.',
+      integrity: 'The downloaded file was damaged and was deleted. Download it again.',
+      network: 'The connection dropped. You can resume the download later from where it stopped.',
+      unknown: 'Could not finish. Please try again.',
+    },
+    viewer: {
+      banner: 'Saved copy on your device - works offline',
+      opening: 'Opening the lecture...',
+      openingProgress: (percent: number) => `Opening the lecture... ${percent}%`,
+      missing: 'This lecture is not saved on your device.',
+      corrupt: 'The saved file was damaged and was deleted. Download it again when you are online.',
+      failed: 'Could not open the lecture.',
+      retry: 'Try again',
+    },
+    screen: {
+      usage: (used: string, budget: string) => `Using ${used} of ${budget}`,
+      budgetTitle: 'Download limit',
+      emptyTitle: 'No downloads yet',
+      emptyBody: 'Open a lecture and tap "Download to study offline" to find it here.',
+      deleteAll: 'Delete all downloads',
+      deleteAllTitle: 'Delete all downloads?',
+      deleteAllMessage: 'Every lecture saved on your phone will be deleted.',
+      removedRevoked: (title: string) =>
+        `"${title}" was removed from your device because it is no longer available to your account.`,
+      removedCorrupt: (title: string) =>
+        `"${title}" was deleted because the saved file was damaged. Download it again.`,
+      dismiss: 'OK',
+      offlineNow: 'You are offline. You can open valid lectures and delete them.',
+      stateReady: 'Ready',
+      stateExpired: 'Expired',
+      stateClock: 'Check device time',
+      statePartial: 'Incomplete',
+      stateDownloading: 'Downloading',
+    },
+  },
   lectures: {
     title: 'Lectures',
     subtitle:
@@ -589,8 +763,6 @@ export const en: TranslationCatalog = {
       pageErrorTitle: 'Could not load the page',
       pageErrorMessage: 'Check your internet connection and try again.',
       retry: 'Try again',
-      protectedNotice:
-        'Protected content: shown inside the app only and cannot be saved or shared.',
       notes: 'Notes',
       bookmarkAdd: 'Bookmark this page',
       bookmarkRemove: 'Remove bookmark',
@@ -694,8 +866,7 @@ export const en: TranslationCatalog = {
     syncError: 'Could not save your marks right now; we will retry',
     limitReached: 'You reached the maximum number of marks in this file.',
     processingTitle: 'The file is being prepared',
-    processingBody:
-      'We are turning the file into protected pages for viewing. This takes a few minutes.',
+    processingBody: 'We are getting the file ready to view. This takes a few minutes.',
     notReadyTitle: 'The file is not ready to view yet',
     notReadyBody:
       'This file has not been prepared for viewing. Tell the administration if it persists.',
@@ -765,6 +936,7 @@ export const en: TranslationCatalog = {
     cancelRequest: 'Cancel the request',
     cancelError: 'Could not cancel the request. Please try again.',
     newRequest: 'New registration',
+    backToStatus: 'Back to request status',
     status: {
       pending: 'Your request is under review',
       approved: 'Your registration was approved',
@@ -1638,7 +1810,7 @@ export const en: TranslationCatalog = {
     pickerFailed: 'Could not open the picker. Please try again.',
     viewAttachment: 'View attachment',
     viewerTitle: 'Attachment',
-    viewerSubtitle: 'Shown inside the app only',
+    viewerSubtitle: 'Attachment from support',
   },
 
   policies: {
@@ -1932,20 +2104,14 @@ export const en: TranslationCatalog = {
       yes: 'Yes',
       no: 'No',
       notPrintable: 'This file is not available for printing.',
-      protectionNote:
-        'Files are protected: they open inside the app only and cannot be downloaded or shared.',
-      inAppOnlyNote: 'This file opens inside the app only.',
     },
 
     viewer: {
       fallbackTitle: 'File viewer',
-      subtitle: 'Shown inside the app only',
+      subtitle: 'Subject file',
       issuingTicket: 'Getting the file ready...',
       loadError: 'Could not display the file. Please try again.',
-      notSupportedYet:
-        'Viewing this file type inside the app is coming in an upcoming update. It cannot be downloaded, to protect the content.',
-      securityNote:
-        'The file opens inside the app only and cannot be downloaded or shared. Screenshots may be blocked while it is open.',
+      notSupportedYet: 'Viewing this file type inside the app is coming in an upcoming update.',
       unavailableTitle: 'This file cannot be displayed',
       unavailableAlt: 'Illustration showing the file cannot be previewed',
       protectedReadyTitle: 'The file is ready to view',
@@ -2193,7 +2359,7 @@ export const en: TranslationCatalog = {
         'Could not convert the file to PDF. Try saving it as a PDF from Word or PowerPoint and upload that.',
       convertedLabel: 'Converted to PDF',
       convertedPages: (pages: number) => `${pages} ${pages === 1 ? 'page' : 'pages'}`,
-      uploadNote: 'We check the file before pricing, and it cannot be downloaded later.',
+      uploadNote: 'We check the file before pricing.',
       uploadSelected: 'File from your phone',
       uploadInvalidType:
         'Unsupported file type. Choose a PDF, Word, PowerPoint or a PNG, JPG or WEBP image.',
@@ -2269,6 +2435,7 @@ export const en: TranslationCatalog = {
       wire: 'Wire weight per copy',
       wireGrams: (grams: string | number) => `${grams} g`,
       coverPrice: 'Cover price',
+      extrasPrice: 'Paper options',
       subtotal: 'Subtotal',
       total: 'Total',
       rounding: 'Rounding',
@@ -2313,6 +2480,7 @@ export const en: TranslationCatalog = {
       pickupInstructions: 'Pickup instructions',
       pickupReady: 'Your order is ready. Head to this pickup point:',
       itemPrice: 'File price',
+      paperOptions: 'Paper options',
       viewFile: 'View file',
       viewFileLabel: (name: string) => `View file: ${name}`,
       autoRefresh: 'The status updates automatically.',
@@ -2321,7 +2489,7 @@ export const en: TranslationCatalog = {
 
     itemViewer: {
       title: 'Order file',
-      subtitle: 'Shown inside the app only',
+      subtitle: 'File preview',
     },
 
     copies: {
@@ -2329,6 +2497,16 @@ export const en: TranslationCatalog = {
       decrease: 'Decrease copies',
       increase: 'Increase copies',
     },
+
+    // --- Print option help («i» buttons): keep this block together to ease merges. ---
+    help: {
+      sheetTitle: 'Explanation',
+      label: (title: string) => `Explanation: ${title}`,
+      hint: 'Opens a short explanation of this option',
+      close: 'Close',
+      imageFailed: 'The illustration could not be loaded',
+    },
+    // --- end print option help ---
 
     options: {
       color: 'Colour',
@@ -2369,6 +2547,24 @@ export const en: TranslationCatalog = {
       sectionPaper: 'Paper and printing',
       sectionLayout: 'Page layout and copies',
       sectionFinishing: 'Binding and cover',
+      sectionExtras: 'Paper and delivery options',
+      extras: {
+        none: 'None',
+        free: 'No charge',
+        perCopy: 'per copy',
+        per50Sheets: 'per 50 sheets',
+        perSheet: 'per sheet',
+        required: 'Required',
+        notRequired: 'Not required',
+        groups: {
+          front_cover: 'Front cover type',
+          back_cover: 'Back cover type',
+          front_transparency: 'Front transparency',
+          back_transparency: 'Back transparency',
+          finishing: 'Artwork and finishing',
+          final_delivery: 'Final delivery',
+        },
+      },
       sheetPages: (count: number) =>
         count === 1 ? '1 page per sheet' : `${count} pages per sheet`,
       allPages: 'All pages',
@@ -2636,6 +2832,133 @@ export const en: TranslationCatalog = {
       unauthorized: 'Your session has ended. Sign in again to continue.',
       validation: 'Check your password details and try again.',
       generic: 'Could not change your password. Please try again.',
+    },
+  },
+
+  // --- Device lock + phone verification (feat/device-lock-phone-verify) ---
+
+  deviceLock: {
+    replacedNotice:
+      'You were signed in on another phone, so your session here ended. Sign in again to use your account on this phone.',
+    revokedNotice: 'The support team ended your session. Sign in again.',
+    title: 'This account is linked to another phone',
+    subtitle:
+      'Your password is correct, but your account is currently active on a different phone.',
+    otherDeviceTitle: 'Phone linked right now',
+    unknownDevice: 'Unknown device',
+    platformAndroid: 'Android',
+    platformIos: 'iPhone',
+    lastSeen: (when: string) => `Last used: ${when}`,
+    policyTitle: 'How phone linking works',
+    policy: [
+      'One account is used on one phone only.',
+      'You can switch phones once per academic term.',
+      'After that you cannot switch yourself and need to contact the administration.',
+    ],
+    switchWarning: 'When you switch, you are signed out of the other phone right away.',
+    switchesRemaining: (value: number) =>
+      value === 1 ? 'You have 1 switch left.' : `You have ${value} switches left.`,
+    switchAction: 'Switch the account to this phone',
+    switching: 'Switching...',
+    backToLogin: 'Back to sign in',
+    errors: {
+      network: 'Could not reach the server. Check your connection and try again.',
+      generic: 'Could not switch the phone. Please try again.',
+      idRequired: 'Update the app to finish switching.',
+    },
+    limit: {
+      title: 'You have used your phone switches',
+      description:
+        'You cannot switch phones yourself right now. Contact the administration to move your account to this phone.',
+      contact: 'Contact the administration',
+      mailSubject: 'Request to move my account to a new phone',
+      mailFailed: 'Could not open your mail app. Email the administration at:',
+    },
+    expired: {
+      title: 'The switch link has expired',
+      description: 'Sign in again to switch the phone.',
+    },
+  },
+
+  phoneVerify: {
+    title: 'Verify your phone number',
+    subtitle:
+      'Link your WhatsApp number to your account and join the community group automatically.',
+    entry: {
+      subtitleUnverified: 'Link your number with a code sent on WhatsApp',
+      subtitleWaiting: 'Waiting for the code to be sent on WhatsApp',
+      subtitleCode: 'Enter the code you received on WhatsApp',
+      badgeNeeded: 'Needed',
+      badgeWaiting: 'In progress',
+      badgeCode: 'Enter code',
+      chipHint: 'Open phone verification',
+    },
+    loading: 'Loading verification status...',
+    loadFailed: 'Could not load the verification status',
+    form: {
+      intro: 'A verification code will be sent to your number on WhatsApp.',
+      phoneLabel: 'Phone number',
+      phonePlaceholder: '0912345678',
+      phoneHint:
+        'Enter your Syrian number such as 0912345678 or 963912345678, or an international number starting with +.',
+      passwordLabel: 'Account password',
+      passwordHint: 'We ask for your password to confirm the account is yours.',
+      submit: 'Request a verification code',
+      submitting: 'Sending request...',
+      phoneRequired: 'Enter your phone number.',
+      phoneInvalid:
+        'This phone number is not valid. Enter a Syrian number such as 0912345678 or an international number starting with +.',
+      passwordRequired: 'Enter your account password.',
+      noticeExpired: 'Your previous request expired. You can request a new code.',
+      noticeRejected: 'Your previous request was not accepted. You can try again.',
+    },
+    waiting: {
+      title: 'The verification code will be sent to your number on WhatsApp',
+      description: (phone: string) =>
+        `Your request for ${phone} is being processed. You get a notification and a WhatsApp message when the code is sent, and the code box appears here.`,
+      refresh: 'Refresh status',
+      cancel: 'Cancel request',
+      cancelling: 'Cancelling...',
+    },
+    code: {
+      title: 'Enter the verification code',
+      description: (phone: string) => `We sent a 6-digit code on WhatsApp to ${phone}.`,
+      label: '6-digit verification code',
+      countdown: (time: string) => `The code expires in ${time}`,
+      lapsed:
+        'The code timer ran out on your phone. If your code is not accepted, request a new one.',
+      attempts: (value: number) => (value === 1 ? '1 attempt left' : `Attempts left: ${value}`),
+      confirm: 'Confirm number',
+      confirming: 'Checking...',
+      newRequest: 'Request a new code',
+      newRequestHint: 'Did not get the code, or typed the wrong number? Cancel and start over.',
+    },
+    success: {
+      title: 'Your phone number is verified',
+      description: (phone: string) => `${phone} is now linked to your account.`,
+      community:
+        'You were added to the community group automatically. Find it in the Groups tab, with nothing to join by hand.',
+      done: 'Done',
+    },
+    errors: {
+      passwordIncorrect: 'The password is incorrect.',
+      phoneInvalid:
+        'This phone number is not valid. Enter a Syrian number such as 0912345678 or an international number starting with +.',
+      phoneInUse:
+        'This number is linked to another account. Use your own number or contact support.',
+      alreadyOpen: 'You already have an open request, and its status was refreshed.',
+      alreadyVerified: 'Your phone number is already verified.',
+      codeInvalid: (attempts: number | null) =>
+        attempts === null
+          ? 'The code is not correct.'
+          : `The code is not correct. Attempts left: ${attempts}.`,
+      attemptsExceeded: 'Too many attempts. Start a new request.',
+      codeExpired: 'The code expired. Start a new request.',
+      codeNotSent: 'The code has not been sent yet. Wait for the notification.',
+      notFound: 'There is no open request. The status was refreshed.',
+      rateLimited: 'Too many attempts. Wait a moment and try again.',
+      network: 'Could not reach the server. Check your connection and try again.',
+      generic: 'Something went wrong. Please try again.',
     },
   },
 };

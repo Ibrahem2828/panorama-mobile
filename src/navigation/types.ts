@@ -14,6 +14,7 @@ export type PublicStackParamList = {
   };
   ForgotPassword: undefined;
   ResetPassword: { identifier: string; channel: 'email' | 'phone' };
+  DeviceLock: undefined;
 };
 
 export type StudentSetupStackParamList = {
@@ -24,7 +25,13 @@ export type StudentSetupStackParamList = {
 };
 
 export type LecturesListParams = { subjectId?: string | number } | undefined;
-export type LectureViewerParams = { lectureId: string | number; title?: string; page?: number };
+export type LectureViewerParams = {
+  lectureId: string | number;
+  title?: string;
+  page?: number;
+  /** Open the saved encrypted copy (works without internet). */
+  offline?: boolean;
+};
 
 export type HomeStackParamList = {
   Home: undefined;
@@ -75,12 +82,14 @@ export type ProfileStackParamList = {
   AcademicInfo: undefined;
   Settings: undefined;
   ChangePassword: undefined;
+  PhoneVerification: undefined;
   DeleteAccount: undefined;
   Notifications: undefined;
   NotificationSettings: undefined;
   MutedChats: undefined;
   Permissions: undefined;
   MyNotes: undefined;
+  Downloads: undefined;
   LectureViewer: LectureViewerParams;
   PdfViewer: { fileId: string | number; title?: string };
   SupportTickets: undefined;

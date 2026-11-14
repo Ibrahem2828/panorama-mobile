@@ -246,3 +246,17 @@ describe('lecture list helpers', () => {
     ]);
   });
 });
+
+describe('lectureErrorStateKind', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { lectureErrorStateKind } = require('../logic') as typeof import('../logic');
+
+  it('maps lecture failures onto the illustrated error kinds', () => {
+    expect(lectureErrorStateKind('network')).toBe('weak');
+    expect(lectureErrorStateKind('timeout')).toBe('timeout');
+    expect(lectureErrorStateKind('notFound')).toBe('notFound');
+    expect(lectureErrorStateKind('unavailable')).toBe('server');
+    expect(lectureErrorStateKind('forbidden')).toBe('generic');
+    expect(lectureErrorStateKind('unknown')).toBe('generic');
+  });
+});

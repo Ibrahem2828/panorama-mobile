@@ -3,3 +3,5 @@ export * from './printTimeline';
 export * from './printingService';
 export * from './printCurrencyStorage';
 export * from './printPreview';
+export * from './printExtras';
+export * from './printOptionHelp';

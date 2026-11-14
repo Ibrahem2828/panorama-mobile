@@ -17,6 +17,14 @@ export const endpoints = {
     verifyOtp: `${API_PREFIX}/auth/otp/verify/`,
     requestPasswordReset: `${API_PREFIX}/auth/request-password-reset/`,
     confirmPasswordReset: `${API_PREFIX}/auth/confirm-password-reset/`,
+    /** Takes the account over on this phone with the token a `409 DEVICE_MISMATCH` login returned. */
+    deviceSwitch: `${API_PREFIX}/auth/device/switch/`,
+  },
+  phoneVerification: {
+    create: `${API_PREFIX}/auth/phone-verification/`,
+    current: `${API_PREFIX}/auth/phone-verification/current/`,
+    confirm: `${API_PREFIX}/auth/phone-verification/confirm/`,
+    cancel: `${API_PREFIX}/auth/phone-verification/cancel/`,
   },
   account: {
     deletionRequest: `${API_PREFIX}/account/deletion/request/`,
@@ -76,6 +84,8 @@ export const endpoints = {
     whatsappLaunch: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/whatsapp-launch/`,
     messageAttachmentTicket: (groupId: EndpointId, messageId: EndpointId) =>
       `${API_PREFIX}/groups/${groupId}/messages/${messageId}/attachment-ticket/`,
+    messageAttachmentTickets: (groupId: EndpointId) =>
+      `${API_PREFIX}/groups/${groupId}/messages/attachment-tickets/`,
   },
   enrollment: {
     subjects: `${API_PREFIX}/enrollment/subjects/`,
@@ -90,6 +100,7 @@ export const endpoints = {
   printing: {
     quote: `${API_PREFIX}/printing/quote/`,
     options: `${API_PREFIX}/printing/options/`,
+    optionHelp: `${API_PREFIX}/printing/option-help/`,
     products: `${API_PREFIX}/printing/products/`,
     convert: `${API_PREFIX}/printing/convert/`,
     convertDetail: (id: string) => `${API_PREFIX}/printing/convert/${id}/`,
@@ -135,6 +146,14 @@ export const endpoints = {
     notes: (lectureId: EndpointId) => `${API_PREFIX}/lectures/${lectureId}/notes/`,
     noteDetail: (lectureId: EndpointId, noteId: EndpointId) =>
       `${API_PREFIX}/lectures/${lectureId}/notes/${noteId}/`,
+    offlineLicense: (lectureId: EndpointId) =>
+      `${API_PREFIX}/lectures/${lectureId}/offline-license/`,
+    offlineLicenseRenew: (lectureId: EndpointId) =>
+      `${API_PREFIX}/lectures/${lectureId}/offline-license/renew/`,
+    offlinePackage: (lectureId: EndpointId) =>
+      `${API_PREFIX}/lectures/${lectureId}/offline-package/`,
+    offlineLicenses: `${API_PREFIX}/lectures/offline-licenses/`,
+    offlineLicensesSync: `${API_PREFIX}/lectures/offline-licenses/sync/`,
   },
   fileViewer: {
     manifest: (fileId: EndpointId) => `${API_PREFIX}/files/${fileId}/viewer/manifest/`,

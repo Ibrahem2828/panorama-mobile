@@ -154,3 +154,48 @@ export async function pickFromSource(
     return { status: 'error' };
   }
 }
+
+export type PickedAudioDocument = {
+  uri: string;
+  name: string;
+  size: number | null;
+  mimeType: string | null;
+};
+
+/**
+ * One audio file (a recorded lecture...) through the system document picker, restricted to `types`. The format and size rules
+ * belong to the caller (chat media); like every picker in the app it is opened from this file only and never throws.
+ */
+export async function pickAudioDocument(
+  types: readonly string[],
+): Promise<
+  { status: 'picked'; file: PickedAudioDocument } | { status: 'canceled' } | { status: 'error' }
+> {
+  try {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: [...types],
+      multiple: false,
+      copyToCacheDirectory: true,
+    });
+
+    if (result.canceled) {
+      return { status: 'canceled' };
+    }
+
+    const asset = result.assets[0];
+
+    return asset
+      ? {
+          status: 'picked',
+          file: {
+            uri: asset.uri,
+            name: asset.name,
+            size: asset.size ?? null,
+            mimeType: asset.mimeType ?? null,
+          },
+        }
+      : { status: 'error' };
+  } catch {
+    return { status: 'error' };
+  }
+}

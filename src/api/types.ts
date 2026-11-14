@@ -190,6 +190,8 @@ export type GroupMessage = ApiEntity & {
 export type SendGroupMessageRequest = {
   content: string;
   message_type?: 'text';
+  /** Id of the message this one replies to (same group, not deleted). */
+  reply_to?: number | null;
   /** Ignored by the backend; kept so older callers still type-check. */
   type?: 'message';
 };
@@ -310,6 +312,8 @@ export type CreatePrintOrderItemInput = {
   orientation?: 'auto' | 'portrait' | 'landscape';
   page_range?: string;
   collate?: boolean;
+  /** Chosen paper option per section ({section: code}); sections left on "none" are not sent. */
+  extras?: Record<string, string>;
 };
 
 /** An item that is a ready-made product: its specification and price are fixed by the shop. */
@@ -371,6 +375,45 @@ export type PrintOptionsResponse = {
   n_up_directions: string[];
   binding_types: PrintBindingType[];
   covers: PrintCoverOption[];
+  /** Paper options by section of the shop's order form, in display order (absent on an older server). */
+  extras?: PrintExtraSection[];
+};
+
+export type PrintExtraPriceUnit = 'per_copy' | 'per_50_sheets' | 'per_sheet';
+
+export type PrintExtraOption = {
+  code: string;
+  name: string;
+  description: string;
+  price: string | number;
+  price_unit: PrintExtraPriceUnit;
+  color_hex: string;
+};
+
+export type PrintExtraSection = {
+  section: string;
+  label: string;
+  options: PrintExtraOption[];
+};
+
+/** One explanation (توضيح) of a print option. A blank `key` is the help of the whole topic. */
+export type PrintOptionHelpItem = {
+  id: number;
+  topic: string;
+  key: string;
+  title: string;
+  body: string;
+  image_url: string | null;
+  image_caption: string;
+  sort_order: number;
+  updated_at: string;
+};
+
+export type PrintOptionHelpResponse = {
+  updated_at: string | null;
+  count: number;
+  items: PrintOptionHelpItem[];
+  by_topic?: Record<string, PrintOptionHelpItem[]>;
 };
 
 export type PrintProduct = {
@@ -601,4 +644,46 @@ export type CreateSupportTicketRequest = {
 
 export type AddSupportTicketMessageRequest = {
   message: string;
+};
+
+// --- Device binding and phone verification (students) ---
+
+export type DeviceSwitchRequest = {
+  device_switch_token: string;
+};
+
+export type DeviceSwitchResponse = LoginResponse;
+
+export type PhoneVerificationStatus =
+  | 'pending_staff'
+  | 'code_sent'
+  | 'verified'
+  | 'expired'
+  | 'cancelled'
+  | 'rejected';
+
+export type PhoneVerificationRequest = {
+  id: number;
+  phone_number: string;
+  status: PhoneVerificationStatus;
+  created_at: string;
+  code_sent_at: string | null;
+  expires_at: string | null;
+  attempts_remaining: number;
+  rejection_reason: string;
+  verified_at: string | null;
+};
+
+export type CreatePhoneVerificationRequest = {
+  phone_number: string;
+  password: string;
+};
+
+export type ConfirmPhoneVerificationRequest = {
+  code: string;
+};
+
+/** `GET auth/phone-verification/current/`: `request` is null when the student never asked. */
+export type CurrentPhoneVerification = {
+  request: PhoneVerificationRequest | null;
 };

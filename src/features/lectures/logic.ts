@@ -1,4 +1,5 @@
 import { normalizeApiError } from '../../api/errors';
+import type { ErrorKind } from '../../api/errorKind';
 import type { Lecture, LectureStatus, PageKind } from './types';
 import { LECTURE_STATUSES } from './types';
 
@@ -189,6 +190,22 @@ export function lectureErrorKind(error: unknown): LectureErrorKind {
       return 'unavailable';
     default:
       return normalized.status === 410 ? 'notFound' : 'unknown';
+  }
+}
+
+/** The illustrated error state a lecture failure maps to (offline is detected by the state itself from the device). */
+export function lectureErrorStateKind(kind: LectureErrorKind): ErrorKind {
+  switch (kind) {
+    case 'network':
+      return 'weak';
+    case 'timeout':
+      return 'timeout';
+    case 'notFound':
+      return 'notFound';
+    case 'unavailable':
+      return 'server';
+    default:
+      return 'generic';
   }
 }
 

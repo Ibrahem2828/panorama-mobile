@@ -9,7 +9,7 @@ import { useTranslation } from '../../../i18n';
 import { spacing, useBrand } from '../../../theme';
 import { useFeedbackStore } from '../../feedback/store';
 import { useProcessingStatus } from '../../lectures/hooks/useProcessingStatus';
-import { isTerminalStatus } from '../../lectures/logic';
+import { isTerminalStatus, lectureErrorStateKind } from '../../lectures/logic';
 import { DocumentViewerBody } from '../../viewer/DocumentViewerBody';
 import { getFileDisplayTitle } from '../services';
 import { useFilesStore } from '../store';
@@ -77,9 +77,14 @@ export function PdfViewerScreen() {
         <ErrorState message={t.docViewer.failedBody} title={t.docViewer.failedTitle} />
       ) : processing.errorKind && !status ? (
         <ErrorState
-          message={t.lectures.errors[processing.errorKind]}
+          fallbackMessage={t.lectures.errors[processing.errorKind]}
+          kind={lectureErrorStateKind(processing.errorKind)}
           onRetry={processing.checkNow}
-          title={t.files.viewer.unavailableTitle}
+          title={
+            lectureErrorStateKind(processing.errorKind) === 'generic'
+              ? t.files.viewer.unavailableTitle
+              : undefined
+          }
         />
       ) : status && isTerminalStatus(status) && !processing.status?.is_ready ? (
         <ErrorState message={t.docViewer.notReadyBody} title={t.docViewer.notReadyTitle} />
