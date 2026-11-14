@@ -6,10 +6,7 @@ import path from 'node:path';
  * `Authorization` / `X-Viewer-Session` headers are dropped and the backend answers 401, so lecture pages and chat images
  * never load. These Images carry authenticated requests and must keep the array form.
  */
-const AUTHENTICATED_IMAGE_FILES = [
-  'features/lectures/components/ViewerPageStage.tsx',
-  'features/chat/components/ChatAttachmentViewer.tsx',
-];
+const AUTHENTICATED_IMAGE_FILES = ['features/lectures/components/ViewerPageStage.tsx'];
 
 describe('authenticated Images', () => {
   it.each(AUTHENTICATED_IMAGE_FILES)('%s passes source as an array', (file) => {

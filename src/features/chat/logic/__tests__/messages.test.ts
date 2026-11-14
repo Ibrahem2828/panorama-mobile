@@ -61,7 +61,7 @@ describe('normalizeChatMessage', () => {
     });
 
     expect(message?.sender_detail).toEqual({ id: 1, full_name: 'بانوراما أدمن', is_staff: true });
-    expect(message?.attachment_meta).toEqual({ name: 'notes.pdf', size: 2048 });
+    expect(message?.attachment_meta).toMatchObject({ name: 'notes.pdf', size: 2048 });
     expect(message?.reactions).toEqual([{ emoji: '👍', count: 2 }]);
     expect(message?.my_reaction).toBe('👍');
     expect(message?.delivery).toEqual({

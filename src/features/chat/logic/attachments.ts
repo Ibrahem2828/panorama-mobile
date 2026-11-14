@@ -1,4 +1,6 @@
 import { MAX_ATTACHMENT_BYTES, type ChatAttachment } from '../types';
+import { serializeWaveform } from '../media/logic/waveform';
+import { validateAudioFile, validateVoice } from '../media/logic/validation';
 
 export type AttachmentProblem = 'type' | 'size' | 'empty';
 
@@ -27,8 +29,27 @@ function extensionForMime(mimeType: string): string {
 
 /** Mirrors the backend upload policy so the user gets early feedback; the server stays authoritative. */
 export function validateChatAttachment(
-  file: Pick<ChatAttachment, 'name' | 'mimeType' | 'size' | 'kind'>,
+  file: Pick<ChatAttachment, 'name' | 'mimeType' | 'size' | 'kind'> &
+    Partial<Pick<ChatAttachment, 'durationMs'>>,
 ): AttachmentProblem | null {
+  if (file.kind === 'voice') {
+    const problem = validateVoice({ size: file.size, durationMs: file.durationMs ?? 0 });
+
+    return problem === null ? null : problem === 'empty' ? 'empty' : 'size';
+  }
+
+  if (file.kind === 'audio') {
+    const problem = validateAudioFile(file);
+
+    return problem === null
+      ? null
+      : problem === 'empty'
+        ? 'empty'
+        : problem === 'size'
+          ? 'size'
+          : 'type';
+  }
+
   const mime = file.mimeType.split(';')[0]?.trim().toLowerCase() ?? '';
   const extension = fileExtension(file.name);
   const extensions: readonly string[] = file.kind === 'image' ? IMAGE_EXTENSIONS : FILE_EXTENSIONS;
@@ -94,7 +115,22 @@ export function buildMessageFormData(input: {
     form.append('content', input.content);
   }
 
-  form.append('message_type', input.attachment.kind === 'image' ? 'image' : 'file');
+  form.append('message_type', input.attachment.kind);
+
+  if (input.attachment.kind === 'voice' || input.attachment.kind === 'audio') {
+    if (input.attachment.durationMs && input.attachment.durationMs > 0) {
+      form.append('duration_ms', String(Math.round(input.attachment.durationMs)));
+    }
+
+    const waveform = input.attachment.waveform
+      ? serializeWaveform(input.attachment.waveform)
+      : null;
+
+    if (waveform) {
+      form.append('waveform', waveform);
+    }
+  }
+
   // React Native reads a `{uri, name, type}` part straight from disk.
   form.append('attachment', {
     uri: input.attachment.uri,

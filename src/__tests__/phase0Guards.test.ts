@@ -13,7 +13,7 @@ describe('protected file viewers', () => {
   });
 
   it('turn a refused chat attachment request into a retryable message', () => {
-    expect(read('src/features/chat/components/ChatAttachmentViewer.tsx')).toMatch(/onHttpError=/);
+    expect(read('src/features/chat/components/ChatMediaViewer.tsx')).toMatch(/openErrors/);
   });
 });
 

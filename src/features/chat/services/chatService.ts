@@ -3,10 +3,10 @@ import {
   normalizeApiError,
   type PaginatedResult,
 } from '../../../api';
-import { isTrustedBackendUrl } from '../../../utils/trustedUrl';
 import type { TranslationCatalog } from '../../../i18n';
 import { resolveMembershipState } from '../../groups/services/membership';
 import { buildMessageFormData } from '../logic/attachments';
+import { mediaErrorKey } from '../media/logic/errors';
 import { mergeChatMessages, normalizeChatMessage } from '../logic/messages';
 import type { ChatAttachment, ChatMessage, ChatSendPermission, Id } from '../types';
 
@@ -126,6 +126,11 @@ export function toSafeChatErrorMessage(error: unknown, t: ChatCatalog): string {
 
 export function toSafeSendChatErrorMessage(error: unknown, t: ChatCatalog): string {
   const normalizedError = normalizeApiError(error);
+  const mediaKey = mediaErrorKey(normalizedError.errorCode);
+
+  if (mediaKey) {
+    return t.media.uploadErrors[mediaKey];
+  }
 
   switch (normalizedError.code) {
     case 'FORBIDDEN':
@@ -230,30 +235,4 @@ export function sendAttachmentMessage(
     promise: handle.promise.then((response) => normalizeChatMessage(response, groupId)),
     abort: handle.abort,
   };
-}
-
-export const CHAT_ATTACHMENT_PATH_PREFIX = '/api/v1/protected-chat-attachments/';
-
-/** Short-lived, in-app-only URL of one attachment. Rejects anything that is not our backend. */
-export async function requestChatAttachmentUrl(
-  groupId: Id,
-  messageId: number,
-  authToken: string,
-): Promise<string> {
-  const ticket = await apiGroupsService.requestGroupMessageAttachmentTicket(
-    groupId,
-    messageId,
-    authToken,
-  );
-
-  if (
-    !isTrustedBackendUrl(ticket.preview_url, {
-      pathPrefixes: [CHAT_ATTACHMENT_PATH_PREFIX],
-      allowHttpInDevelopment: true,
-    })
-  ) {
-    throw new Error('Untrusted attachment URL');
-  }
-
-  return ticket.preview_url;
 }

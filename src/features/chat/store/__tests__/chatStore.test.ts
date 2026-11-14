@@ -15,6 +15,7 @@ jest.mock('@react-native-community/netinfo', () => ({
   __esModule: true,
   default: { addEventListener: jest.fn(() => jest.fn()) },
 }));
+jest.mock('../../media/services/mediaPicker', () => ({ deleteTemp: jest.fn() }));
 jest.mock('../../../auth/store', () => ({
   useAuthStore: { getState: () => ({ accessToken: 'jwt-access', user: { id: 1 } }) },
 }));

@@ -2,6 +2,7 @@ import { memo, useMemo, useRef } from 'react';
 import {
   ActivityIndicator,
   Animated,
+  Image,
   PanResponder,
   Pressable,
   StyleSheet,
@@ -22,6 +23,8 @@ import {
 import { getDayLabel } from '../logic/timeline';
 import { isolateLtr } from '../../../utils/rtl';
 import type { ChatListItem, ChatMessage, DeliveryState, PendingMessage } from '../types';
+import { ChatAudioBubble } from '../media/components/ChatAudioBubble';
+import { ChatImageBubble } from '../media/components/ChatImageBubble';
 import { formatMegabytes, formatMessageClock, formatMessageDay } from './chatFormat';
 import { ReplyQuote } from './ReplyQuote';
 
@@ -262,7 +265,13 @@ const MessageBubble = memo(function MessageBubble({
         </AppText>
       ) : null}
       {message.has_attachment ? (
-        <AttachmentTile message={message} onOpen={onOpenAttachment} />
+        message.message_type === 'image' ? (
+          <ChatImageBubble message={message} onOpen={onOpenAttachment} />
+        ) : message.message_type === 'voice' || message.message_type === 'audio' ? (
+          <ChatAudioBubble message={message} />
+        ) : (
+          <AttachmentTile message={message} onOpen={onOpenAttachment} />
+        )
       ) : null}
       <ReactionChips message={message} />
       <View style={styles.metaLine}>
@@ -341,7 +350,25 @@ const PendingBubble = memo(function PendingBubble({
         ) : null}
         {pending.attachment ? (
           <View style={styles.attachmentTile}>
-            <Icon color={brand.primary} name="image" size={26} />
+            {pending.attachment.kind === 'image' ? (
+              <Image
+                accessibilityIgnoresInvertColors
+                source={{ uri: pending.attachment.uri }}
+                style={styles.pendingThumb}
+              />
+            ) : (
+              <Icon
+                color={brand.primary}
+                name={
+                  pending.attachment.kind === 'voice'
+                    ? 'mic'
+                    : pending.attachment.kind === 'audio'
+                      ? 'music'
+                      : 'file'
+                }
+                size={26}
+              />
+            )}
             <View style={styles.attachmentText}>
               <AppText color="brand" numberOfLines={1} variant="label" weight="600">
                 {pending.attachment.name}
@@ -569,6 +596,11 @@ const styles = StyleSheet.create({
   },
   attachmentText: {
     flexShrink: 1,
+  },
+  pendingThumb: {
+    width: 56,
+    height: 56,
+    borderRadius: radius.md,
   },
   pressed: {
     opacity: 0.7,
