@@ -144,12 +144,11 @@ export function OfflineLectureViewer({ lectureId, title, onBack }: Props) {
           <AppText color="inverse" numberOfLines={1} style={styles.white} variant="title">
             {title}
           </AppText>
-          <View style={styles.noteRow}>
-            <Icon color={MUTED} name="lock" size={12} />
+          {pageLabel ? (
             <AppText style={styles.muted} variant="caption">
-              {pageLabel ?? copy.viewer.protectedNote}
+              {pageLabel}
             </AppText>
-          </View>
+          ) : null}
         </View>
       </View>
       <View
@@ -209,7 +208,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   titleBlock: { flex: 1, minWidth: 0, gap: 2 },
-  noteRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   white: { color: WHITE },
   muted: { color: MUTED },
   banner: {

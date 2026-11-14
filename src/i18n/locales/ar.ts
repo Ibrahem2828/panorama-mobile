@@ -322,7 +322,6 @@ export const ar = {
         imageLabel: 'صورة من المحادثة',
         loadingFull: 'جارٍ تحميل الصورة بجودة كاملة…',
         zoomHint: 'اضغط مرتين أو اسحب بإصبعين للتكبير',
-        protectedNote: 'للعرض داخل بانوراما فقط',
         page: (page: number, total: number) => `صفحة ${page} من ${total}`,
         pdfFailed: 'تعذّر عرض ملف PDF هذا (قد يكون محمياً بكلمة مرور أو تالفاً).',
         pdfLoading: 'جارٍ تجهيز المستند…',
@@ -632,10 +631,9 @@ export const ar = {
 
   offlineLectures: {
     title: 'التنزيلات',
-    subtitle: 'محاضرات محفوظة على هاتفك، مشفّرة داخل التطبيق، لتدرس بدون إنترنت.',
+    subtitle: 'محاضرات محفوظة على هاتفك لتدرس بدون إنترنت.',
     profileSubtitle: 'المحاضرات المحفوظة للدراسة بدون إنترنت',
     download: 'تنزيل للدراسة بدون إنترنت',
-    downloadHint: 'تُحفظ مشفّرة داخل التطبيق فقط، ولا يمكن مشاركتها أو فتحها خارجه.',
     downloading: (percent: number) => `جارٍ التنزيل ${percent}%`,
     downloadingPending: 'جارٍ التحضير…',
     resume: 'متابعة التنزيل',
@@ -672,7 +670,6 @@ export const ar = {
       banner: 'نسخة محفوظة على جهازك — تعمل بدون إنترنت',
       opening: 'جارٍ فتح المحاضرة…',
       openingProgress: (percent: number) => `جارٍ فتح المحاضرة… ${percent}%`,
-      protectedNote: 'محمية: لا يمكن حفظها أو مشاركتها',
       missing: 'هذه المحاضرة غير محفوظة على جهازك.',
       corrupt: 'الملف المحفوظ تالف وتم حذفه. نزّله من جديد عند اتصالك بالإنترنت.',
       failed: 'تعذّر فتح المحاضرة.',
@@ -780,7 +777,6 @@ export const ar = {
       pageErrorTitle: 'تعذّر تحميل الصفحة',
       pageErrorMessage: 'تحقق من اتصالك بالإنترنت ثم أعد المحاولة.',
       retry: 'إعادة المحاولة',
-      protectedNotice: 'محتوى محمي: يُعرض داخل التطبيق فقط ولا يمكن حفظه أو مشاركته.',
       notes: 'الملاحظات',
       bookmarkAdd: 'وضع علامة على هذه الصفحة',
       bookmarkRemove: 'إزالة العلامة',
@@ -882,7 +878,7 @@ export const ar = {
     syncError: 'تعذر حفظ علاماتك الآن، سنحاول لاحقًا',
     limitReached: 'وصلت إلى الحد الأقصى من العلامات في هذا الملف.',
     processingTitle: 'الملف قيد التجهيز',
-    processingBody: 'نحوّل الملف إلى صفحات محمية للعرض. يستغرق ذلك دقائق قليلة.',
+    processingBody: 'نجهّز الملف للعرض. يستغرق ذلك دقائق قليلة.',
     notReadyTitle: 'الملف غير جاهز للعرض بعد',
     notReadyBody: 'لم يُجهَّز هذا الملف للعرض. أبلغ الإدارة إن استمر ذلك.',
     failedTitle: 'تعذر تجهيز الملف',
@@ -1809,7 +1805,7 @@ export const ar = {
     pickerFailed: 'تعذر فتح الاختيار. حاول مرة أخرى.',
     viewAttachment: 'عرض المرفق',
     viewerTitle: 'مرفق',
-    viewerSubtitle: 'يُعرض داخل التطبيق فقط',
+    viewerSubtitle: 'مرفق من الدعم',
   },
 
   policies: {
@@ -2101,19 +2097,15 @@ export const ar = {
       yes: 'نعم',
       no: 'لا',
       notPrintable: 'هذا الملف غير متاح للطباعة.',
-      protectionNote: 'الملفات محمية: تُعرض داخل التطبيق فقط ولا يمكن تنزيلها أو مشاركتها.',
-      inAppOnlyNote: 'يُفتح هذا الملف داخل التطبيق فقط.',
     },
 
     viewer: {
       fallbackTitle: 'عارض الملفات',
-      subtitle: 'يُعرض داخل التطبيق فقط',
+      subtitle: 'ملف المادة',
       issuingTicket: 'جارٍ تجهيز العرض...',
       loadError: 'تعذر عرض الملف. حاول مرة أخرى.',
       notSupportedYet:
-        'عرض هذا النوع من الملفات داخل التطبيق قيد التطوير وسيتوفر في تحديث قريب. لا يمكن تنزيله لحماية المحتوى.',
-      securityNote:
-        'يُعرض الملف داخل التطبيق فقط ولا يمكن تنزيله أو مشاركته. وقد تُمنع لقطات الشاشة أثناء العرض.',
+        'عرض هذا النوع من الملفات داخل التطبيق قيد التطوير وسيتوفر في تحديث قريب.',
       unavailableTitle: 'لا يمكن عرض الملف',
       unavailableAlt: 'رسم يوضح تعذر معاينة الملف',
       protectedReadyTitle: 'الملف جاهز للعرض',
@@ -2375,7 +2367,7 @@ export const ar = {
         'تعذر تحويل الملف إلى PDF. جرّب حفظه بصيغة PDF من تطبيق Word أو PowerPoint ثم ارفعه.',
       convertedLabel: 'ملف تم تحويله إلى PDF',
       convertedPages: (pages: number) => `${pages} صفحة`,
-      uploadNote: 'نفحص الملف قبل حساب السعر، ولا يمكن تنزيله لاحقًا.',
+      uploadNote: 'نفحص الملف قبل حساب السعر.',
       uploadSelected: 'ملف من هاتفك',
       uploadInvalidType:
         'صيغة الملف غير مدعومة. اختر PDF أو Word أو PowerPoint أو صورة بصيغة PNG أو JPG أو WEBP.',
@@ -2501,7 +2493,7 @@ export const ar = {
 
     itemViewer: {
       title: 'ملف الطلب',
-      subtitle: 'يُعرض داخل التطبيق فقط',
+      subtitle: 'معاينة الملف',
     },
 
     copies: {

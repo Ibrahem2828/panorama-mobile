@@ -217,17 +217,13 @@ export function DocumentViewerBody({ doc, title, pageCount, initialPage, onBack 
           style={styles.header}
           title={title}
         />
-        <Stack align="center" direction="horizontal" gap="xs" style={styles.notice}>
-          <Icon color={colors.text.muted} name="lock" size={14} />
-          <AppText color="muted" style={styles.noticeText} variant="caption">
-            {t.lectures.viewer.protectedNotice}
-          </AppText>
-          {annotations.pending ? (
+        {annotations.pending ? (
+          <Stack align="center" direction="horizontal" gap="xs" style={styles.notice}>
             <AppText color="muted" variant="caption">
               {annotations.syncError ? t.docViewer.syncError : t.docViewer.syncPending}
             </AppText>
-          ) : null}
-        </Stack>
+          </Stack>
+        ) : null}
         {bookmarkProblem ? (
           <AppText color="error" style={styles.notice} variant="caption">
             {t.lectures.viewer.bookmarkError}
@@ -445,7 +441,6 @@ const styles = StyleSheet.create({
   topBar: { paddingHorizontal: spacing.sm, gap: spacing.xs },
   header: { minHeight: 56 },
   notice: { paddingHorizontal: spacing.md },
-  noticeText: { flex: 1 },
   stage: { flex: 1 },
   controls: {
     gap: spacing.xs,

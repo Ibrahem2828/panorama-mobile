@@ -246,12 +246,6 @@ export function FileDetailsScreen() {
             </Stack>
           </AppCard>
         </Stack>
-
-        <AppCard variant="muted">
-          <AppText color="secondary" variant="caption">
-            {t.files.details.protectionNote}
-          </AppText>
-        </AppCard>
       </Stack>
     </AppScreen>
   );

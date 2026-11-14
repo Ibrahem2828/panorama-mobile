@@ -93,9 +93,11 @@ function OfflineDownloadButtonBase({ lecture }: Props) {
             title={copy.download}
             variant="outline"
           />
-          <AppText color="muted" variant="caption">
-            {isOnline ? copy.downloadHint : copy.errors.offline}
-          </AppText>
+          {isOnline ? null : (
+            <AppText color="muted" variant="caption">
+              {copy.errors.offline}
+            </AppText>
+          )}
         </>,
       );
 

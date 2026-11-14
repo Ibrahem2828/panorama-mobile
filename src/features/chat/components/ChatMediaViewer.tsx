@@ -135,12 +135,11 @@ export function ChatMediaViewer({ message, onClose }: ChatMediaViewerProps) {
             <AppText color="inverse" numberOfLines={1} style={styles.whiteText} variant="title">
               {title}
             </AppText>
-            <View style={styles.noteRow}>
-              <Icon color={MEDIA_MUTED} name="lock" size={12} />
+            {pageLabel ? (
               <AppText style={styles.mutedText} variant="caption">
-                {pageLabel ?? t.chat.media.viewer.protectedNote}
+                {pageLabel}
               </AppText>
-            </View>
+            ) : null}
           </View>
           <AppIconButton
             accessibilityLabel={t.common.cancel}
@@ -227,7 +226,6 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   titleBlock: { flex: 1, gap: 2 },
-  noteRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xxs },
   whiteText: { color: MEDIA_WHITE },
   mutedText: { color: MEDIA_MUTED },
   body: { flex: 1 },

@@ -308,7 +308,6 @@ export const en: TranslationCatalog = {
         imageLabel: 'Photo from the chat',
         loadingFull: 'Loading the full-quality photo…',
         zoomHint: 'Double-tap or pinch to zoom',
-        protectedNote: 'View inside Panorama only',
         page: (page: number, total: number) => `Page ${page} of ${total}`,
         pdfFailed: 'This PDF cannot be shown (it may be password protected or damaged).',
         pdfLoading: 'Preparing the document…',
@@ -618,10 +617,9 @@ export const en: TranslationCatalog = {
 
   offlineLectures: {
     title: 'Downloads',
-    subtitle: 'Lectures saved on your phone, encrypted inside the app, to study without internet.',
+    subtitle: 'Lectures saved on your phone, to study without internet.',
     profileSubtitle: 'Lectures saved to study without internet',
     download: 'Download to study offline',
-    downloadHint: 'Saved encrypted inside the app only. They cannot be shared or opened elsewhere.',
     downloading: (percent: number) => `Downloading ${percent}%`,
     downloadingPending: 'Preparing...',
     resume: 'Resume download',
@@ -660,7 +658,6 @@ export const en: TranslationCatalog = {
       banner: 'Saved copy on your device - works offline',
       opening: 'Opening the lecture...',
       openingProgress: (percent: number) => `Opening the lecture... ${percent}%`,
-      protectedNote: 'Protected: cannot be saved or shared',
       missing: 'This lecture is not saved on your device.',
       corrupt: 'The saved file was damaged and was deleted. Download it again when you are online.',
       failed: 'Could not open the lecture.',
@@ -766,8 +763,6 @@ export const en: TranslationCatalog = {
       pageErrorTitle: 'Could not load the page',
       pageErrorMessage: 'Check your internet connection and try again.',
       retry: 'Try again',
-      protectedNotice:
-        'Protected content: shown inside the app only and cannot be saved or shared.',
       notes: 'Notes',
       bookmarkAdd: 'Bookmark this page',
       bookmarkRemove: 'Remove bookmark',
@@ -872,7 +867,7 @@ export const en: TranslationCatalog = {
     limitReached: 'You reached the maximum number of marks in this file.',
     processingTitle: 'The file is being prepared',
     processingBody:
-      'We are turning the file into protected pages for viewing. This takes a few minutes.',
+      'We are getting the file ready to view. This takes a few minutes.',
     notReadyTitle: 'The file is not ready to view yet',
     notReadyBody:
       'This file has not been prepared for viewing. Tell the administration if it persists.',
@@ -1816,7 +1811,7 @@ export const en: TranslationCatalog = {
     pickerFailed: 'Could not open the picker. Please try again.',
     viewAttachment: 'View attachment',
     viewerTitle: 'Attachment',
-    viewerSubtitle: 'Shown inside the app only',
+    viewerSubtitle: 'Attachment from support',
   },
 
   policies: {
@@ -2110,20 +2105,15 @@ export const en: TranslationCatalog = {
       yes: 'Yes',
       no: 'No',
       notPrintable: 'This file is not available for printing.',
-      protectionNote:
-        'Files are protected: they open inside the app only and cannot be downloaded or shared.',
-      inAppOnlyNote: 'This file opens inside the app only.',
     },
 
     viewer: {
       fallbackTitle: 'File viewer',
-      subtitle: 'Shown inside the app only',
+      subtitle: 'Subject file',
       issuingTicket: 'Getting the file ready...',
       loadError: 'Could not display the file. Please try again.',
       notSupportedYet:
-        'Viewing this file type inside the app is coming in an upcoming update. It cannot be downloaded, to protect the content.',
-      securityNote:
-        'The file opens inside the app only and cannot be downloaded or shared. Screenshots may be blocked while it is open.',
+        'Viewing this file type inside the app is coming in an upcoming update.',
       unavailableTitle: 'This file cannot be displayed',
       unavailableAlt: 'Illustration showing the file cannot be previewed',
       protectedReadyTitle: 'The file is ready to view',
@@ -2371,7 +2361,7 @@ export const en: TranslationCatalog = {
         'Could not convert the file to PDF. Try saving it as a PDF from Word or PowerPoint and upload that.',
       convertedLabel: 'Converted to PDF',
       convertedPages: (pages: number) => `${pages} ${pages === 1 ? 'page' : 'pages'}`,
-      uploadNote: 'We check the file before pricing, and it cannot be downloaded later.',
+      uploadNote: 'We check the file before pricing.',
       uploadSelected: 'File from your phone',
       uploadInvalidType:
         'Unsupported file type. Choose a PDF, Word, PowerPoint or a PNG, JPG or WEBP image.',
@@ -2501,7 +2491,7 @@ export const en: TranslationCatalog = {
 
     itemViewer: {
       title: 'Order file',
-      subtitle: 'Shown inside the app only',
+      subtitle: 'File preview',
     },
 
     copies: {
