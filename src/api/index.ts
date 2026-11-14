@@ -17,6 +17,19 @@ export {
 } from './errors';
 export { getAppClientHeaders, getAppClientInfo } from './appInfo';
 export {
+  DEVICE_ERROR,
+  deviceErrorCode,
+  isDeviceMismatchError,
+  isSessionReplacedError,
+  sessionEndReason,
+  isDeviceSwitchLimitError,
+  isDeviceSwitchTokenInvalidError,
+  parseDeviceMismatch,
+  parseDeviceMismatchDetails,
+} from './deviceBinding';
+export type { BoundDevice, DeviceMismatchInfo, SessionEndReason } from './deviceBinding';
+export { ensureDeviceId, getDeviceHeaders } from './deviceIdentity';
+export {
   acquireIdempotencyKey,
   generateIdempotencyKey,
   releaseIdempotencyKey,
@@ -37,6 +50,7 @@ export * as enrollmentService from './services/enrollment.service';
 export * as groupsService from './services/groups.service';
 export * as healthService from './services/health.service';
 export * as lifecycleService from './services/lifecycle.service';
+export * as phoneVerificationService from './services/phoneVerification.service';
 export * as notificationsService from './services/notifications.service';
 export * as policiesService from './services/policies.service';
 export * as printingService from './services/printing.service';

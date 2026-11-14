@@ -1,5 +1,7 @@
 import { logger } from '../utils/logger';
 import { getApiAuthBridge, refreshAccessTokenOnce, shouldAttemptAuthRefresh } from './authBridge';
+import { sessionEndReason } from './deviceBinding';
+import { ensureDeviceId, getCachedDeviceId } from './deviceIdentity';
 import { ACCEPT_JSON, DEFAULT_REQUEST_TIMEOUT_MS, type HttpHeaders } from './http';
 import { ApiClientError, createApiError, normalizeApiError, normalizeHttpError } from './errors';
 import { IDEMPOTENCY_IN_PROGRESS_DELAYS_MS } from './idempotency';
@@ -110,6 +112,10 @@ async function executeRequest<TData, TBody = unknown>(
   const method = options.method ?? 'GET';
   const hasBody = options.body !== undefined && options.body !== null;
   const hasFormDataBody = isFormDataBody(options.body);
+  // The device id headers ride on every call (login, refresh and all authenticated requests).
+  if (!getCachedDeviceId()) {
+    await ensureDeviceId();
+  }
   const headers: HttpHeaders = buildRequestHeaders({
     headers: options.headers,
     authToken: options.authToken,
@@ -218,6 +224,15 @@ async function requestWithAuthRetry<TData, TBody = unknown>(
   } catch (error) {
     const normalizedError = normalizeApiError(error);
 
+    // Another phone took this account over (409, or 401 on an access token issued to the old phone). A refresh cannot
+    // help: sign out at once and let the login screen explain.
+    const endReason = sessionEndReason(error);
+
+    if (endReason && options.authToken) {
+      await getApiAuthBridge()?.onDeviceReplaced?.(endReason);
+      throw error instanceof ApiClientError ? error : new ApiClientError(normalizedError);
+    }
+
     if (
       normalizedError.code !== 'UNAUTHORIZED' ||
       options._retried ||
@@ -288,6 +303,9 @@ async function request<TData, TBody = unknown>(options: ApiRequestOptions<TBody>
     fetcher: () => requestOnline<TData, TBody>(options),
   });
 }
+
+// Read the device id from secure storage as soon as the client loads, so the first request rarely has to wait for it.
+void ensureDeviceId();
 
 export const apiClient = {
   request,

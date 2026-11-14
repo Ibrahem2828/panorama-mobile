@@ -275,6 +275,8 @@ export function normalizeHttpError({
   const errorCode = extractErrorCode(responseBody);
   const code = codeFromStatusAndBackendCode(status, errorCode);
   const isLifecycle = code === 'MAINTENANCE_MODE' || code === 'APP_UPDATE_REQUIRED';
+  // Device-binding and phone-verification refusals carry structured `errors` (bound device, attempts left, ...).
+  const isStructured = isLifecycle || /^(?:DEVICE_|PHONE_)/u.test(errorCode ?? '');
   const backendMessage = extractBackendMessage(responseBody);
   const requestId = extractRequestId(responseBody);
   const fieldErrors =
@@ -291,7 +293,7 @@ export function normalizeHttpError({
     fieldErrors,
     errorCode,
     retryAfterSeconds: extractRetryAfter(responseBody),
-    details: isLifecycle ? extractDetails(responseBody) : undefined,
+    details: isStructured ? extractDetails(responseBody) : undefined,
     raw: responseBody,
   };
 }
