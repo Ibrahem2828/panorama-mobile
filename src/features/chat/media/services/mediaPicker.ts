@@ -78,6 +78,8 @@ export async function prepareImage(
         mimeType: 'image/jpeg',
         size,
       };
+      // The picker's full-size cache copy is no longer needed once the shrunk one exists.
+      deleteTemp(attachment.uri);
     } catch {
       result = attachment;
     }
