@@ -4,9 +4,10 @@ import { AppCard, AppText, Divider, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { formatDateTime } from '../../../utils/formatDateTime';
 import { radius, spacing, useBrand } from '../../../theme';
-import { formatPrintMoney, formatRounding } from '../services';
+import { formatPrintMoney, formatRounding, formatExtraPrice, orderExtras } from '../services';
 import type { PrintCartItem, PrintQuote } from '../types';
 import { usePrintOptionLabels } from './PrintItemOptions';
+import { usePrintExtraUnitLabels } from './PrintExtraChoices';
 import { PrintOrderPreview } from './PrintOrderPreview';
 
 type PrintQuoteBreakdownProps = {
@@ -33,6 +34,7 @@ export function PrintQuoteBreakdown({ quote, items, names }: PrintQuoteBreakdown
   const { t, locale } = useTranslation();
   const brand = useBrand();
   const labels = usePrintOptionLabels();
+  const units = usePrintExtraUnitLabels();
   const money = (value: string | number, currency: string) =>
     formatPrintMoney(value, currency) ?? String(value);
   const calculatedAt = formatDateTime(quote.calculated_at, locale);
@@ -102,6 +104,18 @@ export function PrintQuoteBreakdown({ quote, items, names }: PrintQuoteBreakdown
                       value={money(line.pricing_snapshot.cover_price_per_copy, line.currency)}
                     />
                   ) : null}
+                  {orderExtras(line.pricing_snapshot?.extras).map((extra) => (
+                    <Row
+                      key={extra.section}
+                      label={extra.name}
+                      value={`${money(extra.cost, line.currency)} (${formatExtraPrice(
+                        extra,
+                        formatPrintMoney(extra.price, line.currency),
+                        units,
+                        t.printing.options.extras.free,
+                      )})`}
+                    />
+                  ))}
                   <Row
                     label={t.printing.priceSummary.subtotal}
                     value={money(line.subtotal, line.currency)}
