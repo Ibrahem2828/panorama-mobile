@@ -18,6 +18,7 @@ import { spacing, useBrand } from '../../../theme';
 import { filterLectures } from '../logic';
 import { useLecturesStore } from '../store';
 import type { Lecture } from '../types';
+import { OfflineDownloadButton } from '../offline/OfflineDownloadButton';
 import { LectureCard } from './LectureCard';
 
 type Props = { subjectId: string | number };
@@ -86,7 +87,10 @@ export function SubjectLecturesSection({ subjectId }: Props) {
     body = (
       <Stack gap="sm">
         {lectures.slice(0, PREVIEW_LIMIT).map((lecture) => (
-          <LectureCard compact key={lecture.id} lecture={lecture} onPress={openLecture} />
+          <View key={lecture.id}>
+            <LectureCard compact lecture={lecture} onPress={openLecture} />
+            <OfflineDownloadButton lecture={lecture} />
+          </View>
         ))}
         {lectures.length > PREVIEW_LIMIT ? (
           <AppButton

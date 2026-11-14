@@ -1,5 +1,5 @@
 import { fetch as streamingFetch } from 'expo/fetch';
-import { File, FileMode, type FileHandle } from 'expo-file-system';
+import { FileMode, type File, type FileHandle } from 'expo-file-system';
 
 import { getAppClientHeaders, refreshAccessTokenOnce } from '../../../api';
 import { buildApiUrl } from '../../../config/env';

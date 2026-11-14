@@ -24,7 +24,13 @@ export type StudentSetupStackParamList = {
 };
 
 export type LecturesListParams = { subjectId?: string | number } | undefined;
-export type LectureViewerParams = { lectureId: string | number; title?: string; page?: number };
+export type LectureViewerParams = {
+  lectureId: string | number;
+  title?: string;
+  page?: number;
+  /** Open the saved encrypted copy (works without internet). */
+  offline?: boolean;
+};
 
 export type HomeStackParamList = {
   Home: undefined;
@@ -81,6 +87,7 @@ export type ProfileStackParamList = {
   MutedChats: undefined;
   Permissions: undefined;
   MyNotes: undefined;
+  Downloads: undefined;
   LectureViewer: LectureViewerParams;
   PdfViewer: { fileId: string | number; title?: string };
   SupportTickets: undefined;

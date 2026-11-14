@@ -194,6 +194,14 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
             icon="bookmark"
             title={t.docViewer.myNotes.title}
           />
+          {isStudent ? (
+            <ProfileActionItem
+              onPress={() => navigation.navigate(ProfileRoutes.Downloads)}
+              subtitle={t.offlineLectures.profileSubtitle}
+              icon="download"
+              title={t.offlineLectures.title}
+            />
+          ) : null}
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.SupportTickets)}
             subtitle={t.profile.servicesSection.supportSubtitle}

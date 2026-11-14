@@ -205,9 +205,10 @@ export function initOfflineLibrary(userId: string): Promise<void> {
 
 async function loadLibrary(userId: string): Promise<void> {
   try {
-    let { inventory, foreign } = await readInventory(userId);
+    const loaded = await readInventory(userId);
+    let inventory = loaded.inventory;
 
-    if (foreign) {
+    if (loaded.foreign) {
       // A session ended while the app was closed and another student signed in: nothing of the old one may stay.
       await wipeOfflineStorage();
       inventory = emptyInventory(userId);

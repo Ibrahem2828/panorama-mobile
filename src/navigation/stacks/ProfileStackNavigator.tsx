@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { PdfViewerScreen } from '../../features/files/screens/PdfViewerScreen';
+import { DownloadsScreen } from '../../features/lectures/offline/DownloadsScreen';
 import { LectureViewerScreen } from '../../features/lectures/screens/LectureViewerScreen';
 import { MyNotesScreen } from '../../features/viewer/screens/MyNotesScreen';
 import { NotificationsScreen } from '../../features/notifications/screens/NotificationsScreen';
@@ -51,6 +52,7 @@ export function ProfileStackNavigator() {
       <Stack.Screen component={MutedChatsScreen} name={ProfileRoutes.MutedChats} />
       <Stack.Screen component={PermissionsSettingsScreen} name={ProfileRoutes.Permissions} />
       <Stack.Screen component={MyNotesScreen} name={ProfileRoutes.MyNotes} />
+      <Stack.Screen component={DownloadsScreen} name={ProfileRoutes.Downloads} />
       <Stack.Screen component={LectureViewerScreen} name={LecturesRoutes.LectureViewer} />
       <Stack.Screen component={PdfViewerScreen} name={SharedRoutes.PdfViewer} />
       <Stack.Screen component={SupportTicketsScreen} name={ProfileRoutes.SupportTickets} />
