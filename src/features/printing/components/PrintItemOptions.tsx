@@ -15,11 +15,8 @@ import {
 import { PRINT_HELP_TOPICS } from '../services/printOptionHelp';
 import { usePrintingStore } from '../store';
 import type { PrintCartItem } from '../types';
-<<<<<<< HEAD
 import { buildExtraGroups, describeExtras } from '../services/printExtras';
-=======
 import { PrintLabelWithHelp, PrintHelpButton } from './PrintHelpButton';
->>>>>>> origin/feat/print-option-help
 import { PrintChoiceChips, type PrintChoice } from './PrintChoiceChips';
 import { PrintExtraChoices } from './PrintExtraChoices';
 import { PrintOptionSection } from './PrintOptionSection';
