@@ -645,3 +645,45 @@ export type CreateSupportTicketRequest = {
 export type AddSupportTicketMessageRequest = {
   message: string;
 };
+
+// --- Device binding and phone verification (students) ---
+
+export type DeviceSwitchRequest = {
+  device_switch_token: string;
+};
+
+export type DeviceSwitchResponse = LoginResponse;
+
+export type PhoneVerificationStatus =
+  | 'pending_staff'
+  | 'code_sent'
+  | 'verified'
+  | 'expired'
+  | 'cancelled'
+  | 'rejected';
+
+export type PhoneVerificationRequest = {
+  id: number;
+  phone_number: string;
+  status: PhoneVerificationStatus;
+  created_at: string;
+  code_sent_at: string | null;
+  expires_at: string | null;
+  attempts_remaining: number;
+  rejection_reason: string;
+  verified_at: string | null;
+};
+
+export type CreatePhoneVerificationRequest = {
+  phone_number: string;
+  password: string;
+};
+
+export type ConfirmPhoneVerificationRequest = {
+  code: string;
+};
+
+/** `GET auth/phone-verification/current/`: `request` is null when the student never asked. */
+export type CurrentPhoneVerification = {
+  request: PhoneVerificationRequest | null;
+};

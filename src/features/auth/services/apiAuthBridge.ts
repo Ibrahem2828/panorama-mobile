@@ -14,6 +14,7 @@ export function configureApiAuthBridge(): void {
     onSessionExpired: () => {
       void useAuthStore.getState().forceSessionExpired();
     },
+    onDeviceReplaced: (reason) => useAuthStore.getState().forceDeviceReplaced(reason),
   });
 
   isRegistered = true;

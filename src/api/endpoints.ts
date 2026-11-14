@@ -17,6 +17,14 @@ export const endpoints = {
     verifyOtp: `${API_PREFIX}/auth/otp/verify/`,
     requestPasswordReset: `${API_PREFIX}/auth/request-password-reset/`,
     confirmPasswordReset: `${API_PREFIX}/auth/confirm-password-reset/`,
+    /** Takes the account over on this phone with the token a `409 DEVICE_MISMATCH` login returned. */
+    deviceSwitch: `${API_PREFIX}/auth/device/switch/`,
+  },
+  phoneVerification: {
+    create: `${API_PREFIX}/auth/phone-verification/`,
+    current: `${API_PREFIX}/auth/phone-verification/current/`,
+    confirm: `${API_PREFIX}/auth/phone-verification/confirm/`,
+    cancel: `${API_PREFIX}/auth/phone-verification/cancel/`,
   },
   account: {
     deletionRequest: `${API_PREFIX}/account/deletion/request/`,

@@ -2710,4 +2710,131 @@ export const en: TranslationCatalog = {
       generic: 'Could not change your password. Please try again.',
     },
   },
+
+  // --- Device lock + phone verification (feat/device-lock-phone-verify) ---
+
+  deviceLock: {
+    replacedNotice:
+      'You were signed in on another phone, so your session here ended. Sign in again to use your account on this phone.',
+    revokedNotice: 'The support team ended your session. Sign in again.',
+    title: 'This account is linked to another phone',
+    subtitle:
+      'Your password is correct, but your account is currently active on a different phone.',
+    otherDeviceTitle: 'Phone linked right now',
+    unknownDevice: 'Unknown device',
+    platformAndroid: 'Android',
+    platformIos: 'iPhone',
+    lastSeen: (when: string) => `Last used: ${when}`,
+    policyTitle: 'How phone linking works',
+    policy: [
+      'One account is used on one phone only.',
+      'You can switch phones once per academic term.',
+      'After that you cannot switch yourself and need to contact the administration.',
+    ],
+    switchWarning: 'When you switch, you are signed out of the other phone right away.',
+    switchesRemaining: (value: number) =>
+      value === 1 ? 'You have 1 switch left.' : `You have ${value} switches left.`,
+    switchAction: 'Switch the account to this phone',
+    switching: 'Switching...',
+    backToLogin: 'Back to sign in',
+    errors: {
+      network: 'Could not reach the server. Check your connection and try again.',
+      generic: 'Could not switch the phone. Please try again.',
+      idRequired: 'Update the app to finish switching.',
+    },
+    limit: {
+      title: 'You have used your phone switches',
+      description:
+        'You cannot switch phones yourself right now. Contact the administration to move your account to this phone.',
+      contact: 'Contact the administration',
+      mailSubject: 'Request to move my account to a new phone',
+      mailFailed: 'Could not open your mail app. Email the administration at:',
+    },
+    expired: {
+      title: 'The switch link has expired',
+      description: 'Sign in again to switch the phone.',
+    },
+  },
+
+  phoneVerify: {
+    title: 'Verify your phone number',
+    subtitle:
+      'Link your WhatsApp number to your account and join the community group automatically.',
+    entry: {
+      subtitleUnverified: 'Link your number with a code sent on WhatsApp',
+      subtitleWaiting: 'Waiting for the code to be sent on WhatsApp',
+      subtitleCode: 'Enter the code you received on WhatsApp',
+      badgeNeeded: 'Needed',
+      badgeWaiting: 'In progress',
+      badgeCode: 'Enter code',
+      chipHint: 'Open phone verification',
+    },
+    loading: 'Loading verification status...',
+    loadFailed: 'Could not load the verification status',
+    form: {
+      intro: 'A verification code will be sent to your number on WhatsApp.',
+      phoneLabel: 'Phone number',
+      phonePlaceholder: '0912345678',
+      phoneHint:
+        'Enter your Syrian number such as 0912345678 or 963912345678, or an international number starting with +.',
+      passwordLabel: 'Account password',
+      passwordHint: 'We ask for your password to confirm the account is yours.',
+      submit: 'Request a verification code',
+      submitting: 'Sending request...',
+      phoneRequired: 'Enter your phone number.',
+      phoneInvalid:
+        'This phone number is not valid. Enter a Syrian number such as 0912345678 or an international number starting with +.',
+      passwordRequired: 'Enter your account password.',
+      noticeExpired: 'Your previous request expired. You can request a new code.',
+      noticeRejected: 'Your previous request was not accepted. You can try again.',
+    },
+    waiting: {
+      title: 'The verification code will be sent to your number on WhatsApp',
+      description: (phone: string) =>
+        `Your request for ${phone} is being processed. You get a notification and a WhatsApp message when the code is sent, and the code box appears here.`,
+      refresh: 'Refresh status',
+      cancel: 'Cancel request',
+      cancelling: 'Cancelling...',
+    },
+    code: {
+      title: 'Enter the verification code',
+      description: (phone: string) => `We sent a 6-digit code on WhatsApp to ${phone}.`,
+      label: '6-digit verification code',
+      countdown: (time: string) => `The code expires in ${time}`,
+      lapsed:
+        'The code timer ran out on your phone. If your code is not accepted, request a new one.',
+      attempts: (value: number) => (value === 1 ? '1 attempt left' : `Attempts left: ${value}`),
+      confirm: 'Confirm number',
+      confirming: 'Checking...',
+      newRequest: 'Request a new code',
+      newRequestHint: 'Did not get the code, or typed the wrong number? Cancel and start over.',
+    },
+    success: {
+      title: 'Your phone number is verified',
+      description: (phone: string) => `${phone} is now linked to your account.`,
+      community:
+        'You were added to the community group automatically. Find it in the Groups tab, with nothing to join by hand.',
+      done: 'Done',
+    },
+    errors: {
+      passwordIncorrect: 'The password is incorrect.',
+      phoneInvalid:
+        'This phone number is not valid. Enter a Syrian number such as 0912345678 or an international number starting with +.',
+      phoneInUse:
+        'This number is linked to another account. Use your own number or contact support.',
+      alreadyOpen: 'You already have an open request, and its status was refreshed.',
+      alreadyVerified: 'Your phone number is already verified.',
+      codeInvalid: (attempts: number | null) =>
+        attempts === null
+          ? 'The code is not correct.'
+          : `The code is not correct. Attempts left: ${attempts}.`,
+      attemptsExceeded: 'Too many attempts. Start a new request.',
+      codeExpired: 'The code expired. Start a new request.',
+      codeNotSent: 'The code has not been sent yet. Wait for the notification.',
+      notFound: 'There is no open request. The status was refreshed.',
+      rateLimited: 'Too many attempts. Wait a moment and try again.',
+      network: 'Could not reach the server. Check your connection and try again.',
+      generic: 'Something went wrong. Please try again.',
+    },
+  },
 };
