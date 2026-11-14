@@ -67,10 +67,9 @@ export function packageSizeOf(plaintextSize: number, chunkSize: number): number 
 }
 
 function readUint32(bytes: Uint8Array, offset: number): number {
-  return (
-    bytes[offset] * 0x1000000 +
-    ((bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3])
-  );
+  const at = (i: number) => bytes[offset + i] ?? 0;
+
+  return at(0) * 0x1000000 + ((at(1) << 16) | (at(2) << 8) | at(3));
 }
 
 function readUint64(bytes: Uint8Array, offset: number): number {
@@ -89,9 +88,9 @@ export function parsePnofHeader(bytes: Uint8Array): PnofHeader {
     throw new PnofError('header', 'bad magic');
   }
 
-  const version = bytes[4];
-  const algorithm = bytes[5];
-  const flags = (bytes[6] << 8) | bytes[7];
+  const version = bytes[4] ?? 0;
+  const algorithm = bytes[5] ?? 0;
+  const flags = ((bytes[6] ?? 0) << 8) | (bytes[7] ?? 0);
 
   if (version !== 1 || algorithm !== 1 || flags !== 0) {
     throw new PnofError('unsupported', `v${version} a${algorithm} f${flags}`);
@@ -233,13 +232,13 @@ export function encodeBase64(bytes: Uint8Array): string {
   let out = '';
 
   for (let i = 0; i < bytes.length; i += 3) {
-    const a = bytes[i];
-    const b = i + 1 < bytes.length ? bytes[i + 1] : 0;
-    const c = i + 2 < bytes.length ? bytes[i + 2] : 0;
+    const a = bytes[i] ?? 0;
+    const b = bytes[i + 1] ?? 0;
+    const c = bytes[i + 2] ?? 0;
 
-    out += alphabet[a >> 2] + alphabet[((a & 3) << 4) | (b >> 4)];
-    out += i + 1 < bytes.length ? alphabet[((b & 15) << 2) | (c >> 6)] : '=';
-    out += i + 2 < bytes.length ? alphabet[c & 63] : '=';
+    out += (alphabet[a >> 2] ?? '') + (alphabet[((a & 3) << 4) | (b >> 4)] ?? '');
+    out += i + 1 < bytes.length ? (alphabet[((b & 15) << 2) | (c >> 6)] ?? '') : '=';
+    out += i + 2 < bytes.length ? (alphabet[c & 63] ?? '') : '=';
   }
 
   return out;
