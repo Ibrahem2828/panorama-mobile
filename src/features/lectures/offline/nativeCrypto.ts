@@ -48,7 +48,9 @@ export const nativeChunkOpener: ChunkOpener = async (key, nonce, aad, ciphertext
 };
 
 export async function sha256Hex(bytes: Uint8Array): Promise<string> {
-  const hash = new Uint8Array(await digest(CryptoDigestAlgorithm.SHA256, bytes as Uint8Array<ArrayBuffer>));
+  const hash = new Uint8Array(
+    await digest(CryptoDigestAlgorithm.SHA256, bytes as Uint8Array<ArrayBuffer>),
+  );
 
   return Array.from(hash, (byte) => byte.toString(16).padStart(2, '0')).join('');
 }

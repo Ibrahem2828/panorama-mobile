@@ -169,16 +169,41 @@ async function advanceClock(force = false): Promise<void> {
   }
 }
 
+/** Moves the monotonic clock mark forward (app start / foreground), online or not. */
+export async function touchOfflineClock(): Promise<void> {
+  if (useOfflineLibrary.getState().ready) {
+    await advanceClock(true);
+  }
+}
+
 // --- Lifecycle ------------------------------------------------------------------------------------------------------------
 
 /** Signed in (app start or sign-in): load the sealed inventory, drop leftovers, move the clock mark forward. */
-export async function initOfflineLibrary(userId: string): Promise<void> {
+let initInFlight: { userId: string; promise: Promise<void> } | null = null;
+
+export function initOfflineLibrary(userId: string): Promise<void> {
   const current = useOfflineLibrary.getState();
 
   if (current.ready && current.userId === userId) {
-    return;
+    return Promise.resolve();
   }
 
+  if (initInFlight?.userId === userId) {
+    return initInFlight.promise;
+  }
+
+  const promise = loadLibrary(userId).finally(() => {
+    if (initInFlight?.promise === promise) {
+      initInFlight = null;
+    }
+  });
+
+  initInFlight = { userId, promise };
+
+  return promise;
+}
+
+async function loadLibrary(userId: string): Promise<void> {
   try {
     let { inventory, foreign } = await readInventory(userId);
 
@@ -218,6 +243,7 @@ export async function wipeOfflineLibrary(): Promise<void> {
 
   controllers.clear();
   forgetImportedKeys();
+  initInFlight = null;
   useOfflineLibrary.setState({ ...initial });
   writeQueue = Promise.resolve();
   await wipeOfflineStorage();
