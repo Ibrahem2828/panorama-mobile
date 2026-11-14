@@ -5,13 +5,13 @@ This PR must not be merged before backend #54; after it merges, re-sync with `np
 
 ## What the student can do
 
-| Feature                    | How                                                                                                                                                                   |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pictures                   | Attach menu -> album / camera. Photos are shrunk on the phone (JPEG, long edge 2048 px) when large so they fit 10 MB. Optimistic bubble with progress, cancel, retry. |
-| PDF                        | Attach menu -> "ملف PDF". 25 MB.                                                                                                                                      |
-| Audio file                 | Attach menu -> "ملف صوتي" (m4a, mp4, aac, mp3, ogg/opus, wav; 25 MB; webm is refused).                                                                                |
-| Voice message              | Mic button (tap to start). Cancel / send in the recording bar. Hard stop at 5 minutes with a visible notice, then send or discard.                                    |
-| Opening                    | Pictures and PDFs open only in the in-app secure viewer. Voice and audio play in the bubble.                                                                          |
+| Feature       | How                                                                                                                                                                   |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pictures      | Attach menu -> album / camera. Photos are shrunk on the phone (JPEG, long edge 2048 px) when large so they fit 10 MB. Optimistic bubble with progress, cancel, retry. |
+| PDF           | Attach menu -> "ملف PDF". 25 MB.                                                                                                                                      |
+| Audio file    | Attach menu -> "ملف صوتي" (m4a, mp4, aac, mp3, ogg/opus, wav; 25 MB; webm is refused).                                                                                |
+| Voice message | Mic button (tap to start). Cancel / send in the recording bar. Hard stop at 5 minutes with a visible notice, then send or discard.                                    |
+| Opening       | Pictures and PDFs open only in the in-app secure viewer. Voice and audio play in the bubble.                                                                          |
 
 ## Why "tap to record" (not hold-to-record)
 
@@ -45,14 +45,14 @@ always failed. Now:
 
 Reusable by a later "downloaded lectures" feature: `createEncryptedStore(name, { maxBytes, maxEntryBytes, maxAgeMs })`.
 
-| API                                | Purpose                                                                                      |
-| ---------------------------------- | -------------------------------------------------------------------------------------------- |
-| `put(id, bytes, meta)`             | Encrypt and store (replaces the same id). Applies size/age limits (LRU).                     |
-| `readBytes(id)`                    | Decrypt into memory (thumbnails).                                                            |
-| `open(id)` -> `{ uri, release() }` | Decrypt to a temp file in the private cache for viewers that need a path. Call `release()`.  |
-| `evict`, `evictPrefix`, `trim`     | Remove entries, apply limits, drop orphans.                                                  |
-| `sweepTemp()`                      | Delete decrypted temp files a crash left behind (runs at start).                             |
-| `wipe()`                           | Delete everything and the master key (logout, account switch, device replaced).              |
+| API                                | Purpose                                                                                     |
+| ---------------------------------- | ------------------------------------------------------------------------------------------- |
+| `put(id, bytes, meta)`             | Encrypt and store (replaces the same id). Applies size/age limits (LRU).                    |
+| `readBytes(id)`                    | Decrypt into memory (thumbnails).                                                           |
+| `open(id)` -> `{ uri, release() }` | Decrypt to a temp file in the private cache for viewers that need a path. Call `release()`. |
+| `evict`, `evictPrefix`, `trim`     | Remove entries, apply limits, drop orphans.                                                 |
+| `sweepTemp()`                      | Delete decrypted temp files a crash left behind (runs at start).                            |
+| `wipe()`                           | Delete everything and the master key (logout, account switch, device replaced).             |
 
 Design: one random 256-bit master key per install in `expo-secure-store` (Android Keystore backed); a random 256-bit key per
 file, wrapped by the master key; content in 1 MiB chunks sealed with AES-256-GCM through `expo-crypto`'s native AES (random

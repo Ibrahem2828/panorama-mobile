@@ -866,8 +866,7 @@ export const en: TranslationCatalog = {
     syncError: 'Could not save your marks right now; we will retry',
     limitReached: 'You reached the maximum number of marks in this file.',
     processingTitle: 'The file is being prepared',
-    processingBody:
-      'We are getting the file ready to view. This takes a few minutes.',
+    processingBody: 'We are getting the file ready to view. This takes a few minutes.',
     notReadyTitle: 'The file is not ready to view yet',
     notReadyBody:
       'This file has not been prepared for viewing. Tell the administration if it persists.',
@@ -2112,8 +2111,7 @@ export const en: TranslationCatalog = {
       subtitle: 'Subject file',
       issuingTicket: 'Getting the file ready...',
       loadError: 'Could not display the file. Please try again.',
-      notSupportedYet:
-        'Viewing this file type inside the app is coming in an upcoming update.',
+      notSupportedYet: 'Viewing this file type inside the app is coming in an upcoming update.',
       unavailableTitle: 'This file cannot be displayed',
       unavailableAlt: 'Illustration showing the file cannot be previewed',
       protectedReadyTitle: 'The file is ready to view',

@@ -2104,8 +2104,7 @@ export const ar = {
       subtitle: 'ملف المادة',
       issuingTicket: 'جارٍ تجهيز العرض...',
       loadError: 'تعذر عرض الملف. حاول مرة أخرى.',
-      notSupportedYet:
-        'عرض هذا النوع من الملفات داخل التطبيق قيد التطوير وسيتوفر في تحديث قريب.',
+      notSupportedYet: 'عرض هذا النوع من الملفات داخل التطبيق قيد التطوير وسيتوفر في تحديث قريب.',
       unavailableTitle: 'لا يمكن عرض الملف',
       unavailableAlt: 'رسم يوضح تعذر معاينة الملف',
       protectedReadyTitle: 'الملف جاهز للعرض',
