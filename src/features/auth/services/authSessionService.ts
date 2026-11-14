@@ -2,7 +2,9 @@ import {
   ApiClientError,
   authService,
   containsArabic,
-  isDeviceMismatchError,
+  isSessionReplacedError,
+  sessionEndReason,
+  type SessionEndReason,
   normalizeApiError,
   parseDeviceMismatch,
 } from '../../../api';
@@ -214,8 +216,8 @@ export type BootstrapSessionResult = {
   sessionExpired: boolean;
   /** True when the session was opened from the saved profile because the server was unreachable. */
   offline?: boolean;
-  /** True when the server said another phone now owns the account (device binding). */
-  deviceReplaced?: boolean;
+  /** Set when the server ended the session on purpose: another phone took the account, or staff reset it. */
+  endReason?: SessionEndReason;
 };
 
 export async function bootstrapSession(): Promise<BootstrapSessionResult> {
@@ -239,9 +241,13 @@ export async function bootstrapSession(): Promise<BootstrapSessionResult> {
       sessionExpired: false,
     };
   } catch (error) {
-    if (isDeviceMismatchError(error)) {
+    if (isSessionReplacedError(error)) {
       await endSessionReplacedByAnotherDevice();
-      return { session: null, sessionExpired: false, deviceReplaced: true };
+      return {
+        session: null,
+        sessionExpired: false,
+        endReason: sessionEndReason(error) ?? undefined,
+      };
     }
 
     if (!isUnauthorizedError(error)) {
@@ -267,9 +273,13 @@ export async function bootstrapSession(): Promise<BootstrapSessionResult> {
       sessionExpired: false,
     };
   } catch (error) {
-    if (isDeviceMismatchError(error)) {
+    if (isSessionReplacedError(error)) {
       await endSessionReplacedByAnotherDevice();
-      return { session: null, sessionExpired: false, deviceReplaced: true };
+      return {
+        session: null,
+        sessionExpired: false,
+        endReason: sessionEndReason(error) ?? undefined,
+      };
     }
 
     if (!isDefinitiveRefreshRejection(error)) {
@@ -318,7 +328,7 @@ export async function refreshAccessToken(): Promise<AuthTokens | null> {
   try {
     return await refreshStoredAccessToken(storedTokens);
   } catch (error) {
-    if (isDeviceMismatchError(error)) {
+    if (isSessionReplacedError(error)) {
       // Rethrown so the store can tell "replaced by another phone" from "session expired".
       await endSessionReplacedByAnotherDevice();
       throw error;

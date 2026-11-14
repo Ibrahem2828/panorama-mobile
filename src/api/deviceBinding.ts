@@ -6,6 +6,8 @@ export const DEVICE_ERROR = {
   idRequired: 'DEVICE_ID_REQUIRED',
   switchTokenInvalid: 'DEVICE_SWITCH_TOKEN_INVALID',
   switchLimitReached: 'DEVICE_SWITCH_LIMIT_REACHED',
+  /** Staff reset the account's device binding: the session ended, sign in again. */
+  revokedByAdmin: 'SESSION_REVOKED_BY_ADMIN',
 } as const;
 
 export type BoundDevice = {
@@ -31,6 +33,22 @@ export function deviceErrorCode(error: unknown): string | undefined {
 /** 409 on login, 409 or 401 on refresh and on authenticated requests: this phone is not the account's phone. */
 export function isDeviceMismatchError(error: unknown): boolean {
   return deviceErrorCode(error) === DEVICE_ERROR.mismatch;
+}
+
+export type SessionEndReason = 'device_replaced' | 'revoked_by_admin';
+
+/** Why the server ended this session, when it says so (another phone took the account, or staff reset it). */
+export function sessionEndReason(error: unknown): SessionEndReason | null {
+  const code = deviceErrorCode(error);
+
+  if (code === DEVICE_ERROR.mismatch) return 'device_replaced';
+  if (code === DEVICE_ERROR.revokedByAdmin) return 'revoked_by_admin';
+
+  return null;
+}
+
+export function isSessionReplacedError(error: unknown): boolean {
+  return sessionEndReason(error) !== null;
 }
 
 export function isDeviceSwitchLimitError(error: unknown): boolean {

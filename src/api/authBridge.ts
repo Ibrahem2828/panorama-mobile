@@ -1,3 +1,4 @@
+import type { SessionEndReason } from './deviceBinding';
 import { endpoints } from './endpoints';
 
 export type ApiAuthBridge = {
@@ -5,7 +6,7 @@ export type ApiAuthBridge = {
   refreshAccessToken: () => Promise<string | null>;
   onSessionExpired: () => void | Promise<void>;
   /** Another phone took the account over: sign out and explain why. Optional for bridges that predate device binding. */
-  onDeviceReplaced?: () => void | Promise<void>;
+  onDeviceReplaced?: (reason: SessionEndReason) => void | Promise<void>;
 };
 
 const AUTH_EXEMPT_PATHS = new Set<string>([

@@ -1,6 +1,6 @@
 import { logger } from '../utils/logger';
 import { getApiAuthBridge, refreshAccessTokenOnce, shouldAttemptAuthRefresh } from './authBridge';
-import { isDeviceMismatchError } from './deviceBinding';
+import { sessionEndReason } from './deviceBinding';
 import { ensureDeviceId, getCachedDeviceId } from './deviceIdentity';
 import { ACCEPT_JSON, DEFAULT_REQUEST_TIMEOUT_MS, type HttpHeaders } from './http';
 import { ApiClientError, createApiError, normalizeApiError, normalizeHttpError } from './errors';
@@ -226,8 +226,10 @@ async function requestWithAuthRetry<TData, TBody = unknown>(
 
     // Another phone took this account over (409, or 401 on an access token issued to the old phone). A refresh cannot
     // help: sign out at once and let the login screen explain.
-    if (isDeviceMismatchError(error) && options.authToken) {
-      await getApiAuthBridge()?.onDeviceReplaced?.();
+    const endReason = sessionEndReason(error);
+
+    if (endReason && options.authToken) {
+      await getApiAuthBridge()?.onDeviceReplaced?.(endReason);
       throw error instanceof ApiClientError ? error : new ApiClientError(normalizedError);
     }
 

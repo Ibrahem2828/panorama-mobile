@@ -20,12 +20,14 @@ export {
   DEVICE_ERROR,
   deviceErrorCode,
   isDeviceMismatchError,
+  isSessionReplacedError,
+  sessionEndReason,
   isDeviceSwitchLimitError,
   isDeviceSwitchTokenInvalidError,
   parseDeviceMismatch,
   parseDeviceMismatchDetails,
 } from './deviceBinding';
-export type { BoundDevice, DeviceMismatchInfo } from './deviceBinding';
+export type { BoundDevice, DeviceMismatchInfo, SessionEndReason } from './deviceBinding';
 export { ensureDeviceId, getDeviceHeaders } from './deviceIdentity';
 export {
   acquireIdempotencyKey,

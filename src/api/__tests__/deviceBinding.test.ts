@@ -138,6 +138,43 @@ describe('central client', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('treats SESSION_REVOKED_BY_ADMIN like a replaced device, with its own reason', async () => {
+    const onDeviceReplaced = jest.fn();
+    const refreshAccessToken = jest.fn(async () => 'new');
+
+    registerApiAuthBridge({
+      getAccessToken: () => 'access',
+      refreshAccessToken,
+      onSessionExpired: jest.fn(),
+      onDeviceReplaced,
+    });
+    fetchMock.mockResolvedValue(errorEnvelope(401, 'SESSION_REVOKED_BY_ADMIN'));
+
+    await expect(
+      apiClient.get('/api/v1/groups/my/', { authToken: 'access' }),
+    ).rejects.toMatchObject({
+      errorCode: 'SESSION_REVOKED_BY_ADMIN',
+    });
+    expect(onDeviceReplaced).toHaveBeenCalledWith('revoked_by_admin');
+    expect(refreshAccessToken).not.toHaveBeenCalled();
+  });
+
+  it('passes the device_replaced reason for DEVICE_MISMATCH', async () => {
+    const onDeviceReplaced = jest.fn();
+
+    registerApiAuthBridge({
+      getAccessToken: () => 'access',
+      refreshAccessToken: async () => null,
+      onSessionExpired: jest.fn(),
+      onDeviceReplaced,
+    });
+    fetchMock.mockResolvedValue(errorEnvelope(401, 'DEVICE_MISMATCH'));
+
+    await apiClient.get('/api/v1/groups/my/', { authToken: 'access' }).catch(() => undefined);
+
+    expect(onDeviceReplaced).toHaveBeenCalledWith('device_replaced');
+  });
+
   it('does not sign anyone out for a mismatch on a request without a session (login)', async () => {
     const onDeviceReplaced = jest.fn();
 

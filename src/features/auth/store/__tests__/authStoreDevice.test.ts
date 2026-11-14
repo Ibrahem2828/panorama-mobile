@@ -160,12 +160,39 @@ describe('this device was replaced', () => {
     bootstrapSession.mockResolvedValue({
       session: null,
       sessionExpired: false,
-      deviceReplaced: true,
+      endReason: 'device_replaced',
     });
 
     await state().bootstrap();
 
     expect(state()).toMatchObject({ status: 'unauthenticated', errorMessage: replaced() });
+  });
+
+  it('staff ending the session shows its own message, on a request, a refresh and a cold start', async () => {
+    const revoked = useLocaleStore.getState().t.deviceLock.revokedNotice;
+
+    expect(revoked).not.toBe(replaced());
+
+    useAuthStore.setState({ status: 'authenticated', accessToken: 'a', refreshToken: 'r' });
+    await state().forceDeviceReplaced('revoked_by_admin');
+    expect(state().errorMessage).toBe(revoked);
+
+    useAuthStore.setState({ status: 'authenticated', accessToken: 'a', refreshToken: 'r' });
+    refreshSessionAccessToken.mockRejectedValue(
+      createApiError({ status: 401, errorCode: 'SESSION_REVOKED_BY_ADMIN', message: 'x' }),
+    );
+    await expect(state().refreshAccessToken()).resolves.toBeNull();
+    await state().forceSessionExpired();
+    expect(state().errorMessage).toBe(revoked);
+
+    useAuthStore.setState({ status: 'idle', endedByDevice: false });
+    bootstrapSession.mockResolvedValue({
+      session: null,
+      sessionExpired: false,
+      endReason: 'revoked_by_admin',
+    });
+    await state().bootstrap();
+    expect(state().errorMessage).toBe(revoked);
   });
 
   it('an ordinary expired session keeps its own message', async () => {

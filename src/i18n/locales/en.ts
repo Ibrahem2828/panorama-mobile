@@ -2644,6 +2644,7 @@ export const en: TranslationCatalog = {
   deviceLock: {
     replacedNotice:
       'You were signed in on another phone, so your session here ended. Sign in again to use your account on this phone.',
+    revokedNotice: 'The support team ended your session. Sign in again.',
     title: 'This account is linked to another phone',
     subtitle:
       'Your password is correct, but your account is currently active on a different phone.',

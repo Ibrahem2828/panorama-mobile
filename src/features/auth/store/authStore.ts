@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { isDeviceMismatchError } from '../../../api';
+import { sessionEndReason, type SessionEndReason } from '../../../api';
 import {
   DeviceMismatchLoginError,
   DeviceSwitchError,
@@ -23,8 +23,10 @@ function sessionExpiredMessage(): string {
   return useLocaleStore.getState().t.auth.errors.sessionExpired;
 }
 
-function deviceReplacedMessage(): string {
-  return useLocaleStore.getState().t.deviceLock.replacedNotice;
+function deviceReplacedMessage(reason: SessionEndReason = 'device_replaced'): string {
+  const copy = useLocaleStore.getState().t.deviceLock;
+
+  return reason === 'revoked_by_admin' ? copy.revokedNotice : copy.replacedNotice;
 }
 
 type AuthState = {
@@ -46,7 +48,7 @@ type AuthState = {
   refreshAccessToken: () => Promise<string | null>;
   forceSessionExpired: (message?: string) => Promise<void>;
   /** Another phone took the account over: sign out and explain on the login screen. */
-  forceDeviceReplaced: () => Promise<void>;
+  forceDeviceReplaced: (reason?: SessionEndReason) => Promise<void>;
   switchDevice: () => Promise<void>;
   tickDeviceLock: () => void;
   resetDeviceLock: () => void;
@@ -101,9 +103,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({
           ...unauthenticatedState,
           isBootstrapping: false,
-          endedByDevice: Boolean(result.deviceReplaced),
-          errorMessage: result.deviceReplaced
-            ? deviceReplacedMessage()
+          endedByDevice: Boolean(result.endReason),
+          errorMessage: result.endReason
+            ? deviceReplacedMessage(result.endReason)
             : result.sessionExpired
               ? sessionExpiredMessage()
               : null,
@@ -241,12 +243,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       tokens = await refreshSessionAccessToken();
     } catch (error) {
-      if (isDeviceMismatchError(error)) {
+      const endReason = sessionEndReason(error);
+
+      if (endReason) {
         // This phone was replaced: the stored tokens are already gone; explain on the login screen.
         set({
           ...unauthenticatedState,
           endedByDevice: true,
-          errorMessage: deviceReplacedMessage(),
+          errorMessage: deviceReplacedMessage(endReason),
         });
         return null;
       }
@@ -285,14 +289,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
   },
 
-  async forceDeviceReplaced() {
+  async forceDeviceReplaced(reason = 'device_replaced') {
     await endSessionReplacedByAnotherDevice();
 
     set({
       ...unauthenticatedState,
       isSubmitting: false,
       endedByDevice: true,
-      errorMessage: deviceReplacedMessage(),
+      errorMessage: deviceReplacedMessage(reason),
     });
   },
 

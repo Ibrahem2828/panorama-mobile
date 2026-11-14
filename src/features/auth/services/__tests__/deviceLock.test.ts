@@ -215,7 +215,27 @@ describe('session service with device binding', () => {
 
     const result = await bootstrapSession();
 
-    expect(result).toEqual({ session: null, sessionExpired: false, deviceReplaced: true });
+    expect(result).toEqual({ session: null, sessionExpired: false, endReason: 'device_replaced' });
+    expect(clearAuthTokens).toHaveBeenCalled();
+  });
+
+  it('cold start after staff ended the session reports its own reason', async () => {
+    getCurrentUser.mockRejectedValue(backendError(401, 'SESSION_REVOKED_BY_ADMIN'));
+
+    await expect(bootstrapSession()).resolves.toEqual({
+      session: null,
+      sessionExpired: false,
+      endReason: 'revoked_by_admin',
+    });
+    expect(clearAuthTokens).toHaveBeenCalled();
+  });
+
+  it('refresh answered SESSION_REVOKED_BY_ADMIN: tokens cleared and the error surfaced', async () => {
+    refreshToken.mockRejectedValue(backendError(401, 'SESSION_REVOKED_BY_ADMIN'));
+
+    await expect(refreshAccessToken()).rejects.toMatchObject({
+      errorCode: 'SESSION_REVOKED_BY_ADMIN',
+    });
     expect(clearAuthTokens).toHaveBeenCalled();
   });
 
@@ -230,6 +250,6 @@ describe('session service with device binding', () => {
     const result = await bootstrapSession();
 
     expect(result.session?.user.id).toBe(9);
-    expect(result.deviceReplaced).toBeUndefined();
+    expect(result.endReason).toBeUndefined();
   });
 });
