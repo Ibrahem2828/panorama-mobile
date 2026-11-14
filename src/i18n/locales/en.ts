@@ -60,6 +60,35 @@ export const en: TranslationCatalog = {
       'Your request is already being processed. Wait a moment, then check the result.',
   },
 
+  /** Illustrated failure states (ErrorState): one title and one line per kind of failure. */
+  errorStates: {
+    offline: {
+      title: 'No internet connection',
+      message: 'Check your network connection and try again.',
+    },
+    weak: {
+      title: 'Weak or unstable connection',
+      message:
+        'The request could not finish because the network is weak. Move to better coverage and try again.',
+    },
+    timeout: {
+      title: 'This is taking too long',
+      message: 'We did not get a reply in time. Try again in a moment.',
+    },
+    notFound: {
+      title: 'File not found',
+      message: 'It may have been moved or deleted, or it is no longer available to you.',
+    },
+    server: {
+      title: 'Temporary server problem',
+      message: 'We are working on it. Please try again shortly.',
+    },
+    generic: {
+      title: 'Something unexpected happened',
+      message: 'We could not complete the action. Please try again.',
+    },
+  },
+
   lifecycle: {
     maintenanceTitle: 'Under maintenance',
     maintenanceMessage:
@@ -89,6 +118,7 @@ export const en: TranslationCatalog = {
       'You are offline. What you have already loaded stays visible, and everything updates when you reconnect.',
     offlineSaved: 'You are offline. Showing data saved on your device.',
     staleSaved: 'Could not refresh right now. Showing data saved on your device.',
+    weak: 'Weak or unstable connection. Some content may load slowly.',
     lastUpdated: (when: string) => `Last updated ${when}`,
     justNow: 'just now',
     minutesAgo: (count: number) => `${count} min ago`,
@@ -191,6 +221,17 @@ export const en: TranslationCatalog = {
       note: 'New messages arrive automatically once you are back online.',
       offlineBanner:
         'You are offline. You can read saved messages, and updates resume when you reconnect.',
+    },
+
+    reply: {
+      action: 'Reply',
+      replyingTo: (name: string) => `Replying to ${name}`,
+      cancel: 'Cancel reply',
+      deletedMessage: 'Deleted message',
+      swipeHint: 'Swipe a message to reply to it',
+      openOriginal: 'Go to the original message',
+      originalNotLoaded:
+        'The original message is older than what is loaded. Scroll up to load more.',
     },
 
     today: 'Today',
@@ -765,6 +806,7 @@ export const en: TranslationCatalog = {
     cancelRequest: 'Cancel the request',
     cancelError: 'Could not cancel the request. Please try again.',
     newRequest: 'New registration',
+    backToStatus: 'Back to request status',
     status: {
       pending: 'Your request is under review',
       approved: 'Your registration was approved',

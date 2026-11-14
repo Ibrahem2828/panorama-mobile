@@ -47,6 +47,7 @@ import {
   type ChatMessage,
   type ChatReactionFrame,
   type ChatReceiptFrame,
+  type ChatReplyTarget,
   type Id,
   type PendingMessage,
 } from '../types';
@@ -86,7 +87,14 @@ type ChatState = {
   closeRoom: () => void;
   refresh: (groupId: Id) => Promise<void>;
   loadOlder: (groupId: Id) => Promise<void>;
-  send: (groupId: Id, input: { text: string; attachment?: ChatAttachment | null }) => SendResult;
+  send: (
+    groupId: Id,
+    input: {
+      text: string;
+      attachment?: ChatAttachment | null;
+      replyTo?: ChatReplyTarget | null;
+    },
+  ) => SendResult;
   retry: (groupId: Id, localId: string) => void;
   /** Sets (or, with `null`, clears) the member's reaction; the bubble updates at once. */
   react: (groupId: Id, messageId: number, emoji: string | null) => void;
@@ -463,7 +471,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       if (item.attachment) {
         const upload = sendAttachmentMessage(
           groupId,
-          { content: item.content, attachment: item.attachment },
+          { content: item.content, attachment: item.attachment, replyToId: item.replyTo?.id },
           item.idempotencyKey,
           accessToken,
           (fraction) =>
@@ -475,7 +483,13 @@ export const useChatStore = create<ChatState>((set, get) => {
         uploadAborts.set(localId, upload.abort);
         sent = await upload.promise;
       } else {
-        sent = await sendTextMessage(groupId, item.content, item.idempotencyKey, accessToken);
+        sent = await sendTextMessage(
+          groupId,
+          item.content,
+          item.idempotencyKey,
+          accessToken,
+          item.replyTo?.id,
+        );
       }
 
       // Discarded while in flight: the message still reached the server, so show it.
@@ -597,7 +611,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       }
     },
 
-    send(groupId, { text, attachment = null }) {
+    send(groupId, { text, attachment = null, replyTo = null }) {
       const t = chatCatalog();
       const content = text.trim();
 
@@ -638,6 +652,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         idempotencyKey: generateIdempotencyKey(),
         content,
         attachment,
+        replyTo,
         now: new Date(),
       });
 

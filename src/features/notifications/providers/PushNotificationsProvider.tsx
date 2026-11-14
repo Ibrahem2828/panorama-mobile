@@ -13,6 +13,8 @@ import { env } from '../../../config/env';
 import { logger } from '../../../utils/logger';
 import { useAuthStore } from '../../auth/store';
 import { useChatStore } from '../../chat/store';
+import { isEnrollmentPush } from '../../enrollment/logic';
+import { useEnrollmentSignalStore } from '../../enrollment/store/enrollmentSignalStore';
 import { isChatMutedNow, useChatMuteStore } from '../../chat/store/chatMuteStore';
 import { useChatUnreadStore } from '../../chat/store/unreadStore';
 import {
@@ -164,6 +166,11 @@ export function PushNotificationsProvider() {
       const token = useAuthStore.getState().accessToken;
 
       refreshBadges();
+
+      // A decision on the student's enrollment request: the open enrollment screen refetches immediately.
+      if (isEnrollmentPush(notification.request.content.data)) {
+        useEnrollmentSignalStore.getState().bump();
+      }
 
       if (!chat || !token) return;
 

@@ -20,7 +20,13 @@ import { PageTextPanel } from '../lectures/components/PageTextPanel';
 import { ViewerPageStage } from '../lectures/components/ViewerPageStage';
 import { useLectureNotes } from '../lectures/hooks/useLectureNotes';
 import { useViewerPages } from '../lectures/hooks/useViewerPages';
-import { applyPageNav, clampPage, stepZoom, ZOOM_FIT } from '../lectures/logic';
+import {
+  applyPageNav,
+  clampPage,
+  lectureErrorStateKind,
+  stepZoom,
+  ZOOM_FIT,
+} from '../lectures/logic';
 import { bookmarkForPage } from '../lectures/notesLogic';
 import { showToast } from '../../components/feedback/toastStore';
 import { AnnotationLayer, type Tool } from './annotations/AnnotationLayer';
@@ -239,9 +245,14 @@ export function DocumentViewerBody({ doc, title, pageCount, initialPage, onBack 
           <PageTextPanel loadText={pages.loadText} page={page} />
         ) : pages.sessionError ? (
           <ErrorState
-            message={t.lectures.errors[pages.sessionError]}
+            fallbackMessage={t.lectures.errors[pages.sessionError]}
+            kind={lectureErrorStateKind(pages.sessionError)}
             onRetry={() => pages.retry(page)}
-            title={t.lectures.viewer.pageErrorTitle}
+            title={
+              lectureErrorStateKind(pages.sessionError) === 'generic'
+                ? t.lectures.viewer.pageErrorTitle
+                : undefined
+            }
           />
         ) : (
           <ViewerPageStage

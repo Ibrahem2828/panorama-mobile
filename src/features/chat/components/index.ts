@@ -8,3 +8,5 @@ export * from './ChatMessageRow';
 export * from './ChatPermissionNotice';
 export * from './ChatRoomHeader';
 export { MessageActionsSheet } from './MessageActionsSheet';
+export { ReplyBar } from './ReplyBar';
+export { ReplyQuote } from './ReplyQuote';

@@ -1,14 +1,29 @@
-import { memo, useMemo } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { memo, useMemo, useRef } from 'react';
+import {
+  ActivityIndicator,
+  Animated,
+  PanResponder,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { AppAvatar, AppText, Icon, Stack } from '../../../components';
 import { colors, layout, radius, spacing, useBrand } from '../../../theme';
 import { useTranslation } from '../../../i18n';
 import { getChatSenderName } from '../logic/messages';
+import {
+  canReplyToMessage,
+  isHorizontalSwipe,
+  quotedFromMessage,
+  quotedFromPending,
+  shouldTriggerReply,
+} from '../logic/reply';
 import { getDayLabel } from '../logic/timeline';
 import { isolateLtr } from '../../../utils/rtl';
 import type { ChatListItem, ChatMessage, DeliveryState, PendingMessage } from '../types';
 import { formatMegabytes, formatMessageClock, formatMessageDay } from './chatFormat';
+import { ReplyQuote } from './ReplyQuote';
 
 const AVATAR_SIZE = layout.avatar.sm;
 
@@ -18,12 +33,17 @@ const BODY_STYLE = { writingDirection: 'auto' } as const;
 type RowCallbacks = {
   onOpenAttachment: (message: ChatMessage) => void;
   onLongPressMessage: (message: ChatMessage) => void;
+  /** Swipe-to-reply; absent when the member cannot post. */
+  onReply?: (message: ChatMessage) => void;
+  onJumpToReply: (messageId: number) => void;
   onRetry: (localId: string) => void;
   onDiscard: (localId: string) => void;
 };
 
 type ChatMessageRowProps = RowCallbacks & {
   item: ChatListItem;
+  /** The message just jumped to from a quote: it is tinted for a moment. */
+  highlighted: boolean;
 };
 
 const DaySeparator = memo(function DaySeparator({ date }: { date: string }) {
@@ -147,25 +167,70 @@ const ReactionChips = memo(function ReactionChips({ message }: { message: ChatMe
   );
 });
 
+/**
+ * Swipe-to-reply: a deliberate horizontal drag (either direction, so it behaves the same in RTL and LTR) slides the bubble a
+ * little and replies once it passes SWIPE_REPLY_DISTANCE; the bubble springs back. Vertical scrolling is left to the list.
+ */
+function useSwipeToReply(onTrigger: (() => void) | undefined) {
+  const translateX = useRef(new Animated.Value(0)).current;
+  const trigger = useRef(onTrigger);
+
+  trigger.current = onTrigger;
+
+  const handlers = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_event, gesture) =>
+          trigger.current !== undefined && isHorizontalSwipe(gesture.dx, gesture.dy),
+        onPanResponderMove: (_event, gesture) =>
+          translateX.setValue(Math.max(-72, Math.min(72, gesture.dx))),
+        onPanResponderRelease: (_event, gesture) => {
+          if (shouldTriggerReply(gesture.dx)) trigger.current?.();
+          Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+        },
+        onPanResponderTerminate: () => {
+          Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+        },
+      }).panHandlers,
+    [translateX],
+  );
+
+  return { handlers, translateX };
+}
+
 const MessageBubble = memo(function MessageBubble({
   message,
   own,
   delivery,
   groupStart,
+  highlighted,
   onOpenAttachment,
   onLongPressMessage,
+  onReply,
+  onJumpToReply,
 }: {
   message: ChatMessage;
   own: boolean;
   delivery: DeliveryState | null;
   groupStart: boolean;
+  highlighted: boolean;
   onOpenAttachment: (message: ChatMessage) => void;
   onLongPressMessage: (message: ChatMessage) => void;
+  onReply?: (message: ChatMessage) => void;
+  onJumpToReply: (messageId: number) => void;
 }) {
   const { t, locale } = useTranslation();
   const brand = useBrand();
   const senderName = getChatSenderName(message, t.chat.unnamedSender);
   const time = formatMessageClock(message.created_at, locale);
+  const quote = quotedFromMessage(message, {
+    unnamedSender: t.chat.unnamedSender,
+    image: t.chat.attachment.image,
+    file: t.chat.attachment.file,
+  });
+  const swipe = useSwipeToReply(
+    onReply && canReplyToMessage(message) ? () => onReply(message) : undefined,
+  );
 
   const staff = message.sender_detail?.is_staff === true;
   const bubble = (
@@ -179,6 +244,7 @@ const MessageBubble = memo(function MessageBubble({
           ? { backgroundColor: brand.primarySoft, borderColor: brand.primary }
           : styles.otherBubble,
         staff && !own ? { borderColor: brand.primary } : null,
+        highlighted ? { backgroundColor: brand.secondarySoft, borderColor: brand.secondary } : null,
       ]}
     >
       {!own && (groupStart || staff) ? (
@@ -189,6 +255,7 @@ const MessageBubble = memo(function MessageBubble({
           </AppText>
         </View>
       ) : null}
+      {quote ? <ReplyQuote onPress={onJumpToReply} quote={quote} /> : null}
       {message.content ? (
         <AppText align="auto" style={BODY_STYLE}>
           {message.content}
@@ -213,18 +280,27 @@ const MessageBubble = memo(function MessageBubble({
     <View
       style={[styles.row, own ? styles.rowOwn : styles.rowOther, groupStart && styles.groupGap]}
     >
-      {own ? (
-        bubble
-      ) : (
-        <Stack align="flex-end" direction="horizontal" gap="sm" style={styles.otherLine}>
-          {groupStart ? (
-            <AppAvatar name={senderName} size="sm" />
-          ) : (
-            <View style={{ width: AVATAR_SIZE }} />
-          )}
-          {bubble}
-        </Stack>
-      )}
+      <Animated.View
+        {...swipe.handlers}
+        style={[
+          styles.swipe,
+          own ? styles.rowOwn : styles.rowOther,
+          { transform: [{ translateX: swipe.translateX }] },
+        ]}
+      >
+        {own ? (
+          bubble
+        ) : (
+          <Stack align="flex-end" direction="horizontal" gap="sm" style={styles.otherLine}>
+            {groupStart ? (
+              <AppAvatar name={senderName} size="sm" />
+            ) : (
+              <View style={{ width: AVATAR_SIZE }} />
+            )}
+            {bubble}
+          </Stack>
+        )}
+      </Animated.View>
     </View>
   );
 });
@@ -246,6 +322,7 @@ const PendingBubble = memo(function PendingBubble({
   const time = formatMessageClock(pending.createdAt, locale);
   const uploading = pending.attachment !== null;
   const percent = Math.round(pending.progress * 100);
+  const pendingQuote = quotedFromPending(pending);
 
   return (
     <View style={[styles.row, styles.rowOwn, groupStart && styles.groupGap]}>
@@ -256,6 +333,7 @@ const PendingBubble = memo(function PendingBubble({
           failed ? styles.failedBubble : styles.sendingBubble,
         ]}
       >
+        {pendingQuote ? <ReplyQuote quote={pendingQuote} /> : null}
         {pending.content ? (
           <AppText align="auto" style={BODY_STYLE}>
             {pending.content}
@@ -356,8 +434,11 @@ const PendingBubble = memo(function PendingBubble({
 /** One row of the inverted list. Memoised: it only re-renders when its own item changes. */
 export const ChatMessageRow = memo(function ChatMessageRow({
   item,
+  highlighted,
   onOpenAttachment,
   onLongPressMessage,
+  onReply,
+  onJumpToReply,
   onRetry,
   onDiscard,
 }: ChatMessageRowProps) {
@@ -380,9 +461,12 @@ export const ChatMessageRow = memo(function ChatMessageRow({
         <MessageBubble
           delivery={item.delivery}
           groupStart={item.groupStart}
+          highlighted={highlighted}
           message={item.message}
+          onJumpToReply={onJumpToReply}
           onLongPressMessage={onLongPressMessage}
           onOpenAttachment={onOpenAttachment}
+          onReply={onReply}
           own={item.own}
         />
       );
@@ -399,6 +483,9 @@ const styles = StyleSheet.create({
   },
   rowOther: {
     alignItems: 'flex-end',
+  },
+  swipe: {
+    width: '100%',
   },
   groupGap: {
     marginTop: spacing.md,

@@ -88,6 +88,7 @@ export function FileDetailsScreen() {
   const selectedFile = useFilesStore((state) => state.selectedFile);
   const isLoadingDetail = useFilesStore((state) => state.isLoadingDetail);
   const errorMessage = useFilesStore((state) => state.errorMessage);
+  const errorKind = useFilesStore((state) => state.errorKind);
   const loadFileDetail = useFilesStore((state) => state.loadFileDetail);
   const cachedFile = findFileById(fileId, files, groupFilesByGroupId);
   const activeFile = selectedFile && isSameId(selectedFile.id, fileId) ? selectedFile : cachedFile;
@@ -134,9 +135,9 @@ export function FileDetailsScreen() {
         <Stack gap="lg">
           <AppHeader subtitle={t.files.details.subtitle} title={t.files.title} />
           <ErrorState
-            message={errorMessage ?? t.files.details.unavailableMessage}
+            fallbackMessage={errorMessage ?? t.files.details.unavailableMessage}
+            kind={errorKind ?? 'notFound'}
             onRetry={handleRetry}
-            title={t.files.details.unavailableTitle}
           />
         </Stack>
       </AppScreen>
@@ -152,7 +153,13 @@ export function FileDetailsScreen() {
 
         <FileDetailHeader file={activeFile} />
 
-        {errorMessage ? <ErrorState message={errorMessage} onRetry={handleRetry} /> : null}
+        {errorMessage ? (
+          <ErrorState
+            fallbackMessage={errorMessage}
+            kind={errorKind ?? undefined}
+            onRetry={handleRetry}
+          />
+        ) : null}
 
         <Stack direction="horizontal" gap="md" wrap>
           <AppButton

@@ -10,15 +10,18 @@ import { REACTION_EMOJIS, type ChatMessage } from '../types';
 type MessageActionsSheetProps = {
   message: ChatMessage | null;
   canDelete: boolean;
+  /** Absent when the message cannot be replied to (system messages) or the member may not post. */
+  onReply?: (message: ChatMessage) => void;
   onReact: (message: ChatMessage, emoji: string | null) => void;
   onDelete: (message: ChatMessage) => void;
   onClose: () => void;
 };
 
-/** Long-press menu of one message: the six reactions (tap again to remove yours) and, when allowed, delete. */
+/** Long-press menu of one message: the six reactions (tap again to remove yours), reply and, when allowed, delete. */
 export const MessageActionsSheet = memo(function MessageActionsSheet({
   message,
   canDelete,
+  onReply,
   onReact,
   onDelete,
   onClose,
@@ -67,6 +70,22 @@ export const MessageActionsSheet = memo(function MessageActionsSheet({
                 );
               })}
             </View>
+
+            {onReply ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => {
+                  onReply(message);
+                  onClose();
+                }}
+                style={styles.action}
+              >
+                <Icon color={brand.primary} name="reply" size={20} />
+                <AppText color="brand" variant="label" weight="600">
+                  {t.chat.reply.action}
+                </AppText>
+              </Pressable>
+            ) : null}
 
             {canDelete ? (
               <Pressable
