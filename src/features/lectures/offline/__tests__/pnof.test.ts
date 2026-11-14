@@ -157,9 +157,14 @@ describe('PNOF header and layout', () => {
 
     expect(() => assertHeaderMatchesLicense(header, expected)).not.toThrow();
     expect(() =>
-      assertHeaderMatchesLicense(header, { ...expected, keyId: '00000000-0000-0000-0000-000000000000' }),
+      assertHeaderMatchesLicense(header, {
+        ...expected,
+        keyId: '00000000-0000-0000-0000-000000000000',
+      }),
     ).toThrow(/key id/u);
-    expect(() => assertHeaderMatchesLicense(header, { ...expected, fileSize: 1 })).toThrow(/sizes/u);
+    expect(() => assertHeaderMatchesLicense(header, { ...expected, fileSize: 1 })).toThrow(
+      /sizes/u,
+    );
   });
 });
 
@@ -210,9 +215,16 @@ describe('PNOF decryption', () => {
     expect(progress).toEqual([...progress].sort((a, b) => a - b));
 
     await expect(
-      decryptPackage(header, key, { size: pkg.length, read }, { write: () => undefined }, nodeOpener, {
-        isCancelled: () => true,
-      }),
+      decryptPackage(
+        header,
+        key,
+        { size: pkg.length, read },
+        { write: () => undefined },
+        nodeOpener,
+        {
+          isCancelled: () => true,
+        },
+      ),
     ).rejects.toMatchObject({ failure: 'cancelled' });
   });
 
@@ -258,14 +270,17 @@ describe('PNOF decryption', () => {
     await expect(decryptAll(cut, key)).rejects.toMatchObject({ failure: 'tamper' });
 
     // Header untouched but the last chunk removed: size check catches it.
-    await expect(decryptAll(full.slice(0, 40 + 3 * 80), key)).rejects.toMatchObject({ failure: 'size' });
+    await expect(decryptAll(full.slice(0, 40 + 3 * 80), key)).rejects.toMatchObject({
+      failure: 'size',
+    });
   });
 
   it('detects reordered and duplicated chunks', async () => {
     const key = randomBytes(32);
     const pkg = buildPackage(Uint8Array.from(randomBytes(256)), key, 64);
     const header = parsePnofHeader(pkg);
-    const slot = (i: number) => pkg.slice(chunkRange(header, i).start, chunkRange(header, i).start + 80);
+    const slot = (i: number) =>
+      pkg.slice(chunkRange(header, i).start, chunkRange(header, i).start + 80);
     const swapped = Uint8Array.from(
       Buffer.concat([pkg.slice(0, 40), slot(1), slot(0), slot(2), slot(3)]),
     );
