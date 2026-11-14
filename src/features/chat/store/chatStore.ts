@@ -13,6 +13,7 @@ import { useGroupsStore } from '../../groups/store';
 import type { Group } from '../../groups/types';
 import { useChatUnreadStore } from './unreadStore';
 import { validateChatAttachment } from '../logic/attachments';
+import { deleteTemp } from '../media/services/mediaPicker';
 import {
   mergeChatMessages,
   pruneMissingMessages,
@@ -478,6 +479,9 @@ export const useChatStore = create<ChatState>((set, get) => {
         sent = await sendTextMessage(groupId, item.content, item.idempotencyKey, accessToken);
       }
 
+      // The upload is done: the plaintext temp copy (voice recording, compressed photo) is no longer needed.
+      deleteTemp(item.attachment?.uri);
+
       // Discarded while in flight: the message still reached the server, so show it.
       bumpEpoch(groupKey);
       patchRoom(groupKey, (room) => ({
@@ -757,12 +761,19 @@ export const useChatStore = create<ChatState>((set, get) => {
 
     discard(groupId, localId) {
       uploadAborts.get(localId)?.();
+      deleteTemp(
+        get().rooms[keyOf(groupId)]?.pending.find((item) => item.localId === localId)?.attachment
+          ?.uri,
+      );
       patchRoom(keyOf(groupId), (room) => ({ pending: [...removePending(room.pending, localId)] }));
     },
 
     reset() {
       session += 1;
       stopRealtime();
+      Object.values(get().rooms).forEach((room) =>
+        room.pending.forEach((item) => deleteTemp(item.attachment?.uri)),
+      );
       uploadAborts.forEach((abort) => abort());
       uploadAborts.clear();
       syncing.clear();

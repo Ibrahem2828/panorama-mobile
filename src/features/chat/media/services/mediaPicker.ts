@@ -1,4 +1,4 @@
-import { File } from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
 import { pickAudioDocument } from '../../../attachments';
@@ -104,6 +104,11 @@ export function deleteTemp(uri: string | null | undefined): void {
   }
 
   try {
+    // Only ever our own cache copies (recordings, compressed photos, picker copies), never a file the student owns.
+    if (!uri.startsWith(Paths.cache.uri)) {
+      return;
+    }
+
     const file = new File(uri);
 
     if (file.exists) {
