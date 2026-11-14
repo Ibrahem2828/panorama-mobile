@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 
+import { getDeviceHeaders } from '../../../api';
 import type { PrintOptionHelpItem } from '../../../api/types';
 import { AppButton, AppText, Icon } from '../../../components';
 import { Skeleton } from '../../../components/feedback';
@@ -8,10 +9,24 @@ import { AppModal } from '../../../components/overlay';
 import { buildApiUrl } from '../../../config/env';
 import { useTranslation } from '../../../i18n';
 import { colors, radius, shadows, spacing, useBrand } from '../../../theme';
+import { isTrustedBackendUrl } from '../../../utils/trustedUrl';
+import { useAuthStore } from '../../auth/store';
 import { isSafeImageUrl, resolveHelp } from '../services/printOptionHelp';
 import { usePrintOptionHelpStore } from '../store';
 
 const IMAGE_HEIGHT = 180;
+const HELP_IMAGE_PATH = '/api/v1/printing/option-help/';
+
+/** Illustrations served by the API need the student's token; anything else (an older /media/ link) loads as is. */
+function helpImageSource(url: string, accessToken: string | null) {
+  const authenticated =
+    !!accessToken &&
+    isTrustedBackendUrl(url, { pathPrefixes: [HELP_IMAGE_PATH], allowHttpInDevelopment: true });
+
+  return authenticated
+    ? { uri: url, headers: { Authorization: `Bearer ${accessToken}`, ...getDeviceHeaders() } }
+    : { uri: url };
+}
 
 type PrintOptionHelpSheetProps = {
   visible: boolean;
@@ -26,6 +41,7 @@ type PrintOptionHelpSheetProps = {
 function HelpIllustration({ item }: { item: PrintOptionHelpItem }) {
   const { t } = useTranslation();
   const [state, setState] = useState<'loading' | 'ready' | 'failed'>('loading');
+  const accessToken = useAuthStore((state) => state.accessToken);
   const url = isSafeImageUrl(item.image_url) ? buildApiUrl(item.image_url) : null;
 
   useEffect(() => setState('loading'), [url]);
@@ -44,7 +60,8 @@ function HelpIllustration({ item }: { item: PrintOptionHelpItem }) {
             onError={() => setState('failed')}
             onLoad={() => setState('ready')}
             resizeMode="contain"
-            source={{ uri: url }}
+            // Android forwards headers only when `source` is an array.
+            source={[helpImageSource(url, accessToken)]}
             style={styles.image}
           />
         ) : (
