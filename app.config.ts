@@ -341,7 +341,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           photosPermission:
             'يحتاج بانوراما للوصول إلى الصور لرفع البطاقة الجامعية أو المرفقات التي تختارها.',
           cameraPermission: 'يحتاج بانوراما إلى الكاميرا لالتقاط صورة بطاقتك الجامعية.',
-          microphonePermission: false,
+          // NOT false: that blocks RECORD_AUDIO app-wide (tools:node=remove) and breaks chat voice messages (expo-audio).
+          microphonePermission:
+            'يحتاج بانوراما إلى الميكروفون لتسجيل الرسائل الصوتية التي ترسلها في المحادثة.',
         },
       ],
     ],

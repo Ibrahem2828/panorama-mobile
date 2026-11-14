@@ -72,6 +72,8 @@ describe('manifest', () => {
     const blocked = /blockedPermissions:\s*\[([\s\S]*?)\]/u.exec(config)?.[1] ?? '';
 
     expect(blocked).not.toMatch(/RECORD_AUDIO/u);
+    // expo-image-picker blocks RECORD_AUDIO for the whole app when its microphonePermission is false.
+    expect(config).not.toMatch(/microphonePermission:\s*false/u);
     expect(blocked).toMatch(/READ_EXTERNAL_STORAGE/u);
     expect(blocked).toMatch(/WRITE_EXTERNAL_STORAGE/u);
     expect(config).toMatch(/enableBackgroundPlayback: false/u);
