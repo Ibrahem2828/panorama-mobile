@@ -8,7 +8,7 @@ build/
 .env.*.local
 *.log
 .DS_Store
-android/
+/android/
 ios/
 coverage/
 npm-debug.log*

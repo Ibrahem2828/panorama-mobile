@@ -1,4 +1,6 @@
+import { parseWaveform } from '../media/logic/waveform';
 import type {
+  ChatAttachmentMeta,
   ChatDelivery,
   ChatMessage,
   ChatMessageSender,
@@ -40,7 +42,7 @@ export function toNumericId(value: unknown): number | null {
   return null;
 }
 
-const MESSAGE_TYPES = new Set<string>(['text', 'image', 'file', 'system']);
+const MESSAGE_TYPES = new Set<string>(['text', 'image', 'file', 'voice', 'audio', 'system']);
 
 function toMessageType(value: unknown): ChatMessageType {
   return typeof value === 'string' && MESSAGE_TYPES.has(value)
@@ -75,6 +77,21 @@ function toReactions(value: unknown): ChatReactionCount[] {
       ? [{ emoji: entry.emoji, count }]
       : [];
   });
+}
+
+function toAttachmentMeta(meta: Record<string, unknown>): ChatAttachmentMeta {
+  return {
+    name: toText(meta.name) ?? '',
+    size: toNumericId(meta.size),
+    mime: toText(meta.mime) ?? null,
+    kind: toText(meta.kind) ?? null,
+    duration_ms: toNumericId(meta.duration_ms),
+    waveform: parseWaveform(meta.waveform),
+    width: toNumericId(meta.width),
+    height: toNumericId(meta.height),
+    has_thumbnail: meta.has_thumbnail === true,
+    etag: toText(meta.etag) ?? null,
+  };
 }
 
 function toReplyDetail(value: unknown): ChatReplyDetail | null {
@@ -150,7 +167,7 @@ export function normalizeChatMessage(
     content,
     message_type: toMessageType(candidate.message_type),
     has_attachment: hasAttachment,
-    attachment_meta: meta ? { name: toText(meta.name) ?? '', size: toNumericId(meta.size) } : null,
+    attachment_meta: meta ? toAttachmentMeta(meta) : null,
     reply_to: toNumericId(candidate.reply_to),
     reply_to_detail: toReplyDetail(candidate.reply_to_detail),
     reactions: toReactions(candidate.reactions),

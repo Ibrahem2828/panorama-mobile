@@ -1,4 +1,4 @@
-export * from './ChatAttachmentViewer';
+export * from './ChatMediaViewer';
 export * from './ChatComposer';
 export * from './ChatConnectionStatus';
 export * from './ChatEmptyState';

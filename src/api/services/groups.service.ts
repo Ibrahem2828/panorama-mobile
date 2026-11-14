@@ -96,6 +96,19 @@ export function requestGroupMessageAttachmentTicket(
   );
 }
 
+/** Tickets for up to 20 attachments at once (one request per screenful of thumbnails). */
+export function requestGroupMessageAttachmentTickets(
+  groupId: string | number,
+  messageIds: number[],
+  authToken: string,
+): Promise<unknown> {
+  return apiClient.post<unknown, { message_ids: number[] }>(
+    endpoints.groups.messageAttachmentTickets(groupId),
+    { message_ids: messageIds },
+    { authToken },
+  );
+}
+
 /**
  * Issues a one-time WebSocket handshake ticket. Tickets cannot be replayed, so every
  * (re)connect must request a fresh one.
