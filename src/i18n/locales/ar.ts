@@ -2380,6 +2380,16 @@ export const ar = {
       increase: 'زيادة عدد النسخ',
     },
 
+    // --- Print option help («i» buttons): keep this block together to ease merges. ---
+    help: {
+      sheetTitle: 'توضيح',
+      label: (title: string) => `توضيح: ${title}`,
+      hint: 'يفتح شرحاً مختصراً لهذا الخيار',
+      close: 'إغلاق',
+      imageFailed: 'تعذّر تحميل الصورة التوضيحية',
+    },
+    // --- end print option help ---
+
     options: {
       color: 'اللون',
       sides: 'الأوجه',

@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { printingService as apiPrinting, type PrintOptionsResponse } from '../../../api';
 import type { PrintProduct } from '../types';
 
+import { usePrintOptionHelpStore } from './printOptionHelpStore';
 import { useAuthStore } from '../../auth/store';
 import { useFeedbackStore } from '../../feedback/store';
 import { useLocaleStore } from '../../../i18n';
@@ -272,6 +273,8 @@ export const usePrintingStore = create<State>((set, get) => {
       const authToken = token();
       if (!authToken || get().isLoadingPickupLocations) return;
       set({ isLoadingPickupLocations: true, pickupError: null });
+      // The explanations («i» buttons): optional, silent on failure, fetched once per session.
+      void usePrintOptionHelpStore.getState().ensureLoaded();
       // The shop's own binding types and covers: without them the built-in choices are shown and the server still prices them.
       void apiPrinting
         .getPrintOptions(authToken, get().draft.currency)
