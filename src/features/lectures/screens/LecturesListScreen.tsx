@@ -20,6 +20,7 @@ import type { HomeStackParamList } from '../../../navigation/types';
 import { getFlexDirection } from '../../../utils/rtl';
 import { colors, spacing, useBrand } from '../../../theme';
 import { FilterChip } from '../components/FilterChip';
+import { OfflineDownloadButton } from '../offline/OfflineDownloadButton';
 import { LectureCard } from '../components/LectureCard';
 import {
   GENERAL_LECTURES_FILTER,
@@ -75,7 +76,12 @@ export function LecturesListScreen({ navigation, route }: Props) {
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: Lecture }) => <LectureCard lecture={item} onPress={openLecture} />,
+    ({ item }: { item: Lecture }) => (
+      <View>
+        <LectureCard lecture={item} onPress={openLecture} />
+        <OfflineDownloadButton lecture={item} />
+      </View>
+    ),
     [openLecture],
   );
 

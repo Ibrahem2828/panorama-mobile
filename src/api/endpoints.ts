@@ -146,6 +146,14 @@ export const endpoints = {
     notes: (lectureId: EndpointId) => `${API_PREFIX}/lectures/${lectureId}/notes/`,
     noteDetail: (lectureId: EndpointId, noteId: EndpointId) =>
       `${API_PREFIX}/lectures/${lectureId}/notes/${noteId}/`,
+    offlineLicense: (lectureId: EndpointId) =>
+      `${API_PREFIX}/lectures/${lectureId}/offline-license/`,
+    offlineLicenseRenew: (lectureId: EndpointId) =>
+      `${API_PREFIX}/lectures/${lectureId}/offline-license/renew/`,
+    offlinePackage: (lectureId: EndpointId) =>
+      `${API_PREFIX}/lectures/${lectureId}/offline-package/`,
+    offlineLicenses: `${API_PREFIX}/lectures/offline-licenses/`,
+    offlineLicensesSync: `${API_PREFIX}/lectures/offline-licenses/sync/`,
   },
   fileViewer: {
     manifest: (fileId: EndpointId) => `${API_PREFIX}/files/${fileId}/viewer/manifest/`,

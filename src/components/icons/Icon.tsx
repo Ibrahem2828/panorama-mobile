@@ -34,6 +34,7 @@ const shapes = {
   chat: [p('M7.9 20A9 9 0 1 0 4 16.1L2 22z')],
   file: [p('M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z'), p('M14 2v6h6')],
   check: [p('M20 6 9 17l-5-5')],
+  download: [p('M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'), p('m7 10 5 5 5-5'), p('M12 15V3')],
   close: [p('M18 6 6 18'), p('m6 6 12 12')],
   chevronRight: [p('m9 18 6-6-6-6')],
   chevronLeft: [p('m15 18-6-6 6-6')],

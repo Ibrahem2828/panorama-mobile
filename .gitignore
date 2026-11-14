@@ -9,7 +9,7 @@ build/
 *.log
 .DS_Store
 /android/
-ios/
+/ios/
 coverage/
 npm-debug.log*
 yarn-debug.log*
