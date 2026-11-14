@@ -76,6 +76,8 @@ export const endpoints = {
     whatsappLaunch: (groupId: EndpointId) => `${API_PREFIX}/groups/${groupId}/whatsapp-launch/`,
     messageAttachmentTicket: (groupId: EndpointId, messageId: EndpointId) =>
       `${API_PREFIX}/groups/${groupId}/messages/${messageId}/attachment-ticket/`,
+    messageAttachmentTickets: (groupId: EndpointId) =>
+      `${API_PREFIX}/groups/${groupId}/messages/attachment-tickets/`,
   },
   enrollment: {
     subjects: `${API_PREFIX}/enrollment/subjects/`,

@@ -110,3 +110,33 @@ export function touchEntry(index: CacheIndex, key: string, now: number): CacheIn
 export function isFresh(entry: CacheEntry, ticketEtag: string | null): boolean {
   return Boolean(entry.etag && ticketEtag && entry.etag === ticketEtag);
 }
+
+export type CacheDecision =
+  /** The stored copy is what the server holds: use it without a download. */
+  | { action: 'reuse' }
+  /** Ask the server "has it changed?" (If-None-Match); a 304 means reuse. */
+  | { action: 'conditional'; etag: string }
+  | { action: 'download' };
+
+/**
+ * What to do with a stored copy once a fresh ticket is in hand. `parent` is the ticket's etag (the content hash of the original)
+ * recorded when the copy was stored, `etag` the validator of the stored response itself.
+ */
+export function decideCacheUse(
+  meta: { etag?: string | null; parent?: string | null } | null,
+  ticketEtag: string | null,
+): CacheDecision {
+  if (!meta) {
+    return { action: 'download' };
+  }
+
+  if (ticketEtag && meta.parent && meta.parent === ticketEtag) {
+    return { action: 'reuse' };
+  }
+
+  if (meta.etag && (!ticketEtag || meta.parent === ticketEtag || !meta.parent)) {
+    return { action: 'conditional', etag: meta.etag };
+  }
+
+  return { action: 'download' };
+}

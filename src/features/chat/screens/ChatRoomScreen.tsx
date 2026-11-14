@@ -20,7 +20,7 @@ import { useAuthStore } from '../../auth/store';
 import { getGroupDisplayName, getGroupSubjectId } from '../../groups/services';
 import { useGroupsStore } from '../../groups/store';
 import {
-  ChatAttachmentViewer,
+  ChatMediaViewer,
   ChatComposer,
   ChatEmptyState,
   ChatMessageList,
@@ -262,7 +262,7 @@ export function ChatRoomScreen({ navigation, route }: ChatRoomScreenProps) {
     <AppScreen horizontalPadding={false} style={styles.screen}>
       {header}
       <View style={[styles.flex, { paddingBottom: keyboardOverlap }]}>{body}</View>
-      <ChatAttachmentViewer groupId={groupId} message={viewerMessage} onClose={handleCloseViewer} />
+      <ChatMediaViewer message={viewerMessage} onClose={handleCloseViewer} />
       <ChatMuteSheet
         onClose={handleCloseMute}
         target={
