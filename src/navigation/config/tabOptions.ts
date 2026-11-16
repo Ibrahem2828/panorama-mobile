@@ -8,6 +8,7 @@ export const tabLabels = {
   [TabRoutes.Subjects]: 'subjects',
   [TabRoutes.Groups]: 'groups',
   [TabRoutes.Printing]: 'printing',
+  [TabRoutes.Store]: 'store',
   [TabRoutes.Profile]: 'profile',
 } as const;
 

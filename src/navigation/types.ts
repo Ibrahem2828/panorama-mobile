@@ -76,6 +76,15 @@ export type PrintingStackParamList = {
   PrintProducts: undefined;
 };
 
+export type StoreStackParamList = {
+  StoreHome: undefined;
+  StoreProduct: { productId: string | number; name?: string };
+  StoreCart: undefined;
+  StoreOrderSuccess: { orderId: string | number };
+  StoreOrders: undefined;
+  StoreOrderDetails: { orderId: string | number };
+};
+
 export type ProfileStackParamList = {
   ProfileHome: undefined;
   EditProfile: undefined;
@@ -117,6 +126,7 @@ export type AppTabsParamList = {
   SubjectsTab: NavigatorScreenParams<SubjectsStackParamList>;
   GroupsTab: NavigatorScreenParams<GroupsStackParamList>;
   PrintingTab: NavigatorScreenParams<PrintingStackParamList>;
+  StoreTab: NavigatorScreenParams<StoreStackParamList>;
   ProfileTab: NavigatorScreenParams<ProfileStackParamList>;
 };
 

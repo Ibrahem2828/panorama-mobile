@@ -8,6 +8,7 @@ import { AppText } from '../components/common';
 import { totalUnread, useChatUnreadStore } from '../features/chat/store/unreadStore';
 import { tabBadgeCounts } from '../features/notifications/services/notificationPrefs';
 import { useNotificationPrefsStore } from '../features/notifications/store/notificationPrefsStore';
+import { useStoreStore } from '../features/store/store';
 import { Icon, type IconName } from '../components/icons';
 import { useTranslation } from '../i18n';
 import { colors, shadows, useBrand } from '../theme';
@@ -18,6 +19,7 @@ const tabIcons: Record<string, IconName> = {
   [TabRoutes.Subjects]: 'book',
   [TabRoutes.Groups]: 'users',
   [TabRoutes.Printing]: 'printer',
+  [TabRoutes.Store]: 'bag',
   [TabRoutes.Profile]: 'user',
 };
 
@@ -81,12 +83,14 @@ export function AppTabBar({ state, navigation }: BottomTabBarProps) {
   const brand = useBrand();
   const insets = useSafeAreaInsets();
   const badges = useTabBadges();
+  const cartCount = useStoreStore((state) => state.cart?.items_count ?? 0);
 
   const labels: Record<string, string> = {
     [TabRoutes.Home]: t.tabs.home,
     [TabRoutes.Subjects]: t.tabs.subjects,
     [TabRoutes.Groups]: t.tabs.groups,
     [TabRoutes.Printing]: t.tabs.printing,
+    [TabRoutes.Store]: t.tabs.store,
     [TabRoutes.Profile]: t.tabs.profile,
   };
 
@@ -100,9 +104,13 @@ export function AppTabBar({ state, navigation }: BottomTabBarProps) {
         return (
           <Pressable
             accessibilityLabel={
-              badges[route.name]
-                ? `${label}, ${t.notifications.badgeCount(badges[route.name] ?? 0)}`
-                : label
+              route.name === TabRoutes.Store
+                ? cartCount > 0
+                  ? `${label}, ${t.store.home.cartLabelWithCount(cartCount)}`
+                  : label
+                : badges[route.name]
+                  ? `${label}, ${t.notifications.badgeCount(badges[route.name] ?? 0)}`
+                  : label
             }
             accessibilityRole="tab"
             accessibilityState={{ selected: focused }}
@@ -128,22 +136,36 @@ export function AppTabBar({ state, navigation }: BottomTabBarProps) {
                 strokeWidth={focused ? 2.2 : 1.8}
               />
             </TabPill>
-            {badges[route.name] ? (
+            {route.name === TabRoutes.Store && cartCount > 0 ? (
+              <View style={[styles.badge, { backgroundColor: brand.accent }]}>
+                <AppText color="inverse" style={styles.badgeText} variant="caption" weight="700">
+                  {cartCount > 99 ? '99+' : String(cartCount)}
+                </AppText>
+              </View>
+            ) : null}
+            {route.name !== TabRoutes.Store && badges[route.name] ? (
               <View style={[styles.badge, { backgroundColor: colors.semantic.error }]}>
                 <AppText color="inverse" style={styles.badgeText} variant="caption" weight="700">
                   {t.notifications.badgeCount(badges[route.name] ?? 0)}
                 </AppText>
               </View>
             ) : null}
-            <AppText
-              align="center"
-              numberOfLines={1}
-              style={{ color, fontSize: 11, lineHeight: 16 }}
-              variant="caption"
-              weight={focused ? '700' : '600'}
-            >
-              {label}
-            </AppText>
+            {/* Six tabs share the width: the label shrinks to fit its slot (never cut off) and stops growing with the
+                system font size past 1.2x, where the icon, the pill and a readable label still fit. */}
+            <View style={styles.labelSlot}>
+              <AppText
+                adjustsFontSizeToFit
+                align="center"
+                maxFontSizeMultiplier={1.2}
+                minimumFontScale={0.7}
+                numberOfLines={1}
+                style={{ color, fontSize: 11, lineHeight: 16 }}
+                variant="caption"
+                weight={focused ? '700' : '600'}
+              >
+                {label}
+              </AppText>
+            </View>
           </Pressable>
         );
       })}
@@ -180,8 +202,10 @@ const styles = StyleSheet.create({
     gap: 2,
     minHeight: 52,
   },
+  labelSlot: { width: '100%', paddingHorizontal: 2 },
   pill: {
-    width: 56,
+    width: '86%',
+    maxWidth: 56,
     height: 30,
     borderRadius: 15,
     overflow: 'hidden',

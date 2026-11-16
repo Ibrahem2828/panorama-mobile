@@ -4,12 +4,14 @@ import { useAuthStore } from '../features/auth/store';
 import { TermConfirmationGate } from '../features/academic-term';
 import { OfflineLibraryEffects } from '../features/lectures/offline/OfflineLibraryEffects';
 import { PolicyGate } from '../features/policies';
+import { StoreEffects } from '../features/store';
 import { AppTabBar } from './AppTabBar';
 import { bottomTabScreenOptions } from './config/tabOptions';
 import { GroupsStackNavigator } from './stacks/GroupsStackNavigator';
 import { HomeStackNavigator } from './stacks/HomeStackNavigator';
 import { PrintingStackNavigator } from './stacks/PrintingStackNavigator';
 import { ProfileStackNavigator } from './stacks/ProfileStackNavigator';
+import { StoreStackNavigator } from './stacks/StoreStackNavigator';
 import { SubjectsStackNavigator } from './stacks/SubjectsStackNavigator';
 import { TabRoutes } from './routes';
 import type { AppTabsParamList } from './types';
@@ -35,9 +37,11 @@ export function AppTabsNavigator() {
           </>
         ) : null}
         <Tabs.Screen component={PrintingStackNavigator} name={TabRoutes.Printing} />
+        <Tabs.Screen component={StoreStackNavigator} name={TabRoutes.Store} />
         <Tabs.Screen component={ProfileStackNavigator} name={TabRoutes.Profile} />
       </Tabs.Navigator>
       {isStudent ? <OfflineLibraryEffects /> : null}
+      <StoreEffects />
       <PolicyGate />
       <TermConfirmationGate />
     </>
