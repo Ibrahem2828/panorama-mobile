@@ -19,6 +19,9 @@ type ImageGalleryProps = {
 
 type GalleryItem = Pick<StoreProductImage, 'id' | 'url'>;
 
+/** Keeps the picture from filling the whole screen on a tall phone: the details stay close below it. */
+const MAX_HEIGHT = 300;
+
 const VIEWABILITY = { itemVisiblePercentThreshold: 60 } as const;
 
 /** Swipeable pictures of a product with position dots. Pinch is not needed. */
@@ -62,7 +65,7 @@ export function ImageGallery({ images, fallbackUri, name, focusImageId }: ImageG
               accessibilityLabel={`${name}، ${t.store.product.galleryLabel(itemIndex + 1, items.length)}`}
               borderRadius={radius.xl}
               resizeMode="contain"
-              style={{ width, height: width }}
+              style={{ width, height: Math.min(width, MAX_HEIGHT) }}
               uri={item.url}
             />
           )}

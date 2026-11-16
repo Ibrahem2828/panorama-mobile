@@ -12,7 +12,6 @@ import {
   ErrorState,
   Icon,
   Skeleton,
-  useToastStore,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { useNetworkStore } from '../../../offline/networkStore';
@@ -57,7 +56,6 @@ export function StoreProductScreen({ navigation, route }: Props) {
   const cart = useStoreStore((state) => state.cart);
   const addToCart = useStoreStore((state) => state.addToCart);
   const loadCart = useStoreStore((state) => state.loadCart);
-  const showToast = useToastStore((state) => state.show);
   const { productId } = route.params;
   const copy = t.store.product;
   const [product, setProduct] = useState<StoreProductDetail | null>(null);
@@ -138,7 +136,6 @@ export function StoreProductScreen({ navigation, route }: Props) {
     const result = await addToCart(variant.id, quantity);
     setAdding(false);
     if (result.ok) {
-      showToast(copy.added);
       setJustAdded(true);
       if (addedTimer.current) clearTimeout(addedTimer.current);
       addedTimer.current = setTimeout(() => setJustAdded(false), ADDED_NOTICE_MS);

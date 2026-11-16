@@ -51,7 +51,7 @@ function BrandTile({
       <AppText
         align="center"
         color={selected ? 'brand' : 'secondary'}
-        numberOfLines={1}
+        numberOfLines={2}
         style={styles.label}
         variant="caption"
         weight={selected ? '700' : '600'}

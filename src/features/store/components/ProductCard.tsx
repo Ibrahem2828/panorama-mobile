@@ -46,10 +46,12 @@ export const ProductCard = memo(function ProductCard({
           uri={product.thumb_url ?? product.image_url}
         />
         {!product.in_stock ? (
-          <View style={[styles.badge, { backgroundColor: colors.text.primary }]}>
-            <AppText color="inverse" variant="caption" weight="700">
-              {copy.outOfStock}
-            </AppText>
+          <View pointerEvents="none" style={styles.badgeRow}>
+            <View style={[styles.badge, { backgroundColor: colors.text.primary }]}>
+              <AppText color="inverse" numberOfLines={1} variant="caption" weight="700">
+                {copy.outOfStock}
+              </AppText>
+            </View>
           </View>
         ) : null}
       </View>
@@ -100,10 +102,14 @@ const styles = StyleSheet.create({
   },
   pressed: { opacity: 0.9 },
   image: { width: '100%', aspectRatio: 1 },
-  badge: {
+  badgeRow: {
     position: 'absolute',
     top: spacing.sm,
     start: spacing.sm,
+    end: spacing.sm,
+    flexDirection: 'row',
+  },
+  badge: {
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
     borderRadius: radius.full,

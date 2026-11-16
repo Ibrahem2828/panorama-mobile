@@ -171,13 +171,14 @@ export const storeEn: TranslationCatalog['store'] = {
   errors: {
     insufficientStock: (available: number | null) =>
       available === null
-        ? 'The requested quantity is not available right now. We refreshed your cart.'
-        : `Only ${available} available now. We adjusted your cart to what is in stock.`,
+        ? 'The requested quantity is not available right now. Lower it and confirm again.'
+        : `Only ${available} available now. Lower the quantity and confirm again.`,
     quantityLimit: (max: number | null) =>
       max === null
         ? 'You went over the per-order limit.'
         : `The limit for this item is ${max} per order.`,
-    variantUnavailable: 'This option is no longer available. We refreshed your cart.',
+    variantUnavailable:
+      'This option is no longer available. Remove it from the cart or pick another.',
     priceUnavailable:
       'One of the items is not sold in this currency. Switch currency or remove it from the cart.',
     cartEmpty: 'Your cart is empty.',

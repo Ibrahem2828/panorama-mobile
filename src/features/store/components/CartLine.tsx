@@ -126,7 +126,10 @@ export const CartLine = memo(function CartLine({
           decreaseLabel={copy.decrease(item.product.name)}
           increaseLabel={copy.increase(item.product.name)}
           max={max}
-          onChange={(quantity) => onChangeQuantity(item, quantity)}
+          // A line above what is left goes straight down to what is left, not one step at a time.
+          onChange={(quantity) =>
+            onChangeQuantity(item, quantity < item.quantity ? Math.min(quantity, max) : quantity)
+          }
           value={item.quantity}
           valueLabel={copy.quantityOf(item.product.name, item.quantity)}
         />
