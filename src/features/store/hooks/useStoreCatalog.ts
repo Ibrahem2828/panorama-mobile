@@ -5,10 +5,10 @@ import {
   type StoreBrand,
   type StoreCategory,
   type StoreProductCard,
-  type StoreProductsQuery,
 } from '../../../api';
 import { useAuthStore } from '../../auth/store';
 import type { StoreFilters } from '../components/FilterSheet';
+import { buildProductsQuery } from '../services/storeQuery';
 import { useStoreStore } from '../store';
 
 const SEARCH_DEBOUNCE_MS = 400;
@@ -38,25 +38,6 @@ const EMPTY: CatalogState = {
   moreError: null,
   hasLoaded: false,
 };
-
-export function buildProductsQuery(input: {
-  search: string;
-  filters: StoreFilters;
-  currency: StoreProductsQuery['currency'];
-  page?: number;
-}): StoreProductsQuery {
-  const search = input.search.trim();
-
-  return {
-    page: input.page,
-    search: search || undefined,
-    brand: input.filters.brand ?? undefined,
-    category: input.filters.category ?? undefined,
-    in_stock: input.filters.inStock ? true : undefined,
-    ordering: input.filters.ordering,
-    currency: input.currency,
-  };
-}
 
 /** Brands and categories for the strip and the filter sheet; a failure just hides them. */
 export function useStoreFilterOptions() {

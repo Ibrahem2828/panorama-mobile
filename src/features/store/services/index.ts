@@ -5,3 +5,4 @@ export * from './storeReviews';
 export * from './storeVariants';
 export * from './storeImage';
 export * from './storeMessages';
+export * from './storeQuery';

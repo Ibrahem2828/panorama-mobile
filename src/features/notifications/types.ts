@@ -61,6 +61,8 @@ export type NotificationRouteIntent =
   | { kind: 'printingNew' }
   | { kind: 'printingOrders' }
   | { kind: 'printingOrder'; orderId: Id }
+  | { kind: 'storeOrder'; orderId: Id }
+  | { kind: 'storeOrders' }
   | { kind: 'groups' }
   | { kind: 'myGroups' }
   | { kind: 'group'; groupId: Id }

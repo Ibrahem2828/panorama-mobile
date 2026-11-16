@@ -100,7 +100,6 @@ export function StoreProductScreen({ navigation, route }: Props) {
     selectionReady.current = false;
     void load('initial');
     void loadCart({ silent: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId, accessToken]);
 
   useEffect(

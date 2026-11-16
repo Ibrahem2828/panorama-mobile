@@ -13,7 +13,7 @@ import {
   LoadingState,
   Stack,
 } from '../../../components';
-import { PrintingRoutes, ProfileRoutes, TabRoutes } from '../../../navigation/routes';
+import { PrintingRoutes, ProfileRoutes, StoreRoutes, TabRoutes } from '../../../navigation/routes';
 import { openLegalPage } from '../services';
 import type { AppTabsParamList, ProfileStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -93,6 +93,10 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
     tabNavigation?.navigate(TabRoutes.Printing, {
       screen: PrintingRoutes.MyPrintOrders,
     });
+  }
+
+  function handleStoreOrdersPress() {
+    tabNavigation?.navigate(TabRoutes.Store, { screen: StoreRoutes.StoreOrders });
   }
 
   return (
@@ -190,6 +194,12 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeScreenProps) {
             subtitle={t.profile.servicesSection.printOrdersSubtitle}
             icon="printer"
             title={t.profile.servicesSection.printOrders}
+          />
+          <ProfileActionItem
+            onPress={handleStoreOrdersPress}
+            subtitle={t.store.account.ordersSubtitle}
+            icon="bag"
+            title={t.store.account.ordersTitle}
           />
           <ProfileActionItem
             onPress={() => navigation.navigate(ProfileRoutes.Notifications)}

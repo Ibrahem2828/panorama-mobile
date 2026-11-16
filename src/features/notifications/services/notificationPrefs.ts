@@ -284,6 +284,11 @@ export function intentFromPushData(
     case 'groups':
       return { kind: 'groups' };
     case 'printing': {
+      const storeOrderId = data?.kind === 'store_order_status' ? id('store_order_id') : null;
+
+      if (storeOrderId) return { kind: 'storeOrder', orderId: storeOrderId };
+      if (data?.kind === 'store_order_status') return { kind: 'storeOrders' };
+
       const orderId = id('order_id') ?? id('print_order_id');
 
       return orderId ? { kind: 'printingOrder', orderId } : { kind: 'printingOrders' };
