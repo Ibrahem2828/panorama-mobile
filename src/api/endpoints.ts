@@ -112,6 +112,21 @@ export const endpoints = {
     itemAccessTicket: (itemId: EndpointId) =>
       `${API_PREFIX}/printing/items/${itemId}/access-ticket/`,
   },
+  store: {
+    brands: `${API_PREFIX}/store/brands/`,
+    categories: `${API_PREFIX}/store/categories/`,
+    products: `${API_PREFIX}/store/products/`,
+    productDetail: (productId: EndpointId) => `${API_PREFIX}/store/products/${productId}/`,
+    reviews: (productId: EndpointId) => `${API_PREFIX}/store/products/${productId}/reviews/`,
+    myReview: (productId: EndpointId) => `${API_PREFIX}/store/products/${productId}/reviews/mine/`,
+    cart: `${API_PREFIX}/store/cart/`,
+    cartItems: `${API_PREFIX}/store/cart/items/`,
+    cartItem: (itemId: EndpointId) => `${API_PREFIX}/store/cart/items/${itemId}/`,
+    checkout: `${API_PREFIX}/store/checkout/`,
+    orders: `${API_PREFIX}/store/orders/`,
+    orderDetail: (orderId: EndpointId) => `${API_PREFIX}/store/orders/${orderId}/`,
+    cancelOrder: (orderId: EndpointId) => `${API_PREFIX}/store/orders/${orderId}/cancel/`,
+  },
   notifications: {
     list: `${API_PREFIX}/notifications/`,
     unreadCount: `${API_PREFIX}/notifications/unread-count/`,

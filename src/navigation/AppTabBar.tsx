@@ -8,6 +8,7 @@ import { AppText } from '../components/common';
 import { totalUnread, useChatUnreadStore } from '../features/chat/store/unreadStore';
 import { tabBadgeCounts } from '../features/notifications/services/notificationPrefs';
 import { useNotificationPrefsStore } from '../features/notifications/store/notificationPrefsStore';
+import { useStoreStore } from '../features/store/store';
 import { Icon, type IconName } from '../components/icons';
 import { useTranslation } from '../i18n';
 import { colors, shadows, useBrand } from '../theme';
@@ -18,6 +19,7 @@ const tabIcons: Record<string, IconName> = {
   [TabRoutes.Subjects]: 'book',
   [TabRoutes.Groups]: 'users',
   [TabRoutes.Printing]: 'printer',
+  [TabRoutes.Store]: 'bag',
   [TabRoutes.Profile]: 'user',
 };
 
@@ -64,6 +66,13 @@ function TabPill({ focused, children }: { focused: boolean; children: ReactNode 
 }
 
 /** Unread numbers per tab: chat + groups on Groups, print updates on Printing, everything else on Profile (the inbox). */
+const HIDDEN_TABS: readonly string[] = [TabRoutes.Subjects];
+
+/** Tabs that stay registered (routes, deep links, notification targets) but have no button in the bar. */
+export function isHiddenTab(name: string): boolean {
+  return HIDDEN_TABS.includes(name);
+}
+
 function useTabBadges(): Record<string, number> {
   const summary = useNotificationPrefsStore((state) => state.summary);
   const chatUnread = useChatUnreadStore((state) => totalUnread(state.byGroup));
@@ -81,72 +90,99 @@ export function AppTabBar({ state, navigation }: BottomTabBarProps) {
   const brand = useBrand();
   const insets = useSafeAreaInsets();
   const badges = useTabBadges();
+  const cartCount = useStoreStore((state) => state.cart?.items_count ?? 0);
 
   const labels: Record<string, string> = {
     [TabRoutes.Home]: t.tabs.home,
-    [TabRoutes.Subjects]: t.tabs.subjects,
     [TabRoutes.Groups]: t.tabs.groups,
     [TabRoutes.Printing]: t.tabs.printing,
+    [TabRoutes.Store]: t.tabs.store,
     [TabRoutes.Profile]: t.tabs.profile,
   };
 
   return (
     <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
-      {state.routes.map((route, index) => {
-        const focused = state.index === index;
-        const color = focused ? brand.primary : colors.text.muted;
-        const label = labels[route.name] ?? route.name;
+      {state.routes
+        .filter((route) => !isHiddenTab(route.name))
+        .map((route) => {
+          const activeRoute = state.routes[state.index];
+          // Subjects open from the Home card, so Home stays lit while the student is inside them.
+          const focused = activeRoute
+            ? activeRoute.key === route.key ||
+              (route.name === TabRoutes.Home && isHiddenTab(activeRoute.name))
+            : false;
+          const isCurrentRoute = activeRoute?.key === route.key;
+          const color = focused ? brand.primary : colors.text.muted;
+          const label = labels[route.name] ?? route.name;
 
-        return (
-          <Pressable
-            accessibilityLabel={
-              badges[route.name]
-                ? `${label}, ${t.notifications.badgeCount(badges[route.name] ?? 0)}`
-                : label
-            }
-            accessibilityRole="tab"
-            accessibilityState={{ selected: focused }}
-            android_ripple={{ color: brand.primarySoft, borderless: true, radius: 36 }}
-            key={route.key}
-            onPress={() => {
-              const event = navigation.emit({
-                type: 'tabPress',
-                target: route.key,
-                canPreventDefault: true,
-              });
-              if (!focused && !event.defaultPrevented) {
-                navigation.navigate(route.name, route.params);
+          return (
+            <Pressable
+              accessibilityLabel={
+                route.name === TabRoutes.Store
+                  ? cartCount > 0
+                    ? `${label}, ${t.store.home.cartLabelWithCount(cartCount)}`
+                    : label
+                  : badges[route.name]
+                    ? `${label}, ${t.notifications.badgeCount(badges[route.name] ?? 0)}`
+                    : label
               }
-            }}
-            style={styles.item}
-          >
-            <TabPill focused={focused}>
-              <Icon
-                color={color}
-                name={tabIcons[route.name] ?? 'home'}
-                size={22}
-                strokeWidth={focused ? 2.2 : 1.8}
-              />
-            </TabPill>
-            {badges[route.name] ? (
-              <View style={[styles.badge, { backgroundColor: colors.semantic.error }]}>
-                <AppText color="inverse" style={styles.badgeText} variant="caption" weight="700">
-                  {t.notifications.badgeCount(badges[route.name] ?? 0)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: focused }}
+              android_ripple={{ color: brand.primarySoft, borderless: true, radius: 36 }}
+              key={route.key}
+              onPress={() => {
+                const event = navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+                if (!isCurrentRoute && !event.defaultPrevented) {
+                  navigation.navigate(route.name, route.params);
+                }
+              }}
+              style={styles.item}
+            >
+              <TabPill focused={focused}>
+                <Icon
+                  color={color}
+                  name={tabIcons[route.name] ?? 'home'}
+                  size={22}
+                  strokeWidth={focused ? 2.2 : 1.8}
+                />
+              </TabPill>
+              {route.name === TabRoutes.Store && cartCount > 0 ? (
+                <View style={[styles.badge, { backgroundColor: brand.accent }]}>
+                  <AppText color="inverse" style={styles.badgeText} variant="caption" weight="700">
+                    {cartCount > 99 ? '99+' : String(cartCount)}
+                  </AppText>
+                </View>
+              ) : null}
+              {route.name !== TabRoutes.Store && badges[route.name] ? (
+                <View style={[styles.badge, { backgroundColor: colors.semantic.error }]}>
+                  <AppText color="inverse" style={styles.badgeText} variant="caption" weight="700">
+                    {t.notifications.badgeCount(badges[route.name] ?? 0)}
+                  </AppText>
+                </View>
+              ) : null}
+              {/* The tabs share the width: the label shrinks to fit its slot (never cut off) and stops growing with the
+                system font size past 1.2x, where the icon, the pill and a readable label still fit. */}
+              <View style={styles.labelSlot}>
+                <AppText
+                  adjustsFontSizeToFit
+                  align="center"
+                  maxFontSizeMultiplier={1.2}
+                  minimumFontScale={0.7}
+                  numberOfLines={1}
+                  style={{ color, fontSize: 11, lineHeight: 16 }}
+                  variant="caption"
+                  weight={focused ? '700' : '600'}
+                >
+                  {label}
                 </AppText>
               </View>
-            ) : null}
-            <AppText
-              align="center"
-              numberOfLines={1}
-              style={{ color, fontSize: 11, lineHeight: 16 }}
-              variant="caption"
-              weight={focused ? '700' : '600'}
-            >
-              {label}
-            </AppText>
-          </Pressable>
-        );
-      })}
+            </Pressable>
+          );
+        })}
     </View>
   );
 }
@@ -180,8 +216,10 @@ const styles = StyleSheet.create({
     gap: 2,
     minHeight: 52,
   },
+  labelSlot: { width: '100%', paddingHorizontal: 2 },
   pill: {
-    width: 56,
+    width: '86%',
+    maxWidth: 56,
     height: 30,
     borderRadius: 15,
     overflow: 'hidden',

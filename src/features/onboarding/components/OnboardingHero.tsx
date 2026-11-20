@@ -16,7 +16,7 @@ type SceneConfig = {
 const SCENES: Record<Exclude<OnboardingScene, 'logo'>, SceneConfig> = {
   verification: { main: 'shield', satellites: ['idCard', 'checkCircle', 'cap'] },
   groups: { main: 'users', satellites: ['chat', 'bell', 'megaphone'], showFaculties: true },
-  files: { main: 'printer', satellites: ['file', 'folder', 'paperclip'] },
+  files: { main: 'printer', satellites: ['file', 'bag', 'pencil'] },
 };
 
 const FACULTY_ORDER = [

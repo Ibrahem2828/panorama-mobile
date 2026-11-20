@@ -26,6 +26,9 @@ const ALLOW: readonly RegExp[] = [
   /^\/api\/v1\/files\/\d+\/viewer\/manifest\/$/u,
   /^\/api\/v1\/printing\/(?:options|products|pickup-locations)\/$/u,
   /^\/api\/v1\/printing\/orders\/my\/(?:\d+\/)?$/u,
+  // The browsable catalogue of the stationery store (never the cart or orders).
+  /^\/api\/v1\/store\/(?:brands|categories|products)\/$/u,
+  /^\/api\/v1\/store\/products\/\d+\/$/u,
   /^\/api\/v1\/notifications\/(?:unread-count|summary|preferences)?\/?$/u,
   /^\/api\/v1\/support\/tickets\/(?:my|\d+)\/$/u,
   /^\/api\/v1\/lectures\/(?:\d+\/)?$/u,

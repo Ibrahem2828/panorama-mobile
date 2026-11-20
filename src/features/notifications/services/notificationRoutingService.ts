@@ -6,6 +6,7 @@ import type { Id, NotificationRouteIntent, NotificationTarget } from '../types';
  * but no producer populates them yet, so these keys are the only reliable target today.
  */
 const DATA_TARGET_KEYS: ReadonlyArray<readonly [string, string]> = [
+  ['store_order_id', 'store_order'],
   ['print_order_id', 'printing'],
   ['support_ticket_id', 'support'],
   ['group_id', 'group'],
@@ -62,6 +63,10 @@ export function resolveNotificationRouteIntent(
 
   if ((targetType === 'printing' || targetType === 'print_order') && id !== null) {
     return { kind: 'printingOrder', orderId: id };
+  }
+
+  if (targetType === 'store_order') {
+    return id !== null ? { kind: 'storeOrder', orderId: id } : { kind: 'storeOrders' };
   }
 
   if (targetType === 'group' && id !== null) {

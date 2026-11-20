@@ -29,6 +29,7 @@ export const TabRoutes = {
   Subjects: 'SubjectsTab',
   Groups: 'GroupsTab',
   Printing: 'PrintingTab',
+  Store: 'StoreTab',
   Profile: 'ProfileTab',
 } as const;
 
@@ -65,6 +66,15 @@ export const PrintingRoutes = {
   PrintOrderDetails: 'PrintOrderDetails',
   PrintItemViewer: 'PrintItemViewer',
   PrintProducts: 'PrintProducts',
+} as const;
+
+export const StoreRoutes = {
+  StoreHome: 'StoreHome',
+  StoreProduct: 'StoreProduct',
+  StoreCart: 'StoreCart',
+  StoreOrderSuccess: 'StoreOrderSuccess',
+  StoreOrders: 'StoreOrders',
+  StoreOrderDetails: 'StoreOrderDetails',
 } as const;
 
 export const ProfileRoutes = {

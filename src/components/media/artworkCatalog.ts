@@ -19,6 +19,8 @@ export const artworks = {
   announcements: { icon: 'megaphone' },
   notifications: { icon: 'bell' },
   printing: { icon: 'printer' },
+  store: { icon: 'bag' },
+  cart: { icon: 'cart' },
   printingPending: { icon: 'clock', tone: 'warning' },
   printingProcessing: { icon: 'printer', tone: 'info' },
   printingReady: { icon: 'check', tone: 'success' },

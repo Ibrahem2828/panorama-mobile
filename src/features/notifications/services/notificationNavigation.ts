@@ -4,6 +4,7 @@ import {
   HomeRoutes,
   PrintingRoutes,
   ProfileRoutes,
+  StoreRoutes,
   RootRoutes,
   SharedRoutes,
   SubjectsRoutes,
@@ -79,6 +80,14 @@ function destinationFor(intent: NotificationRouteIntent): Destination | null {
       return {
         tab: TabRoutes.Printing,
         screen: PrintingRoutes.PrintOrderDetails,
+        params: { orderId: intent.orderId },
+      };
+    case 'storeOrders':
+      return { tab: TabRoutes.Store, screen: StoreRoutes.StoreOrders };
+    case 'storeOrder':
+      return {
+        tab: TabRoutes.Store,
+        screen: StoreRoutes.StoreOrderDetails,
         params: { orderId: intent.orderId },
       };
     case 'supportList':

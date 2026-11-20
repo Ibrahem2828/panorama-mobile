@@ -26,6 +26,8 @@ import {
   resolveNotificationIntent,
 } from '../services';
 import { useNotificationPrefsStore } from '../store/notificationPrefsStore';
+import { useStoreStore } from '../../store/store';
+import { isStoreOrderPush } from '../../store/services/storeOrders';
 import { isPhoneVerificationPush } from '../../phone-verification/services/phoneVerificationLogic';
 import { usePhoneVerificationStore } from '../../phone-verification/store/phoneVerificationStore';
 
@@ -185,6 +187,11 @@ export function PushNotificationsProvider() {
       // A decision on the student's enrollment request: the open enrollment screen refetches immediately.
       if (isEnrollmentPush(notification.request.content.data)) {
         useEnrollmentSignalStore.getState().bump();
+      }
+
+      // A store order changed status: open order screens refetch at once.
+      if (isStoreOrderPush(notification.request.content.data)) {
+        useStoreStore.getState().bumpOrders();
       }
 
       // Phone verification moved (code sent, verified, rejected, expired): re-read it so an open screen updates at once.

@@ -41,6 +41,7 @@ import {
   AnnouncementCard,
   HomeHero,
   HomeSectionHeader,
+  MySubjectsCard,
   QuickActionTile,
   StudentStatusBanner,
 } from '../components';
@@ -58,7 +59,6 @@ function getQuickActions(
   t: TranslationCatalog['home']['services'],
 ): HomeQuickAction[] {
   const actions: HomeQuickAction[] = [
-    { key: 'subjects', title: t.subjects, description: t.subjectsDescription },
     { key: 'groups', title: t.groups, description: t.groupsDescription },
     { key: 'files', title: t.files, description: t.filesDescription },
     { key: 'lectures', title: t.lectures, description: t.lecturesDescription },
@@ -252,6 +252,8 @@ export function HomeScreen() {
             verificationStatus={verificationStatus}
           />
         ) : null}
+
+        {isStudent ? <MySubjectsCard onPress={() => handleQuickActionPress('subjects')} /> : null}
 
         {isStudent ? <CurrentTermCard /> : null}
 

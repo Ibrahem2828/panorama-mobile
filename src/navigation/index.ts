@@ -13,6 +13,7 @@ export type {
   RootFlowMode,
   RootStackParamList,
   SharedStackParamList,
+  StoreStackParamList,
   StudentSetupStackParamList,
   SubjectsStackParamList,
 } from './types';
