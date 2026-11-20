@@ -9,7 +9,7 @@ export const storeAr = {
 
   home: {
     title: 'متجر القرطاسية',
-    subtitle: 'أقلام ودفاتر وأدوات بأفضل الماركات',
+    subtitle: 'قرطاسية بأفضل الماركات لطلاب بانوراما',
     searchPlaceholder: 'ابحث عن منتج أو ماركة',
     searchLabel: 'البحث في المتجر',
     clearSearch: 'مسح البحث',

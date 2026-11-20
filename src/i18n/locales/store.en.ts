@@ -11,7 +11,7 @@ export const storeEn: TranslationCatalog['store'] = {
 
   home: {
     title: 'Stationery store',
-    subtitle: 'Pens, notebooks and supplies from top brands',
+    subtitle: 'Stationery from top brands for Panorama students',
     searchPlaceholder: 'Search for a product or brand',
     searchLabel: 'Search the store',
     clearSearch: 'Clear search',
