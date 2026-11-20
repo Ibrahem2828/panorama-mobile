@@ -5,7 +5,6 @@ import { TabRoutes } from '../routes';
 
 export const tabLabels = {
   [TabRoutes.Home]: 'home',
-  [TabRoutes.Subjects]: 'subjects',
   [TabRoutes.Groups]: 'groups',
   [TabRoutes.Printing]: 'printing',
   [TabRoutes.Store]: 'store',

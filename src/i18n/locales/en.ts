@@ -6,10 +6,9 @@ export const en: TranslationCatalog = {
 
   tabs: {
     home: 'Home',
-    subjects: 'Subjects',
     groups: 'Groups',
     printing: 'Printing',
-    store: 'Store',
+    store: 'Stationery',
     profile: 'Account',
   },
 
@@ -1893,6 +1892,11 @@ export const en: TranslationCatalog = {
       emptyIllustrationAlt: 'Illustration showing no announcements',
       untitled: 'Announcement',
       noDetails: 'There are no further details for this announcement.',
+    },
+
+    mySubjects: {
+      title: 'My subjects and lectures',
+      description: 'Browse your faculty subjects with their lectures and files in one place.',
     },
 
     services: {

@@ -30,15 +30,17 @@ export function AppTabsNavigator() {
         tabBar={(props) => <AppTabBar {...props} />}
       >
         <Tabs.Screen component={HomeStackNavigator} name={TabRoutes.Home} />
+        <Tabs.Screen component={StoreStackNavigator} name={TabRoutes.Store} />
         {isStudent ? (
-          <>
-            <Tabs.Screen component={SubjectsStackNavigator} name={TabRoutes.Subjects} />
-            <Tabs.Screen component={GroupsStackNavigator} name={TabRoutes.Groups} />
-          </>
+          <Tabs.Screen component={GroupsStackNavigator} name={TabRoutes.Groups} />
         ) : null}
         <Tabs.Screen component={PrintingStackNavigator} name={TabRoutes.Printing} />
-        <Tabs.Screen component={StoreStackNavigator} name={TabRoutes.Store} />
         <Tabs.Screen component={ProfileStackNavigator} name={TabRoutes.Profile} />
+        {/* Subjects and lectures have no tab of their own: they open from the Home card. The stack stays registered here so every
+            route name, deep link and notification target (SubjectsTab > SubjectDetails, LecturesList, ...) keeps working. */}
+        {isStudent ? (
+          <Tabs.Screen component={SubjectsStackNavigator} name={TabRoutes.Subjects} />
+        ) : null}
       </Tabs.Navigator>
       {isStudent ? <OfflineLibraryEffects /> : null}
       <StoreEffects />

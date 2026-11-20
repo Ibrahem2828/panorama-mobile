@@ -1,6 +1,6 @@
 /** Stationery store copy (Arabic is the source). Kept apart from the main catalog; `ar.ts` mounts it as `store`. */
 export const storeAr = {
-  tabLabel: 'المتجر',
+  tabLabel: 'القرطاسية',
 
   account: {
     ordersTitle: 'طلباتي من المتجر',
@@ -30,8 +30,8 @@ export const storeAr = {
     currencyUsdFull: 'الدولار',
     resultsCount: (count: number) => `${count} منتج`,
     loadMore: 'عرض المزيد',
-    emptyTitle: 'لا توجد منتجات بعد',
-    emptyMessage: 'نجهّز المتجر الآن. عُد قريبًا لتجد أقلامك ودفاترك المفضلة.',
+    emptyTitle: 'لم تُضف منتجات بعد',
+    emptyMessage: 'ستظهر القرطاسية هنا فور إضافتها. عُد قريبًا.',
     emptyFilteredTitle: 'لا توجد نتائج مطابقة',
     emptyFilteredMessage: 'جرّب كلمة بحث أخرى أو غيّر التصفية.',
     clearFilters: 'مسح التصفية',

@@ -11,10 +11,9 @@ export const ar = {
 
   tabs: {
     home: 'الرئيسية',
-    subjects: 'المواد',
     groups: 'المجموعات',
     printing: 'الطباعة',
-    store: 'المتجر',
+    store: 'القرطاسية',
     profile: 'حسابي',
   },
 
@@ -1887,6 +1886,11 @@ export const ar = {
       emptyIllustrationAlt: 'رسم يوضح عدم وجود إعلانات',
       untitled: 'إعلان',
       noDetails: 'لا توجد تفاصيل إضافية لهذا الإعلان.',
+    },
+
+    mySubjects: {
+      title: 'موادي ومحاضراتي',
+      description: 'تصفح مواد كليتك ومحاضراتها وملفاتها في مكان واحد.',
     },
 
     services: {

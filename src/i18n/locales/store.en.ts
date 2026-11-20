@@ -2,7 +2,7 @@ import type { TranslationCatalog } from '../types';
 
 /** Stationery store copy (English). Mounted by `en.ts` as `store`. */
 export const storeEn: TranslationCatalog['store'] = {
-  tabLabel: 'Store',
+  tabLabel: 'Stationery',
 
   account: {
     ordersTitle: 'My store orders',
@@ -32,9 +32,8 @@ export const storeEn: TranslationCatalog['store'] = {
     currencyUsdFull: 'US dollar',
     resultsCount: (count: number) => `${count} products`,
     loadMore: 'Show more',
-    emptyTitle: 'No products yet',
-    emptyMessage:
-      'We are setting up the store. Come back soon for your favourite pens and notebooks.',
+    emptyTitle: 'No products added yet',
+    emptyMessage: 'Stationery will appear here as soon as it is added. Come back soon.',
     emptyFilteredTitle: 'No matching results',
     emptyFilteredMessage: 'Try another search or change the filters.',
     clearFilters: 'Clear filters',

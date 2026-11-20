@@ -5,3 +5,4 @@ export { HomeSectionHeader } from './HomeSectionHeader';
 export { StudentStatusBanner } from './StudentStatusBanner';
 export { HomeHero } from './HomeHero';
 export { QuickActionTile } from './QuickActionTile';
+export { MySubjectsCard } from './MySubjectsCard';
