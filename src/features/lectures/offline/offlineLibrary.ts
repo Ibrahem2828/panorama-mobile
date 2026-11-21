@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { isDeviceOffline } from '../../../offline/networkStore';
 import { logger } from '../../../utils/logger';
 import { DownloadError, runPackageDownload } from './downloadCore';
+import { PreparingCancelledError } from './preparing';
 import {
   anchorGuard,
   checkStorage,
@@ -11,6 +12,8 @@ import {
   emptyInventory,
   evaluateAccess,
   inventoryLicenseIds,
+  entryKey,
+  entryKind,
   keyOf,
   observeClock,
   planSync,
@@ -20,6 +23,7 @@ import {
   type LectureKey,
   type OfflineEntry,
   type OfflineErrorKind,
+  type OfflineKind,
   type ServerLicense,
   type TransferState,
   EMPTY_GUARD,
@@ -69,6 +73,8 @@ export type LectureRef = {
   title: string;
   subjectName: string | null;
   pageCount: number;
+  /** Absent means a lecture. Library files use `file`. */
+  kind?: OfflineKind;
 };
 
 type LibraryState = {
@@ -79,7 +85,12 @@ type LibraryState = {
   budgetBytes: number;
   transfers: Record<LectureKey, TransferState>;
   /** Set when a purge removed something the student had, so the screen can explain it once. */
-  notices: { lectureId: number; title: string; reason: 'revoked' | 'corrupt' | 'replaced' }[];
+  notices: {
+    lectureId: number;
+    kind: OfflineKind;
+    title: string;
+    reason: 'revoked' | 'corrupt' | 'replaced';
+  }[];
 };
 
 const initial: LibraryState = {
@@ -259,6 +270,7 @@ function entryFromLicense(
   etag: string | null,
 ): OfflineEntry {
   return {
+    kind: lecture.kind ?? 'lecture',
     lectureId: lecture.id,
     title: lecture.title,
     subjectName: lecture.subjectName,
@@ -356,8 +368,19 @@ async function verifyPackage(entry: OfflineEntry, license: ServerLicense): Promi
 }
 
 /** Starts (or resumes) downloading one lecture into the encrypted private library. Resolves when it finished or failed. */
-export async function downloadLecture(lecture: LectureRef): Promise<void> {
-  const key = keyOf(lecture.id);
+export function downloadLecture(lecture: LectureRef): Promise<void> {
+  return downloadItem({ ...lecture, kind: 'lecture' });
+}
+
+/** The same for a library file. */
+export function downloadFile(file: LectureRef): Promise<void> {
+  return downloadItem({ ...file, kind: 'file' });
+}
+
+/** Starts (or resumes) downloading one lecture or file. Resolves when it finished or failed. */
+export async function downloadItem(lecture: LectureRef): Promise<void> {
+  const kind = lecture.kind ?? 'lecture';
+  const key = keyOf(lecture.id, kind);
   const state = useOfflineLibrary.getState();
 
   if (!state.userId || controllers.has(key)) {
@@ -368,7 +391,7 @@ export async function downloadLecture(lecture: LectureRef): Promise<void> {
 
   if (existing?.status === 'complete') {
     // Already stored: a renewal is what a stale copy needs, not another download.
-    await renewLecture(lecture.id);
+    await renewItem(lecture.id, kind).catch(() => undefined);
     return;
   }
 
@@ -389,7 +412,16 @@ export async function downloadLecture(lecture: LectureRef): Promise<void> {
   let writer: PartWriter | null = null;
 
   try {
-    const license = await issueLicense(lecture.id);
+    const license = await issueLicense(lecture.id, kind, {
+      isCancelled: () => controller.signal.aborted,
+      onPreparing: (attempt) => setTransfer(key, { kind: 'preparing', attempt }),
+    });
+
+    setTransfer(key, {
+      kind: 'downloading',
+      doneBytes: existing?.downloadedBytes ?? 0,
+      totalBytes: license.fileSize,
+    });
 
     // A different package version than the partial file: start over.
     if (existing && (existing.keyId !== license.keyId || existing.sha256 !== license.sha256)) {
@@ -408,7 +440,7 @@ export async function downloadLecture(lecture: LectureRef): Promise<void> {
     const verdict = checkStorage({
       usedBytes: usedBytes(
         Object.values(useOfflineLibrary.getState().entries).filter(
-          (entry) => entry.lectureId !== lecture.id,
+          (entry) => entryKey(entry) !== key,
         ),
       ),
       incomingBytes: license.fileSize,
@@ -420,7 +452,7 @@ export async function downloadLecture(lecture: LectureRef): Promise<void> {
     if (!verdict.ok) {
       writer.close();
       deleteEntryFiles({ fileName });
-      void releaseLicense(lecture.id).catch(() => undefined);
+      void releaseLicense(lecture.id, kind).catch(() => undefined);
       setTransfer(key, { kind: 'error', reason: verdict.reason });
       return;
     }
@@ -490,19 +522,22 @@ export async function downloadLecture(lecture: LectureRef): Promise<void> {
   } catch (error) {
     writer?.close();
 
-    if (error instanceof DownloadError && error.kind === 'cancelled') {
-      await discardEntry(lecture.id, { release: true });
+    if (
+      (error instanceof DownloadError && error.kind === 'cancelled') ||
+      error instanceof PreparingCancelledError
+    ) {
+      await discardEntry(lecture.id, kind, { release: true });
       setTransfer(key, { kind: 'idle' });
     } else {
-      const kind = failureKind(error);
+      const failure = failureKind(error);
 
-      logger.warn('Offline lecture download failed', { kind, message: String(error) });
+      logger.warn('Offline download failed', { kind: failure, item: kind, message: String(error) });
 
-      if (kind === 'integrity') {
-        await discardEntry(lecture.id, { release: false });
+      if (failure === 'integrity') {
+        await discardEntry(lecture.id, kind, { release: false });
       }
 
-      setTransfer(key, { kind: 'error', reason: kind });
+      setTransfer(key, { kind: 'error', reason: failure });
     }
   } finally {
     controllers.delete(key);
@@ -510,12 +545,12 @@ export async function downloadLecture(lecture: LectureRef): Promise<void> {
 }
 
 /** Stops a running download and discards what was fetched. */
-export function cancelDownload(lectureId: number): void {
-  controllers.get(keyOf(lectureId))?.abort();
+export function cancelDownload(lectureId: number, kind: OfflineKind = 'lecture'): void {
+  controllers.get(keyOf(lectureId, kind))?.abort();
 }
 
-export function clearTransferError(lectureId: number): void {
-  const key = keyOf(lectureId);
+export function clearTransferError(lectureId: number, kind: OfflineKind = 'lecture'): void {
+  const key = keyOf(lectureId, kind);
 
   if (useOfflineLibrary.getState().transfers[key]?.kind === 'error') {
     setTransfer(key, { kind: 'idle' });
@@ -526,9 +561,10 @@ export function clearTransferError(lectureId: number): void {
 
 async function discardEntry(
   lectureId: number,
+  kind: OfflineKind,
   options: { release: boolean; notice?: 'revoked' | 'corrupt' | 'replaced' },
 ): Promise<void> {
-  const key = keyOf(lectureId);
+  const key = keyOf(lectureId, kind);
   const entry = useOfflineLibrary.getState().entries[key];
 
   if (!entry) {
@@ -545,27 +581,32 @@ async function discardEntry(
   });
 
   if (options.notice) {
-    const notice = { lectureId, title: entry.title, reason: options.notice };
+    const notice = { lectureId, kind, title: entry.title, reason: options.notice };
 
     useOfflineLibrary.setState((state) => ({ notices: [...state.notices, notice] }));
   }
 
   if (options.release && !isDeviceOffline()) {
-    void releaseLicense(lectureId).catch(() => undefined);
+    void releaseLicense(lectureId, kind).catch(() => undefined);
   }
 }
 
 /** The student deletes one downloaded lecture (frees the device slot on the server when online). */
-export async function deleteDownload(lectureId: number): Promise<void> {
-  cancelDownload(lectureId);
-  await discardEntry(lectureId, { release: true });
+export async function deleteDownload(
+  lectureId: number,
+  kind: OfflineKind = 'lecture',
+): Promise<void> {
+  cancelDownload(lectureId, kind);
+  await discardEntry(lectureId, kind, { release: true });
 }
 
 export async function deleteAllDownloads(): Promise<void> {
-  const ids = Object.values(useOfflineLibrary.getState().entries).map((entry) => entry.lectureId);
+  const rows = Object.values(useOfflineLibrary.getState().entries).map(
+    (entry) => [entry.lectureId, entryKind(entry)] as const,
+  );
 
-  for (const id of ids) {
-    await deleteDownload(id);
+  for (const [id, kind] of rows) {
+    await deleteDownload(id, kind);
   }
 }
 
@@ -583,8 +624,16 @@ export async function setBudget(bytes: number): Promise<void> {
  * Renews a stored lecture. 404 means the membership is gone: the copy is purged. A server package that changed since the copy
  * was made (new key) cannot be opened with the new key, so the old copy is replaced by a fresh download.
  */
-export async function renewLecture(lectureId: number): Promise<'renewed' | 'purged' | 'replaced'> {
-  const key = keyOf(lectureId);
+export function renewLecture(lectureId: number): Promise<'renewed' | 'purged' | 'replaced'> {
+  return renewItem(lectureId, 'lecture');
+}
+
+/** The same for lectures and library files. */
+export async function renewItem(
+  lectureId: number,
+  kind: OfflineKind,
+): Promise<'renewed' | 'purged' | 'replaced'> {
+  const key = keyOf(lectureId, kind);
   const entry = useOfflineLibrary.getState().entries[key];
 
   if (!entry) {
@@ -594,13 +643,14 @@ export async function renewLecture(lectureId: number): Promise<'renewed' | 'purg
   setTransfer(key, { kind: 'renewing' });
 
   try {
-    const license = await renewLicense(lectureId);
+    const license = await renewLicense(lectureId, kind);
 
     if (license.keyId !== entry.keyId || license.sha256 !== entry.sha256) {
-      await discardEntry(lectureId, { release: false });
+      await discardEntry(lectureId, kind, { release: false });
       setTransfer(key, { kind: 'idle' });
-      await downloadLecture({
+      await downloadItem({
         id: lectureId,
+        kind,
         title: entry.title,
         subjectName: entry.subjectName,
         pageCount: entry.pageCount,
@@ -636,7 +686,7 @@ export async function renewLecture(lectureId: number): Promise<'renewed' | 'purg
     const failure = toLibraryError(error);
 
     if (failure.kind === 'notFound') {
-      await discardEntry(lectureId, { release: false, notice: 'revoked' });
+      await discardEntry(lectureId, kind, { release: false, notice: 'revoked' });
       setTransfer(key, { kind: 'idle' });
 
       return 'purged';
@@ -663,32 +713,49 @@ export async function syncOfflineLibrary(options: { force?: boolean } = {}): Pro
     return;
   }
 
-  const entries = Object.values(state.entries).filter((entry) => entry.status === 'complete');
+  const all = Object.values(state.entries).filter((entry) => entry.status === 'complete');
 
   lastSyncAt = now;
   await advanceClock();
 
-  if (entries.length === 0) {
-    return;
-  }
+  // Lectures and library files have their own license tables and sync routes: each kind is reconciled on its own, so one
+  // failing route never blocks the other.
+  for (const kind of ['lecture', 'file'] as const) {
+    const entries = all.filter((entry) => entryKind(entry) === kind);
 
+    if (entries.length > 0) {
+      await syncKind(kind, entries, now);
+    }
+  }
+}
+
+async function syncKind(kind: OfflineKind, entries: OfflineEntry[], now: number): Promise<void> {
   try {
-    const response = await syncLicenses(inventoryLicenseIds(entries));
+    const response = await syncLicenses(inventoryLicenseIds(entries), kind);
     const plan = planSync(entries, response, now, useOfflineLibrary.getState().guard);
+    const byKey = new Map(entries.map((entry) => [entryKey(entry), entry]));
 
     for (const key of plan.purge) {
-      await discardEntry(Number(key), { release: false, notice: 'revoked' });
+      const entry = byKey.get(key);
+
+      if (entry) {
+        await discardEntry(entry.lectureId, kind, { release: false, notice: 'revoked' });
+      }
     }
 
     for (const key of plan.renew) {
+      const entry = byKey.get(key);
+
       try {
-        await renewLecture(Number(key));
+        if (entry) {
+          await renewItem(entry.lectureId, kind);
+        }
       } catch {
         // Stays as it is (still readable until it expires); the next sync tries again.
       }
     }
   } catch (error) {
-    logger.warn('Offline library sync failed', { message: String(error) });
+    logger.warn('Offline library sync failed', { kind, message: String(error) });
   }
 }
 
@@ -711,11 +778,25 @@ export type OpenedLecture = { uri: string; entry: OfflineEntry; release(): void 
  * Decrypts a stored lecture into a temp PDF in the private cache for the viewer. Works fully offline. Refuses (without touching
  * the package) when the license expired or the clock was moved back; an expired or blocked copy needs an online renewal.
  */
-export async function openDownloadedLecture(
+export function openDownloadedLecture(
   lectureId: number,
-  options: { onProgress?: (done: number, total: number) => void; isCancelled?: () => boolean } = {},
+  options: OpenOptions = {},
 ): Promise<OpenedLecture> {
-  const entry = useOfflineLibrary.getState().entries[keyOf(lectureId)];
+  return openDownloadedItem(lectureId, 'lecture', options);
+}
+
+type OpenOptions = {
+  onProgress?: (done: number, total: number) => void;
+  isCancelled?: () => boolean;
+};
+
+/** The same for lectures and library files (both are PDFs inside the same package format). */
+export async function openDownloadedItem(
+  lectureId: number,
+  kind: OfflineKind,
+  options: OpenOptions = {},
+): Promise<OpenedLecture> {
+  const entry = useOfflineLibrary.getState().entries[keyOf(lectureId, kind)];
 
   if (!entry || entry.status !== 'complete') {
     throw new OfflineOpenError('missing');
@@ -737,7 +818,7 @@ export async function openDownloadedLecture(
   const source = packageFile(entry.fileName);
 
   if (!source.exists) {
-    await discardEntry(lectureId, { release: false, notice: 'corrupt' });
+    await discardEntry(lectureId, kind, { release: false, notice: 'corrupt' });
     throw new OfflineOpenError('missing');
   }
 
@@ -782,7 +863,7 @@ export async function openDownloadedLecture(
       }
 
       // Tampered, truncated or the wrong key: the copy is useless, remove it and let the student download it again.
-      await discardEntry(lectureId, { release: false, notice: 'corrupt' });
+      await discardEntry(lectureId, kind, { release: false, notice: 'corrupt' });
       throw new OfflineOpenError('corrupt');
     }
 

@@ -9,10 +9,11 @@ import { useNetworkStore } from '../../../offline/networkStore';
 import { radius, spacing } from '../../../theme';
 import { ChatPdfPages } from '../../chat/media/components/ChatPdfPages';
 import { percentOf } from './formatBytes';
+import type { OfflineKind } from './licenseLogic';
 import {
   OfflineOpenError,
-  openDownloadedLecture,
-  renewLecture,
+  openDownloadedItem,
+  renewItem,
   useOfflineLibrary,
   type OpenBlock,
   type OpenedLecture,
@@ -28,7 +29,13 @@ type ViewerState =
   | { status: 'blocked'; reason: OpenBlock | 'failed' }
   | { status: 'ready'; opened: OpenedLecture };
 
-type Props = { lectureId: number; title: string; onBack: () => void };
+type Props = {
+  lectureId: number;
+  title: string;
+  onBack: () => void;
+  /** A downloaded library file opens in the very same viewer. */
+  kind?: OfflineKind;
+};
 
 /**
  * Reads a downloaded lecture inside the app, fully offline. The package is decrypted chunk by chunk into a temp PDF in the
@@ -36,7 +43,7 @@ type Props = { lectureId: number; title: string; onBack: () => void };
  * for as long as it is open, always (also in tester builds). There is no share, save, export or open-with, and no long-press menu.
  * An expired license or a rolled-back clock blocks opening until the app is online and the license is renewed.
  */
-export function OfflineLectureViewer({ lectureId, title, onBack }: Props) {
+export function OfflineLectureViewer({ lectureId, title, onBack, kind = 'lecture' }: Props) {
   const { t } = useTranslation();
   const copy = t.offlineLectures;
   const insets = useSafeAreaInsets();
@@ -66,7 +73,7 @@ export function OfflineLectureViewer({ lectureId, title, onBack }: Props) {
 
     setState({ status: 'loading', percent: 0 });
 
-    openDownloadedLecture(lectureId, {
+    openDownloadedItem(lectureId, kind, {
       isCancelled: () => !active,
       onProgress: (done, total) => {
         const percent = percentOf(done, total);
@@ -101,21 +108,21 @@ export function OfflineLectureViewer({ lectureId, title, onBack }: Props) {
       openedRef.current?.release();
       openedRef.current = null;
     };
-  }, [attempt, lectureId, ready]);
+  }, [attempt, kind, lectureId, ready]);
 
   const retry = useCallback(() => setAttempt((value) => value + 1), []);
   const renew = useCallback(async () => {
     setRenewing(true);
 
     try {
-      await renewLecture(lectureId);
+      await renewItem(lectureId, kind);
       retry();
     } catch {
       // The reason is shown by the library state; the screen stays blocked.
     } finally {
       setRenewing(false);
     }
-  }, [lectureId, retry]);
+  }, [kind, lectureId, retry]);
 
   const blockedMessage = (reason: OpenBlock | 'failed'): { title: string; body: string } => {
     switch (reason) {

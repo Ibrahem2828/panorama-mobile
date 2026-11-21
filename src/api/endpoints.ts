@@ -96,6 +96,12 @@ export const endpoints = {
     list: `${API_PREFIX}/files/`,
     detail: (fileId: EndpointId) => `${API_PREFIX}/files/${fileId}/`,
     accessTicket: (fileId: EndpointId) => `${API_PREFIX}/files/${fileId}/access-ticket/`,
+    offlineLicense: (fileId: EndpointId) => `${API_PREFIX}/files/${fileId}/offline-license/`,
+    offlineLicenseRenew: (fileId: EndpointId) =>
+      `${API_PREFIX}/files/${fileId}/offline-license/renew/`,
+    offlinePackage: (fileId: EndpointId) => `${API_PREFIX}/files/${fileId}/offline-package/`,
+    offlineLicenses: `${API_PREFIX}/files/offline-licenses/`,
+    offlineLicensesSync: `${API_PREFIX}/files/offline-licenses/sync/`,
   },
   printing: {
     quote: `${API_PREFIX}/printing/quote/`,

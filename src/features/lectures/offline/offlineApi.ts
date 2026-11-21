@@ -2,10 +2,18 @@ import { apiClient, endpoints, generateIdempotencyKey, normalizeApiError } from 
 import { useAuthStore } from '../../auth/store';
 import { offlineDeviceHeaders } from './deviceId';
 import {
+  issueWithPreparing,
+  PreparingCancelledError,
+  PreparingTimeoutError,
+  type LicenseAttempt,
+} from './preparing';
+import {
   classifyOfflineError,
+  parsePreparing,
   parseServerLicense,
   parseSyncResponse,
   type OfflineErrorKind,
+  type OfflineKind,
   type ServerLicense,
   type SyncResponse,
 } from './licenseLogic';
@@ -35,6 +43,7 @@ export function toLibraryError(error: unknown): OfflineLibraryError {
       status: normalized.status ?? null,
       code: normalized.errorCode ?? null,
       offline,
+      detail: normalized.fieldErrors?.detail?.join(' ') ?? null,
     }),
     normalized.status,
   );
@@ -50,42 +59,98 @@ async function options() {
 
 type CallOptions = Awaited<ReturnType<typeof options>> & { idempotencyKey: string };
 
-async function licenseCall(call: (opts: CallOptions) => Promise<unknown>): Promise<ServerLicense> {
+/** The license routes of a kind: lectures and library files expose the same five routes under different prefixes. */
+function routes(kind: OfflineKind) {
+  return kind === 'file' ? endpoints.files : endpoints.lectures;
+}
+
+async function licenseAttempt(
+  kind: OfflineKind,
+  call: (opts: CallOptions) => Promise<unknown>,
+): Promise<LicenseAttempt<ServerLicense>> {
   try {
-    const license = parseServerLicense(
-      await call({ ...(await options()), idempotencyKey: generateIdempotencyKey() }),
-    );
+    const data = await call({ ...(await options()), idempotencyKey: generateIdempotencyKey() });
+    const preparing = parsePreparing(data);
+
+    if (preparing) {
+      return { kind: 'preparing', delayMs: preparing.delayMs };
+    }
+
+    const license = parseServerLicense(data, kind);
 
     if (!license) {
       throw new OfflineLibraryError('unknown');
     }
 
-    return license;
+    return { kind: 'license', license };
   } catch (error) {
     throw toLibraryError(error);
   }
 }
 
-/** Issues (201) or refreshes (200) the license of one lecture and returns the content key. */
-export function issueLicense(lectureId: number | string): Promise<ServerLicense> {
-  return licenseCall((opts) =>
-    apiClient.post<unknown>(endpoints.lectures.offlineLicense(lectureId), undefined, opts),
-  );
+export type IssueOptions = {
+  /** Called on every 202 answer (a big file is still being packaged on the server). */
+  onPreparing?: (attempt: number) => void;
+  isCancelled?: () => boolean;
+};
+
+/**
+ * Issues (201) or refreshes (200) the license of one lecture or file and returns the content key. For a big library file the
+ * server first answers 202 while it builds the package: the same request is repeated until the license arrives.
+ */
+export function issueLicense(
+  id: number | string,
+  kind: OfflineKind = 'lecture',
+  issue: IssueOptions = {},
+): Promise<ServerLicense> {
+  return issueWithPreparing({
+    attempt: () =>
+      licenseAttempt(kind, (opts) =>
+        apiClient.post<unknown>(routes(kind).offlineLicense(id), undefined, opts),
+      ),
+    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    isCancelled: issue.isCancelled ?? (() => false),
+    onPreparing: issue.onPreparing,
+  }).catch((error: unknown) => {
+    if (error instanceof PreparingCancelledError) {
+      throw error;
+    }
+
+    if (error instanceof PreparingTimeoutError) {
+      throw new OfflineLibraryError('notReady');
+    }
+
+    throw toLibraryError(error);
+  });
 }
 
 /** Extends the license; 404 means access is gone (the caller purges the local copy). */
-export function renewLicense(lectureId: number | string): Promise<ServerLicense> {
-  return licenseCall((opts) =>
-    apiClient.post<unknown>(endpoints.lectures.offlineLicenseRenew(lectureId), undefined, opts),
-  );
+export function renewLicense(
+  id: number | string,
+  kind: OfflineKind = 'lecture',
+): Promise<ServerLicense> {
+  return issueWithPreparing({
+    attempt: () =>
+      licenseAttempt(kind, (opts) =>
+        apiClient.post<unknown>(routes(kind).offlineLicenseRenew(id), undefined, opts),
+      ),
+    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    isCancelled: () => false,
+    maxAttempts: 1,
+  }).catch((error: unknown) => {
+    throw toLibraryError(error);
+  });
 }
 
 /** Tells the server the app deleted its copy (frees a device slot). Failures are ignored by the caller. */
-export async function releaseLicense(lectureId: number | string): Promise<void> {
+export async function releaseLicense(
+  id: number | string,
+  kind: OfflineKind = 'lecture',
+): Promise<void> {
   try {
     const opts = await options();
 
-    await apiClient.delete<unknown>(endpoints.lectures.offlineLicense(lectureId), {
+    await apiClient.delete<unknown>(routes(kind).offlineLicense(id), {
       authToken: opts.authToken,
       headers: opts.headers,
     });
@@ -94,11 +159,14 @@ export async function releaseLicense(lectureId: number | string): Promise<void> 
   }
 }
 
-export async function syncLicenses(licenseIds: string[]): Promise<SyncResponse> {
+export async function syncLicenses(
+  licenseIds: string[],
+  kind: OfflineKind = 'lecture',
+): Promise<SyncResponse> {
   try {
     const opts = await options();
     const data = await apiClient.post<unknown, { license_ids: string[] }>(
-      endpoints.lectures.offlineLicensesSync,
+      routes(kind).offlineLicensesSync,
       { license_ids: licenseIds },
       { authToken: opts.authToken, headers: opts.headers },
     );

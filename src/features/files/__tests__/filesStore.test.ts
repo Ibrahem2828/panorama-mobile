@@ -119,3 +119,27 @@ describe('files list store', () => {
     expect(state.listQuery).toEqual({ printableOnly: true });
   });
 });
+
+describe('files list store offline fallback', () => {
+  it('drops the previous rows when another query cannot be loaded (offline, not saved before)', async () => {
+    mockLoadFilesPage.mockResolvedValueOnce(page([1, 2], 'next'));
+    await useFilesStore.getState().loadList({});
+    mockLoadFilesPage.mockRejectedValueOnce(new Error('offline'));
+    await useFilesStore.getState().loadList({ search: 'new' });
+
+    const state = useFilesStore.getState();
+
+    expect(state.list).toEqual([]);
+    expect(state.listError).toBe('safe error');
+    expect(state.listNextPage).toBeNull();
+  });
+
+  it('keeps the rows when the same query fails to refresh', async () => {
+    mockLoadFilesPage.mockResolvedValueOnce(page([1, 2]));
+    await useFilesStore.getState().loadList({});
+    mockLoadFilesPage.mockRejectedValueOnce(new Error('offline'));
+    await useFilesStore.getState().loadList({});
+
+    expect(useFilesStore.getState().list).toHaveLength(2);
+  });
+});

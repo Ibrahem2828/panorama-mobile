@@ -18,6 +18,7 @@ import {
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { formatDate } from '../../../utils/formatDateTime';
+import { OfflineDownloadControl } from '../../lectures/offline/OfflineDownloadButton';
 import { PrintingRoutes, SharedRoutes, TabRoutes } from '../../../navigation/routes';
 import type { AppTabsParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
@@ -42,7 +43,7 @@ type FileDetailsRouteParamList = {
 
 type FileDetailsNavigationParamList = {
   FileDetails: { fileId: Id };
-  PdfViewer: { fileId: Id; title?: string };
+  PdfViewer: { fileId: Id; title?: string; offline?: boolean };
 };
 
 type FileDetailsRoute = RouteProp<FileDetailsRouteParamList, 'FileDetails'>;
@@ -52,6 +53,12 @@ type FileDetailsNavigation = NativeStackNavigationProp<
 >;
 type AppTabsNavigation = BottomTabNavigationProp<AppTabsParamList>;
 
+function numericId(id: Id): number | null {
+  const value = Number(id);
+
+  return Number.isFinite(value) ? value : null;
+}
+
 function isSameId(left: Id, right: Id): boolean {
   return String(left) === String(right);
 }
@@ -60,8 +67,11 @@ function findFileById(
   fileId: Id,
   files: FileResource[],
   groupFilesByGroupId: Record<string, FileResource[]>,
+  list: FileResource[] = [],
 ): FileResource | null {
-  const fromFiles = files.find((file) => isSameId(file.id, fileId));
+  const fromFiles =
+    files.find((file) => isSameId(file.id, fileId)) ??
+    list.find((file) => isSameId(file.id, fileId));
 
   if (fromFiles) {
     return fromFiles;
@@ -85,12 +95,13 @@ export function FileDetailsScreen() {
   const { fileId } = route.params;
   const files = useFilesStore((state) => state.files);
   const groupFilesByGroupId = useFilesStore((state) => state.groupFilesByGroupId);
+  const list = useFilesStore((state) => state.list);
   const selectedFile = useFilesStore((state) => state.selectedFile);
   const isLoadingDetail = useFilesStore((state) => state.isLoadingDetail);
   const errorMessage = useFilesStore((state) => state.errorMessage);
   const errorKind = useFilesStore((state) => state.errorKind);
   const loadFileDetail = useFilesStore((state) => state.loadFileDetail);
-  const cachedFile = findFileById(fileId, files, groupFilesByGroupId);
+  const cachedFile = findFileById(fileId, files, groupFilesByGroupId, list);
   const activeFile = selectedFile && isSameId(selectedFile.id, fileId) ? selectedFile : cachedFile;
   const showInitialLoading = isLoadingDetail && !activeFile;
   const canPreview = activeFile ? canRequestProtectedPreview(activeFile) : false;
@@ -107,6 +118,14 @@ export function FileDetailsScreen() {
     navigation.navigate(SharedRoutes.PdfViewer, {
       fileId: file.id,
       title: getFileDisplayTitle(file, t.files),
+    });
+  }
+
+  function handleOpenOffline(file: FileResource) {
+    navigation.navigate(SharedRoutes.PdfViewer, {
+      fileId: file.id,
+      title: getFileDisplayTitle(file, t.files),
+      offline: true,
     });
   }
 
@@ -174,6 +193,18 @@ export function FileDetailsScreen() {
             variant="outline"
           />
         </Stack>
+
+        {numericId(activeFile.id) !== null ? (
+          <OfflineDownloadControl
+            downloadable={canPreview}
+            id={numericId(activeFile.id) as number}
+            kind="file"
+            onOpen={() => handleOpenOffline(activeFile)}
+            pageCount={typeof activeFile.pages_count === 'number' ? activeFile.pages_count : 0}
+            subjectName={getEntityLabel(activeFile.subject) ?? null}
+            title={getFileDisplayTitle(activeFile, t.files)}
+          />
+        ) : null}
 
         {activeFile.is_printable === false ? (
           <AppCard variant="muted">
