@@ -1,11 +1,12 @@
 import type { StyleProp, ViewStyle } from 'react-native';
-import { Image, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { colors, layout, radius, useBrand } from '../../theme';
 import { getInitials } from '../../utils/strings';
 import type { IconName } from '../icons';
 import { Icon } from '../icons';
 import { AppText } from './AppText';
+import { AuthenticatedImage } from './AuthenticatedImage';
 
 type AvatarSize = keyof typeof layout.avatar;
 
@@ -35,6 +36,14 @@ export function AppAvatar({
     borderRadius: dimension / 2,
   };
 
+  const placeholder = icon ? (
+    <Icon color={brand.primary} name={icon} size={Math.round(dimension * 0.5)} />
+  ) : (
+    <AppText align="center" color="brand" variant={size === 'xl' ? 'h3' : 'label'} weight="700">
+      {getInitials(name)}
+    </AppText>
+  );
+
   return (
     <View
       accessibilityLabel={accessibilityLabel ?? name}
@@ -42,13 +51,14 @@ export function AppAvatar({
       style={[styles.base, { backgroundColor: brand.primarySoft }, containerStyle, style]}
     >
       {imageUri ? (
-        <Image source={{ uri: imageUri }} style={[styles.image, containerStyle]} />
-      ) : icon ? (
-        <Icon color={brand.primary} name={icon} size={Math.round(dimension * 0.5)} />
+        // Avatar pictures are API URLs that need the student's token; on failure the initials/icon stay.
+        <AuthenticatedImage
+          fallback={placeholder}
+          style={[styles.fallbackBox, containerStyle]}
+          uri={imageUri}
+        />
       ) : (
-        <AppText align="center" color="brand" variant={size === 'xl' ? 'h3' : 'label'} weight="700">
-          {getInitials(name)}
-        </AppText>
+        placeholder
       )}
     </View>
   );
@@ -64,7 +74,8 @@ const styles = StyleSheet.create({
     borderColor: colors.border.default,
     borderRadius: radius.avatar,
   },
-  image: {
-    resizeMode: 'cover',
+  fallbackBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

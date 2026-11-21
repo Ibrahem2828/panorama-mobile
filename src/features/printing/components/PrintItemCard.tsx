@@ -1,7 +1,15 @@
 import { memo, useCallback, useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
-import { AppButton, AppCard, AppIconButton, AppText, Icon, Stack } from '../../../components';
+import {
+  AppButton,
+  AppCard,
+  AppIconButton,
+  AppText,
+  AuthenticatedImage,
+  Icon,
+  Stack,
+} from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { colors, radius, spacing, useBrand } from '../../../theme';
 import { formatFileSize } from '../../files/services';
@@ -140,11 +148,17 @@ function PrintItemCardComponent({
         {source ? (
           <Stack align="center" direction="horizontal" gap="md">
             {source.kind === 'product' && source.product.image_url ? (
-              <Image
-                accessibilityIgnoresInvertColors
-                resizeMode="cover"
-                source={{ uri: source.product.image_url }}
+              <AuthenticatedImage
+                borderRadius={radius.md}
+                fallback={
+                  <View
+                    style={[styles.thumb, styles.thumbIcon, { backgroundColor: brand.primarySoft }]}
+                  >
+                    <Icon color={brand.primary} name="file" />
+                  </View>
+                }
                 style={styles.thumb}
+                uri={source.product.image_url}
               />
             ) : source.kind === 'upload' && source.file.mimeType?.startsWith('image/') ? (
               <Image

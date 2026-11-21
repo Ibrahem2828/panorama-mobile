@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Image, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import {
   AppButton,
@@ -8,6 +8,7 @@ import {
   AppHeader,
   AppScreen,
   AppText,
+  AuthenticatedImage,
   BrandRefreshControl,
   EmptyState,
   Icon,
@@ -78,24 +79,16 @@ export function PrintProductsScreen({ navigation }: Props) {
             <View key={product.id} style={styles.cell}>
               <AppCard variant="elevated" style={styles.card}>
                 <Stack gap="sm" style={styles.cardBody}>
-                  {product.image_url ? (
-                    <Image
-                      accessibilityIgnoresInvertColors
-                      resizeMode="cover"
-                      source={{ uri: product.image_url }}
-                      style={styles.image}
-                    />
-                  ) : (
-                    <View
-                      style={[
-                        styles.image,
-                        styles.imageIcon,
-                        { backgroundColor: brand.primarySoft },
-                      ]}
-                    >
-                      <Icon color={brand.primary} name="book" size={36} />
-                    </View>
-                  )}
+                  <AuthenticatedImage
+                    borderRadius={radius.md}
+                    fallback={
+                      <View style={[styles.imageIcon, { backgroundColor: brand.primarySoft }]}>
+                        <Icon color={brand.primary} name="book" size={36} />
+                      </View>
+                    }
+                    style={styles.image}
+                    uri={product.image_url}
+                  />
                   <AppText numberOfLines={2} variant="label" weight="700">
                     {product.name}
                   </AppText>
@@ -135,5 +128,5 @@ const styles = StyleSheet.create({
   cardBody: { flex: 1 },
   spacer: { flexGrow: 1 },
   image: { width: '100%', height: 120, borderRadius: radius.md },
-  imageIcon: { alignItems: 'center', justifyContent: 'center' },
+  imageIcon: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });
