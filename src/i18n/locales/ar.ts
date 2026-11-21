@@ -693,7 +693,7 @@ export const ar = {
         `حُذفت «${title}» لأن الملف المحفوظ كان تالفاً. نزّلها من جديد.`,
       dismiss: 'حسناً',
       offlineNow: 'أنت بدون إنترنت. يمكنك فتح المواد الصالحة وحذفها.',
-      stateReady: 'جاهزة',
+      stateReady: 'متاح للفتح',
       stateExpired: 'منتهية الصلاحية',
       stateClock: 'تحقق من وقت الجهاز',
       statePartial: 'غير مكتملة',
