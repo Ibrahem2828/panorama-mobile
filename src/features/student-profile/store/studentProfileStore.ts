@@ -161,12 +161,16 @@ function getHydratedSelection(profile: StudentProfile | null) {
   };
 }
 
+/** A silent revalidation is in flight (it does not touch `isBootstrapping`, so it needs its own guard). */
+let silentRevalidating = false;
+
 export const useStudentProfileStore = create<StudentProfileState>((set, get) => ({
   ...getInitialDataState(),
 
   async bootstrap(options) {
     const { isBootstrapping, hasBootstrapped, lastAuthUserId } = get();
-    const hadProfile = get().profile !== null;
+    const previous = get();
+    const hadProfile = previous.profile !== null;
     const { accessToken, userId } = requireAuthContext();
 
     if (isBootstrapping) {
@@ -177,18 +181,49 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
       return;
     }
 
-    set({
-      ...getInitialDataState(),
-      isBootstrapping: true,
-      isLoadingOptions: true,
-      lastAuthUserId: userId,
-    });
+    // Revalidation after the connection came back: the student keeps using what is on screen, nothing flashes a loading
+    // state, and a failed refresh never discards the last good profile.
+    const silent = Boolean(options?.silent) && hasBootstrapped && lastAuthUserId === userId;
+
+    if (silent && silentRevalidating) {
+      return;
+    }
+
+    if (silent) {
+      silentRevalidating = true;
+    } else {
+      set({
+        ...getInitialDataState(),
+        isBootstrapping: true,
+        isLoadingOptions: true,
+        lastAuthUserId: userId,
+      });
+    }
 
     try {
-      const [profile, setupOptions] = await Promise.all([
+      // The profile decides the journey; the lists next to it (university, years, semesters, faculties, majors) only feed the
+      // setup pickers. A list that cannot be loaded (offline with nothing saved for it) must not block a student whose profile
+      // is known, so those fall back to empty and are loaded on demand by the screens that need them.
+      const [profileResult, optionsResult] = await Promise.allSettled([
         getMyStudentProfile(accessToken),
         getAcademicSetupOptions(accessToken),
       ]);
+
+      if (profileResult.status === 'rejected') {
+        throw profileResult.reason;
+      }
+
+      const profile = profileResult.value;
+
+      if (optionsResult.status === 'rejected' && !profile) {
+        // No profile yet means the setup flow comes next and it needs these lists.
+        throw optionsResult.reason;
+      }
+
+      const setupOptions =
+        optionsResult.status === 'fulfilled'
+          ? optionsResult.value
+          : { universities: [], academicYears: [], semesters: [] };
       const hydratedSelection = getHydratedSelection(profile);
       let faculties: AcademicOption[] = [];
       let majors: AcademicOption[] = [];
@@ -198,11 +233,13 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
         faculties = await listFacultiesForUniversity(
           hydratedSelection.selectedUniversityId,
           accessToken,
-        );
+        ).catch(() => []);
       }
 
       if (hydratedSelection.selectedFacultyId) {
-        majors = await listMajorsForFaculty(hydratedSelection.selectedFacultyId, accessToken);
+        majors = await listMajorsForFaculty(hydratedSelection.selectedFacultyId, accessToken).catch(
+          () => [],
+        );
       }
 
       let facultySubjectsCount = 0;
@@ -228,13 +265,25 @@ export const useStudentProfileStore = create<StudentProfileState>((set, get) => 
         errorMessage: null,
       });
     } catch (error) {
+      if (silent) {
+        return;
+      }
+
       set({
+        // A failed refresh keeps the profile the student already had (the reset above only clears it for a new load).
+        ...(hadProfile
+          ? { profile: previous.profile, ...getHydratedSelection(previous.profile) }
+          : {}),
         hasBootstrapped: true,
         loadFailed: !hadProfile,
         isBootstrapping: false,
         isLoadingOptions: false,
         errorMessage: toSafeStudentProfileErrorMessage(error, studentProfileCatalog()),
       });
+    } finally {
+      if (silent) {
+        silentRevalidating = false;
+      }
     }
   },
 

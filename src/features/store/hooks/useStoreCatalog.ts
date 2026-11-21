@@ -6,6 +6,10 @@ import {
   type StoreCategory,
   type StoreProductCard,
 } from '../../../api';
+import { normalizeApiError } from '../../../api';
+import { searchCachedRecords } from '../../../offline/cachedRecords';
+import { shouldSearchLocally } from '../../../offline/localSearch';
+import { useNetworkStore } from '../../../offline/networkStore';
 import { useAuthStore } from '../../auth/store';
 import type { StoreFilters } from '../components/FilterSheet';
 import { buildProductsQuery } from '../services/storeQuery';
@@ -25,6 +29,8 @@ type CatalogState = {
   /** The failure of a later page (a retry row under the list). */
   moreError: unknown;
   hasLoaded: boolean;
+  /** A search answered from the products already saved on the phone (no connection). */
+  isLocal: boolean;
 };
 
 const EMPTY: CatalogState = {
@@ -37,6 +43,7 @@ const EMPTY: CatalogState = {
   error: null,
   moreError: null,
   hasLoaded: false,
+  isLocal: false,
 };
 
 /** Brands and categories for the strip and the filter sheet; a failure just hides them. */
@@ -115,9 +122,42 @@ export function useStoreCatalog(search: string, filters: StoreFilters) {
           error: null,
           moreError: null,
           hasLoaded: true,
+          isLocal: false,
         });
       } catch (error) {
         if (id !== requestId.current) return;
+        const normalized = normalizeApiError(error);
+        const searchText = query.search?.trim();
+
+        // A search typed with no connection is answered from the products saved on the phone, never with a raw error.
+        if (
+          searchText &&
+          shouldSearchLocally({
+            isOnline: useNetworkStore.getState().isOnline,
+            errorCode: normalized.code,
+            status: normalized.status,
+          })
+        ) {
+          const local = (await searchCachedRecords(/^\/api\/v1\/store\/products\/$/u, searchText, [
+            'name',
+            'brand.name',
+          ])) as unknown as StoreProductCard[];
+
+          if (id !== requestId.current) return;
+          setState({
+            items: local,
+            count: local.length,
+            nextPage: null,
+            isLoading: false,
+            isLoadingMore: false,
+            isRefreshing: false,
+            error: null,
+            moreError: null,
+            hasLoaded: true,
+            isLocal: true,
+          });
+          return;
+        }
         setState((previous) => ({
           ...previous,
           isLoading: false,

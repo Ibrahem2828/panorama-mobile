@@ -63,4 +63,6 @@ export type ParsedStudentNumber = {
 
 export type StudentProfileBootstrapOptions = {
   force?: boolean;
+  /** Refresh in the background: no loading state, and a failure keeps the last good data. */
+  silent?: boolean;
 };

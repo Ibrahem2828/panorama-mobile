@@ -18,6 +18,8 @@ import {
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { useNetworkStore } from '../../../offline/networkStore';
+import { useRefreshOnReconnect } from '../../../offline/useRefreshOnReconnect';
+import { OfflineSearchEmpty, OfflineSearchNote } from '../../search/components/OfflineSearchNotice';
 import { StoreRoutes } from '../../../navigation/routes';
 import type { StoreStackParamList } from '../../../navigation/types';
 import { colors, layout, radius, spacing, useBrand } from '../../../theme';
@@ -63,6 +65,10 @@ export function StoreHomeScreen({ navigation }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const { brands, categories } = useStoreFilterOptions();
   const catalog = useStoreCatalog(search, filters);
+  // Back online after a search answered from the phone: run it again by itself.
+  useRefreshOnReconnect(() => {
+    if (catalog.isLocal || catalog.error) void catalog.retry();
+  });
   const copy = t.store.home;
   const activeCount = activeFilterCount(filters);
   const isFiltered = activeCount > 0 || search.trim() !== '';
@@ -132,6 +138,7 @@ export function StoreHomeScreen({ navigation }: Props) {
           }
           value={search}
         />
+        {catalog.isLocal && catalog.items.length > 0 ? <OfflineSearchNote /> : null}
         <BrandStrip
           brands={brands}
           onSelect={(id) => setFilters((previous) => ({ ...previous, brand: id }))}
@@ -216,6 +223,8 @@ export function StoreHomeScreen({ navigation }: Props) {
       catalog.count,
       catalog.error,
       catalog.hasLoaded,
+      catalog.isLocal,
+      catalog.items.length,
       categories,
       copy,
       currency,
@@ -236,6 +245,8 @@ export function StoreHomeScreen({ navigation }: Props) {
       onRetry={() => void catalog.retry()}
       title={copy.errorTitle}
     />
+  ) : catalog.isLocal ? (
+    <OfflineSearchEmpty />
   ) : isFiltered ? (
     <EmptyState
       action={<AppButton onPress={clearAll} title={copy.clearFilters} variant="outline" />}

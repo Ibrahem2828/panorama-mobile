@@ -23,6 +23,8 @@ export type VerificationCardImage = {
 
 export type VerificationLoadOptions = {
   force?: boolean;
+  /** Refresh in the background: no loading state, and a failure keeps the last good data. */
+  silent?: boolean;
 };
 
 export type VerificationSubmissionMode = 'submit' | 'resubmit';

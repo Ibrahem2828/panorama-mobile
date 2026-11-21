@@ -17,9 +17,21 @@ import {
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import { HomeRoutes, SharedRoutes, SubjectsRoutes, TabRoutes } from '../../../navigation/routes';
+import {
+  HomeRoutes,
+  LecturesRoutes,
+  ProfileRoutes,
+  SharedRoutes,
+  SubjectsRoutes,
+  TabRoutes,
+} from '../../../navigation/routes';
 import type { AppTabsParamList, HomeStackParamList } from '../../../navigation/types';
+import { normalizeApiError } from '../../../api';
+import { shouldSearchLocally } from '../../../offline/localSearch';
+import { useNetworkStore } from '../../../offline/networkStore';
+import { useRefreshOnReconnect } from '../../../offline/useRefreshOnReconnect';
 import { layout, opacity, spacing, useBrand } from '../../../theme';
+import { useOfflineLibrary } from '../../lectures/offline/offlineLibrary';
 import { useAuthStore } from '../../auth/store';
 import { useFeedbackStore } from '../../feedback/store';
 import { useStudentProfileStore } from '../../student-profile';
@@ -32,6 +44,12 @@ import {
   searchQueryState,
   toSafeSearchErrorMessage,
 } from '../services';
+import { OfflineSearchNote } from '../components/OfflineSearchNotice';
+import {
+  searchCachedLists,
+  searchDownloadedEntries,
+  type DownloadedHit,
+} from '../services/offlineSearch';
 import type { GlobalSearchResult, SearchResultItem, SearchResultKind } from '../types';
 import { EMPTY_SEARCH_RESULT } from '../types';
 
@@ -63,6 +81,9 @@ export function SearchScreen({ navigation, route }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [retryTick, setRetryTick] = useState(0);
+  // No connection: the answer comes from what is saved on the phone, and the query runs again by itself when it is back.
+  const [localMode, setLocalMode] = useState(false);
+  const [downloaded, setDownloaded] = useState<DownloadedHit[]>([]);
   const isStudent = role === 'student';
   const state = searchQueryState(query);
   const feedbackSent = useRef('');
@@ -70,11 +91,18 @@ export function SearchScreen({ navigation, route }: Props) {
   // A new text or filter starts again from the first few hits.
   useEffect(() => setLimit(DEFAULT_LIMIT), [state.query, kind]);
 
+  useRefreshOnReconnect(() => {
+    // Only a search that was answered from the phone (or failed) needs to run again; a good answer stays as it is.
+    if (localMode || errorMessage) setRetryTick((tick) => tick + 1);
+  });
+
   useEffect(() => {
     if (!state.valid || !accessToken) {
       setResult(EMPTY_SEARCH_RESULT);
       setErrorMessage(null);
       setIsLoading(false);
+      setLocalMode(false);
+      setDownloaded([]);
       return undefined;
     }
 
@@ -94,6 +122,8 @@ export function SearchScreen({ navigation, route }: Props) {
         .then((next) => {
           if (controller.signal.aborted) return;
           setResult(next);
+          setLocalMode(false);
+          setDownloaded([]);
 
           if (feedbackSent.current !== state.query) {
             feedbackSent.current = state.query;
@@ -104,8 +134,40 @@ export function SearchScreen({ navigation, route }: Props) {
             });
           }
         })
-        .catch((error: unknown) => {
+        .catch(async (error: unknown) => {
           if (controller.signal.aborted) return;
+          const normalized = normalizeApiError(error);
+
+          if (
+            shouldSearchLocally({
+              isOnline: useNetworkStore.getState().isOnline,
+              errorCode: normalized.code,
+              status: normalized.status,
+            })
+          ) {
+            const wanted = kind === 'all' ? [] : [kind];
+            const local = await searchCachedLists(state.query, wanted);
+
+            if (controller.signal.aborted) return;
+            setResult(local);
+            // A saved file that the saved lists also found is shown once, in its own section.
+            setDownloaded(
+              searchDownloadedEntries(
+                useOfflineLibrary.getState().entries,
+                state.query,
+                wanted,
+              ).filter(
+                (hit) =>
+                  hit.kind !== 'file' ||
+                  !local.files.some((item) => String(item.id) === String(hit.id)),
+              ),
+            );
+            setLocalMode(true);
+            return;
+          }
+
+          setLocalMode(false);
+          setDownloaded([]);
           setErrorMessage(toSafeSearchErrorMessage(error, t.search));
           setResult(EMPTY_SEARCH_RESULT);
         })
@@ -130,6 +192,22 @@ export function SearchScreen({ navigation, route }: Props) {
     state.valid,
     t,
   ]);
+
+  const openDownloaded = useCallback(
+    (hit: DownloadedHit) =>
+      hit.kind === 'file'
+        ? navigation.navigate(SharedRoutes.PdfViewer, {
+            fileId: hit.id,
+            title: hit.title,
+            offline: true,
+          })
+        : navigation.navigate(LecturesRoutes.LectureViewer, {
+            lectureId: hit.id,
+            title: hit.title,
+            offline: true,
+          }),
+    [navigation],
+  );
 
   const openResult = useCallback(
     (item: SearchResultItem) => {
@@ -253,6 +331,43 @@ export function SearchScreen({ navigation, route }: Props) {
       {errorMessage ? (
         <ErrorState message={errorMessage} onRetry={() => setRetryTick((tick) => tick + 1)} />
       ) : null}
+      {localMode && (result.total > 0 || downloaded.length > 0) ? <OfflineSearchNote /> : null}
+      {localMode && downloaded.length > 0 ? (
+        <Stack gap="sm">
+          <AppText color="muted" variant="label" weight="700">
+            {`${t.offlineHome.title} · ${t.search.resultsCount(downloaded.length)}`}
+          </AppText>
+          {downloaded.map((hit) => (
+            <Pressable
+              accessibilityLabel={`${hit.kind === 'file' ? t.offlineSearch.savedFile : t.offlineSearch.savedLecture}: ${hit.title}`}
+              accessibilityRole="button"
+              key={`${hit.kind}-${hit.id}`}
+              onPress={() => openDownloaded(hit)}
+              style={({ pressed }) => (pressed ? styles.pressed : null)}
+            >
+              <AppCard padding="md" variant="default">
+                <Stack align="center" direction="horizontal" gap="md">
+                  <Stack gap="xs" style={styles.rowBody}>
+                    <AppText numberOfLines={2} variant="title">
+                      {hit.title}
+                    </AppText>
+                    <AppText color="secondary" numberOfLines={1} variant="bodySmall">
+                      {hit.subjectName ??
+                        (hit.kind === 'file'
+                          ? t.offlineSearch.savedFile
+                          : t.offlineSearch.savedLecture)}
+                    </AppText>
+                  </Stack>
+                  <AppBadge
+                    label={hit.kind === 'file' ? t.search.kindFile : t.offlineHome.kindLecture}
+                    variant="brand"
+                  />
+                </Stack>
+              </AppCard>
+            </Pressable>
+          ))}
+        </Stack>
+      ) : null}
       {result.partialFailure ? (
         <AppCard variant="muted">
           <AppText color="secondary" variant="bodySmall">
@@ -270,6 +385,21 @@ export function SearchScreen({ navigation, route }: Props) {
         ListEmptyComponent={
           !state.valid ? (
             <EmptyState message={t.search.startMessage} title={t.search.startTitle} />
+          ) : localMode && !isLoading ? (
+            downloaded.length > 0 ? null : (
+              <EmptyState
+                action={
+                  <AppButton
+                    onPress={() => navigation.navigate(ProfileRoutes.Downloads)}
+                    title={t.offlineSearch.openDownloads}
+                    variant="outline"
+                  />
+                }
+                artwork="search"
+                message={t.offlineSearch.emptyMessage}
+                title={t.offlineSearch.emptyTitle}
+              />
+            )
           ) : !isLoading && !errorMessage ? (
             <EmptyState message={t.search.noResultsMessage} title={t.common.searchNoResultsTitle} />
           ) : null
