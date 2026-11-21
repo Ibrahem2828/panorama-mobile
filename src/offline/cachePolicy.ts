@@ -53,6 +53,31 @@ const NEVER: readonly RegExp[] = [
   /account\/deletion/u,
 ];
 
+/**
+ * The saved answers that decide whether a student can get past the startup gates (who they are, their academic profile,
+ * verification, the reference lists the profile points to, and the terms status). They are the offline startup snapshot:
+ * they never expire while the device is offline and are never evicted to make room, so a student whose last good copy
+ * is older than the usual maximum age still reaches the app instead of being blocked. They are refreshed whenever a live
+ * answer arrives, and wiped with everything else on sign-out, account switch or device replacement.
+ */
+const PINNED: readonly RegExp[] = [
+  /^\/api\/v1\/auth\/me\/$/u,
+  /^\/api\/v1\/students\/me\/profile\/$/u,
+  /^\/api\/v1\/verification\/me\/$/u,
+  /^\/api\/v1\/(?:universities|academic-years|semesters)\/$/u,
+  /^\/api\/v1\/academic\/current-term\/$/u,
+  /^\/api\/v1\/universities\/\d+\/faculties\/$/u,
+  /^\/api\/v1\/faculties\/\d+\/majors\/$/u,
+  /^\/api\/v1\/policies\/(?:current|status)\/$/u,
+];
+
+/** Whether a saved answer belongs to the offline startup snapshot (see {@link PINNED}). `path` may carry a query string. */
+export function isPinnedPath(path: string): boolean {
+  const clean = (path.split('?')[0] ?? path).replace(/\/{2,}/gu, '/');
+
+  return isCacheablePath(clean) && PINNED.some((pattern) => pattern.test(clean));
+}
+
 /** `path` is the request path without the query string. */
 export function isCacheablePath(path: string): boolean {
   const clean = path.split('?')[0] ?? path;

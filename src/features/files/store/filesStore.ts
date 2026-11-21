@@ -2,13 +2,17 @@ import { create } from 'zustand';
 
 import { classifyApiError, type ErrorKind } from '../../../api/errorKind';
 import { useLocaleStore } from '../../../i18n';
+import { normalizeApiError } from '../../../api';
+import { shouldSearchLocally } from '../../../offline/localSearch';
 import { useNetworkStore } from '../../../offline/networkStore';
+import { useOfflineLibrary } from '../../lectures/offline/offlineLibrary';
 
 import { useAuthStore } from '../../auth/store';
 import {
   loadFileDetail,
   loadFiles,
   loadFilesPage,
+  searchLocalFiles,
   loadGroupFiles,
   toSafeFilesErrorMessage,
 } from '../services';
@@ -39,6 +43,8 @@ type FilesState = {
   isRefreshingList: boolean;
   listError: string | null;
   listErrorKind: ErrorKind | null;
+  /** The list shown is a search answered from what is saved on the phone (no connection). */
+  listIsLocal: boolean;
   loadMoreError: string | null;
 
   loadList: (query: FilesListQuery) => Promise<void>;
@@ -109,6 +115,7 @@ const initialFilesState = {
   isRefreshingList: false,
   listError: null as string | null,
   listErrorKind: null as ErrorKind | null,
+  listIsLocal: false,
   loadMoreError: null as string | null,
 };
 
@@ -221,6 +228,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
         hasLoadedList: true,
         isLoadingList: false,
         isRefreshingList: false,
+        listIsLocal: false,
         loadMoreError: null,
         lastLoadedAt: new Date().toISOString(),
       });
@@ -229,11 +237,45 @@ export const useFilesStore = create<FilesState>((set, get) => {
         return;
       }
 
+      // A search typed with no connection (or no server) is answered from what is saved on the phone instead of an error.
+      const normalized = normalizeApiError(error);
+      const searchText = query.search?.trim();
+
+      if (
+        searchText &&
+        shouldSearchLocally({
+          isOnline: useNetworkStore.getState().isOnline,
+          errorCode: normalized.code,
+          status: normalized.status,
+        })
+      ) {
+        const local = await searchLocalFiles(searchText, useOfflineLibrary.getState().entries);
+
+        if (requestId !== listRequestId) {
+          return;
+        }
+
+        set({
+          list: local,
+          listCount: local.length,
+          listNextPage: null,
+          hasLoadedList: true,
+          isLoadingList: false,
+          isRefreshingList: false,
+          listError: null,
+          listErrorKind: null,
+          listIsLocal: true,
+          loadMoreError: null,
+        });
+        return;
+      }
+
       set({
         isLoadingList: false,
         isRefreshingList: false,
         listError: toSafeFilesErrorMessage(error, filesCatalog()),
         listErrorKind: kindOf(error),
+        listIsLocal: false,
         ...(queryChanged ? { list: [], listCount: 0, listNextPage: null } : {}),
       });
     }

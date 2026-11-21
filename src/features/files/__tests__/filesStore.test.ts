@@ -1,4 +1,5 @@
 const mockLoadFilesPage = jest.fn();
+const mockSearchLocalFiles = jest.fn();
 
 jest.mock('../../auth/store', () => ({
   useAuthStore: { getState: () => ({ accessToken: 'token' }) },
@@ -14,15 +15,26 @@ jest.mock('../../../i18n', () => ({
     }),
   },
 }));
+jest.mock('../../../api', () => ({
+  normalizeApiError: (error: { code?: string; status?: number }) => ({
+    code: error?.code ?? 'UNKNOWN',
+    status: error?.status,
+  }),
+}));
+jest.mock('../../lectures/offline/offlineLibrary', () => ({
+  useOfflineLibrary: { getState: () => ({ entries: {} }) },
+}));
 jest.mock('../../../api/errorKind', () => ({ classifyApiError: () => 'generic' }));
 jest.mock('../services', () => ({
   loadFileDetail: jest.fn(),
   loadFiles: jest.fn(),
   loadGroupFiles: jest.fn(),
   loadFilesPage: (...args: unknown[]) => mockLoadFilesPage(...args),
+  searchLocalFiles: (...args: unknown[]) => mockSearchLocalFiles(...args),
   toSafeFilesErrorMessage: () => 'safe error',
 }));
 
+import { useNetworkStore } from '../../../offline/networkStore';
 import { useFilesStore } from '../store/filesStore';
 import type { FileResource } from '../types';
 
@@ -45,6 +57,8 @@ function deferred<T>() {
 
 beforeEach(() => {
   mockLoadFilesPage.mockReset();
+  mockSearchLocalFiles.mockReset();
+  useNetworkStore.setState({ isOnline: true });
   useFilesStore.getState().reset();
 });
 
@@ -141,5 +155,78 @@ describe('files list store offline fallback', () => {
     await useFilesStore.getState().loadList({});
 
     expect(useFilesStore.getState().list).toHaveLength(2);
+  });
+});
+
+describe('files list store search with no connection', () => {
+  const networkError = Object.assign(new Error('offline'), { code: 'NETWORK_ERROR' });
+
+  it('answers a never-run search from what is saved on the phone, without an error', async () => {
+    useNetworkStore.setState({ isOnline: false });
+    mockLoadFilesPage.mockRejectedValue(networkError);
+    mockSearchLocalFiles.mockResolvedValue([file(5), file(6)]);
+
+    await useFilesStore.getState().loadList({ search: 'تشريح' });
+
+    const state = useFilesStore.getState();
+
+    expect(mockSearchLocalFiles).toHaveBeenCalledWith('تشريح', {});
+    expect(state.list.map((entry) => entry.id)).toEqual([5, 6]);
+    expect(state.listIsLocal).toBe(true);
+    expect(state.listError).toBeNull();
+    expect(state.listNextPage).toBeNull();
+    expect(state.isLoadingList).toBe(false);
+  });
+
+  it('shows an empty local answer (not an error) when nothing saved matches', async () => {
+    useNetworkStore.setState({ isOnline: false });
+    mockLoadFilesPage.mockRejectedValue(networkError);
+    mockSearchLocalFiles.mockResolvedValue([]);
+
+    await useFilesStore.getState().loadList({ search: 'xyz' });
+
+    const state = useFilesStore.getState();
+
+    expect(state.list).toEqual([]);
+    expect(state.listIsLocal).toBe(true);
+    expect(state.listError).toBeNull();
+  });
+
+  it('runs the search again by itself when the connection is back', async () => {
+    useNetworkStore.setState({ isOnline: false });
+    mockLoadFilesPage.mockRejectedValueOnce(networkError);
+    mockSearchLocalFiles.mockResolvedValue([file(5)]);
+    await useFilesStore.getState().loadList({ search: 'تشريح' });
+
+    useNetworkStore.setState({ isOnline: true });
+    mockLoadFilesPage.mockResolvedValueOnce(page([5, 8, 9]));
+    await useFilesStore.getState().refreshList();
+
+    const state = useFilesStore.getState();
+
+    expect(state.listIsLocal).toBe(false);
+    expect(state.list.map((entry) => entry.id)).toEqual([5, 8, 9]);
+  });
+
+  it('keeps the error state for a plain list with no search text', async () => {
+    useNetworkStore.setState({ isOnline: false });
+    mockLoadFilesPage.mockRejectedValue(networkError);
+
+    await useFilesStore.getState().loadList({ ordering: 'title' });
+
+    const state = useFilesStore.getState();
+
+    expect(mockSearchLocalFiles).not.toHaveBeenCalled();
+    expect(state.listError).toBe('safe error');
+    expect(state.listIsLocal).toBe(false);
+  });
+
+  it('does not search locally for a real server refusal while online', async () => {
+    mockLoadFilesPage.mockRejectedValue(Object.assign(new Error('no'), { code: 'FORBIDDEN' }));
+
+    await useFilesStore.getState().loadList({ search: 'تشريح' });
+
+    expect(mockSearchLocalFiles).not.toHaveBeenCalled();
+    expect(useFilesStore.getState().listError).toBe('safe error');
   });
 });

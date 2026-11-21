@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { useAuthStore } from '../../features/auth/store';
+import { useRefreshOnReconnect } from '../../offline/useRefreshOnReconnect';
 import { useStudentProfileStore } from '../../features/student-profile';
 import { useVerificationStore } from '../../features/verification';
 import type { RootFlowMode } from '../types';
@@ -10,6 +11,7 @@ import {
   isStudentUser,
   shouldDenyMobileAccess,
 } from './navigationGuards';
+import { reconnectRevalidationMode } from './studentContextRecovery';
 import { canEnterMainStudentApp, resolveStudentJourneyPhase } from './studentJourney';
 
 type StudentAccessGate = {
@@ -71,6 +73,25 @@ export function useStudentAccessGate(): StudentAccessGate {
     status,
     user,
   ]);
+
+  // The connection came back: check the profile and verification again. A student who was blocked gets the full reload;
+  // everyone else is refreshed in the background so what is on screen never flashes. A device that was replaced or an
+  // account that was revoked in the meantime is signed out by these same requests (DEVICE_MISMATCH / SESSION_REVOKED_BY_ADMIN).
+  useRefreshOnReconnect(() => {
+    if (status !== 'authenticated' || !user || !isStudentAccount) {
+      return;
+    }
+
+    const blocked = isResolvingStudentContext;
+    const mode = reconnectRevalidationMode({ blocked, journeyPhase });
+
+    if (mode === 'none') {
+      return;
+    }
+
+    void bootstrapStudentProfile({ force: true, silent: mode === 'silent' });
+    void loadVerification({ force: true, silent: mode === 'silent' });
+  });
 
   if (status !== 'authenticated' || !user) {
     return { rootFlow: 'public', isStudentAccount: false, isResolvingStudentContext: false };

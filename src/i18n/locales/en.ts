@@ -713,6 +713,16 @@ export const en: TranslationCatalog = {
       failed: 'Could not open the file.',
     },
   },
+  offlineSearch: {
+    localNote:
+      'Results from what is saved on this phone. Connect to the internet for a wider search.',
+    emptyTitle: 'No results in what is saved on this phone',
+    emptyMessage:
+      'You are offline and nothing saved matches. Connect to the internet for a wider search, or open what is available offline.',
+    openDownloads: 'Available offline',
+    savedFile: 'File saved on this phone',
+    savedLecture: 'Lecture saved on this phone',
+  },
   offlineHome: {
     title: 'Available offline',
     subtitle: 'Your lectures and files saved on this phone',
@@ -1512,6 +1522,12 @@ export const en: TranslationCatalog = {
       preparingStudentAccount: 'Preparing your student account...',
       studentContextError:
         'We could not load your account details. Check your connection and try again.',
+      offlineTitle: 'You are offline',
+      offlineMessage:
+        'Your account could not be prepared without a connection. Try again when the internet is back, or study what you saved on this phone.',
+      stuckTitle: 'Loading is taking longer than usual',
+      stuckMessage: 'Try again, or study what you saved on this phone in the meantime.',
+      openOffline: 'Available offline',
     },
 
     roleDenied: {

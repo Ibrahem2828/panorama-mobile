@@ -94,6 +94,9 @@ function requireSelectedCardImage(image: VerificationCardImage | null): Verifica
   return image;
 }
 
+/** A silent revalidation is in flight (it does not touch `isLoadingVerification`, so it needs its own guard). */
+let silentRevalidating = false;
+
 export const useVerificationStore = create<VerificationState>((set, get) => ({
   ...getInitialVerificationState(),
 
@@ -110,13 +113,23 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
     }
 
     const hadVerification = get().verification !== null;
+    // Revalidation after the connection came back: nothing flashes a loading state and a failure keeps the last good record.
+    const silent = Boolean(options?.silent) && hasLoadedVerification && lastAuthUserId === userId;
 
-    set({
-      isLoadingVerification: true,
-      loadFailed: false,
-      errorMessage: null,
-      lastAuthUserId: userId,
-    });
+    if (silent && silentRevalidating) {
+      return;
+    }
+
+    if (silent) {
+      silentRevalidating = true;
+    } else {
+      set({
+        isLoadingVerification: true,
+        loadFailed: false,
+        errorMessage: null,
+        lastAuthUserId: userId,
+      });
+    }
 
     try {
       const verification = await getMyVerification(accessToken);
@@ -128,12 +141,20 @@ export const useVerificationStore = create<VerificationState>((set, get) => ({
         isLoadingVerification: false,
       });
     } catch (error) {
+      if (silent) {
+        return;
+      }
+
       set({
         hasLoadedVerification: true,
         loadFailed: !hadVerification,
         isLoadingVerification: false,
         errorMessage: toSafeVerificationErrorMessage(error, verificationCatalog()),
       });
+    } finally {
+      if (silent) {
+        silentRevalidating = false;
+      }
     }
   },
 

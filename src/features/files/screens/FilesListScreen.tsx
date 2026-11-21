@@ -21,6 +21,7 @@ import { useTranslation } from '../../../i18n';
 import { SharedRoutes } from '../../../navigation/routes';
 import type { HomeStackParamList } from '../../../navigation/types';
 import { colors, layout, spacing, useBrand } from '../../../theme';
+import { OfflineSearchEmpty, OfflineSearchNote } from '../../search/components/OfflineSearchNotice';
 import { FileCard } from '../components';
 import { useFilesStore } from '../store';
 import type { FileResource, FilesListQuery, FilesOrdering } from '../types';
@@ -55,6 +56,7 @@ export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
   const isLoading = useFilesStore((state) => state.isLoadingList);
   const isLoadingMore = useFilesStore((state) => state.isLoadingMoreList);
   const isRefreshing = useFilesStore((state) => state.isRefreshingList);
+  const listIsLocal = useFilesStore((state) => state.listIsLocal);
   const listError = useFilesStore((state) => state.listError);
   const listErrorKind = useFilesStore((state) => state.listErrorKind);
   const loadMoreError = useFilesStore((state) => state.loadMoreError);
@@ -131,6 +133,7 @@ export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
         subtitle={hasLoaded ? t.files.list.total(listCount) : t.files.subtitle}
         title={t.files.title}
       />
+      {listIsLocal && list.length > 0 ? <OfflineSearchNote /> : null}
       <AppTextInput
         autoCorrect={false}
         onChangeText={setSearchText}
@@ -203,6 +206,8 @@ export function FilesListScreen({ navigation, route }: FilesListScreenProps) {
               kind={listErrorKind ?? undefined}
               onRetry={() => void loadList(query)}
             />
+          ) : listIsLocal ? (
+            <OfflineSearchEmpty />
           ) : hasFilters || subjectId !== undefined ? (
             <EmptyState
               action={

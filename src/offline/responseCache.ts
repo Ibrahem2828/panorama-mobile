@@ -1,4 +1,5 @@
 import { getCacheStorage } from './cacheStorage';
+import { isPinnedPath } from './cachePolicy';
 
 /** Bump to invalidate every stored entry after a change in the cached shapes. */
 export const CACHE_VERSION = 1;
@@ -11,10 +12,15 @@ export const CACHE_MAX_ENTRY_BYTES = 300 * 1024;
 export const CACHE_MAX_TOTAL_BYTES = 4 * 1024 * 1024;
 export const CACHE_MAX_ENTRIES = 150;
 
-type IndexRow = { k: string; s: number; t: number; a: number };
+/** `p`: part of the offline startup snapshot (never expires, never evicted). `q`: the request path, to find lists by path. */
+type IndexRow = { k: string; s: number; t: number; a: number; p?: 1; q?: string };
 type Stored = { v: number; k: string; t: number; d: unknown };
 
 export type CacheHit<T> = { data: T; savedAt: number };
+
+function pathOf(key: string): string {
+  return key.split('?')[0] ?? key;
+}
 
 function indexKey(userId: string): string {
   return `${PREFIX}${userId}:__index`;
@@ -86,7 +92,9 @@ export async function readCache<T>(
       return null;
     }
 
-    if (now - entry.t > CACHE_MAX_AGE_MS) {
+    // The startup snapshot is stale-but-usable: an old copy beats a student blocked offline (it is replaced by the next
+    // live answer, or wiped on sign-out).
+    if (now - entry.t > CACHE_MAX_AGE_MS && !isPinnedPath(key)) {
       void serial(userId, async () => {
         await storage.removeItem(storageKey);
         await writeIndex(
@@ -138,9 +146,20 @@ export function writeCache(
       const storageKey = entryKey(userId, key);
       let rows = (await readIndex(userId)).filter((row) => row.k !== storageKey);
 
-      rows.push({ k: storageKey, s: size, t: now, a: now });
+      const path = pathOf(key);
+
+      rows.push({
+        k: storageKey,
+        s: size,
+        t: now,
+        a: now,
+        q: path,
+        ...(isPinnedPath(path) ? { p: 1 as const } : {}),
+      });
       // Drop expired rows, then the least recently used until both bounds hold (the new entry is never the victim).
-      const expired = rows.filter((row) => row.k !== storageKey && now - row.t > CACHE_MAX_AGE_MS);
+      const expired = rows.filter(
+        (row) => row.k !== storageKey && !row.p && now - row.t > CACHE_MAX_AGE_MS,
+      );
       let total = rows.reduce((sum, row) => sum + row.s, 0);
       const doomed = new Set(expired.map((row) => row.k));
 
@@ -148,7 +167,7 @@ export function writeCache(
       total = rows.reduce((sum, row) => sum + row.s, 0);
 
       const byUse = rows
-        .filter((row) => row.k !== storageKey)
+        .filter((row) => row.k !== storageKey && !row.p)
         .sort((left, right) => left.a - right.a);
 
       while ((total > CACHE_MAX_TOTAL_BYTES || rows.length > CACHE_MAX_ENTRIES) && byUse.length) {
@@ -202,5 +221,44 @@ export async function clearAllCaches(): Promise<void> {
     }
   } catch {
     // Same as above.
+  }
+}
+
+export type CachedListEntry<T> = { key: string; data: T; savedAt: number };
+
+/**
+ * Every saved answer of one path, or of the paths matching a pattern (any query), newest first: the lists the student already loaded, used to search them
+ * locally while offline. Expired entries are skipped, never deleted here.
+ */
+export async function readCachedByPath<T>(
+  userId: string,
+  path: string | RegExp,
+  now: number = Date.now(),
+): Promise<CachedListEntry<T>[]> {
+  try {
+    const storage = getCacheStorage();
+    const rows = (await readIndex(userId)).filter(
+      (row) =>
+        row.q !== undefined &&
+        (typeof path === 'string' ? row.q === path : path.test(row.q)) &&
+        (row.p || now - row.t <= CACHE_MAX_AGE_MS),
+    );
+    const found: CachedListEntry<T>[] = [];
+
+    for (const row of rows) {
+      const raw = await storage.getItem(row.k);
+
+      if (!raw) continue;
+
+      const entry = JSON.parse(raw) as Stored;
+
+      if (entry.v === CACHE_VERSION) {
+        found.push({ key: entry.k, data: entry.d as T, savedAt: entry.t });
+      }
+    }
+
+    return found.sort((left, right) => right.savedAt - left.savedAt);
+  } catch {
+    return [];
   }
 }
