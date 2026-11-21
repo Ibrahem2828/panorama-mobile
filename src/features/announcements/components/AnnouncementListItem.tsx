@@ -1,7 +1,14 @@
 import { memo, useCallback } from 'react';
-import { Image, Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
-import { AppBadge, AppCard, AppText, IconTile, Stack } from '../../../components';
+import {
+  AppBadge,
+  AppCard,
+  AppText,
+  AuthenticatedImage,
+  IconTile,
+  Stack,
+} from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { colors, opacity, radius, useBrand } from '../../../theme';
 import { formatDate } from '../../../utils/formatDateTime';
@@ -44,11 +51,11 @@ function AnnouncementListItemComponent({ item, isUnread, onPress }: Announcement
       >
         <Stack align="flex-start" direction="horizontal" gap="md">
           {item.imageUrl ? (
-            <Image
-              accessibilityIgnoresInvertColors
-              resizeMode="cover"
-              source={{ uri: item.imageUrl }}
+            <AuthenticatedImage
+              borderRadius={radius.md}
+              fallback={<IconTile icon="megaphone" size="lg" style={styles.thumbnail} />}
               style={styles.thumbnail}
+              uri={item.imageUrl}
             />
           ) : (
             <IconTile icon="megaphone" size="lg" style={styles.thumbnail} />

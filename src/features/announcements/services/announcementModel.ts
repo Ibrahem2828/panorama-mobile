@@ -1,4 +1,5 @@
 import type { AnnouncementRecord } from '../../../api';
+import { authenticatedImageUrl } from '../../../utils/authenticatedImageUrl';
 import type { AcademicTargetKey, AnnouncementItem, AudienceKey } from '../types';
 
 const ENDING_SOON_WINDOW_MS = 48 * 60 * 60 * 1000;
@@ -25,6 +26,17 @@ export function toSafeExternalUrl(value: unknown): string | null {
   }
 }
 
+/**
+ * The picture is an authenticated API route (`/api/v1/announcements/{id}/image/`). `AuthenticatedImage` re-joins the
+ * path to the configured API address, so the host and scheme the server wrote are irrelevant (a plain-http dev server
+ * must not lose its picture); any other image URL still has to be https.
+ */
+function toAnnouncementImageUrl(value: unknown): string | null {
+  const text = toText(value);
+
+  return text && authenticatedImageUrl(text) ? text : toSafeExternalUrl(text);
+}
+
 export function normalizeAnnouncement(record: AnnouncementRecord): AnnouncementItem {
   const targets: Array<[AcademicTargetKey, unknown]> = [
     ['university', record.target_university],
@@ -38,7 +50,7 @@ export function normalizeAnnouncement(record: AnnouncementRecord): AnnouncementI
     id: record.id,
     title: toText(record.title),
     body: toText(record.description) ?? toText(record.body),
-    imageUrl: toSafeExternalUrl(record.image),
+    imageUrl: toAnnouncementImageUrl(record.image),
     linkUrl: toSafeExternalUrl(record.link),
     startsAt: toText(record.starts_at) ?? toText(record.start_date),
     endsAt: toText(record.ends_at) ?? toText(record.end_date),

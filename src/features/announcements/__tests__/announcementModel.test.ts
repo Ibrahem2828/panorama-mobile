@@ -1,3 +1,8 @@
+jest.mock('expo-constants', () => ({
+  __esModule: true,
+  default: { expoConfig: { extra: { apiBaseUrl: 'https://api.example.com' } } },
+}));
+
 import {
   getAudienceKey,
   isEndingSoon,
@@ -56,6 +61,19 @@ describe('normalizeAnnouncement', () => {
     expect(result.linkUrl).toBeNull();
     expect(result.startsAt).toBe('2026-01-01T00:00:00Z');
     expect(result.academicTargets).toEqual(['faculty']);
+  });
+
+  it('keeps the authenticated image route whatever scheme the server wrote, drops other non-https images', () => {
+    const route = (image: string) => normalizeAnnouncement({ id: 1, image }).imageUrl;
+
+    expect(route('http://10.0.2.2:8020/api/v1/announcements/5/image/?v=1')).toBe(
+      'http://10.0.2.2:8020/api/v1/announcements/5/image/?v=1',
+    );
+    expect(route('https://api.example.com/api/v1/announcements/5/image/?v=1')).toBe(
+      'https://api.example.com/api/v1/announcements/5/image/?v=1',
+    );
+    expect(route('http://evil.example.com/x.png')).toBeNull();
+    expect(route('http://10.0.2.2:8020/api/v1/groups/5/avatar/')).toBeNull();
   });
 });
 

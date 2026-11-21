@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as WebBrowser from 'expo-web-browser';
-import { Image, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import {
   AppBadge,
@@ -10,14 +10,16 @@ import {
   AppHeader,
   AppScreen,
   AppText,
+  AuthenticatedImage,
   EmptyState,
   ErrorState,
+  Icon,
   LoadingState,
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import type { HomeStackParamList } from '../../../navigation/types';
-import { radius, spacing } from '../../../theme';
+import { colors, radius, spacing } from '../../../theme';
 import { formatDate } from '../../../utils/formatDateTime';
 import { getAnnouncementDate, getAudienceKey } from '../services';
 import { useAnnouncementsStore } from '../store';
@@ -123,12 +125,15 @@ export function AnnouncementDetailScreen({ route }: Props) {
 
       <AppCard padding="none" variant="default">
         {announcement.imageUrl ? (
-          <Image
-            accessibilityIgnoresInvertColors
+          <AuthenticatedImage
             accessibilityLabel={t.announcements.imageAlt}
-            resizeMode="cover"
-            source={{ uri: announcement.imageUrl }}
+            fallback={
+              <View style={styles.imageFallback}>
+                <Icon color={colors.text.muted} name="megaphone" size={36} />
+              </View>
+            }
             style={styles.image}
+            uri={announcement.imageUrl}
           />
         ) : null}
         <Stack gap="md" style={styles.cardBody}>
@@ -181,6 +186,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: radius.card,
     borderTopRightRadius: radius.card,
   },
+  imageFallback: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   cardBody: { padding: spacing.card.md },
   rowValue: { flexShrink: 1 },
 });
