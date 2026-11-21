@@ -150,8 +150,17 @@ export function SearchScreen({ navigation, route }: Props) {
 
             if (controller.signal.aborted) return;
             setResult(local);
+            // A saved file that the saved lists also found is shown once, in its own section.
             setDownloaded(
-              searchDownloadedEntries(useOfflineLibrary.getState().entries, state.query, wanted),
+              searchDownloadedEntries(
+                useOfflineLibrary.getState().entries,
+                state.query,
+                wanted,
+              ).filter(
+                (hit) =>
+                  hit.kind !== 'file' ||
+                  !local.files.some((item) => String(item.id) === String(hit.id)),
+              ),
             );
             setLocalMode(true);
             return;
