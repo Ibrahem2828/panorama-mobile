@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Alert, StyleSheet, View } from 'react-native';
 
 import {
@@ -15,30 +16,32 @@ import {
   Stack,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
-import { LecturesRoutes } from '../../../navigation/routes';
+import { LecturesRoutes, SharedRoutes } from '../../../navigation/routes';
 import type { ProfileStackParamList } from '../../../navigation/types';
 import { useNetworkStore } from '../../../offline/networkStore';
 import { radius, spacing, useBrand } from '../../../theme';
 import { formatDate } from '../../../utils/formatDateTime';
 import { formatBytes, percentOf } from './formatBytes';
-import { deriveItemState, usedBytes, type OfflineEntry } from './licenseLogic';
+import { deriveItemState, entryKey, entryKind, usedBytes, type OfflineEntry } from './licenseLogic';
 import {
   cancelDownload,
   deleteAllDownloads,
   deleteDownload,
   dismissNotices,
-  renewLecture,
+  renewItem,
   setBudget,
   useOfflineLibrary,
 } from './offlineLibrary';
 
-type Props = NativeStackScreenProps<ProfileStackParamList, 'Downloads'>;
-
 const MB = 1024 * 1024;
 const BUDGET_OPTIONS = [500 * MB, 1024 * MB, 1536 * MB, 3072 * MB] as const;
 
-/** The student's downloaded lectures: what is stored, how much space it takes, when each copy expires, delete one or all. */
-export function DownloadsScreen({ navigation }: Props) {
+/**
+ * The student's downloaded lectures and library files: what is stored, how much space it takes, when each copy expires, delete one
+ * or all. Registered in the Home and Profile stacks; it reads only local state, so it works with no connection at all.
+ */
+export function DownloadsScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
   const { t, locale } = useTranslation();
   const brand = useBrand();
   const copy = t.offlineLectures;
@@ -51,7 +54,10 @@ export function DownloadsScreen({ navigation }: Props) {
   const rows = useMemo(
     () =>
       Object.values(entries).sort(
-        (a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0) || b.lectureId - a.lectureId,
+        (a, b) =>
+          (b.completedAt ?? 0) - (a.completedAt ?? 0) ||
+          b.lectureId - a.lectureId ||
+          entryKey(a).localeCompare(entryKey(b)),
       ),
     [entries],
   );
@@ -59,11 +65,17 @@ export function DownloadsScreen({ navigation }: Props) {
 
   const open = useCallback(
     (entry: OfflineEntry) =>
-      navigation.navigate(LecturesRoutes.LectureViewer, {
-        lectureId: entry.lectureId,
-        title: entry.title,
-        offline: true,
-      }),
+      entryKind(entry) === 'file'
+        ? navigation.navigate(SharedRoutes.PdfViewer, {
+            fileId: entry.lectureId,
+            title: entry.title,
+            offline: true,
+          })
+        : navigation.navigate(LecturesRoutes.LectureViewer, {
+            lectureId: entry.lectureId,
+            title: entry.title,
+            offline: true,
+          }),
     [navigation],
   );
 
@@ -74,7 +86,7 @@ export function DownloadsScreen({ navigation }: Props) {
         {
           text: copy.delete,
           style: 'destructive',
-          onPress: () => void deleteDownload(entry.lectureId),
+          onPress: () => void deleteDownload(entry.lectureId, entryKind(entry)),
         },
       ]);
     },
@@ -97,7 +109,7 @@ export function DownloadsScreen({ navigation }: Props) {
   ): { label: string; tone: 'success' | 'warning' | 'info' } => {
     const state = deriveItemState(
       entry,
-      transfers[String(entry.lectureId)] ?? { kind: 'idle' },
+      transfers[entryKey(entry)] ?? { kind: 'idle' },
       Date.now(),
       guard,
     );
@@ -123,7 +135,7 @@ export function DownloadsScreen({ navigation }: Props) {
       <AppHeader showBack subtitle={copy.subtitle} title={copy.title} />
 
       {notices.map((notice) => (
-        <AppCard key={`${notice.lectureId}-${notice.reason}`} padding="md">
+        <AppCard key={`${notice.kind}-${notice.lectureId}-${notice.reason}`} padding="md">
           <Stack gap="sm">
             <AppText variant="bodySmall">
               {notice.reason === 'corrupt'
@@ -194,12 +206,12 @@ export function DownloadsScreen({ navigation }: Props) {
               month: 'short',
               day: 'numeric',
             });
-            const transfer = transfers[String(entry.lectureId)];
+            const transfer = transfers[entryKey(entry)];
             const busy = transfer?.kind === 'downloading';
             const needsRenewal = status.tone === 'warning';
 
             return (
-              <AppCard key={entry.lectureId} padding="md">
+              <AppCard key={entryKey(entry)} padding="md">
                 <Stack gap="sm">
                   <AppText numberOfLines={2} variant="subtitle">
                     {entry.title}
@@ -210,6 +222,14 @@ export function DownloadsScreen({ navigation }: Props) {
                     </AppText>
                   ) : null}
                   <Stack direction="horizontal" gap="xs" wrap>
+                    <AppBadge
+                      label={
+                        entryKind(entry) === 'file'
+                          ? t.offlineHome.kindFile
+                          : t.offlineHome.kindLecture
+                      }
+                      variant="brand"
+                    />
                     <AppBadge label={status.label} variant={status.tone} />
                     <AppBadge label={formatBytes(entry.fileSize)} />
                     {date ? <AppBadge label={copy.availableUntil(date)} /> : null}
@@ -221,14 +241,16 @@ export function DownloadsScreen({ navigation }: Props) {
                     {needsRenewal ? (
                       <AppButton
                         disabled={!isOnline}
-                        onPress={() => void renewLecture(entry.lectureId).catch(() => undefined)}
+                        onPress={() =>
+                          void renewItem(entry.lectureId, entryKind(entry)).catch(() => undefined)
+                        }
                         size="sm"
                         title={copy.renew}
                       />
                     ) : null}
                     {busy ? (
                       <AppButton
-                        onPress={() => cancelDownload(entry.lectureId)}
+                        onPress={() => cancelDownload(entry.lectureId, entryKind(entry))}
                         size="sm"
                         title={t.common.cancel}
                         variant="ghost"

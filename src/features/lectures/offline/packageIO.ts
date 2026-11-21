@@ -9,7 +9,10 @@ import { DownloadError, type PackageResponse } from './downloadCore';
 import { offlineDeviceHeaders } from './deviceId';
 import type { DecryptSource } from './pnof';
 
-const TRUSTED = { pathPrefixes: ['/api/v1/lectures/'], allowHttpInDevelopment: true } as const;
+const TRUSTED = {
+  pathPrefixes: ['/api/v1/lectures/', '/api/v1/files/'],
+  allowHttpInDevelopment: true,
+} as const;
 
 /** Append-only writer for the partial ciphertext file. `bytes` is the size on disk (the resume point). */
 export class PartWriter {

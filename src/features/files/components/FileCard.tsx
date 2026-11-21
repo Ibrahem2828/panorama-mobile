@@ -3,6 +3,7 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import { AppBadge, AppCard, AppText, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
+import { OfflineBadge } from '../../lectures/offline/OfflineBadge';
 import { formatDate } from '../../../utils/formatDateTime';
 import { colors, opacity } from '../../../theme';
 import {
@@ -68,6 +69,7 @@ function FileCardComponent({ file, onPress }: FileCardProps) {
           </Stack>
 
           <Stack direction="horizontal" gap="sm" wrap>
+            <OfflineBadge id={file.id} kind="file" />
             {contextLabel ? <AppBadge label={contextLabel} variant="info" /> : null}
             {visibilityLabel && isProtected ? (
               <AppBadge label={visibilityLabel} variant="warning" />

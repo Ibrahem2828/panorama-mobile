@@ -9,7 +9,7 @@ import { useNetworkStore } from '../../../offline/networkStore';
 import { spacing } from '../../../theme';
 import { DocumentViewerBody } from '../../viewer/DocumentViewerBody';
 import { OfflineLectureViewer } from '../offline/OfflineLectureViewer';
-import { keyOf } from '../offline/licenseLogic';
+import { keyOf, shouldOpenSavedCopy } from '../offline/licenseLogic';
 import { useOfflineLibrary } from '../offline/offlineLibrary';
 import { LectureProcessingView } from '../components/LectureProcessingView';
 import { useLecture } from '../hooks/useLecture';
@@ -31,7 +31,7 @@ export function LectureViewerScreen({ navigation, route }: Props) {
   const doc = useMemo(() => ({ kind: 'lecture' as const, id: lectureId }), [lectureId]);
 
   // The saved encrypted copy is opened on request, and whenever the phone is offline and one exists.
-  if (saved?.status === 'complete' && (offline === true || !isOnline)) {
+  if (saved && shouldOpenSavedCopy({ entry: saved, isOnline, requestedOffline: offline })) {
     return (
       <OfflineLectureViewer
         lectureId={saved.lectureId}

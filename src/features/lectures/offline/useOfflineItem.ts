@@ -1,18 +1,27 @@
 import { useMemo } from 'react';
 
 import { useNetworkStore } from '../../../offline/networkStore';
-import { deriveItemState, keyOf, type ItemState, type TransferState } from './licenseLogic';
+import {
+  deriveItemState,
+  keyOf,
+  type ItemState,
+  type OfflineKind,
+  type TransferState,
+} from './licenseLogic';
 import { useOfflineLibrary } from './offlineLibrary';
 
 const IDLE: TransferState = { kind: 'idle' };
 
-/** Offline state of one lecture for buttons and rows (re-evaluated whenever the inventory, a transfer or the clock mark changes). */
-export function useOfflineItem(lectureId: number): {
+/** Offline state of one lecture or library file for buttons and rows (re-evaluated whenever the inventory, a transfer or the clock mark changes). */
+export function useOfflineItem(
+  lectureId: number,
+  kind: OfflineKind = 'lecture',
+): {
   state: ItemState;
   isOnline: boolean;
   ready: boolean;
 } {
-  const key = keyOf(lectureId);
+  const key = keyOf(lectureId, kind);
   const entry = useOfflineLibrary((library) => library.entries[key]);
   const transfer = useOfflineLibrary((library) => library.transfers[key]) ?? IDLE;
   const guard = useOfflineLibrary((library) => library.guard);

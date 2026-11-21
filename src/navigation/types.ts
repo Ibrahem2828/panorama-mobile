@@ -39,10 +39,11 @@ export type HomeStackParamList = {
   AnnouncementDetail: { announcementId: string | number };
   FilesList: { subjectId?: string | number; subjectName?: string } | undefined;
   FileDetails: { fileId: string | number };
-  PdfViewer: { fileId: string | number; title?: string };
+  PdfViewer: { fileId: string | number; title?: string; offline?: boolean };
   Search: { query?: string } | undefined;
   LecturesList: LecturesListParams;
   LectureViewer: LectureViewerParams;
+  Downloads: undefined;
 };
 
 export type SubjectsStackParamList = {
@@ -50,7 +51,7 @@ export type SubjectsStackParamList = {
   SubjectDetails: { subjectId: string | number };
   FilesList: { subjectId?: string | number; subjectName?: string } | undefined;
   FileDetails: { fileId: string | number };
-  PdfViewer: { fileId: string | number; title?: string };
+  PdfViewer: { fileId: string | number; title?: string; offline?: boolean };
   LecturesList: LecturesListParams;
   LectureViewer: LectureViewerParams;
 };
@@ -61,7 +62,7 @@ export type GroupsStackParamList = {
   GroupDetails: { groupId: string | number };
   GroupFiles: { groupId: string | number };
   FileDetails: { fileId: string | number };
-  PdfViewer: { fileId: string | number; title?: string };
+  PdfViewer: { fileId: string | number; title?: string; offline?: boolean };
   ChatRoom: { groupId: string | number };
   Enrollment: undefined;
 };
@@ -100,7 +101,7 @@ export type ProfileStackParamList = {
   MyNotes: undefined;
   Downloads: undefined;
   LectureViewer: LectureViewerParams;
-  PdfViewer: { fileId: string | number; title?: string };
+  PdfViewer: { fileId: string | number; title?: string; offline?: boolean };
   SupportTickets: undefined;
   CreateSupportTicket: undefined;
   TicketDetails: { ticketId: string | number };
@@ -116,7 +117,7 @@ export type ProfileStackParamList = {
 export type SharedStackParamList = {
   FilesList: { subjectId?: string | number; subjectName?: string } | undefined;
   FileDetails: { fileId: string | number };
-  PdfViewer: { fileId: string | number; title?: string };
+  PdfViewer: { fileId: string | number; title?: string; offline?: boolean };
   GroupFiles: { groupId: string | number };
   Search: { query?: string } | undefined;
 };

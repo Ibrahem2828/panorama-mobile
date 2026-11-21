@@ -1,5 +1,5 @@
 import { memo, useCallback } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -12,60 +12,61 @@ import { formatDate } from '../../../utils/formatDateTime';
 import { isViewable, lectureTitle } from '../logic';
 import type { Lecture } from '../types';
 import { formatBytes, percentOf } from './formatBytes';
+import type { OfflineKind } from './licenseLogic';
 import {
   cancelDownload,
   clearTransferError,
   deleteDownload,
-  downloadLecture,
-  renewLecture,
+  downloadItem,
+  renewItem,
 } from './offlineLibrary';
+import { useOfflineCopy } from './useOfflineCopy';
 import { useOfflineItem } from './useOfflineItem';
 
-type Props = { lecture: Lecture };
+const RETRYABLE = new Set(['network', 'unknown', 'notReady']);
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
+
+export type OfflineControlProps = {
+  kind: OfflineKind;
+  id: number;
+  title: string;
+  subjectName: string | null;
+  pageCount: number;
+  /** False while the item cannot be downloaded (not processed yet): the control then only shows an existing copy. */
+  downloadable: boolean;
+  /** Opens the saved copy (the viewer of the kind, in offline mode). */
+  onOpen: () => void;
+};
 
 /**
  * "Download to study offline" for one lecture, with every state of the offline copy: not downloaded, downloading (progress and
  * cancel), paused (resume), saved (size, valid until, open, delete), needs renewal, expired / clock problem, and the error cases.
  */
-function OfflineDownloadButtonBase({ lecture }: Props) {
+export function OfflineDownloadControl({
+  kind,
+  id,
+  title,
+  subjectName,
+  pageCount,
+  downloadable,
+  onOpen: open,
+}: OfflineControlProps) {
   const { t, locale } = useTranslation();
   const brand = useBrand();
-  const navigation = useNavigation<Nav>();
-  const { state, isOnline, ready } = useOfflineItem(lecture.id);
-  const copy = t.offlineLectures;
-  const title = lectureTitle(lecture, t.lectures.untitled);
+  const { state, isOnline, ready } = useOfflineItem(id, kind);
+  const copy = useOfflineCopy(kind);
 
-  const ref = {
-    id: lecture.id,
-    title,
-    subjectName: lecture.subject_name,
-    pageCount: lecture.page_count,
-  };
-
-  const start = () => void downloadLecture(ref);
-  const renew = useCallback(
-    () => void renewLecture(lecture.id).catch(() => undefined),
-    [lecture.id],
-  );
-  const open = useCallback(
-    () =>
-      navigation.navigate(LecturesRoutes.LectureViewer, {
-        lectureId: lecture.id,
-        title,
-        offline: true,
-      }),
-    [lecture.id, navigation, title],
-  );
+  const start = () => void downloadItem({ id, kind, title, subjectName, pageCount });
+  const renew = useCallback(() => void renewItem(id, kind).catch(() => undefined), [id, kind]);
   const confirmDelete = useCallback(() => {
     Alert.alert(copy.deleteTitle, copy.deleteMessage, [
       { text: t.common.cancel, style: 'cancel' },
-      { text: copy.delete, style: 'destructive', onPress: () => void deleteDownload(lecture.id) },
+      { text: copy.delete, style: 'destructive', onPress: () => void deleteDownload(id, kind) },
     ]);
-  }, [copy, lecture.id, t.common.cancel]);
+  }, [copy, id, kind, t.common.cancel]);
 
-  if (!ready || (!isViewable(lecture) && state.kind === 'none')) {
+  if (!ready || (!downloadable && state.kind === 'none')) {
     return null;
   }
 
@@ -101,6 +102,27 @@ function OfflineDownloadButtonBase({ lecture }: Props) {
         </>,
       );
 
+    case 'preparing':
+      return box(
+        <>
+          <View style={styles.row}>
+            <ActivityIndicator color={brand.primary} size="small" />
+            <AppText style={styles.grow} variant="bodySmall">
+              {copy.preparing(state.attempt)}
+            </AppText>
+            <AppButton
+              onPress={() => cancelDownload(id, kind)}
+              size="sm"
+              title={t.common.cancel}
+              variant="ghost"
+            />
+          </View>
+          <AppText color="muted" variant="caption">
+            {copy.preparingHint}
+          </AppText>
+        </>,
+      );
+
     case 'downloading': {
       const percent = percentOf(state.doneBytes, state.totalBytes);
 
@@ -111,7 +133,7 @@ function OfflineDownloadButtonBase({ lecture }: Props) {
               {state.totalBytes > 0 ? copy.downloading(percent) : copy.downloadingPending}
             </AppText>
             <AppButton
-              onPress={() => cancelDownload(lecture.id)}
+              onPress={() => cancelDownload(id, kind)}
               size="sm"
               title={t.common.cancel}
               variant="ghost"
@@ -150,7 +172,7 @@ function OfflineDownloadButtonBase({ lecture }: Props) {
               variant="outline"
             />
             <AppButton
-              onPress={() => void deleteDownload(lecture.id)}
+              onPress={() => void deleteDownload(id, kind)}
               size="sm"
               title={t.common.cancel}
               variant="ghost"
@@ -232,17 +254,15 @@ function OfflineDownloadButtonBase({ lecture }: Props) {
           <View style={styles.row}>
             <AppButton
               onPress={() => {
-                clearTransferError(lecture.id);
+                clearTransferError(id, kind);
 
-                if (state.reason === 'network' || state.reason === 'unknown') {
+                if (RETRYABLE.has(state.reason)) {
                   start();
                 }
               }}
               size="sm"
               title={
-                state.reason === 'network' || state.reason === 'unknown'
-                  ? copy.viewer.retry
-                  : t.offlineLectures.screen.dismiss
+                RETRYABLE.has(state.reason) ? copy.viewer.retry : t.offlineLectures.screen.dismiss
               }
               variant="outline"
             />
@@ -254,6 +274,36 @@ function OfflineDownloadButtonBase({ lecture }: Props) {
     default:
       return null;
   }
+}
+
+const OfflineDownloadControlMemo = memo(OfflineDownloadControl);
+
+/** Download control of one lecture. */
+function OfflineDownloadButtonBase({ lecture }: { lecture: Lecture }) {
+  const { t } = useTranslation();
+  const navigation = useNavigation<Nav>();
+  const title = lectureTitle(lecture, t.lectures.untitled);
+  const open = useCallback(
+    () =>
+      navigation.navigate(LecturesRoutes.LectureViewer, {
+        lectureId: lecture.id,
+        title,
+        offline: true,
+      }),
+    [lecture.id, navigation, title],
+  );
+
+  return (
+    <OfflineDownloadControlMemo
+      downloadable={isViewable(lecture)}
+      id={lecture.id}
+      kind="lecture"
+      onOpen={open}
+      pageCount={lecture.page_count}
+      subjectName={lecture.subject_name}
+      title={title}
+    />
+  );
 }
 
 export const OfflineDownloadButton = memo(OfflineDownloadButtonBase);

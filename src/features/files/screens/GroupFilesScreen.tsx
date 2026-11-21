@@ -128,7 +128,7 @@ export function GroupFilesScreen({ navigation, route }: GroupFilesScreenProps) {
           value={search}
         />
 
-        {errorMessage ? (
+        {errorMessage && groupFiles.length === 0 ? (
           <ErrorState
             fallbackMessage={errorMessage}
             kind={errorKind ?? undefined}

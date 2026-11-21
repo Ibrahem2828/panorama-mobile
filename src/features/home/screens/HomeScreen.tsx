@@ -33,6 +33,7 @@ import {
 import type { AppTabsParamList, HomeStackParamList } from '../../../navigation/types';
 import { spacing } from '../../../theme';
 import { createEntranceAnim } from '../../../utils/motion';
+import { OfflineHomeCard } from '../../lectures/offline/OfflineHomeCard';
 import { CurrentTermCard } from '../../academic-term/components/CurrentTermCard';
 import { useAuthStore } from '../../auth/store';
 import { isStudentProfileComplete, useStudentProfileStore } from '../../student-profile';
@@ -171,6 +172,12 @@ export function HomeScreen() {
     [navigation],
   );
 
+  const handleOpenDownloads = useCallback(
+    () => navigation.navigate(ProfileRoutes.Downloads),
+    [navigation],
+  );
+  const offlineCard = isStudent ? <OfflineHomeCard onPress={handleOpenDownloads} /> : null;
+
   const handleOpenNotifications = useCallback(
     () => handleQuickActionPress('notifications'),
     [handleQuickActionPress],
@@ -210,6 +217,7 @@ export function HomeScreen() {
       >
         {hero}
         <View style={styles.body}>
+          {offlineCard}
           <SkeletonList count={3} />
         </View>
       </AppScreen>
@@ -227,6 +235,7 @@ export function HomeScreen() {
       >
         {hero}
         <View style={styles.body}>
+          {offlineCard}
           <ErrorState message={errorMessage ?? undefined} onRetry={handleRefresh} />
         </View>
       </AppScreen>
@@ -254,6 +263,8 @@ export function HomeScreen() {
         ) : null}
 
         {isStudent ? <MySubjectsCard onPress={() => handleQuickActionPress('subjects')} /> : null}
+
+        {offlineCard}
 
         {isStudent ? <CurrentTermCard /> : null}
 

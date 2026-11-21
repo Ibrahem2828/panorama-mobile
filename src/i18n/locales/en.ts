@@ -621,8 +621,8 @@ export const en: TranslationCatalog = {
 
   offlineLectures: {
     title: 'Downloads',
-    subtitle: 'Lectures saved on your phone, to study without internet.',
-    profileSubtitle: 'Lectures saved to study without internet',
+    subtitle: 'Lectures and files saved on your phone, to study without internet.',
+    profileSubtitle: 'Lectures and files saved to study without internet',
     download: 'Download to study offline',
     downloading: (percent: number) => `Downloading ${percent}%`,
     downloadingPending: 'Preparing...',
@@ -671,22 +671,66 @@ export const en: TranslationCatalog = {
       usage: (used: string, budget: string) => `Using ${used} of ${budget}`,
       budgetTitle: 'Download limit',
       emptyTitle: 'No downloads yet',
-      emptyBody: 'Open a lecture and tap "Download to study offline" to find it here.',
+      emptyBody: 'Open a lecture or file and tap "Download to study offline" to find it here.',
       deleteAll: 'Delete all downloads',
       deleteAllTitle: 'Delete all downloads?',
-      deleteAllMessage: 'Every lecture saved on your phone will be deleted.',
+      deleteAllMessage: 'Every lecture and file saved on your phone will be deleted.',
       removedRevoked: (title: string) =>
         `"${title}" was removed from your device because it is no longer available to your account.`,
       removedCorrupt: (title: string) =>
         `"${title}" was deleted because the saved file was damaged. Download it again.`,
       dismiss: 'OK',
-      offlineNow: 'You are offline. You can open valid lectures and delete them.',
+      offlineNow: 'You are offline. You can open valid items and delete them.',
       stateReady: 'Ready',
       stateExpired: 'Expired',
       stateClock: 'Check device time',
       statePartial: 'Incomplete',
       stateDownloading: 'Downloading',
     },
+  },
+  offlineFiles: {
+    preparing: (attempt: number) =>
+      attempt > 1
+        ? 'The file is still being prepared, please wait...'
+        : 'Preparing the file for download...',
+    preparingHint: 'Large files can take a few minutes. You can stay on this screen.',
+    downloaded: (size: string) => `Saved for offline study · ${size}`,
+    availableUntil: (date: string) => `Available until ${date}`,
+    errors: {
+      limitReached:
+        'You reached the download limit for this device. Delete an old download and try again.',
+      notFound: 'This file is no longer available to your account.',
+      offline: 'You need an internet connection to download or renew a file.',
+      budget:
+        'Your download space is full. Delete a download or raise the limit on the Downloads screen.',
+      tooLarge: 'This file is too large to study offline.',
+      notReady: 'The file is still being prepared. Try again in a moment.',
+    },
+    viewer: {
+      opening: 'Opening the file...',
+      openingProgress: (percent: number) => `Opening the file... ${percent}%`,
+      missing: 'This file is not saved on your device.',
+      failed: 'Could not open the file.',
+    },
+  },
+  offlineHome: {
+    title: 'Available offline',
+    subtitle: 'Your lectures and files saved on this phone',
+    summary: (lectures: number, files: number) => {
+      const parts: string[] = [];
+
+      if (files > 0) parts.push(files === 1 ? '1 file' : `${files} files`);
+      if (lectures > 0) parts.push(lectures === 1 ? '1 lecture' : `${lectures} lectures`);
+
+      return parts.length > 0 ? parts.join(' and ') : 'Nothing saved yet';
+    },
+    openHint: 'Open downloads',
+    emptyHint: 'Download a file or lecture to study without internet',
+    kindLecture: 'Lecture',
+    kindFile: 'File',
+    badgeSaved: 'Available offline',
+    badgeAccessibility: 'Saved on this phone',
+    offlineStaleList: 'This list is not available offline. Items you opened before are shown here.',
   },
   lectures: {
     title: 'Lectures',

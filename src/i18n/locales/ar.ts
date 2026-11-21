@@ -636,8 +636,8 @@ export const ar = {
 
   offlineLectures: {
     title: 'التنزيلات',
-    subtitle: 'محاضرات محفوظة على هاتفك لتدرس بدون إنترنت.',
-    profileSubtitle: 'المحاضرات المحفوظة للدراسة بدون إنترنت',
+    subtitle: 'محاضرات وملفات محفوظة على هاتفك لتدرس بدون إنترنت.',
+    profileSubtitle: 'المحاضرات والملفات المحفوظة للدراسة بدون إنترنت',
     download: 'تنزيل للدراسة بدون إنترنت',
     downloading: (percent: number) => `جارٍ التنزيل ${percent}%`,
     downloadingPending: 'جارٍ التحضير…',
@@ -684,21 +684,62 @@ export const ar = {
       usage: (used: string, budget: string) => `المساحة المستخدمة ⁦${used}⁩ من ⁦${budget}⁩`,
       budgetTitle: 'الحد الأقصى للتنزيلات',
       emptyTitle: 'لا توجد تنزيلات',
-      emptyBody: 'افتح محاضرة واضغط «تنزيل للدراسة بدون إنترنت» لتجدها هنا.',
+      emptyBody: 'افتح محاضرة أو ملفاً واضغط «تنزيل للدراسة بدون إنترنت» لتجده هنا.',
       deleteAll: 'حذف كل التنزيلات',
       deleteAllTitle: 'حذف كل التنزيلات؟',
-      deleteAllMessage: 'ستُحذف كل المحاضرات المحفوظة على هاتفك.',
+      deleteAllMessage: 'ستُحذف كل المحاضرات والملفات المحفوظة على هاتفك.',
       removedRevoked: (title: string) => `أُزيلت «${title}» من جهازك لأنها لم تعد متاحة لحسابك.`,
       removedCorrupt: (title: string) =>
         `حُذفت «${title}» لأن الملف المحفوظ كان تالفاً. نزّلها من جديد.`,
       dismiss: 'حسناً',
-      offlineNow: 'أنت بدون إنترنت. يمكنك فتح المحاضرات الصالحة وحذفها.',
+      offlineNow: 'أنت بدون إنترنت. يمكنك فتح المواد الصالحة وحذفها.',
       stateReady: 'جاهزة',
       stateExpired: 'منتهية الصلاحية',
       stateClock: 'تحقق من وقت الجهاز',
       statePartial: 'غير مكتملة',
       stateDownloading: 'قيد التنزيل',
     },
+  },
+  offlineFiles: {
+    preparing: (attempt: number) =>
+      attempt > 1 ? 'ما زال الملف قيد التجهيز، يرجى الانتظار…' : 'جارٍ تجهيز الملف للتنزيل…',
+    preparingHint: 'قد يستغرق الأمر بضع دقائق للملفات الكبيرة. يمكنك البقاء في هذه الشاشة.',
+    downloaded: (size: string) => `محفوظ للدراسة بدون إنترنت · ⁦${size}⁩`,
+    availableUntil: (date: string) => `متاح حتى ${date}`,
+    errors: {
+      limitReached:
+        'وصلت إلى الحد الأقصى للتنزيلات على هذا الجهاز. احذف تنزيلاً قديماً ثم أعد المحاولة.',
+      notFound: 'هذا الملف لم يعد متاحاً لحسابك.',
+      offline: 'تحتاج إلى اتصال بالإنترنت لتنزيل الملف أو تجديده.',
+      budget: 'مساحة التنزيلات ممتلئة. احذف تنزيلاً أو ارفع الحد من شاشة التنزيلات.',
+      tooLarge: 'هذا الملف كبير جداً للدراسة بدون إنترنت.',
+      notReady: 'ما زال الملف قيد التجهيز. أعد المحاولة بعد قليل.',
+    },
+    viewer: {
+      opening: 'جارٍ فتح الملف…',
+      openingProgress: (percent: number) => `جارٍ فتح الملف… ${percent}%`,
+      missing: 'هذا الملف غير محفوظ على جهازك.',
+      failed: 'تعذّر فتح الملف.',
+    },
+  },
+  offlineHome: {
+    title: 'المتاح بدون إنترنت',
+    subtitle: 'محاضراتك وملفاتك المحفوظة على الهاتف',
+    summary: (lectures: number, files: number) => {
+      const parts: string[] = [];
+
+      if (files > 0) parts.push(files === 1 ? 'ملف واحد' : `${files} ملفات`);
+      if (lectures > 0) parts.push(lectures === 1 ? 'محاضرة واحدة' : `${lectures} محاضرات`);
+
+      return parts.length > 0 ? parts.join(' و') : 'لا توجد مواد محفوظة بعد';
+    },
+    openHint: 'افتح التنزيلات',
+    emptyHint: 'نزّل ملفاً أو محاضرة لتدرس بدون إنترنت',
+    kindLecture: 'محاضرة',
+    kindFile: 'ملف',
+    badgeSaved: 'متاح بدون إنترنت',
+    badgeAccessibility: 'محفوظ على هذا الهاتف',
+    offlineStaleList: 'لا تتوفر هذه القائمة بدون إنترنت. تظهر هنا المواد التي فتحتها سابقاً.',
   },
   lectures: {
     title: 'المحاضرات',

@@ -4,6 +4,10 @@
  * No native modules here, so every rule is unit tested.
  */
 
+/** What a stored copy is: a lecture or a library file. Both use the same package format and license rules. */
+export type OfflineKind = 'lecture' | 'file';
+
+/** Inventory key. Lectures keep their plain numeric key (existing inventories stay valid); files are prefixed `f:`. */
 export type LectureKey = string;
 
 export const OFFLINE_RENEW_BEFORE_MS = 3 * 24 * 60 * 60 * 1000;
@@ -19,6 +23,7 @@ export const MIN_FREE_DISK_BYTES = 150 * 1024 * 1024;
 
 export type ServerLicense = {
   licenseId: string;
+  /** Id of the lecture or file the license is for (`lecture_id` / `file_id` on the wire). */
   lectureId: number;
   contentKey: string;
   keyId: string;
@@ -50,7 +55,10 @@ const count = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
 
 /** Returns null for anything that is not a complete, supported license (never trust a half-filled one). */
-export function parseServerLicense(data: unknown): ServerLicense | null {
+export function parseServerLicense(
+  data: unknown,
+  kind: OfflineKind = 'lecture',
+): ServerLicense | null {
   const row = asRecord(data);
 
   if (!row) {
@@ -64,7 +72,7 @@ export function parseServerLicense(data: unknown): ServerLicense | null {
   const expiresAt = text(row.expires_at);
   const sha256 = text(row.sha256_of_ciphertext);
   const packageUrl = text(row.package_url);
-  const lectureId = count(row.lecture_id);
+  const lectureId = count(kind === 'file' ? row.file_id : row.lecture_id);
   const fileSize = count(row.file_size);
   const chunkSize = count(row.chunk_size);
   const plaintextSize = count(row.plaintext_size);
@@ -129,6 +137,9 @@ export function parseServerLicense(data: unknown): ServerLicense | null {
 // --- Local inventory ------------------------------------------------------------------------------------------------------
 
 export type OfflineEntry = {
+  /** Absent in inventories written before files existed: that means a lecture. */
+  kind?: OfflineKind;
+  /** Id of the lecture or file (the field keeps its historical name so stored inventories stay readable). */
   lectureId: number;
   title: string;
   subjectName: string | null;
@@ -180,7 +191,14 @@ export function emptyInventory(userId: string): Inventory {
   };
 }
 
-export const keyOf = (lectureId: number | string): LectureKey => String(lectureId);
+export const keyOf = (id: number | string, kind: OfflineKind = 'lecture'): LectureKey =>
+  kind === 'file' ? `f:${id}` : String(id);
+
+export const entryKind = (entry: Pick<OfflineEntry, 'kind'>): OfflineKind =>
+  entry.kind ?? 'lecture';
+
+export const entryKey = (entry: Pick<OfflineEntry, 'kind' | 'lectureId'>): LectureKey =>
+  keyOf(entry.lectureId, entryKind(entry));
 
 // --- Access state machine (works fully offline) -------------------------------------------------------------------------
 
@@ -235,6 +253,8 @@ export function anchorGuard(guard: ClockGuard, serverMs: number, nowMs: number):
 
 export type TransferState =
   | { kind: 'idle' }
+  /** A big library file whose package the server is still building (the request is repeated until it is ready). */
+  | { kind: 'preparing'; attempt: number }
   | { kind: 'downloading'; doneBytes: number; totalBytes: number }
   | { kind: 'verifying' }
   | { kind: 'renewing' }
@@ -242,6 +262,7 @@ export type TransferState =
 
 export type ItemState =
   | { kind: 'none' }
+  | { kind: 'preparing'; attempt: number }
   | { kind: 'downloading'; doneBytes: number; totalBytes: number }
   | { kind: 'verifying' }
   | { kind: 'renewing' }
@@ -260,7 +281,8 @@ export function deriveItemState(
   if (
     transfer.kind === 'downloading' ||
     transfer.kind === 'verifying' ||
-    transfer.kind === 'renewing'
+    transfer.kind === 'renewing' ||
+    transfer.kind === 'preparing'
   ) {
     return transfer;
   }
@@ -337,20 +359,20 @@ export function planSync(
     const entry = byLicense.get(id);
 
     if (entry) {
-      purge.add(keyOf(entry.lectureId));
+      purge.add(entryKey(entry));
     }
   }
 
   for (const id of response.renew) {
     const entry = byLicense.get(id);
 
-    if (entry && !purge.has(keyOf(entry.lectureId))) {
-      renew.add(keyOf(entry.lectureId));
+    if (entry && !purge.has(entryKey(entry))) {
+      renew.add(entryKey(entry));
     }
   }
 
   for (const entry of entries) {
-    const key = keyOf(entry.lectureId);
+    const key = entryKey(entry);
 
     if (entry.status !== 'complete' || purge.has(key) || renew.has(key)) {
       continue;
@@ -364,7 +386,7 @@ export function planSync(
   }
 
   const keep = entries
-    .map((entry) => keyOf(entry.lectureId))
+    .map((entry) => entryKey(entry))
     .filter((key) => !purge.has(key) && !renew.has(key));
 
   return { purge: [...purge], renew: [...renew], keep };
@@ -502,6 +524,9 @@ export type OfflineErrorKind =
   | 'disk'
   | 'integrity'
   | 'network'
+  | 'tooLarge'
+  /** A big file's package was still not ready after the app waited for it. */
+  | 'notReady'
   | 'unknown';
 
 /** Maps an API error (status + backend code) to what the student is told. */
@@ -509,9 +534,16 @@ export function classifyOfflineError(input: {
   status?: number | null;
   code?: string | null;
   offline?: boolean;
+  /** The backend's human readable `errors.detail`, used only to tell the two 409 answers of the file endpoint apart. */
+  detail?: string | null;
 }): OfflineErrorKind {
   if (input.offline) {
     return 'offline';
+  }
+
+  // A library file whose generated package exceeds the server cap answers 409 with the same generic code as the limit.
+  if (input.status === 409 && /too large/iu.test(input.detail ?? '')) {
+    return 'tooLarge';
   }
 
   // The license endpoint answers 409 only when the device/user limit is reached (the body code is the generic CONFLICT, the
@@ -534,4 +566,40 @@ export function classifyOfflineError(input: {
   }
 
   return 'unknown';
+}
+
+// --- Big files: the server builds the package first (202) ------------------------------------------------------------------------
+
+/** Longest the app keeps asking while the server builds a package (15 s steps: about 15 minutes). */
+export const PREPARING_MAX_ATTEMPTS = 60;
+export const PREPARING_DEFAULT_DELAY_MS = 15_000;
+const PREPARING_MIN_DELAY_MS = 2_000;
+const PREPARING_MAX_DELAY_MS = 60_000;
+
+/** `202 {state: 'preparing', retry_after_seconds}` -> how long to wait before the same request is repeated; null otherwise. */
+export function parsePreparing(data: unknown): { delayMs: number } | null {
+  const row = asRecord(data);
+
+  if (!row || row.state !== 'preparing') {
+    return null;
+  }
+
+  const seconds = count(row.retry_after_seconds);
+  const delay = seconds === null ? PREPARING_DEFAULT_DELAY_MS : seconds * 1000;
+
+  return { delayMs: Math.min(PREPARING_MAX_DELAY_MS, Math.max(PREPARING_MIN_DELAY_MS, delay)) };
+}
+
+// --- Which viewer opens ------------------------------------------------------------------------------------------------------------
+
+/**
+ * Offline routing: a complete saved copy opens when the student asked for it explicitly (Downloads, the "open offline" button)
+ * and automatically whenever the phone has no connection, so tapping a file or lecture without internet just works.
+ */
+export function shouldOpenSavedCopy(input: {
+  entry: Pick<OfflineEntry, 'status'> | undefined;
+  isOnline: boolean;
+  requestedOffline?: boolean;
+}): boolean {
+  return input.entry?.status === 'complete' && (input.requestedOffline === true || !input.isOnline);
 }

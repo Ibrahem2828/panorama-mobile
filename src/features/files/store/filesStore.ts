@@ -191,6 +191,9 @@ export const useFilesStore = create<FilesState>((set, get) => {
     }
 
     const requestId = ++listRequestId;
+    // A different query that cannot be loaded (offline, not saved before) must not keep showing the previous query's rows.
+    const queryChanged =
+      mode === 'load' && JSON.stringify(get().listQuery) !== JSON.stringify(query);
 
     set(
       mode === 'load'
@@ -231,6 +234,7 @@ export const useFilesStore = create<FilesState>((set, get) => {
         isRefreshingList: false,
         listError: toSafeFilesErrorMessage(error, filesCatalog()),
         listErrorKind: kindOf(error),
+        ...(queryChanged ? { list: [], listCount: 0, listNextPage: null } : {}),
       });
     }
   }

@@ -7,6 +7,10 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppButton, AppHeader, AppScreen, AppText, ErrorState, Stack } from '../../../components';
 import { useTranslation } from '../../../i18n';
 import { spacing, useBrand } from '../../../theme';
+import { useNetworkStore } from '../../../offline/networkStore';
+import { keyOf, shouldOpenSavedCopy } from '../../lectures/offline/licenseLogic';
+import { OfflineLectureViewer } from '../../lectures/offline/OfflineLectureViewer';
+import { useOfflineLibrary } from '../../lectures/offline/offlineLibrary';
 import { useFeedbackStore } from '../../feedback/store';
 import { useProcessingStatus } from '../../lectures/hooks/useProcessingStatus';
 import { isTerminalStatus, lectureErrorStateKind } from '../../lectures/logic';
@@ -15,7 +19,7 @@ import { getFileDisplayTitle } from '../services';
 import { useFilesStore } from '../store';
 import type { Id } from '../types';
 
-type ParamList = { PdfViewer: { fileId: Id; title?: string } };
+type ParamList = { PdfViewer: { fileId: Id; title?: string; offline?: boolean } };
 type ViewerRoute = RouteProp<ParamList, 'PdfViewer'>;
 type ViewerNavigation = NativeStackNavigationProp<ParamList, 'PdfViewer'>;
 
@@ -24,6 +28,32 @@ type ViewerNavigation = NativeStackNavigationProp<ParamList, 'PdfViewer'>;
  * night mode, text view and the student's private marks. A file that is still being prepared shows its progress.
  */
 export function PdfViewerScreen() {
+  const navigation = useNavigation<ViewerNavigation>();
+  const route = useRoute<ViewerRoute>();
+  const { fileId, title, offline } = route.params;
+  const isOnline = useNetworkStore((state) => state.isOnline);
+  const numeric = Number(fileId);
+  const saved = useOfflineLibrary((library) =>
+    Number.isFinite(numeric) ? library.entries[keyOf(numeric, 'file')] : undefined,
+  );
+  const goBack = useCallback(() => navigation.goBack(), [navigation]);
+
+  // A saved copy opens on request and automatically whenever the phone has no connection (no network call is made first).
+  if (saved && shouldOpenSavedCopy({ entry: saved, isOnline, requestedOffline: offline })) {
+    return (
+      <OfflineLectureViewer
+        kind="file"
+        lectureId={saved.lectureId}
+        onBack={goBack}
+        title={saved.title || title || ''}
+      />
+    );
+  }
+
+  return <OnlinePdfViewer />;
+}
+
+function OnlinePdfViewer() {
   const { t } = useTranslation();
   const brand = useBrand();
   const navigation = useNavigation<ViewerNavigation>();
